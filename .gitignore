@@ -1,5 +1,12 @@
+# User-specific files
 *.suo
-GBSharp/bin/
-GBSharp/obj/
-CPUTest/bin/
-CPUTest/obj/
+*.user
+*.sln.docstates
+
+# Build results
+[Bb]in/
+[Oo]bj/
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*

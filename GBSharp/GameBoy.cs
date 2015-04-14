@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GBSharp
 {
-    public class Class1
+    public class GameBoy
     {
     }
 }
