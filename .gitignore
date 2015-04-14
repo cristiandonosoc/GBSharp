@@ -1,0 +1,5 @@
+*.suo
+GBSharp/bin/
+GBSharp/obj/
+CPUTest/bin/
+CPUTest/obj/
