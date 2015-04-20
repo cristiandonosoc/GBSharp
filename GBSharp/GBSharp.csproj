@@ -40,6 +40,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GameBoy.cs" />
+    <Compile Include="ICPU.cs" />
+    <Compile Include="IMemory.cs" />
+    <Compile Include="IRegister.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
