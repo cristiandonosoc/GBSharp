@@ -40,6 +40,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MainWindowViewModel.cs" />
+    <Compile Include="MemoryViewModel.cs" />
+    <Compile Include="MemoryWordViewModel.cs" />
+    <Compile Include="MemoryFormatViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegisterViewModel.cs" />
     <Compile Include="ViewModelBase.cs" />

@@ -43,6 +43,7 @@
     <Compile Include="ICPU.cs" />
     <Compile Include="IMemory.cs" />
     <Compile Include="IRegister.cs" />
+    <Compile Include="MemoryDummy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
