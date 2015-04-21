@@ -13,6 +13,8 @@ namespace GBSharp.Memory
         /// </summary>
         byte[] data = new byte[65536];
 
+        ICatridge catridge;
+
         /// <summary>
         /// Class constructor, initializes everything to 0.
         /// </summary>
