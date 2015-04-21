@@ -39,6 +39,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Catridge\Cartridge.cs" />
+    <Compile Include="Catridge\CatridgeType.cs" />
+    <Compile Include="Catridge\ICatridge.cs" />
     <Compile Include="CPU\CPU.cs" />
     <Compile Include="CPU\CPURegisters.cs" />
     <Compile Include="GameBoy.cs" />
@@ -46,6 +49,7 @@
     <Compile Include="IMemory.cs" />
     <Compile Include="IRegister.cs" />
     <Compile Include="MemoryDummy.cs" />
+    <Compile Include="Memory\Memory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
