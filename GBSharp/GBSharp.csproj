@@ -39,6 +39,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CPU\CPU.cs" />
+    <Compile Include="CPU\CPURegisters.cs" />
     <Compile Include="GameBoy.cs" />
     <Compile Include="ICPU.cs" />
     <Compile Include="IMemory.cs" />
