@@ -17,7 +17,7 @@ namespace GBSharp
 
     public MemoryDummy()
     {
-      _values = File.ReadAllBytes("tetris.gb");
+      _values = File.ReadAllBytes("rom.gb");
 
     }
   }
