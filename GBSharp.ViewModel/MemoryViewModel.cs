@@ -12,7 +12,7 @@ namespace GBSharp.ViewModel
     Hexa
   }
 
-  public class MemoryViewModel : ViewModelBase, IDisposable
+  public class MemoryViewModel : ViewModelBase
   {
     private readonly IMemory _memory;
     private MemoryWordFormat _memoryWordValueFormat = MemoryWordFormat.Decimal;
@@ -82,10 +82,12 @@ namespace GBSharp.ViewModel
     {
       if (memory == null) throw new ArgumentNullException("memory");
       _memory = memory;
-
       InitMemoryFormats();
+    }
+
+    public void Update()
+    {
       CopyFromDomain();
-      RegisterEvents();
     }
 
     private void InitMemoryFormats()
@@ -110,35 +112,19 @@ namespace GBSharp.ViewModel
       }
     }
 
-    private void RegisterEvents()
-    {
-      _memory.ValuesChanged += MemoryValuesChanged;
-    }
-
-    private void MemoryValuesChanged()
-    {
-      CopyFromDomain();
-    }
-
+   
+  
     private void CopyFromDomain()
     {
       _memoryWords.Clear();
-      for (int address = 0; address < _memory.Values.Length; address++)
+      for (int address = 0; address < _memory.Data.Length; address++)
       {
-        _memoryWords.Add(new MemoryWordViewModel(address, _memory.Values[address]));
+        _memoryWords.Add(new MemoryWordViewModel(address, _memory.Data[address]));
       }
     }
 
 
-    public void Dispose()
-    {
-      UnregisterEvents();
-    }
-
-    private void UnregisterEvents()
-    {
-      if (_memory != null)
-        _memory.ValuesChanged -= MemoryValuesChanged;
-    }
+  
+  
   }
 }

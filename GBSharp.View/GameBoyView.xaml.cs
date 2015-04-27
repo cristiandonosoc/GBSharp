@@ -8,12 +8,14 @@ namespace GBSharp.View
   /// </summary>
   public partial class MainWindow : Window
   {
-    private readonly MainWindowViewModel _mainWindowViewModel;
-    
+    private readonly GameBoyViewModel _mainWindowViewModel;
+    private readonly IGameBoy _gameBoy;
+
     public MainWindow()
     {
       InitializeComponent();
-      _mainWindowViewModel = new MainWindowViewModel();
+      _gameBoy = new GameBoy();
+      _mainWindowViewModel = new GameBoyViewModel(_gameBoy);
       this.DataContext = _mainWindowViewModel;
     }
   }

@@ -40,7 +40,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MainWindowViewModel.cs" />
+    <Compile Include="CartridgeViewModel.cs" />
+    <Compile Include="GameBoyViewModel.cs" />
     <Compile Include="MemoryViewModel.cs" />
     <Compile Include="MemoryWordViewModel.cs" />
     <Compile Include="MemoryFormatViewModel.cs" />

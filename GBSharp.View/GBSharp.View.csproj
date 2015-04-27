@@ -57,7 +57,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="MainWindow.xaml">
+    <Page Include="CartridgeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GameBoyView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -65,8 +69,11 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+    <Compile Include="CartridgeView.xaml.cs">
+      <DependentUpon>CartridgeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GameBoyView.xaml.cs">
+      <DependentUpon>GameBoyView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Page Include="MemoryView.xaml">

@@ -6,11 +6,9 @@ namespace GBSharp
 {
   public class MemoryDummy : IMemory
   {
-    public event Action ValuesChanged;
-
     private readonly byte[] _values;
 
-    public byte[] Values
+    public byte[] Data
     {
       get { return _values; }
     }

@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace GBSharp.Catridge
 {
-    class Cartridge : ICatridge
+    class Cartridge : ICartridge
     {
         byte[] rom;
         int romSize;
         int ramSize;
-        CatridgeType type;
+        CartridgeType type;
         string title;
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace GBSharp.Catridge
                     ramSize = 128 * 1024;
                     break;
             }
-            this.type = (CatridgeType)this.rom[catridgeTypeAddress];
+            this.type = (CartridgeType)this.rom[catridgeTypeAddress];
             this.title = "";
             for (var i = 0; i < 16; ++i)
             {
@@ -61,7 +61,7 @@ namespace GBSharp.Catridge
         /// <summary>
         /// See: CatridgeType enum.
         /// </summary>
-        public CatridgeType Type
+        public CartridgeType Type
         {
             get { return this.type; }
         }
@@ -69,7 +69,7 @@ namespace GBSharp.Catridge
         /// <summary>
         /// Contents of the rom.
         /// </summary>
-        public byte[] Rom
+        public byte[] Data
         {
             get { return this.rom; }
         }

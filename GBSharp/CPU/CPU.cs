@@ -35,7 +35,7 @@ namespace GBSharp.CPU
         #endregion
 
 
-        public CPU()
+        public CPU(Memory.Memory memory)
         {
             // Magic CPU initial values (after bios execution).
             this.registers.BC = 0x0013;
@@ -45,7 +45,7 @@ namespace GBSharp.CPU
             this.registers.SP = 0xFFFE;
 
             // Initialize the memory
-            this.memory = new Memory.Memory();
+            this.memory = memory;
             this.memory.Write(0xFF05, 0x00); // TIMA
             this.memory.Write(0xFF06, 0x00); // TMA
             this.memory.Write(0xFF07, 0x00); // TAC

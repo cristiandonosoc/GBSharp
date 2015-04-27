@@ -14,8 +14,7 @@ namespace GBSharp.Memory
         /// </summary>
         byte[] data = new byte[65536];
 
-        ICatridge catridge;
-
+        
         /// <summary>
         /// Class constructor, initializes everything to 0.
         /// </summary>
@@ -61,13 +60,8 @@ namespace GBSharp.Memory
         }
 
         #region External memory interface
-        event Action IMemory.ValuesChanged
-        {
-            add { throw new NotImplementedException(); }
-            remove { throw new NotImplementedException(); }
-        }
-
-        byte[] IMemory.Values
+       
+        byte[] IMemory.Data
         {
             get { return this.data; }
         }
