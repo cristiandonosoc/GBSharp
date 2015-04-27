@@ -40,16 +40,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Catridge\Cartridge.cs" />
-    <Compile Include="Catridge\CartridgeType.cs" />
-    <Compile Include="Catridge\ICartridge.cs" />
+    <Compile Include="CartridgeType.cs" />
+    <Compile Include="ICartridge.cs" />
     <Compile Include="CPU\CPU.cs" />
-    <Compile Include="CPU\CPURegisters.cs" />
+    <Compile Include="CPURegisters.cs" />
     <Compile Include="GameBoy.cs" />
     <Compile Include="ICPU.cs" />
     <Compile Include="IGameBoy.cs" />
     <Compile Include="IMemory.cs" />
     <Compile Include="IRegister.cs" />
-    <Compile Include="MemoryDummy.cs" />
     <Compile Include="Memory\Memory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

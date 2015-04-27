@@ -12,29 +12,6 @@ namespace GBSharp.CPU
         internal Memory.Memory memory;
 
 
-        # region CPU Interface methods
-        IEnumerable<IRegister> ICPU.Registers
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        IRegister ICPU.ProgramCounter
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        IRegister ICPU.StackPointer
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        IRegister ICPU.Flags
-        {
-            get { throw new NotImplementedException(); }
-        }
-        #endregion
-
-
         public CPU(Memory.Memory memory)
         {
             // Magic CPU initial values (after bios execution).
@@ -80,5 +57,13 @@ namespace GBSharp.CPU
 
         }
 
+
+        CPURegisters ICPU.Registers
+        {
+            get
+            {
+                return this.registers;
+            }
+        }
     }
 }

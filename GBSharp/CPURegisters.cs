@@ -5,10 +5,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GBSharp.CPU
+namespace GBSharp
 {
     [StructLayout(LayoutKind.Explicit)]
-    struct CPURegisters
+    public struct CPURegisters
     {
         // 1 byte registers
         [FieldOffset(0)]
