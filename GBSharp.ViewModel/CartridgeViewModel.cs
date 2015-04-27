@@ -12,6 +12,9 @@ namespace GBSharp.ViewModel
     private readonly MemoryViewModel _memory;
     private string _filePath;
 
+    private string _cartridgeTitle;
+
+
     public MemoryViewModel Memory
     {
       get { return _memory; }
@@ -26,6 +29,19 @@ namespace GBSharp.ViewModel
         {
           _filePath = value;
           NotifyCartridgeFileLoaded();
+        }
+      }
+    }
+
+    public string CartridgeTitle
+    {
+      get { return _cartridgeTitle; }
+      set
+      {
+        if (_cartridgeTitle != value)
+        {
+          _cartridgeTitle = value;
+          OnPropertyChanged(() => CartridgeTitle);
         }
       }
     }
@@ -45,6 +61,7 @@ namespace GBSharp.ViewModel
 
     public void Update()
     {
+      CartridgeTitle = _cartridge.Title;
       _memory.Update();
     }
    

@@ -15,6 +15,7 @@
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto"></RowDefinition>
+      <RowDefinition Height="Auto"></RowDefinition>
       <RowDefinition Height="*"></RowDefinition>
     </Grid.RowDefinitions>
     <Grid>
@@ -25,6 +26,7 @@
       <TextBlock Name="FileText" Text="{Binding FilePath, Mode=TwoWay}"></TextBlock>
       <Button Grid.Column="1" Click="ButtonBase_OnClick" Content="Load"></Button>
     </Grid>
-    <ContentPresenter Grid.Row="1" Content="{Binding Memory}"/>
+    <TextBlock Grid.Row="1" Text="{Binding CartridgeTitle}"></TextBlock>
+    <ContentPresenter Grid.Row="2" Content="{Binding Memory}"/>
   </Grid>
 </UserControl>
