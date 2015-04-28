@@ -1056,522 +1056,1544 @@ namespace GBSharp.CPU
     private void CreateInstructionLambdas()
     {
       instructionLambdas = new Dictionary<byte, Action<ushort>>() {
-            {0x00, (n) => { }}, // NOP
-            {0x01, (n) => { registers.BC = n; }}, // LD BC,nn
-            {0x02, (n) => { memory.Write(registers.BC, registers.A); }}, // LD (BC),A
-            {0x03, (n) => { registers.BC++; }}, // INC BC
-            {0x04, (n) => { registers.B++; }}, // INC B
-            {0x05, (n) => {registers.B--;}}, // DEC B
-            {0x06, (n) => { registers.B = (byte)n; }}, // LD B,n
-            {0x07, (n) => { throw new NotImplementedException(); }}, // RLC A
-            {0x08, (n) => memory.Write(n, registers.SP)}, // LD (nn),SP
-            {0x09, (n) => { registers.HL += registers.BC; }}, // ADD HL,BC
-            {0x0A, (n) => registers.A = memory.Read(registers.BC)}, // LD A,(BC)
-            {0x0B, (n) => { registers.BC--; }}, // DEC BC
-            {0x0C, (n) => { registers.C++; }}, // INC C
-            {0x0D, (n) => { registers.C--; }}, // DEC C
-            {0x0E, (n)=>{throw new NotImplementedException();}}, // LD C,n
-            {0x0F, (n)=>{throw new NotImplementedException();}}, // RRC A
-            {0x10, (n)=>{throw new NotImplementedException();}}, // STOP
-            {0x11, (n)=>{throw new NotImplementedException();}}, // LD DE,nn
-            {0x12, (n)=>{throw new NotImplementedException();}}, // LD (DE),A
-            {0x13, (n)=>{throw new NotImplementedException();}}, // INC DE
-            {0x14, (n)=>{throw new NotImplementedException();}}, // INC D
-            {0x15, (n)=>{throw new NotImplementedException();}}, // DEC D
-            {0x16, (n)=>{throw new NotImplementedException();}}, // LD D,n
-            {0x17, (n)=>{throw new NotImplementedException();}}, // RL A
-            {0x18, (n)=>{throw new NotImplementedException();}}, // JR n
-            {0x19, (n)=>{throw new NotImplementedException();}}, // ADD HL,DE
-            {0x1A, (n)=>{throw new NotImplementedException();}}, // LD A,(DE)
-            {0x1B, (n)=>{throw new NotImplementedException();}}, // DEC DE
-            {0x1C, (n)=>{throw new NotImplementedException();}}, // INC E
-            {0x1D, (n)=>{throw new NotImplementedException();}}, // DEC E
-            {0x1E, (n)=>{throw new NotImplementedException();}}, // LD E,n
-            {0x1F, (n)=>{throw new NotImplementedException();}}, // RR A
-            {0x20, (n)=>{throw new NotImplementedException();}}, // JR NZ,n
-            {0x21, (n)=>{throw new NotImplementedException();}}, // LD HL,nn
-            {0x22, (n)=>{throw new NotImplementedException();}}, // LDI (HL),A
-            {0x23, (n)=>{throw new NotImplementedException();}}, // INC HL
-            {0x24, (n)=>{throw new NotImplementedException();}}, // INC H
-            {0x25, (n)=>{throw new NotImplementedException();}}, // DEC H
-            {0x26, (n)=>{throw new NotImplementedException();}}, // LD H,n
-            {0x27, (n)=>{throw new NotImplementedException();}}, // DAA
-            {0x28, (n)=>{throw new NotImplementedException();}}, // JR Z,n
-            {0x29, (n)=>{throw new NotImplementedException();}}, // ADD HL,HL
-            {0x2A, (n)=>{throw new NotImplementedException();}}, // LDI A,(HL)
-            {0x2B, (n)=>{throw new NotImplementedException();}}, // DEC HL
-            {0x2C, (n)=>{throw new NotImplementedException();}}, // INC L
-            {0x2D, (n)=>{throw new NotImplementedException();}}, // DEC L
-            {0x2E, (n)=>{throw new NotImplementedException();}}, // LD L,n
-            {0x2F, (n)=>{throw new NotImplementedException();}}, // CPL
-            {0x30, (n)=>{throw new NotImplementedException();}}, // JR NC,n
-            {0x31, (n)=>{throw new NotImplementedException();}}, // LD SP,nn
-            {0x32, (n)=>{throw new NotImplementedException();}}, // LDD (HL),A
-            {0x33, (n)=>{throw new NotImplementedException();}}, // INC SP
-            {0x34, (n)=>{throw new NotImplementedException();}}, // INC (HL)
-            {0x35, (n)=>{throw new NotImplementedException();}}, // DEC (HL)
-            {0x36, (n)=>{throw new NotImplementedException();}}, // LD (HL),n
-            {0x37, (n)=>{throw new NotImplementedException();}}, // SCF
-            {0x38, (n)=>{throw new NotImplementedException();}}, // JR C,n
-            {0x39, (n)=>{throw new NotImplementedException();}}, // ADD HL,SP
-            {0x3A, (n)=>{throw new NotImplementedException();}}, // LDD A,(HL)
-            {0x3B, (n)=>{throw new NotImplementedException();}}, // DEC SP
-            {0x3C, (n)=>{throw new NotImplementedException();}}, // INC A
-            {0x3D, (n)=>{throw new NotImplementedException();}}, // DEC A
-            {0x3E, (n)=>{throw new NotImplementedException();}}, // LD A,n
-            {0x3F, (n)=>{throw new NotImplementedException();}}, // CCF
-            {0x40, (n)=>{throw new NotImplementedException();}}, // LD B,B
-            {0x41, (n)=>{throw new NotImplementedException();}}, // LD B,C
-            {0x42, (n)=>{throw new NotImplementedException();}}, // LD B,D
-            {0x43, (n)=>{throw new NotImplementedException();}}, // LD B,E
-            {0x44, (n)=>{throw new NotImplementedException();}}, // LD B,H
-            {0x45, (n)=>{throw new NotImplementedException();}}, // LD B,L
-            {0x46, (n)=>{throw new NotImplementedException();}}, // LD B,(HL)
-            {0x47, (n)=>{throw new NotImplementedException();}}, // LD B,A
-            {0x48, (n)=>{throw new NotImplementedException();}}, // LD C,B
-            {0x49, (n)=>{throw new NotImplementedException();}}, // LD C,C
-            {0x4A, (n)=>{throw new NotImplementedException();}}, // LD C,D
-            {0x4B, (n)=>{throw new NotImplementedException();}}, // LD C,E
-            {0x4C, (n)=>{throw new NotImplementedException();}}, // LD C,H
-            {0x4D, (n)=>{throw new NotImplementedException();}}, // LD C,L
-            {0x4E, (n)=>{throw new NotImplementedException();}}, // LD C,(HL)
-            {0x4F, (n)=>{throw new NotImplementedException();}}, // LD C,A
-            {0x50, (n)=>{throw new NotImplementedException();}}, // LD D,B
-            {0x51, (n)=>{throw new NotImplementedException();}}, // LD D,C
-            {0x52, (n)=>{throw new NotImplementedException();}}, // LD D,D
-            {0x53, (n)=>{throw new NotImplementedException();}}, // LD D,E
-            {0x54, (n)=>{throw new NotImplementedException();}}, // LD D,H
-            {0x55, (n)=>{throw new NotImplementedException();}}, // LD D,L
-            {0x56, (n)=>{throw new NotImplementedException();}}, // LD D,(HL)
-            {0x57, (n)=>{throw new NotImplementedException();}}, // LD D,A
-            {0x58, (n)=>{throw new NotImplementedException();}}, // LD E,B
-            {0x59, (n)=>{throw new NotImplementedException();}}, // LD E,C
-            {0x5A, (n)=>{throw new NotImplementedException();}}, // LD E,D
-            {0x5B, (n)=>{throw new NotImplementedException();}}, // LD E,E
-            {0x5C, (n)=>{throw new NotImplementedException();}}, // LD E,H
-            {0x5D, (n)=>{throw new NotImplementedException();}}, // LD E,L
-            {0x5E, (n)=>{throw new NotImplementedException();}}, // LD E,(HL)
-            {0x5F, (n)=>{throw new NotImplementedException();}}, // LD E,A
-            {0x60, (n)=>{throw new NotImplementedException();}}, // LD H,B
-            {0x61, (n)=>{throw new NotImplementedException();}}, // LD H,C
-            {0x62, (n)=>{throw new NotImplementedException();}}, // LD H,D
-            {0x63, (n)=>{throw new NotImplementedException();}}, // LD H,E
-            {0x64, (n)=>{throw new NotImplementedException();}}, // LD H,H
-            {0x65, (n)=>{throw new NotImplementedException();}}, // LD H,L
-            {0x66, (n)=>{throw new NotImplementedException();}}, // LD H,(HL)
-            {0x67, (n)=>{throw new NotImplementedException();}}, // LD H,A
-            {0x68, (n)=>{throw new NotImplementedException();}}, // LD L,B
-            {0x69, (n)=>{throw new NotImplementedException();}}, // LD L,C
-            {0x6A, (n)=>{throw new NotImplementedException();}}, // LD L,D
-            {0x6B, (n)=>{throw new NotImplementedException();}}, // LD L,E
-            {0x6C, (n)=>{throw new NotImplementedException();}}, // LD L,H
-            {0x6D, (n)=>{throw new NotImplementedException();}}, // LD L,L
-            {0x6E, (n)=>{throw new NotImplementedException();}}, // LD L,(HL)
-            {0x6F, (n)=>{throw new NotImplementedException();}}, // LD L,A
-            {0x70, (n)=>{throw new NotImplementedException();}}, // LD (HL),B
-            {0x71, (n)=>{throw new NotImplementedException();}}, // LD (HL),C
-            {0x72, (n)=>{throw new NotImplementedException();}}, // LD (HL),D
-            {0x73, (n)=>{throw new NotImplementedException();}}, // LD (HL),E
-            {0x74, (n)=>{throw new NotImplementedException();}}, // LD (HL),H
-            {0x75, (n)=>{throw new NotImplementedException();}}, // LD (HL),L
-            {0x76, (n)=>{throw new NotImplementedException();}}, // HALT
-            {0x77, (n)=>{throw new NotImplementedException();}}, // LD (HL),A
-            {0x78, (n)=>{throw new NotImplementedException();}}, // LD A,B
-            {0x79, (n)=>{throw new NotImplementedException();}}, // LD A,C
-            {0x7A, (n)=>{throw new NotImplementedException();}}, // LD A,D
-            {0x7B, (n)=>{throw new NotImplementedException();}}, // LD A,E
-            {0x7C, (n)=>{throw new NotImplementedException();}}, // LD A,H
-            {0x7D, (n)=>{throw new NotImplementedException();}}, // LD A,L
-            {0x7E, (n)=>{throw new NotImplementedException();}}, // LD A,(HL)
-            {0x7F, (n)=>{throw new NotImplementedException();}}, // LD A,A
-            {0x80, (n)=>{throw new NotImplementedException();}}, // ADD A,B
-            {0x81, (n)=>{throw new NotImplementedException();}}, // ADD A,C
-            {0x82, (n)=>{throw new NotImplementedException();}}, // ADD A,D
-            {0x83, (n)=>{throw new NotImplementedException();}}, // ADD A,E
-            {0x84, (n)=>{throw new NotImplementedException();}}, // ADD A,H
-            {0x85, (n)=>{throw new NotImplementedException();}}, // ADD A,L
-            {0x86, (n)=>{throw new NotImplementedException();}}, // ADD A,(HL)
-            {0x87, (n)=>{throw new NotImplementedException();}}, // ADD A,A
-            {0x88, (n)=>{throw new NotImplementedException();}}, // ADC A,B
-            {0x89, (n)=>{throw new NotImplementedException();}}, // ADC A,C
-            {0x8A, (n)=>{throw new NotImplementedException();}}, // ADC A,D
-            {0x8B, (n)=>{throw new NotImplementedException();}}, // ADC A,E
-            {0x8C, (n)=>{throw new NotImplementedException();}}, // ADC A,H
-            {0x8D, (n)=>{throw new NotImplementedException();}}, // ADC A,L
-            {0x8E, (n)=>{throw new NotImplementedException();}}, // ADC A,(HL)
-            {0x8F, (n)=>{throw new NotImplementedException();}}, // ADC A,A
-            {0x90, (n)=>{throw new NotImplementedException();}}, // SUB A,B
-            {0x91, (n)=>{throw new NotImplementedException();}}, // SUB A,C
-            {0x92, (n)=>{throw new NotImplementedException();}}, // SUB A,D
-            {0x93, (n)=>{throw new NotImplementedException();}}, // SUB A,E
-            {0x94, (n)=>{throw new NotImplementedException();}}, // SUB A,H
-            {0x95, (n)=>{throw new NotImplementedException();}}, // SUB A,L
-            {0x96, (n)=>{throw new NotImplementedException();}}, // SUB A,(HL)
-            {0x97, (n)=>{throw new NotImplementedException();}}, // SUB A,A
-            {0x98, (n)=>{throw new NotImplementedException();}}, // SBC A,B
-            {0x99, (n)=>{throw new NotImplementedException();}}, // SBC A,C
-            {0x9A, (n)=>{throw new NotImplementedException();}}, // SBC A,D
-            {0x9B, (n)=>{throw new NotImplementedException();}}, // SBC A,E
-            {0x9C, (n)=>{throw new NotImplementedException();}}, // SBC A,H
-            {0x9D, (n)=>{throw new NotImplementedException();}}, // SBC A,L
-            {0x9E, (n)=>{throw new NotImplementedException();}}, // SBC A,(HL)
-            {0x9F, (n)=>{throw new NotImplementedException();}}, // SBC A,A
-            {0xA0, (n)=>{throw new NotImplementedException();}}, // AND B
-            {0xA1, (n)=>{throw new NotImplementedException();}}, // AND C
-            {0xA2, (n)=>{throw new NotImplementedException();}}, // AND D
-            {0xA3, (n)=>{throw new NotImplementedException();}}, // AND E
-            {0xA4, (n)=>{throw new NotImplementedException();}}, // AND H
-            {0xA5, (n)=>{throw new NotImplementedException();}}, // AND L
-            {0xA6, (n)=>{throw new NotImplementedException();}}, // AND (HL)
-            {0xA7, (n)=>{throw new NotImplementedException();}}, // AND A
-            {0xA8, (n)=>{throw new NotImplementedException();}}, // XOR B
-            {0xA9, (n)=>{throw new NotImplementedException();}}, // XOR C
-            {0xAA, (n)=>{throw new NotImplementedException();}}, // XOR D
-            {0xAB, (n)=>{throw new NotImplementedException();}}, // XOR E
-            {0xAC, (n)=>{throw new NotImplementedException();}}, // XOR H
-            {0xAD, (n)=>{throw new NotImplementedException();}}, // XOR L
-            {0xAE, (n)=>{throw new NotImplementedException();}}, // XOR (HL)
-            {0xAF, (n)=>{throw new NotImplementedException();}}, // XOR A
-            {0xB0, (n)=>{throw new NotImplementedException();}}, // OR B
-            {0xB1, (n)=>{throw new NotImplementedException();}}, // OR C
-            {0xB2, (n)=>{throw new NotImplementedException();}}, // OR D
-            {0xB3, (n)=>{throw new NotImplementedException();}}, // OR E
-            {0xB4, (n)=>{throw new NotImplementedException();}}, // OR H
-            {0xB5, (n)=>{throw new NotImplementedException();}}, // OR L
-            {0xB6, (n)=>{throw new NotImplementedException();}}, // OR (HL)
-            {0xB7, (n)=>{throw new NotImplementedException();}}, // OR A
-            {0xB8, (n)=>{throw new NotImplementedException();}}, // CP B
-            {0xB9, (n)=>{throw new NotImplementedException();}}, // CP C
-            {0xBA, (n)=>{throw new NotImplementedException();}}, // CP D
-            {0xBB, (n)=>{throw new NotImplementedException();}}, // CP E
-            {0xBC, (n)=>{throw new NotImplementedException();}}, // CP H
-            {0xBD, (n)=>{throw new NotImplementedException();}}, // CP L
-            {0xBE, (n)=>{throw new NotImplementedException();}}, // CP (HL)
-            {0xBF, (n)=>{throw new NotImplementedException();}}, // CP A
-            {0xC0, (n)=>{throw new NotImplementedException();}}, // RET NZ
-            {0xC1, (n)=>{throw new NotImplementedException();}}, // POP BC
-            {0xC2, (n)=>{throw new NotImplementedException();}}, // JP NZ,nn
-            {0xC3, (n)=>{throw new NotImplementedException();}}, // JP nn
-            {0xC4, (n)=>{throw new NotImplementedException();}}, // CALL NZ,nn
-            {0xC5, (n)=>{throw new NotImplementedException();}}, // PUSH BC
-            {0xC6, (n)=>{throw new NotImplementedException();}}, // ADD A,n
-            {0xC7, (n)=>{throw new NotImplementedException();}}, // RST 0
-            {0xC8, (n)=>{throw new NotImplementedException();}}, // RET Z
-            {0xC9, (n)=>{throw new NotImplementedException();}}, // RET
-            {0xCA, (n)=>{throw new NotImplementedException();}}, // JP Z,nn
-            {0xCB, (n)=>{throw new NotImplementedException();}}, // Ext ops
-            {0xCC, (n)=>{throw new NotImplementedException();}}, // CALL Z,nn
-            {0xCD, (n)=>{throw new NotImplementedException();}}, // CALL nn
-            {0xCE, (n)=>{throw new NotImplementedException();}}, // ADC A,n
-            {0xCF, (n)=>{throw new NotImplementedException();}}, // RST 8
-            {0xD0, (n)=>{throw new NotImplementedException();}}, // RET NC
-            {0xD1, (n)=>{throw new NotImplementedException();}}, // POP DE
-            {0xD2, (n)=>{throw new NotImplementedException();}}, // JP NC,nn
-            // {0xD3, }, // XX
-            {0xD4, (n)=>{throw new NotImplementedException();}}, // CALL NC,nn
-            {0xD5, (n)=>{throw new NotImplementedException();}}, // PUSH DE
-            {0xD6, (n)=>{throw new NotImplementedException();}}, // SUB A,n
-            {0xD7, (n)=>{throw new NotImplementedException();}}, // RST 10
-            {0xD8, (n)=>{throw new NotImplementedException();}}, // RET C
-            {0xD9, (n)=>{throw new NotImplementedException();}}, // RETI
-            {0xDA, (n)=>{throw new NotImplementedException();}}, // JP C,nn
-            // {0xDB, }, // XX
-            {0xDC, (n)=>{throw new NotImplementedException();}}, // CALL C,nn
-            // {0xDD, }, // XX
-            {0xDE, (n)=>{throw new NotImplementedException();}}, // SBC A,n
-            {0xDF, (n)=>{throw new NotImplementedException();}}, // RST 18
-            {0xE0, (n)=>{throw new NotImplementedException();}}, // LDH (n),A
-            {0xE1, (n)=>{throw new NotImplementedException();}}, // POP HL
-            {0xE2, (n)=>{throw new NotImplementedException();}}, // LDH (C),A
-            // {0xE3, }, // XX
-            // {0xE4, }, // XX
-            {0xE5, (n)=>{throw new NotImplementedException();}}, // PUSH HL
-            {0xE6, (n)=>{throw new NotImplementedException();}}, // AND n
-            {0xE7, (n)=>{throw new NotImplementedException();}}, // RST 20
-            {0xE8, (n)=>{throw new NotImplementedException();}}, // ADD SP,d
-            {0xE9, (n)=>{throw new NotImplementedException();}}, // JP (HL)
-            {0xEA, (n)=>{throw new NotImplementedException();}}, // LD (nn),A
-            // {0xEB, }, // XX
-            // {0xEC, }, // XX
-            // {0xED, }, // XX
-            {0xEE, (n)=>{throw new NotImplementedException();}}, // XOR n
-            {0xEF, (n)=>{throw new NotImplementedException();}}, // RST 28
-            {0xF0, (n)=>{throw new NotImplementedException();}}, // LDH A,(n)
-            {0xF1, (n)=>{throw new NotImplementedException();}}, // POP AF
-            {0xF2, (n)=>{throw new NotImplementedException();}}, // LDH A, (C)
-            {0xF3, (n)=>{throw new NotImplementedException();}}, // DI
-            // {0xF4, }, // XX
-            {0xF5, (n)=>{throw new NotImplementedException();}}, // PUSH AF
-            {0xF6, (n)=>{throw new NotImplementedException();}}, // OR n
-            {0xF7, (n)=>{throw new NotImplementedException();}}, // RST 30
-            {0xF8, (n)=>{throw new NotImplementedException();}}, // LDHL SP,d
-            {0xF9, (n)=>{throw new NotImplementedException();}}, // LD SP,HL
-            {0xFA, (n)=>{throw new NotImplementedException();}}, // LD A,(nn)
-            {0xFB, (n)=>{throw new NotImplementedException();}}, // EI
-            // {0xFC, }, // XX
-            // {0xFD, }, // XX
-            {0xFE, (n)=>{throw new NotImplementedException();}}, // CP n
-            {0xFF, (n)=>{throw new NotImplementedException();}} // RST 38
+            // NOP: No Operation
+            {0x00, (n)=>{ }},
+
+            // LD BC,nn: Load 16-bit immediate into BC
+            {0x01, (n)=>{ registers.BC = n; }},
+
+            // LD (BC),A: Save A to address pointed by BC
+            {0x02, (n)=>{ memory.Write(registers.BC, registers.A); }},
+
+            // INC BC: Increment 16-bit BC
+            {0x03, (n)=>{ registers.BC++; }},
+
+            // INC B: Increment B
+            {0x04, (n)=>{ registers.B++; }},
+
+            // DEC B: Decrement B
+            {0x05, (n)=>{ registers.B--; }},
+
+            // LD B,n: Load 8-bit immediate into B
+            {0x06, (n)=>{ registers.B = (byte)n; }},
+
+            // RLC A: Rotate A left with carry
+            {0x07, (n)=>{throw new NotImplementedException();}},
+
+            // LD (nn),SP: Save SP to given address
+            {0x08, (n)=>memory.Write(n, registers.SP)},
+
+            // ADD HL,BC: Add 16-bit BC to HL
+            {0x09, (n)=>{ registers.HL += registers.BC; }},
+
+            // LD A,(BC): Load A from address pointed to by BC
+            {0x0A, (n) => registers.A = memory.Read(registers.BC)},
+
+            // DEC BC: Decrement 16-bit BC
+            {0x0B, (n) => { registers.BC--; }},
+
+            // INC C: Increment C
+            {0x0C, (n) => { registers.C++; }},
+
+            // DEC C: Decrement C
+            {0x0D, (n) => { registers.C--; }},
+
+            // LD C,n: Load 8-bit immediate into C
+            {0x0E, (n)=>{throw new NotImplementedException();}},
+
+            // RRC A: Rotate A right with carry
+            {0x0F, (n)=>{throw new NotImplementedException();}},
+
+            // STOP: Stop processor
+            {0x10, (n)=>{throw new NotImplementedException();}},
+
+            // LD DE,nn: Load 16-bit immediate into DE
+            {0x11, (n)=>{throw new NotImplementedException();}},
+
+            // LD (DE),A: Save A to address pointed by DE
+            {0x12, (n)=>{throw new NotImplementedException();}},
+
+            // INC DE: Increment 16-bit DE
+            {0x13, (n)=>{throw new NotImplementedException();}},
+
+            // INC D: Increment D
+            {0x14, (n)=>{throw new NotImplementedException();}},
+
+            // DEC D: Decrement D
+            {0x15, (n)=>{throw new NotImplementedException();}},
+
+            // LD D,n: Load 8-bit immediate into D
+            {0x16, (n)=>{throw new NotImplementedException();}},
+
+            // RL A: Rotate A left
+            {0x17, (n)=>{throw new NotImplementedException();}},
+
+            // JR n: Relative jump by signed immediate
+            {0x18, (n)=>{throw new NotImplementedException();}},
+
+            // ADD HL,DE: Add 16-bit DE to HL
+            {0x19, (n)=>{throw new NotImplementedException();}},
+
+            // LD A,(DE): Load A from address pointed to by DE
+            {0x1A, (n)=>{throw new NotImplementedException();}},
+
+            // DEC DE: Decrement 16-bit DE
+            {0x1B, (n)=>{throw new NotImplementedException();}},
+
+            // INC E: Increment E
+            {0x1C, (n)=>{throw new NotImplementedException();}},
+
+            // DEC E: Decrement E
+            {0x1D, (n)=>{throw new NotImplementedException();}},
+
+            // LD E,n: Load 8-bit immediate into E
+            {0x1E, (n)=>{throw new NotImplementedException();}},
+
+            // RR A: Rotate A right
+            {0x1F, (n)=>{throw new NotImplementedException();}},
+
+            // JR NZ,n: Relative jump by signed immediate if last result was not zero
+            {0x20, (n)=>{throw new NotImplementedException();}},
+
+            // LD HL,nn: Load 16-bit immediate into HL
+            {0x21, (n)=>{throw new NotImplementedException();}},
+
+            // LDI (HL),A: Save A to address pointed by HL, and increment HL
+            {0x22, (n)=>{throw new NotImplementedException();}},
+
+            // INC HL: Increment 16-bit HL
+            {0x23, (n)=>{throw new NotImplementedException();}},
+
+            // INC H: Increment H
+            {0x24, (n)=>{throw new NotImplementedException();}},
+
+            // DEC H: Decrement H
+            {0x25, (n)=>{throw new NotImplementedException();}},
+
+            // LD H,n: Load 8-bit immediate into H
+            {0x26, (n)=>{throw new NotImplementedException();}},
+
+            // DAA: Adjust A for BCD addition
+            {0x27, (n)=>{throw new NotImplementedException();}},
+
+            // JR Z,n: Relative jump by signed immediate if last result was zero
+            {0x28, (n)=>{throw new NotImplementedException();}},
+
+            // ADD HL,HL: Add 16-bit HL to HL
+            {0x29, (n)=>{throw new NotImplementedException();}},
+
+            // LDI A,(HL): Load A from address pointed to by HL, and increment HL
+            {0x2A, (n)=>{throw new NotImplementedException();}},
+
+            // DEC HL: Decrement 16-bit HL
+            {0x2B, (n)=>{throw new NotImplementedException();}},
+
+            // INC L: Increment L
+            {0x2C, (n)=>{throw new NotImplementedException();}},
+
+            // DEC L: Decrement L
+            {0x2D, (n)=>{throw new NotImplementedException();}},
+
+            // LD L,n: Load 8-bit immediate into L
+            {0x2E, (n)=>{throw new NotImplementedException();}},
+
+            // CPL: Complement (logical NOT) on A
+            {0x2F, (n)=>{throw new NotImplementedException();}},
+
+            // JR NC,n: Relative jump by signed immediate if last result caused no carry
+            {0x30, (n)=>{throw new NotImplementedException();}},
+
+            // LD SP,nn: Load 16-bit immediate into SP
+            {0x31, (n)=>{throw new NotImplementedException();}},
+
+            // LDD (HL),A: Save A to address pointed by HL, and decrement HL
+            {0x32, (n)=>{throw new NotImplementedException();}},
+
+            // INC SP: Increment 16-bit HL
+            {0x33, (n)=>{throw new NotImplementedException();}},
+
+            // INC (HL): Increment value pointed by HL
+            {0x34, (n)=>{throw new NotImplementedException();}},
+
+            // DEC (HL): Decrement value pointed by HL
+            {0x35, (n)=>{throw new NotImplementedException();}},
+
+            // LD (HL),n: Load 8-bit immediate into address pointed by HL
+            {0x36, (n)=>{throw new NotImplementedException();}},
+
+            // SCF: Set carry flag
+            {0x37, (n)=>{throw new NotImplementedException();}},
+
+            // JR C,n: Relative jump by signed immediate if last result caused carry
+            {0x38, (n)=>{throw new NotImplementedException();}},
+
+            // ADD HL,SP: Add 16-bit SP to HL
+            {0x39, (n)=>{throw new NotImplementedException();}},
+
+            // LDD A,(HL): Load A from address pointed to by HL, and decrement HL
+            {0x3A, (n)=>{throw new NotImplementedException();}},
+
+            // DEC SP: Decrement 16-bit SP
+            {0x3B, (n)=>{throw new NotImplementedException();}},
+
+            // INC A: Increment A
+            {0x3C, (n)=>{throw new NotImplementedException();}},
+
+            // DEC A: Decrement A
+            {0x3D, (n)=>{throw new NotImplementedException();}},
+
+            // LD A,n: Load 8-bit immediate into A
+            {0x3E, (n)=>{throw new NotImplementedException();}},
+
+            // CCF: Clear carry flag
+            {0x3F, (n)=>{throw new NotImplementedException();}},
+
+            // LD B,B: Copy B to B
+            {0x40, (n)=>{throw new NotImplementedException();}},
+
+            // LD B,C: Copy C to B
+            {0x41, (n)=>{throw new NotImplementedException();}},
+
+            // LD B,D: Copy D to B
+            {0x42, (n)=>{throw new NotImplementedException();}},
+
+            // LD B,E: Copy E to B
+            {0x43, (n)=>{throw new NotImplementedException();}},
+
+            // LD B,H: Copy H to B
+            {0x44, (n)=>{throw new NotImplementedException();}},
+
+            // LD B,L: Copy L to B
+            {0x45, (n)=>{throw new NotImplementedException();}},
+
+            // LD B,(HL): Copy value pointed by HL to B
+            {0x46, (n)=>{throw new NotImplementedException();}},
+
+            // LD B,A: Copy A to B
+            {0x47, (n)=>{throw new NotImplementedException();}},
+
+            // LD C,B: Copy B to C
+            {0x48, (n)=>{throw new NotImplementedException();}},
+
+            // LD C,C: Copy C to C
+            {0x49, (n)=>{throw new NotImplementedException();}},
+
+            // LD C,D: Copy D to C
+            {0x4A, (n)=>{throw new NotImplementedException();}},
+
+            // LD C,E: Copy E to C
+            {0x4B, (n)=>{throw new NotImplementedException();}},
+
+            // LD C,H: Copy H to C
+            {0x4C, (n)=>{throw new NotImplementedException();}},
+
+            // LD C,L: Copy L to C
+            {0x4D, (n)=>{throw new NotImplementedException();}},
+
+            // LD C,(HL): Copy value pointed by HL to C
+            {0x4E, (n)=>{throw new NotImplementedException();}},
+
+            // LD C,A: Copy A to C
+            {0x4F, (n)=>{throw new NotImplementedException();}},
+
+            // LD D,B: Copy B to D
+            {0x50, (n)=>{throw new NotImplementedException();}},
+
+            // LD D,C: Copy C to D
+            {0x51, (n)=>{throw new NotImplementedException();}},
+
+            // LD D,D: Copy D to D
+            {0x52, (n)=>{throw new NotImplementedException();}},
+
+            // LD D,E: Copy E to D
+            {0x53, (n)=>{throw new NotImplementedException();}},
+
+            // LD D,H: Copy H to D
+            {0x54, (n)=>{throw new NotImplementedException();}},
+
+            // LD D,L: Copy L to D
+            {0x55, (n)=>{throw new NotImplementedException();}},
+
+            // LD D,(HL): Copy value pointed by HL to D
+            {0x56, (n)=>{throw new NotImplementedException();}},
+
+            // LD D,A: Copy A to D
+            {0x57, (n)=>{throw new NotImplementedException();}},
+
+            // LD E,B: Copy B to E
+            {0x58, (n)=>{throw new NotImplementedException();}},
+
+            // LD E,C: Copy C to E
+            {0x59, (n)=>{throw new NotImplementedException();}},
+
+            // LD E,D: Copy D to E
+            {0x5A, (n)=>{throw new NotImplementedException();}},
+
+            // LD E,E: Copy E to E
+            {0x5B, (n)=>{throw new NotImplementedException();}},
+
+            // LD E,H: Copy H to E
+            {0x5C, (n)=>{throw new NotImplementedException();}},
+
+            // LD E,L: Copy L to E
+            {0x5D, (n)=>{throw new NotImplementedException();}},
+
+            // LD E,(HL): Copy value pointed by HL to E
+            {0x5E, (n)=>{throw new NotImplementedException();}},
+
+            // LD E,A: Copy A to E
+            {0x5F, (n)=>{throw new NotImplementedException();}},
+
+            // LD H,B: Copy B to H
+            {0x60, (n)=>{throw new NotImplementedException();}},
+
+            // LD H,C: Copy C to H
+            {0x61, (n)=>{throw new NotImplementedException();}},
+
+            // LD H,D: Copy D to H
+            {0x62, (n)=>{throw new NotImplementedException();}},
+
+            // LD H,E: Copy E to H
+            {0x63, (n)=>{throw new NotImplementedException();}},
+
+            // LD H,H: Copy H to H
+            {0x64, (n)=>{throw new NotImplementedException();}},
+
+            // LD H,L: Copy L to H
+            {0x65, (n)=>{throw new NotImplementedException();}},
+
+            // LD H,(HL): Copy value pointed by HL to H
+            {0x66, (n)=>{throw new NotImplementedException();}},
+
+            // LD H,A: Copy A to H
+            {0x67, (n)=>{throw new NotImplementedException();}},
+
+            // LD L,B: Copy B to L
+            {0x68, (n)=>{throw new NotImplementedException();}},
+
+            // LD L,C: Copy C to L
+            {0x69, (n)=>{throw new NotImplementedException();}},
+
+            // LD L,D: Copy D to L
+            {0x6A, (n)=>{throw new NotImplementedException();}},
+
+            // LD L,E: Copy E to L
+            {0x6B, (n)=>{throw new NotImplementedException();}},
+
+            // LD L,H: Copy H to L
+            {0x6C, (n)=>{throw new NotImplementedException();}},
+
+            // LD L,L: Copy L to L
+            {0x6D, (n)=>{throw new NotImplementedException();}},
+
+            // LD L,(HL): Copy value pointed by HL to L
+            {0x6E, (n)=>{throw new NotImplementedException();}},
+
+            // LD L,A: Copy A to L
+            {0x6F, (n)=>{throw new NotImplementedException();}},
+
+            // LD (HL),B: Copy B to address pointed by HL
+            {0x70, (n)=>{throw new NotImplementedException();}},
+
+            // LD (HL),C: Copy C to address pointed by HL
+            {0x71, (n)=>{throw new NotImplementedException();}},
+
+            // LD (HL),D: Copy D to address pointed by HL
+            {0x72, (n)=>{throw new NotImplementedException();}},
+
+            // LD (HL),E: Copy E to address pointed by HL
+            {0x73, (n)=>{throw new NotImplementedException();}},
+
+            // LD (HL),H: Copy H to address pointed by HL
+            {0x74, (n)=>{throw new NotImplementedException();}},
+
+            // LD (HL),L: Copy L to address pointed by HL
+            {0x75, (n)=>{throw new NotImplementedException();}},
+
+            // HALT: Halt processor
+            {0x76, (n)=>{throw new NotImplementedException();}},
+
+            // LD (HL),A: Copy A to address pointed by HL
+            {0x77, (n)=>{throw new NotImplementedException();}},
+
+            // LD A,B: Copy B to A
+            {0x78, (n)=>{throw new NotImplementedException();}},
+
+            // LD A,C: Copy C to A
+            {0x79, (n)=>{throw new NotImplementedException();}},
+
+            // LD A,D: Copy D to A
+            {0x7A, (n)=>{throw new NotImplementedException();}},
+
+            // LD A,E: Copy E to A
+            {0x7B, (n)=>{throw new NotImplementedException();}},
+
+            // LD A,H: Copy H to A
+            {0x7C, (n)=>{throw new NotImplementedException();}},
+
+            // LD A,L: Copy L to A
+            {0x7D, (n)=>{throw new NotImplementedException();}},
+
+            // LD A,(HL): Copy value pointed by HL to A
+            {0x7E, (n)=>{throw new NotImplementedException();}},
+
+            // LD A,A: Copy A to A
+            {0x7F, (n)=>{throw new NotImplementedException();}},
+
+            // ADD A,B: Add B to A
+            {0x80, (n)=>{throw new NotImplementedException();}},
+
+            // ADD A,C: Add C to A
+            {0x81, (n)=>{throw new NotImplementedException();}},
+
+            // ADD A,D: Add D to A
+            {0x82, (n)=>{throw new NotImplementedException();}},
+
+            // ADD A,E: Add E to A
+            {0x83, (n)=>{throw new NotImplementedException();}},
+
+            // ADD A,H: Add H to A
+            {0x84, (n)=>{throw new NotImplementedException();}},
+
+            // ADD A,L: Add L to A
+            {0x85, (n)=>{throw new NotImplementedException();}},
+
+            // ADD A,(HL): Add value pointed by HL to A
+            {0x86, (n)=>{throw new NotImplementedException();}},
+
+            // ADD A,A: Add A to A
+            {0x87, (n)=>{throw new NotImplementedException();}},
+
+            // ADC A,B: Add B and carry flag to A
+            {0x88, (n)=>{throw new NotImplementedException();}},
+
+            // ADC A,C: Add C and carry flag to A
+            {0x89, (n)=>{throw new NotImplementedException();}},
+
+            // ADC A,D: Add D and carry flag to A
+            {0x8A, (n)=>{throw new NotImplementedException();}},
+
+            // ADC A,E: Add E and carry flag to A
+            {0x8B, (n)=>{throw new NotImplementedException();}},
+
+            // ADC A,H: Add H and carry flag to A
+            {0x8C, (n)=>{throw new NotImplementedException();}},
+
+            // ADC A,L: Add and carry flag L to A
+            {0x8D, (n)=>{throw new NotImplementedException();}},
+
+            // ADC A,(HL): Add value pointed by HL and carry flag to A
+            {0x8E, (n)=>{throw new NotImplementedException();}},
+
+            // ADC A,A: Add A and carry flag to A
+            {0x8F, (n)=>{throw new NotImplementedException();}},
+
+            // SUB A,B: Subtract B from A
+            {0x90, (n)=>{throw new NotImplementedException();}},
+
+            // SUB A,C: Subtract C from A
+            {0x91, (n)=>{throw new NotImplementedException();}},
+
+            // SUB A,D: Subtract D from A
+            {0x92, (n)=>{throw new NotImplementedException();}},
+
+            // SUB A,E: Subtract E from A
+            {0x93, (n)=>{throw new NotImplementedException();}},
+
+            // SUB A,H: Subtract H from A
+            {0x94, (n)=>{throw new NotImplementedException();}},
+
+            // SUB A,L: Subtract L from A
+            {0x95, (n)=>{throw new NotImplementedException();}},
+
+            // SUB A,(HL): Subtract value pointed by HL from A
+            {0x96, (n)=>{throw new NotImplementedException();}},
+
+            // SUB A,A: Subtract A from A
+            {0x97, (n)=>{throw new NotImplementedException();}},
+
+            // SBC A,B: Subtract B and carry flag from A
+            {0x98, (n)=>{throw new NotImplementedException();}},
+
+            // SBC A,C: Subtract C and carry flag from A
+            {0x99, (n)=>{throw new NotImplementedException();}},
+
+            // SBC A,D: Subtract D and carry flag from A
+            {0x9A, (n)=>{throw new NotImplementedException();}},
+
+            // SBC A,E: Subtract E and carry flag from A
+            {0x9B, (n)=>{throw new NotImplementedException();}},
+
+            // SBC A,H: Subtract H and carry flag from A
+            {0x9C, (n)=>{throw new NotImplementedException();}},
+
+            // SBC A,L: Subtract and carry flag L from A
+            {0x9D, (n)=>{throw new NotImplementedException();}},
+
+            // SBC A,(HL): Subtract value pointed by HL and carry flag from A
+            {0x9E, (n)=>{throw new NotImplementedException();}},
+
+            // SBC A,A: Subtract A and carry flag from A
+            {0x9F, (n)=>{throw new NotImplementedException();}},
+
+            // AND B: Logical AND B against A
+            {0xA0, (n)=>{throw new NotImplementedException();}},
+
+            // AND C: Logical AND C against A
+            {0xA1, (n)=>{throw new NotImplementedException();}},
+
+            // AND D: Logical AND D against A
+            {0xA2, (n)=>{throw new NotImplementedException();}},
+
+            // AND E: Logical AND E against A
+            {0xA3, (n)=>{throw new NotImplementedException();}},
+
+            // AND H: Logical AND H against A
+            {0xA4, (n)=>{throw new NotImplementedException();}},
+
+            // AND L: Logical AND L against A
+            {0xA5, (n)=>{throw new NotImplementedException();}},
+
+            // AND (HL): Logical AND value pointed by HL against A
+            {0xA6, (n)=>{throw new NotImplementedException();}},
+
+            // AND A: Logical AND A against A
+            {0xA7, (n)=>{throw new NotImplementedException();}},
+
+            // XOR B: Logical XOR B against A
+            {0xA8, (n)=>{throw new NotImplementedException();}},
+
+            // XOR C: Logical XOR C against A
+            {0xA9, (n)=>{throw new NotImplementedException();}},
+
+            // XOR D: Logical XOR D against A
+            {0xAA, (n)=>{throw new NotImplementedException();}},
+
+            // XOR E: Logical XOR E against A
+            {0xAB, (n)=>{throw new NotImplementedException();}},
+
+            // XOR H: Logical XOR H against A
+            {0xAC, (n)=>{throw new NotImplementedException();}},
+
+            // XOR L: Logical XOR L against A
+            {0xAD, (n)=>{throw new NotImplementedException();}},
+
+            // XOR (HL): Logical XOR value pointed by HL against A
+            {0xAE, (n)=>{throw new NotImplementedException();}},
+
+            // XOR A: Logical XOR A against A
+            {0xAF, (n)=>{throw new NotImplementedException();}},
+
+            // OR B: Logical OR B against A
+            {0xB0, (n)=>{throw new NotImplementedException();}},
+
+            // OR C: Logical OR C against A
+            {0xB1, (n)=>{throw new NotImplementedException();}},
+
+            // OR D: Logical OR D against A
+            {0xB2, (n)=>{throw new NotImplementedException();}},
+
+            // OR E: Logical OR E against A
+            {0xB3, (n)=>{throw new NotImplementedException();}},
+
+            // OR H: Logical OR H against A
+            {0xB4, (n)=>{throw new NotImplementedException();}},
+
+            // OR L: Logical OR L against A
+            {0xB5, (n)=>{throw new NotImplementedException();}},
+
+            // OR (HL): Logical OR value pointed by HL against A
+            {0xB6, (n)=>{throw new NotImplementedException();}},
+
+            // OR A: Logical OR A against A
+            {0xB7, (n)=>{throw new NotImplementedException();}},
+
+            // CP B: Compare B against A
+            {0xB8, (n)=>{throw new NotImplementedException();}},
+
+            // CP C: Compare C against A
+            {0xB9, (n)=>{throw new NotImplementedException();}},
+
+            // CP D: Compare D against A
+            {0xBA, (n)=>{throw new NotImplementedException();}},
+
+            // CP E: Compare E against A
+            {0xBB, (n)=>{throw new NotImplementedException();}},
+
+            // CP H: Compare H against A
+            {0xBC, (n)=>{throw new NotImplementedException();}},
+
+            // CP L: Compare L against A
+            {0xBD, (n)=>{throw new NotImplementedException();}},
+
+            // CP (HL): Compare value pointed by HL against A
+            {0xBE, (n)=>{throw new NotImplementedException();}},
+
+            // CP A: Compare A against A
+            {0xBF, (n)=>{throw new NotImplementedException();}},
+
+            // RET NZ: Return if last result was not zero
+            {0xC0, (n)=>{throw new NotImplementedException();}},
+
+            // POP BC: Pop 16-bit value from stack into BC
+            {0xC1, (n)=>{throw new NotImplementedException();}},
+
+            // JP NZ,nn: Absolute jump to 16-bit location if last result was not zero
+            {0xC2, (n)=>{throw new NotImplementedException();}},
+
+            // JP nn: Absolute jump to 16-bit location
+            {0xC3, (n)=>{throw new NotImplementedException();}},
+
+            // CALL NZ,nn: Call routine at 16-bit location if last result was not zero
+            {0xC4, (n)=>{throw new NotImplementedException();}},
+
+            // PUSH BC: Push 16-bit BC onto stack
+            {0xC5, (n)=>{throw new NotImplementedException();}},
+
+            // ADD A,n: Add 8-bit immediate to A
+            {0xC6, (n)=>{throw new NotImplementedException();}},
+
+            // RST 0: Call routine at address 0000h
+            {0xC7, (n)=>{throw new NotImplementedException();}},
+
+            // RET Z: Return if last result was zero
+            {0xC8, (n)=>{throw new NotImplementedException();}},
+
+            // RET: Return to calling routine
+            {0xC9, (n)=>{throw new NotImplementedException();}},
+
+            // JP Z,nn: Absolute jump to 16-bit location if last result was zero
+            {0xCA, (n)=>{throw new NotImplementedException();}},
+
+            // Ext ops: Extended operations (two-byte instruction code)
+            {0xCB, (n)=>{throw new NotImplementedException();}},
+
+            // CALL Z,nn: Call routine at 16-bit location if last result was zero
+            {0xCC, (n)=>{throw new NotImplementedException();}},
+
+            // CALL nn: Call routine at 16-bit location
+            {0xCD, (n)=>{throw new NotImplementedException();}},
+
+            // ADC A,n: Add 8-bit immediate and carry to A
+            {0xCE, (n)=>{throw new NotImplementedException();}},
+
+            // RST 8: Call routine at address 0008h
+            {0xCF, (n)=>{throw new NotImplementedException();}},
+
+            // RET NC: Return if last result caused no carry
+            {0xD0, (n)=>{throw new NotImplementedException();}},
+
+            // POP DE: Pop 16-bit value from stack into DE
+            {0xD1, (n)=>{throw new NotImplementedException();}},
+
+            // JP NC,nn: Absolute jump to 16-bit location if last result caused no carry
+            {0xD2, (n)=>{throw new NotImplementedException();}},
+
+            // XX: Operation removed in this CPU
+            {0xD3, (n)=>{throw new NotImplementedException();}},
+
+            // CALL NC,nn: Call routine at 16-bit location if last result caused no carry
+            {0xD4, (n)=>{throw new NotImplementedException();}},
+
+            // PUSH DE: Push 16-bit DE onto stack
+            {0xD5, (n)=>{throw new NotImplementedException();}},
+
+            // SUB A,n: Subtract 8-bit immediate from A
+            {0xD6, (n)=>{throw new NotImplementedException();}},
+
+            // RST 10: Call routine at address 0010h
+            {0xD7, (n)=>{throw new NotImplementedException();}},
+
+            // RET C: Return if last result caused carry
+            {0xD8, (n)=>{throw new NotImplementedException();}},
+
+            // RETI: Enable interrupts and return to calling routine
+            {0xD9, (n)=>{throw new NotImplementedException();}},
+
+            // JP C,nn: Absolute jump to 16-bit location if last result caused carry
+            {0xDA, (n)=>{throw new NotImplementedException();}},
+
+            // XX: Operation removed in this CPU
+            {0xDB, (n)=>{throw new NotImplementedException();}},
+
+            // CALL C,nn: Call routine at 16-bit location if last result caused carry
+            {0xDC, (n)=>{throw new NotImplementedException();}},
+
+            // XX: Operation removed in this CPU
+            {0xDD, (n)=>{throw new NotImplementedException();}},
+
+            // SBC A,n: Subtract 8-bit immediate and carry from A
+            {0xDE, (n)=>{throw new NotImplementedException();}},
+
+            // RST 18: Call routine at address 0018h
+            {0xDF, (n)=>{throw new NotImplementedException();}},
+
+            // LDH (n),A: Save A at address pointed to by (FF00h + 8-bit immediate)
+            {0xE0, (n)=>{throw new NotImplementedException();}},
+
+            // POP HL: Pop 16-bit value from stack into HL
+            {0xE1, (n)=>{throw new NotImplementedException();}},
+
+            // LDH (C),A: Save A at address pointed to by (FF00h + C)
+            {0xE2, (n)=>{throw new NotImplementedException();}},
+
+            // XX: Operation removed in this CPU
+            {0xE3, (n)=>{throw new NotImplementedException();}},
+
+            // XX: Operation removed in this CPU
+            {0xE4, (n)=>{throw new NotImplementedException();}},
+
+            // PUSH HL: Push 16-bit HL onto stack
+            {0xE5, (n)=>{throw new NotImplementedException();}},
+
+            // AND n: Logical AND 8-bit immediate against A
+            {0xE6, (n)=>{throw new NotImplementedException();}},
+
+            // RST 20: Call routine at address 0020h
+            {0xE7, (n)=>{throw new NotImplementedException();}},
+
+            // ADD SP,d: Add signed 8-bit immediate to SP
+            {0xE8, (n)=>{throw new NotImplementedException();}},
+
+            // JP (HL): Jump to 16-bit value pointed by HL
+            {0xE9, (n)=>{throw new NotImplementedException();}},
+
+            // LD (nn),A: Save A at given 16-bit address
+            {0xEA, (n)=>{throw new NotImplementedException();}},
+
+            // XX: Operation removed in this CPU
+            {0xEB, (n)=>{throw new NotImplementedException();}},
+
+            // XX: Operation removed in this CPU
+            {0xEC, (n)=>{throw new NotImplementedException();}},
+
+            // XX: Operation removed in this CPU
+            {0xED, (n)=>{throw new NotImplementedException();}},
+
+            // XOR n: Logical XOR 8-bit immediate against A
+            {0xEE, (n)=>{throw new NotImplementedException();}},
+
+            // RST 28: Call routine at address 0028h
+            {0xEF, (n)=>{throw new NotImplementedException();}},
+
+            // LDH A,(n): Load A from address pointed to by (FF00h + 8-bit immediate)
+            {0xF0, (n)=>{throw new NotImplementedException();}},
+
+            // POP AF: Pop 16-bit value from stack into AF
+            {0xF1, (n)=>{throw new NotImplementedException();}},
+
+            // LDH A, (C): Operation removed in this CPU? (Or Load into A memory from FF00 + C?)
+            {0xF2, (n)=>{throw new NotImplementedException();}},
+
+            // DI: DIsable interrupts
+            {0xF3, (n)=>{throw new NotImplementedException();}},
+
+            // XX: Operation removed in this CPU
+            {0xF4, (n)=>{throw new NotImplementedException();}},
+
+            // PUSH AF: Push 16-bit AF onto stack
+            {0xF5, (n)=>{throw new NotImplementedException();}},
+
+            // OR n: Logical OR 8-bit immediate against A
+            {0xF6, (n)=>{throw new NotImplementedException();}},
+
+            // RST 30: Call routine at address 0030h
+            {0xF7, (n)=>{throw new NotImplementedException();}},
+
+            // LDHL SP,d: Add signed 8-bit immediate to SP and save result in HL
+            {0xF8, (n)=>{throw new NotImplementedException();}},
+
+            // LD SP,HL: Copy HL to SP
+            {0xF9, (n)=>{throw new NotImplementedException();}},
+
+            // LD A,(nn): Load A from given 16-bit address
+            {0xFA, (n)=>{throw new NotImplementedException();}},
+
+            // EI: Enable interrupts
+            {0xFB, (n)=>{throw new NotImplementedException();}},
+
+            // XX: Operation removed in this CPU
+            {0xFC, (n)=>{throw new NotImplementedException();}},
+
+            // XX: Operation removed in this CPU
+            {0xFD, (n)=>{throw new NotImplementedException();}},
+
+            // CP n: Compare 8-bit immediate against A
+            {0xFE, (n)=>{throw new NotImplementedException();}},
+
+            // RST 38: Call routine at address 0038h
+            {0xFF, (n)=>{throw new NotImplementedException();}}
         };
     }
 
-    Dictionary<byte, Action<ushort>> CBInstructionLambdas = new Dictionary<byte, Action<ushort>>() {
-            {0x00, (n)=>{throw new NotImplementedException();}}, // RLC B
-            {0x01, (n)=>{throw new NotImplementedException();}}, // RLC C
-            {0x02, (n)=>{throw new NotImplementedException();}}, // RLC D
-            {0x03, (n)=>{throw new NotImplementedException();}}, // RLC E
-            {0x04, (n)=>{throw new NotImplementedException();}}, // RLC H
-            {0x05, (n)=>{throw new NotImplementedException();}}, // RLC L
-            {0x06, (n)=>{throw new NotImplementedException();}}, // RLC (HL)
-            {0x07, (n)=>{throw new NotImplementedException();}}, // RLC A
-            {0x08, (n)=>{throw new NotImplementedException();}}, // RRC B
-            {0x09, (n)=>{throw new NotImplementedException();}}, // RRC C
-            {0x0A, (n)=>{throw new NotImplementedException();}}, // RRC D
-            {0x0B, (n)=>{throw new NotImplementedException();}}, // RRC E
-            {0x0C, (n)=>{throw new NotImplementedException();}}, // RRC H
-            {0x0D, (n)=>{throw new NotImplementedException();}}, // RRC L
-            {0x0E, (n)=>{throw new NotImplementedException();}}, // RRC (HL)
-            {0x0F, (n)=>{throw new NotImplementedException();}}, // RRC A
-            {0x10, (n)=>{throw new NotImplementedException();}}, // RL B
-            {0x11, (n)=>{throw new NotImplementedException();}}, // RL C
-            {0x12, (n)=>{throw new NotImplementedException();}}, // RL D
-            {0x13, (n)=>{throw new NotImplementedException();}}, // RL E
-            {0x14, (n)=>{throw new NotImplementedException();}}, // RL H
-            {0x15, (n)=>{throw new NotImplementedException();}}, // RL L
-            {0x16, (n)=>{throw new NotImplementedException();}}, // RL (HL)
-            {0x17, (n)=>{throw new NotImplementedException();}}, // RL A
-            {0x18, (n)=>{throw new NotImplementedException();}}, // RR B
-            {0x19, (n)=>{throw new NotImplementedException();}}, // RR C
-            {0x1A, (n)=>{throw new NotImplementedException();}}, // RR D
-            {0x1B, (n)=>{throw new NotImplementedException();}}, // RR E
-            {0x1C, (n)=>{throw new NotImplementedException();}}, // RR H
-            {0x1D, (n)=>{throw new NotImplementedException();}}, // RR L
-            {0x1E, (n)=>{throw new NotImplementedException();}}, // RR (HL)
-            {0x1F, (n)=>{throw new NotImplementedException();}}, // RR A
-            {0x20, (n)=>{throw new NotImplementedException();}}, // SLA B
-            {0x21, (n)=>{throw new NotImplementedException();}}, // SLA C
-            {0x22, (n)=>{throw new NotImplementedException();}}, // SLA D
-            {0x23, (n)=>{throw new NotImplementedException();}}, // SLA E
-            {0x24, (n)=>{throw new NotImplementedException();}}, // SLA H
-            {0x25, (n)=>{throw new NotImplementedException();}}, // SLA L
-            {0x26, (n)=>{throw new NotImplementedException();}}, // SLA (HL)
-            {0x27, (n)=>{throw new NotImplementedException();}}, // SLA A
-            {0x28, (n)=>{throw new NotImplementedException();}}, // SRA B
-            {0x29, (n)=>{throw new NotImplementedException();}}, // SRA C
-            {0x2A, (n)=>{throw new NotImplementedException();}}, // SRA D
-            {0x2B, (n)=>{throw new NotImplementedException();}}, // SRA E
-            {0x2C, (n)=>{throw new NotImplementedException();}}, // SRA H
-            {0x2D, (n)=>{throw new NotImplementedException();}}, // SRA L
-            {0x2E, (n)=>{throw new NotImplementedException();}}, // SRA (HL)
-            {0x2F, (n)=>{throw new NotImplementedException();}}, // SRA A
-            {0x30, (n)=>{throw new NotImplementedException();}}, // SWAP B
-            {0x31, (n)=>{throw new NotImplementedException();}}, // SWAP C
-            {0x32, (n)=>{throw new NotImplementedException();}}, // SWAP D
-            {0x33, (n)=>{throw new NotImplementedException();}}, // SWAP E
-            {0x34, (n)=>{throw new NotImplementedException();}}, // SWAP H
-            {0x35, (n)=>{throw new NotImplementedException();}}, // SWAP L
-            {0x36, (n)=>{throw new NotImplementedException();}}, // SWAP (HL)
-            {0x37, (n)=>{throw new NotImplementedException();}}, // SWAP A
-            {0x38, (n)=>{throw new NotImplementedException();}}, // SRL B
-            {0x39, (n)=>{throw new NotImplementedException();}}, // SRL C
-            {0x3A, (n)=>{throw new NotImplementedException();}}, // SRL D
-            {0x3B, (n)=>{throw new NotImplementedException();}}, // SRL E
-            {0x3C, (n)=>{throw new NotImplementedException();}}, // SRL H
-            {0x3D, (n)=>{throw new NotImplementedException();}}, // SRL L
-            {0x3E, (n)=>{throw new NotImplementedException();}}, // SRL (HL)
-            {0x3F, (n)=>{throw new NotImplementedException();}}, // SRL A
-            {0x40, (n)=>{throw new NotImplementedException();}}, // BIT 0,B
-            {0x41, (n)=>{throw new NotImplementedException();}}, // BIT 0,C
-            {0x42, (n)=>{throw new NotImplementedException();}}, // BIT 0,D
-            {0x43, (n)=>{throw new NotImplementedException();}}, // BIT 0,E
-            {0x44, (n)=>{throw new NotImplementedException();}}, // BIT 0,H
-            {0x45, (n)=>{throw new NotImplementedException();}}, // BIT 0,L
-            {0x46, (n)=>{throw new NotImplementedException();}}, // BIT 0,(HL)
-            {0x47, (n)=>{throw new NotImplementedException();}}, // BIT 0,A
-            {0x48, (n)=>{throw new NotImplementedException();}}, // BIT 1,B
-            {0x49, (n)=>{throw new NotImplementedException();}}, // BIT 1,C
-            {0x4A, (n)=>{throw new NotImplementedException();}}, // BIT 1,D
-            {0x4B, (n)=>{throw new NotImplementedException();}}, // BIT 1,E
-            {0x4C, (n)=>{throw new NotImplementedException();}}, // BIT 1,H
-            {0x4D, (n)=>{throw new NotImplementedException();}}, // BIT 1,L
-            {0x4E, (n)=>{throw new NotImplementedException();}}, // BIT 1,(HL)
-            {0x4F, (n)=>{throw new NotImplementedException();}}, // BIT 1,A
-            {0x50, (n)=>{throw new NotImplementedException();}}, // BIT 2,B
-            {0x51, (n)=>{throw new NotImplementedException();}}, // BIT 2,C
-            {0x52, (n)=>{throw new NotImplementedException();}}, // BIT 2,D
-            {0x53, (n)=>{throw new NotImplementedException();}}, // BIT 2,E
-            {0x54, (n)=>{throw new NotImplementedException();}}, // BIT 2,H
-            {0x55, (n)=>{throw new NotImplementedException();}}, // BIT 2,L
-            {0x56, (n)=>{throw new NotImplementedException();}}, // BIT 2,(HL)
-            {0x57, (n)=>{throw new NotImplementedException();}}, // BIT 2,A
-            {0x58, (n)=>{throw new NotImplementedException();}}, // BIT 3,B
-            {0x59, (n)=>{throw new NotImplementedException();}}, // BIT 3,C
-            {0x5A, (n)=>{throw new NotImplementedException();}}, // BIT 3,D
-            {0x5B, (n)=>{throw new NotImplementedException();}}, // BIT 3,E
-            {0x5C, (n)=>{throw new NotImplementedException();}}, // BIT 3,H
-            {0x5D, (n)=>{throw new NotImplementedException();}}, // BIT 3,L
-            {0x5E, (n)=>{throw new NotImplementedException();}}, // BIT 3,(HL)
-            {0x5F, (n)=>{throw new NotImplementedException();}}, // BIT 3,A
-            {0x60, (n)=>{throw new NotImplementedException();}}, // BIT 4,B
-            {0x61, (n)=>{throw new NotImplementedException();}}, // BIT 4,C
-            {0x62, (n)=>{throw new NotImplementedException();}}, // BIT 4,D
-            {0x63, (n)=>{throw new NotImplementedException();}}, // BIT 4,E
-            {0x64, (n)=>{throw new NotImplementedException();}}, // BIT 4,H
-            {0x65, (n)=>{throw new NotImplementedException();}}, // BIT 4,L
-            {0x66, (n)=>{throw new NotImplementedException();}}, // BIT 4,(HL)
-            {0x67, (n)=>{throw new NotImplementedException();}}, // BIT 4,A
-            {0x68, (n)=>{throw new NotImplementedException();}}, // BIT 5,B
-            {0x69, (n)=>{throw new NotImplementedException();}}, // BIT 5,C
-            {0x6A, (n)=>{throw new NotImplementedException();}}, // BIT 5,D
-            {0x6B, (n)=>{throw new NotImplementedException();}}, // BIT 5,E
-            {0x6C, (n)=>{throw new NotImplementedException();}}, // BIT 5,H
-            {0x6D, (n)=>{throw new NotImplementedException();}}, // BIT 5,L
-            {0x6E, (n)=>{throw new NotImplementedException();}}, // BIT 5,(HL)
-            {0x6F, (n)=>{throw new NotImplementedException();}}, // BIT 5,A
-            {0x70, (n)=>{throw new NotImplementedException();}}, // BIT 6,B
-            {0x71, (n)=>{throw new NotImplementedException();}}, // BIT 6,C
-            {0x72, (n)=>{throw new NotImplementedException();}}, // BIT 6,D
-            {0x73, (n)=>{throw new NotImplementedException();}}, // BIT 6,E
-            {0x74, (n)=>{throw new NotImplementedException();}}, // BIT 6,H
-            {0x75, (n)=>{throw new NotImplementedException();}}, // BIT 6,L
-            {0x76, (n)=>{throw new NotImplementedException();}}, // BIT 6,(HL)
-            {0x77, (n)=>{throw new NotImplementedException();}}, // BIT 6,A
-            {0x78, (n)=>{throw new NotImplementedException();}}, // BIT 7,B
-            {0x79, (n)=>{throw new NotImplementedException();}}, // BIT 7,C
-            {0x7A, (n)=>{throw new NotImplementedException();}}, // BIT 7,D
-            {0x7B, (n)=>{throw new NotImplementedException();}}, // BIT 7,E
-            {0x7C, (n)=>{throw new NotImplementedException();}}, // BIT 7,H
-            {0x7D, (n)=>{throw new NotImplementedException();}}, // BIT 7,L
-            {0x7E, (n)=>{throw new NotImplementedException();}}, // BIT 7,(HL)
-            {0x7F, (n)=>{throw new NotImplementedException();}}, // BIT 7,A
-            {0x80, (n)=>{throw new NotImplementedException();}}, // RES 0,B
-            {0x81, (n)=>{throw new NotImplementedException();}}, // RES 0,C
-            {0x82, (n)=>{throw new NotImplementedException();}}, // RES 0,D
-            {0x83, (n)=>{throw new NotImplementedException();}}, // RES 0,E
-            {0x84, (n)=>{throw new NotImplementedException();}}, // RES 0,H
-            {0x85, (n)=>{throw new NotImplementedException();}}, // RES 0,L
-            {0x86, (n)=>{throw new NotImplementedException();}}, // RES 0,(HL)
-            {0x87, (n)=>{throw new NotImplementedException();}}, // RES 0,A
-            {0x88, (n)=>{throw new NotImplementedException();}}, // RES 1,B
-            {0x89, (n)=>{throw new NotImplementedException();}}, // RES 1,C
-            {0x8A, (n)=>{throw new NotImplementedException();}}, // RES 1,D
-            {0x8B, (n)=>{throw new NotImplementedException();}}, // RES 1,E
-            {0x8C, (n)=>{throw new NotImplementedException();}}, // RES 1,H
-            {0x8D, (n)=>{throw new NotImplementedException();}}, // RES 1,L
-            {0x8E, (n)=>{throw new NotImplementedException();}}, // RES 1,(HL)
-            {0x8F, (n)=>{throw new NotImplementedException();}}, // RES 1,A
-            {0x90, (n)=>{throw new NotImplementedException();}}, // RES 2,B
-            {0x91, (n)=>{throw new NotImplementedException();}}, // RES 2,C
-            {0x92, (n)=>{throw new NotImplementedException();}}, // RES 2,D
-            {0x93, (n)=>{throw new NotImplementedException();}}, // RES 2,E
-            {0x94, (n)=>{throw new NotImplementedException();}}, // RES 2,H
-            {0x95, (n)=>{throw new NotImplementedException();}}, // RES 2,L
-            {0x96, (n)=>{throw new NotImplementedException();}}, // RES 2,(HL)
-            {0x97, (n)=>{throw new NotImplementedException();}}, // RES 2,A
-            {0x98, (n)=>{throw new NotImplementedException();}}, // RES 3,B
-            {0x99, (n)=>{throw new NotImplementedException();}}, // RES 3,C
-            {0x9A, (n)=>{throw new NotImplementedException();}}, // RES 3,D
-            {0x9B, (n)=>{throw new NotImplementedException();}}, // RES 3,E
-            {0x9C, (n)=>{throw new NotImplementedException();}}, // RES 3,H
-            {0x9D, (n)=>{throw new NotImplementedException();}}, // RES 3,L
-            {0x9E, (n)=>{throw new NotImplementedException();}}, // RES 3,(HL)
-            {0x9F, (n)=>{throw new NotImplementedException();}}, // RES 3,A
-            {0xA0, (n)=>{throw new NotImplementedException();}}, // RES 4,B
-            {0xA1, (n)=>{throw new NotImplementedException();}}, // RES 4,C
-            {0xA2, (n)=>{throw new NotImplementedException();}}, // RES 4,D
-            {0xA3, (n)=>{throw new NotImplementedException();}}, // RES 4,E
-            {0xA4, (n)=>{throw new NotImplementedException();}}, // RES 4,H
-            {0xA5, (n)=>{throw new NotImplementedException();}}, // RES 4,L
-            {0xA6, (n)=>{throw new NotImplementedException();}}, // RES 4,(HL)
-            {0xA7, (n)=>{throw new NotImplementedException();}}, // RES 4,A
-            {0xA8, (n)=>{throw new NotImplementedException();}}, // RES 5,B
-            {0xA9, (n)=>{throw new NotImplementedException();}}, // RES 5,C
-            {0xAA, (n)=>{throw new NotImplementedException();}}, // RES 5,D
-            {0xAB, (n)=>{throw new NotImplementedException();}}, // RES 5,E
-            {0xAC, (n)=>{throw new NotImplementedException();}}, // RES 5,H
-            {0xAD, (n)=>{throw new NotImplementedException();}}, // RES 5,L
-            {0xAE, (n)=>{throw new NotImplementedException();}}, // RES 5,(HL)
-            {0xAF, (n)=>{throw new NotImplementedException();}}, // RES 5,A
-            {0xB0, (n)=>{throw new NotImplementedException();}}, // RES 6,B
-            {0xB1, (n)=>{throw new NotImplementedException();}}, // RES 6,C
-            {0xB2, (n)=>{throw new NotImplementedException();}}, // RES 6,D
-            {0xB3, (n)=>{throw new NotImplementedException();}}, // RES 6,E
-            {0xB4, (n)=>{throw new NotImplementedException();}}, // RES 6,H
-            {0xB5, (n)=>{throw new NotImplementedException();}}, // RES 6,L
-            {0xB6, (n)=>{throw new NotImplementedException();}}, // RES 6,(HL)
-            {0xB7, (n)=>{throw new NotImplementedException();}}, // RES 6,A
-            {0xB8, (n)=>{throw new NotImplementedException();}}, // RES 7,B
-            {0xB9, (n)=>{throw new NotImplementedException();}}, // RES 7,C
-            {0xBA, (n)=>{throw new NotImplementedException();}}, // RES 7,D
-            {0xBB, (n)=>{throw new NotImplementedException();}}, // RES 7,E
-            {0xBC, (n)=>{throw new NotImplementedException();}}, // RES 7,H
-            {0xBD, (n)=>{throw new NotImplementedException();}}, // RES 7,L
-            {0xBE, (n)=>{throw new NotImplementedException();}}, // RES 7,(HL)
-            {0xBF, (n)=>{throw new NotImplementedException();}}, // RES 7,A
-            {0xC0, (n)=>{throw new NotImplementedException();}}, // SET 0,B
-            {0xC1, (n)=>{throw new NotImplementedException();}}, // SET 0,C
-            {0xC2, (n)=>{throw new NotImplementedException();}}, // SET 0,D
-            {0xC3, (n)=>{throw new NotImplementedException();}}, // SET 0,E
-            {0xC4, (n)=>{throw new NotImplementedException();}}, // SET 0,H
-            {0xC5, (n)=>{throw new NotImplementedException();}}, // SET 0,L
-            {0xC6, (n)=>{throw new NotImplementedException();}}, // SET 0,(HL)
-            {0xC7, (n)=>{throw new NotImplementedException();}}, // SET 0,A
-            {0xC8, (n)=>{throw new NotImplementedException();}}, // SET 1,B
-            {0xC9, (n)=>{throw new NotImplementedException();}}, // SET 1,C
-            {0xCA, (n)=>{throw new NotImplementedException();}}, // SET 1,D
-            {0xCB, (n)=>{throw new NotImplementedException();}}, // SET 1,E
-            {0xCC, (n)=>{throw new NotImplementedException();}}, // SET 1,H
-            {0xCD, (n)=>{throw new NotImplementedException();}}, // SET 1,L
-            {0xCE, (n)=>{throw new NotImplementedException();}}, // SET 1,(HL)
-            {0xCF, (n)=>{throw new NotImplementedException();}}, // SET 1,A
-            {0xD0, (n)=>{throw new NotImplementedException();}}, // SET 2,B
-            {0xD1, (n)=>{throw new NotImplementedException();}}, // SET 2,C
-            {0xD2, (n)=>{throw new NotImplementedException();}}, // SET 2,D
-            {0xD3, (n)=>{throw new NotImplementedException();}}, // SET 2,E
-            {0xD4, (n)=>{throw new NotImplementedException();}}, // SET 2,H
-            {0xD5, (n)=>{throw new NotImplementedException();}}, // SET 2,L
-            {0xD6, (n)=>{throw new NotImplementedException();}}, // SET 2,(HL)
-            {0xD7, (n)=>{throw new NotImplementedException();}}, // SET 2,A
-            {0xD8, (n)=>{throw new NotImplementedException();}}, // SET 3,B
-            {0xD9, (n)=>{throw new NotImplementedException();}}, // SET 3,C
-            {0xDA, (n)=>{throw new NotImplementedException();}}, // SET 3,D
-            {0xDB, (n)=>{throw new NotImplementedException();}}, // SET 3,E
-            {0xDC, (n)=>{throw new NotImplementedException();}}, // SET 3,H
-            {0xDD, (n)=>{throw new NotImplementedException();}}, // SET 3,L
-            {0xDE, (n)=>{throw new NotImplementedException();}}, // SET 3,(HL)
-            {0xDF, (n)=>{throw new NotImplementedException();}}, // SET 3,A
-            {0xE0, (n)=>{throw new NotImplementedException();}}, // SET 4,B
-            {0xE1, (n)=>{throw new NotImplementedException();}}, // SET 4,C
-            {0xE2, (n)=>{throw new NotImplementedException();}}, // SET 4,D
-            {0xE3, (n)=>{throw new NotImplementedException();}}, // SET 4,E
-            {0xE4, (n)=>{throw new NotImplementedException();}}, // SET 4,H
-            {0xE5, (n)=>{throw new NotImplementedException();}}, // SET 4,L
-            {0xE6, (n)=>{throw new NotImplementedException();}}, // SET 4,(HL)
-            {0xE7, (n)=>{throw new NotImplementedException();}}, // SET 4,A
-            {0xE8, (n)=>{throw new NotImplementedException();}}, // SET 5,B
-            {0xE9, (n)=>{throw new NotImplementedException();}}, // SET 5,C
-            {0xEA, (n)=>{throw new NotImplementedException();}}, // SET 5,D
-            {0xEB, (n)=>{throw new NotImplementedException();}}, // SET 5,E
-            {0xEC, (n)=>{throw new NotImplementedException();}}, // SET 5,H
-            {0xED, (n)=>{throw new NotImplementedException();}}, // SET 5,L
-            {0xEE, (n)=>{throw new NotImplementedException();}}, // SET 5,(HL)
-            {0xEF, (n)=>{throw new NotImplementedException();}}, // SET 5,A
-            {0xF0, (n)=>{throw new NotImplementedException();}}, // SET 6,B
-            {0xF1, (n)=>{throw new NotImplementedException();}}, // SET 6,C
-            {0xF2, (n)=>{throw new NotImplementedException();}}, // SET 6,D
-            {0xF3, (n)=>{throw new NotImplementedException();}}, // SET 6,E
-            {0xF4, (n)=>{throw new NotImplementedException();}}, // SET 6,H
-            {0xF5, (n)=>{throw new NotImplementedException();}}, // SET 6,L
-            {0xF6, (n)=>{throw new NotImplementedException();}}, // SET 6,(HL)
-            {0xF7, (n)=>{throw new NotImplementedException();}}, // SET 6,A
-            {0xF8, (n)=>{throw new NotImplementedException();}}, // SET 7,B
-            {0xF9, (n)=>{throw new NotImplementedException();}}, // SET 7,C
-            {0xFA, (n)=>{throw new NotImplementedException();}}, // SET 7,D
-            {0xFB, (n)=>{throw new NotImplementedException();}}, // SET 7,E
-            {0xFC, (n)=>{throw new NotImplementedException();}}, // SET 7,H
-            {0xFD, (n)=>{throw new NotImplementedException();}}, // SET 7,L
-            {0xFE, (n)=>{throw new NotImplementedException();}}, // SET 7,(HL)
-            {0xFF, (n)=>{throw new NotImplementedException();}} // SET 7,A
+    Dictionary<byte, Action<ushort>> CBInstructionLambdas = new Dictionary<byte, Action<ushort>>() {            
+        // RLC B: Rotate B left with carry
+        {0x00, (n)=>{throw new NotImplementedException();}},
+
+        // RLC C: Rotate C left with carry
+        {0x01, (n)=>{throw new NotImplementedException();}},
+
+        // RLC D: Rotate D left with carry
+        {0x02, (n)=>{throw new NotImplementedException();}},
+
+        // RLC E: Rotate E left with carry
+        {0x03, (n)=>{throw new NotImplementedException();}},
+
+        // RLC H: Rotate H left with carry
+        {0x04, (n)=>{throw new NotImplementedException();}},
+
+        // RLC L: Rotate L left with carry
+        {0x05, (n)=>{throw new NotImplementedException();}},
+
+        // RLC (HL): Rotate value pointed by HL left with carry
+        {0x06, (n)=>{throw new NotImplementedException();}},
+
+        // RLC A: Rotate A left with carry
+        {0x07, (n)=>{throw new NotImplementedException();}},
+
+        // RRC B: Rotate B right with carry
+        {0x08, (n)=>{throw new NotImplementedException();}},
+
+        // RRC C: Rotate C right with carry
+        {0x09, (n)=>{throw new NotImplementedException();}},
+
+        // RRC D: Rotate D right with carry
+        {0x0A, (n)=>{throw new NotImplementedException();}},
+
+        // RRC E: Rotate E right with carry
+        {0x0B, (n)=>{throw new NotImplementedException();}},
+
+        // RRC H: Rotate H right with carry
+        {0x0C, (n)=>{throw new NotImplementedException();}},
+
+        // RRC L: Rotate L right with carry
+        {0x0D, (n)=>{throw new NotImplementedException();}},
+
+        // RRC (HL): Rotate value pointed by HL right with carry
+        {0x0E, (n)=>{throw new NotImplementedException();}},
+
+        // RRC A: Rotate A right with carry
+        {0x0F, (n)=>{throw new NotImplementedException();}},
+
+        // RL B: Rotate B left
+        {0x10, (n)=>{throw new NotImplementedException();}},
+
+        // RL C: Rotate C left
+        {0x11, (n)=>{throw new NotImplementedException();}},
+
+        // RL D: Rotate D left
+        {0x12, (n)=>{throw new NotImplementedException();}},
+
+        // RL E: Rotate E left
+        {0x13, (n)=>{throw new NotImplementedException();}},
+
+        // RL H: Rotate H left
+        {0x14, (n)=>{throw new NotImplementedException();}},
+
+        // RL L: Rotate L left
+        {0x15, (n)=>{throw new NotImplementedException();}},
+
+        // RL (HL): Rotate value pointed by HL left
+        {0x16, (n)=>{throw new NotImplementedException();}},
+
+        // RL A: Rotate A left
+        {0x17, (n)=>{throw new NotImplementedException();}},
+
+        // RR B: Rotate B right
+        {0x18, (n)=>{throw new NotImplementedException();}},
+
+        // RR C: Rotate C right
+        {0x19, (n)=>{throw new NotImplementedException();}},
+
+        // RR D: Rotate D right
+        {0x1A, (n)=>{throw new NotImplementedException();}},
+
+        // RR E: Rotate E right
+        {0x1B, (n)=>{throw new NotImplementedException();}},
+
+        // RR H: Rotate H right
+        {0x1C, (n)=>{throw new NotImplementedException();}},
+
+        // RR L: Rotate L right
+        {0x1D, (n)=>{throw new NotImplementedException();}},
+
+        // RR (HL): Rotate value pointed by HL right
+        {0x1E, (n)=>{throw new NotImplementedException();}},
+
+        // RR A: Rotate A right
+        {0x1F, (n)=>{throw new NotImplementedException();}},
+
+        // SLA B: Shift B left preserving sign
+        {0x20, (n)=>{throw new NotImplementedException();}},
+
+        // SLA C: Shift C left preserving sign
+        {0x21, (n)=>{throw new NotImplementedException();}},
+
+        // SLA D: Shift D left preserving sign
+        {0x22, (n)=>{throw new NotImplementedException();}},
+
+        // SLA E: Shift E left preserving sign
+        {0x23, (n)=>{throw new NotImplementedException();}},
+
+        // SLA H: Shift H left preserving sign
+        {0x24, (n)=>{throw new NotImplementedException();}},
+
+        // SLA L: Shift L left preserving sign
+        {0x25, (n)=>{throw new NotImplementedException();}},
+
+        // SLA (HL): Shift value pointed by HL left preserving sign
+        {0x26, (n)=>{throw new NotImplementedException();}},
+
+        // SLA A: Shift A left preserving sign
+        {0x27, (n)=>{throw new NotImplementedException();}},
+
+        // SRA B: Shift B right preserving sign
+        {0x28, (n)=>{throw new NotImplementedException();}},
+
+        // SRA C: Shift C right preserving sign
+        {0x29, (n)=>{throw new NotImplementedException();}},
+
+        // SRA D: Shift D right preserving sign
+        {0x2A, (n)=>{throw new NotImplementedException();}},
+
+        // SRA E: Shift E right preserving sign
+        {0x2B, (n)=>{throw new NotImplementedException();}},
+
+        // SRA H: Shift H right preserving sign
+        {0x2C, (n)=>{throw new NotImplementedException();}},
+
+        // SRA L: Shift L right preserving sign
+        {0x2D, (n)=>{throw new NotImplementedException();}},
+
+        // SRA (HL): Shift value pointed by HL right preserving sign
+        {0x2E, (n)=>{throw new NotImplementedException();}},
+
+        // SRA A: Shift A right preserving sign
+        {0x2F, (n)=>{throw new NotImplementedException();}},
+
+        // SWAP B: Swap nybbles in B
+        {0x30, (n)=>{throw new NotImplementedException();}},
+
+        // SWAP C: Swap nybbles in C
+        {0x31, (n)=>{throw new NotImplementedException();}},
+
+        // SWAP D: Swap nybbles in D
+        {0x32, (n)=>{throw new NotImplementedException();}},
+
+        // SWAP E: Swap nybbles in E
+        {0x33, (n)=>{throw new NotImplementedException();}},
+
+        // SWAP H: Swap nybbles in H
+        {0x34, (n)=>{throw new NotImplementedException();}},
+
+        // SWAP L: Swap nybbles in L
+        {0x35, (n)=>{throw new NotImplementedException();}},
+
+        // SWAP (HL): Swap nybbles in value pointed by HL
+        {0x36, (n)=>{throw new NotImplementedException();}},
+
+        // SWAP A: Swap nybbles in A
+        {0x37, (n)=>{throw new NotImplementedException();}},
+
+        // SRL B: Shift B right
+        {0x38, (n)=>{throw new NotImplementedException();}},
+
+        // SRL C: Shift C right
+        {0x39, (n)=>{throw new NotImplementedException();}},
+
+        // SRL D: Shift D right
+        {0x3A, (n)=>{throw new NotImplementedException();}},
+
+        // SRL E: Shift E right
+        {0x3B, (n)=>{throw new NotImplementedException();}},
+
+        // SRL H: Shift H right
+        {0x3C, (n)=>{throw new NotImplementedException();}},
+
+        // SRL L: Shift L right
+        {0x3D, (n)=>{throw new NotImplementedException();}},
+
+        // SRL (HL): Shift value pointed by HL right
+        {0x3E, (n)=>{throw new NotImplementedException();}},
+
+        // SRL A: Shift A right
+        {0x3F, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 0,B: Test bit 0 of B
+        {0x40, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 0,C: Test bit 0 of C
+        {0x41, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 0,D: Test bit 0 of D
+        {0x42, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 0,E: Test bit 0 of E
+        {0x43, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 0,H: Test bit 0 of H
+        {0x44, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 0,L: Test bit 0 of L
+        {0x45, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 0,(HL): Test bit 0 of value pointed by HL
+        {0x46, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 0,A: Test bit 0 of A
+        {0x47, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 1,B: Test bit 1 of B
+        {0x48, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 1,C: Test bit 1 of C
+        {0x49, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 1,D: Test bit 1 of D
+        {0x4A, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 1,E: Test bit 1 of E
+        {0x4B, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 1,H: Test bit 1 of H
+        {0x4C, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 1,L: Test bit 1 of L
+        {0x4D, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 1,(HL): Test bit 1 of value pointed by HL
+        {0x4E, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 1,A: Test bit 1 of A
+        {0x4F, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 2,B: Test bit 2 of B
+        {0x50, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 2,C: Test bit 2 of C
+        {0x51, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 2,D: Test bit 2 of D
+        {0x52, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 2,E: Test bit 2 of E
+        {0x53, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 2,H: Test bit 2 of H
+        {0x54, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 2,L: Test bit 2 of L
+        {0x55, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 2,(HL): Test bit 2 of value pointed by HL
+        {0x56, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 2,A: Test bit 2 of A
+        {0x57, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 3,B: Test bit 3 of B
+        {0x58, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 3,C: Test bit 3 of C
+        {0x59, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 3,D: Test bit 3 of D
+        {0x5A, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 3,E: Test bit 3 of E
+        {0x5B, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 3,H: Test bit 3 of H
+        {0x5C, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 3,L: Test bit 3 of L
+        {0x5D, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 3,(HL): Test bit 3 of value pointed by HL
+        {0x5E, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 3,A: Test bit 3 of A
+        {0x5F, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 4,B: Test bit 4 of B
+        {0x60, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 4,C: Test bit 4 of C
+        {0x61, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 4,D: Test bit 4 of D
+        {0x62, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 4,E: Test bit 4 of E
+        {0x63, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 4,H: Test bit 4 of H
+        {0x64, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 4,L: Test bit 4 of L
+        {0x65, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 4,(HL): Test bit 4 of value pointed by HL
+        {0x66, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 4,A: Test bit 4 of A
+        {0x67, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 5,B: Test bit 5 of B
+        {0x68, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 5,C: Test bit 5 of C
+        {0x69, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 5,D: Test bit 5 of D
+        {0x6A, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 5,E: Test bit 5 of E
+        {0x6B, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 5,H: Test bit 5 of H
+        {0x6C, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 5,L: Test bit 5 of L
+        {0x6D, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 5,(HL): Test bit 5 of value pointed by HL
+        {0x6E, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 5,A: Test bit 5 of A
+        {0x6F, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 6,B: Test bit 6 of B
+        {0x70, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 6,C: Test bit 6 of C
+        {0x71, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 6,D: Test bit 6 of D
+        {0x72, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 6,E: Test bit 6 of E
+        {0x73, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 6,H: Test bit 6 of H
+        {0x74, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 6,L: Test bit 6 of L
+        {0x75, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 6,(HL): Test bit 6 of value pointed by HL
+        {0x76, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 6,A: Test bit 6 of A
+        {0x77, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 7,B: Test bit 7 of B
+        {0x78, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 7,C: Test bit 7 of C
+        {0x79, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 7,D: Test bit 7 of D
+        {0x7A, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 7,E: Test bit 7 of E
+        {0x7B, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 7,H: Test bit 7 of H
+        {0x7C, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 7,L: Test bit 7 of L
+        {0x7D, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 7,(HL): Test bit 7 of value pointed by HL
+        {0x7E, (n)=>{throw new NotImplementedException();}},
+
+        // BIT 7,A: Test bit 7 of A
+        {0x7F, (n)=>{throw new NotImplementedException();}},
+
+        // RES 0,B: Clear (reset) bit 0 of B
+        {0x80, (n)=>{throw new NotImplementedException();}},
+
+        // RES 0,C: Clear (reset) bit 0 of C
+        {0x81, (n)=>{throw new NotImplementedException();}},
+
+        // RES 0,D: Clear (reset) bit 0 of D
+        {0x82, (n)=>{throw new NotImplementedException();}},
+
+        // RES 0,E: Clear (reset) bit 0 of E
+        {0x83, (n)=>{throw new NotImplementedException();}},
+
+        // RES 0,H: Clear (reset) bit 0 of H
+        {0x84, (n)=>{throw new NotImplementedException();}},
+
+        // RES 0,L: Clear (reset) bit 0 of L
+        {0x85, (n)=>{throw new NotImplementedException();}},
+
+        // RES 0,(HL): Clear (reset) bit 0 of value pointed by HL
+        {0x86, (n)=>{throw new NotImplementedException();}},
+
+        // RES 0,A: Clear (reset) bit 0 of A
+        {0x87, (n)=>{throw new NotImplementedException();}},
+
+        // RES 1,B: Clear (reset) bit 1 of B
+        {0x88, (n)=>{throw new NotImplementedException();}},
+
+        // RES 1,C: Clear (reset) bit 1 of C
+        {0x89, (n)=>{throw new NotImplementedException();}},
+
+        // RES 1,D: Clear (reset) bit 1 of D
+        {0x8A, (n)=>{throw new NotImplementedException();}},
+
+        // RES 1,E: Clear (reset) bit 1 of E
+        {0x8B, (n)=>{throw new NotImplementedException();}},
+
+        // RES 1,H: Clear (reset) bit 1 of H
+        {0x8C, (n)=>{throw new NotImplementedException();}},
+
+        // RES 1,L: Clear (reset) bit 1 of L
+        {0x8D, (n)=>{throw new NotImplementedException();}},
+
+        // RES 1,(HL): Clear (reset) bit 1 of value pointed by HL
+        {0x8E, (n)=>{throw new NotImplementedException();}},
+
+        // RES 1,A: Clear (reset) bit 1 of A
+        {0x8F, (n)=>{throw new NotImplementedException();}},
+
+        // RES 2,B: Clear (reset) bit 2 of B
+        {0x90, (n)=>{throw new NotImplementedException();}},
+
+        // RES 2,C: Clear (reset) bit 2 of C
+        {0x91, (n)=>{throw new NotImplementedException();}},
+
+        // RES 2,D: Clear (reset) bit 2 of D
+        {0x92, (n)=>{throw new NotImplementedException();}},
+
+        // RES 2,E: Clear (reset) bit 2 of E
+        {0x93, (n)=>{throw new NotImplementedException();}},
+
+        // RES 2,H: Clear (reset) bit 2 of H
+        {0x94, (n)=>{throw new NotImplementedException();}},
+
+        // RES 2,L: Clear (reset) bit 2 of L
+        {0x95, (n)=>{throw new NotImplementedException();}},
+
+        // RES 2,(HL): Clear (reset) bit 2 of value pointed by HL
+        {0x96, (n)=>{throw new NotImplementedException();}},
+
+        // RES 2,A: Clear (reset) bit 2 of A
+        {0x97, (n)=>{throw new NotImplementedException();}},
+
+        // RES 3,B: Clear (reset) bit 3 of B
+        {0x98, (n)=>{throw new NotImplementedException();}},
+
+        // RES 3,C: Clear (reset) bit 3 of C
+        {0x99, (n)=>{throw new NotImplementedException();}},
+
+        // RES 3,D: Clear (reset) bit 3 of D
+        {0x9A, (n)=>{throw new NotImplementedException();}},
+
+        // RES 3,E: Clear (reset) bit 3 of E
+        {0x9B, (n)=>{throw new NotImplementedException();}},
+
+        // RES 3,H: Clear (reset) bit 3 of H
+        {0x9C, (n)=>{throw new NotImplementedException();}},
+
+        // RES 3,L: Clear (reset) bit 3 of L
+        {0x9D, (n)=>{throw new NotImplementedException();}},
+
+        // RES 3,(HL): Clear (reset) bit 3 of value pointed by HL
+        {0x9E, (n)=>{throw new NotImplementedException();}},
+
+        // RES 3,A: Clear (reset) bit 3 of A
+        {0x9F, (n)=>{throw new NotImplementedException();}},
+
+        // RES 4,B: Clear (reset) bit 4 of B
+        {0xA0, (n)=>{throw new NotImplementedException();}},
+
+        // RES 4,C: Clear (reset) bit 4 of C
+        {0xA1, (n)=>{throw new NotImplementedException();}},
+
+        // RES 4,D: Clear (reset) bit 4 of D
+        {0xA2, (n)=>{throw new NotImplementedException();}},
+
+        // RES 4,E: Clear (reset) bit 4 of E
+        {0xA3, (n)=>{throw new NotImplementedException();}},
+
+        // RES 4,H: Clear (reset) bit 4 of H
+        {0xA4, (n)=>{throw new NotImplementedException();}},
+
+        // RES 4,L: Clear (reset) bit 4 of L
+        {0xA5, (n)=>{throw new NotImplementedException();}},
+
+        // RES 4,(HL): Clear (reset) bit 4 of value pointed by HL
+        {0xA6, (n)=>{throw new NotImplementedException();}},
+
+        // RES 4,A: Clear (reset) bit 4 of A
+        {0xA7, (n)=>{throw new NotImplementedException();}},
+
+        // RES 5,B: Clear (reset) bit 5 of B
+        {0xA8, (n)=>{throw new NotImplementedException();}},
+
+        // RES 5,C: Clear (reset) bit 5 of C
+        {0xA9, (n)=>{throw new NotImplementedException();}},
+
+        // RES 5,D: Clear (reset) bit 5 of D
+        {0xAA, (n)=>{throw new NotImplementedException();}},
+
+        // RES 5,E: Clear (reset) bit 5 of E
+        {0xAB, (n)=>{throw new NotImplementedException();}},
+
+        // RES 5,H: Clear (reset) bit 5 of H
+        {0xAC, (n)=>{throw new NotImplementedException();}},
+
+        // RES 5,L: Clear (reset) bit 5 of L
+        {0xAD, (n)=>{throw new NotImplementedException();}},
+
+        // RES 5,(HL): Clear (reset) bit 5 of value pointed by HL
+        {0xAE, (n)=>{throw new NotImplementedException();}},
+
+        // RES 5,A: Clear (reset) bit 5 of A
+        {0xAF, (n)=>{throw new NotImplementedException();}},
+
+        // RES 6,B: Clear (reset) bit 6 of B
+        {0xB0, (n)=>{throw new NotImplementedException();}},
+
+        // RES 6,C: Clear (reset) bit 6 of C
+        {0xB1, (n)=>{throw new NotImplementedException();}},
+
+        // RES 6,D: Clear (reset) bit 6 of D
+        {0xB2, (n)=>{throw new NotImplementedException();}},
+
+        // RES 6,E: Clear (reset) bit 6 of E
+        {0xB3, (n)=>{throw new NotImplementedException();}},
+
+        // RES 6,H: Clear (reset) bit 6 of H
+        {0xB4, (n)=>{throw new NotImplementedException();}},
+
+        // RES 6,L: Clear (reset) bit 6 of L
+        {0xB5, (n)=>{throw new NotImplementedException();}},
+
+        // RES 6,(HL): Clear (reset) bit 6 of value pointed by HL
+        {0xB6, (n)=>{throw new NotImplementedException();}},
+
+        // RES 6,A: Clear (reset) bit 6 of A
+        {0xB7, (n)=>{throw new NotImplementedException();}},
+
+        // RES 7,B: Clear (reset) bit 7 of B
+        {0xB8, (n)=>{throw new NotImplementedException();}},
+
+        // RES 7,C: Clear (reset) bit 7 of C
+        {0xB9, (n)=>{throw new NotImplementedException();}},
+
+        // RES 7,D: Clear (reset) bit 7 of D
+        {0xBA, (n)=>{throw new NotImplementedException();}},
+
+        // RES 7,E: Clear (reset) bit 7 of E
+        {0xBB, (n)=>{throw new NotImplementedException();}},
+
+        // RES 7,H: Clear (reset) bit 7 of H
+        {0xBC, (n)=>{throw new NotImplementedException();}},
+
+        // RES 7,L: Clear (reset) bit 7 of L
+        {0xBD, (n)=>{throw new NotImplementedException();}},
+
+        // RES 7,(HL): Clear (reset) bit 7 of value pointed by HL
+        {0xBE, (n)=>{throw new NotImplementedException();}},
+
+        // RES 7,A: Clear (reset) bit 7 of A
+        {0xBF, (n)=>{throw new NotImplementedException();}},
+
+        // SET 0,B: Set bit 0 of B
+        {0xC0, (n)=>{throw new NotImplementedException();}},
+
+        // SET 0,C: Set bit 0 of C
+        {0xC1, (n)=>{throw new NotImplementedException();}},
+
+        // SET 0,D: Set bit 0 of D
+        {0xC2, (n)=>{throw new NotImplementedException();}},
+
+        // SET 0,E: Set bit 0 of E
+        {0xC3, (n)=>{throw new NotImplementedException();}},
+
+        // SET 0,H: Set bit 0 of H
+        {0xC4, (n)=>{throw new NotImplementedException();}},
+
+        // SET 0,L: Set bit 0 of L
+        {0xC5, (n)=>{throw new NotImplementedException();}},
+
+        // SET 0,(HL): Set bit 0 of value pointed by HL
+        {0xC6, (n)=>{throw new NotImplementedException();}},
+
+        // SET 0,A: Set bit 0 of A
+        {0xC7, (n)=>{throw new NotImplementedException();}},
+
+        // SET 1,B: Set bit 1 of B
+        {0xC8, (n)=>{throw new NotImplementedException();}},
+
+        // SET 1,C: Set bit 1 of C
+        {0xC9, (n)=>{throw new NotImplementedException();}},
+
+        // SET 1,D: Set bit 1 of D
+        {0xCA, (n)=>{throw new NotImplementedException();}},
+
+        // SET 1,E: Set bit 1 of E
+        {0xCB, (n)=>{throw new NotImplementedException();}},
+
+        // SET 1,H: Set bit 1 of H
+        {0xCC, (n)=>{throw new NotImplementedException();}},
+
+        // SET 1,L: Set bit 1 of L
+        {0xCD, (n)=>{throw new NotImplementedException();}},
+
+        // SET 1,(HL): Set bit 1 of value pointed by HL
+        {0xCE, (n)=>{throw new NotImplementedException();}},
+
+        // SET 1,A: Set bit 1 of A
+        {0xCF, (n)=>{throw new NotImplementedException();}},
+
+        // SET 2,B: Set bit 2 of B
+        {0xD0, (n)=>{throw new NotImplementedException();}},
+
+        // SET 2,C: Set bit 2 of C
+        {0xD1, (n)=>{throw new NotImplementedException();}},
+
+        // SET 2,D: Set bit 2 of D
+        {0xD2, (n)=>{throw new NotImplementedException();}},
+
+        // SET 2,E: Set bit 2 of E
+        {0xD3, (n)=>{throw new NotImplementedException();}},
+
+        // SET 2,H: Set bit 2 of H
+        {0xD4, (n)=>{throw new NotImplementedException();}},
+
+        // SET 2,L: Set bit 2 of L
+        {0xD5, (n)=>{throw new NotImplementedException();}},
+
+        // SET 2,(HL): Set bit 2 of value pointed by HL
+        {0xD6, (n)=>{throw new NotImplementedException();}},
+
+        // SET 2,A: Set bit 2 of A
+        {0xD7, (n)=>{throw new NotImplementedException();}},
+
+        // SET 3,B: Set bit 3 of B
+        {0xD8, (n)=>{throw new NotImplementedException();}},
+
+        // SET 3,C: Set bit 3 of C
+        {0xD9, (n)=>{throw new NotImplementedException();}},
+
+        // SET 3,D: Set bit 3 of D
+        {0xDA, (n)=>{throw new NotImplementedException();}},
+
+        // SET 3,E: Set bit 3 of E
+        {0xDB, (n)=>{throw new NotImplementedException();}},
+
+        // SET 3,H: Set bit 3 of H
+        {0xDC, (n)=>{throw new NotImplementedException();}},
+
+        // SET 3,L: Set bit 3 of L
+        {0xDD, (n)=>{throw new NotImplementedException();}},
+
+        // SET 3,(HL): Set bit 3 of value pointed by HL
+        {0xDE, (n)=>{throw new NotImplementedException();}},
+
+        // SET 3,A: Set bit 3 of A
+        {0xDF, (n)=>{throw new NotImplementedException();}},
+
+        // SET 4,B: Set bit 4 of B
+        {0xE0, (n)=>{throw new NotImplementedException();}},
+
+        // SET 4,C: Set bit 4 of C
+        {0xE1, (n)=>{throw new NotImplementedException();}},
+
+        // SET 4,D: Set bit 4 of D
+        {0xE2, (n)=>{throw new NotImplementedException();}},
+
+        // SET 4,E: Set bit 4 of E
+        {0xE3, (n)=>{throw new NotImplementedException();}},
+
+        // SET 4,H: Set bit 4 of H
+        {0xE4, (n)=>{throw new NotImplementedException();}},
+
+        // SET 4,L: Set bit 4 of L
+        {0xE5, (n)=>{throw new NotImplementedException();}},
+
+        // SET 4,(HL): Set bit 4 of value pointed by HL
+        {0xE6, (n)=>{throw new NotImplementedException();}},
+
+        // SET 4,A: Set bit 4 of A
+        {0xE7, (n)=>{throw new NotImplementedException();}},
+
+        // SET 5,B: Set bit 5 of B
+        {0xE8, (n)=>{throw new NotImplementedException();}},
+
+        // SET 5,C: Set bit 5 of C
+        {0xE9, (n)=>{throw new NotImplementedException();}},
+
+        // SET 5,D: Set bit 5 of D
+        {0xEA, (n)=>{throw new NotImplementedException();}},
+
+        // SET 5,E: Set bit 5 of E
+        {0xEB, (n)=>{throw new NotImplementedException();}},
+
+        // SET 5,H: Set bit 5 of H
+        {0xEC, (n)=>{throw new NotImplementedException();}},
+
+        // SET 5,L: Set bit 5 of L
+        {0xED, (n)=>{throw new NotImplementedException();}},
+
+        // SET 5,(HL): Set bit 5 of value pointed by HL
+        {0xEE, (n)=>{throw new NotImplementedException();}},
+
+        // SET 5,A: Set bit 5 of A
+        {0xEF, (n)=>{throw new NotImplementedException();}},
+
+        // SET 6,B: Set bit 6 of B
+        {0xF0, (n)=>{throw new NotImplementedException();}},
+
+        // SET 6,C: Set bit 6 of C
+        {0xF1, (n)=>{throw new NotImplementedException();}},
+
+        // SET 6,D: Set bit 6 of D
+        {0xF2, (n)=>{throw new NotImplementedException();}},
+
+        // SET 6,E: Set bit 6 of E
+        {0xF3, (n)=>{throw new NotImplementedException();}},
+
+        // SET 6,H: Set bit 6 of H
+        {0xF4, (n)=>{throw new NotImplementedException();}},
+
+        // SET 6,L: Set bit 6 of L
+        {0xF5, (n)=>{throw new NotImplementedException();}},
+
+        // SET 6,(HL): Set bit 6 of value pointed by HL
+        {0xF6, (n)=>{throw new NotImplementedException();}},
+
+        // SET 6,A: Set bit 6 of A
+        {0xF7, (n)=>{throw new NotImplementedException();}},
+
+        // SET 7,B: Set bit 7 of B
+        {0xF8, (n)=>{throw new NotImplementedException();}},
+
+        // SET 7,C: Set bit 7 of C
+        {0xF9, (n)=>{throw new NotImplementedException();}},
+
+        // SET 7,D: Set bit 7 of D
+        {0xFA, (n)=>{throw new NotImplementedException();}},
+
+        // SET 7,E: Set bit 7 of E
+        {0xFB, (n)=>{throw new NotImplementedException();}},
+
+        // SET 7,H: Set bit 7 of H
+        {0xFC, (n)=>{throw new NotImplementedException();}},
+
+        // SET 7,L: Set bit 7 of L
+        {0xFD, (n)=>{throw new NotImplementedException();}},
+
+        // SET 7,(HL): Set bit 7 of value pointed by HL
+        {0xFE, (n)=>{throw new NotImplementedException();}},
+
+        // SET 7,A: Set bit 7 of A
+        {0xFF, (n)=>{throw new NotImplementedException();}}
         };
 
     #endregion
