@@ -12,21 +12,23 @@
       <view:MemoryView></view:MemoryView>
     </DataTemplate>
   </UserControl.Resources>
+
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto"></RowDefinition>
       <RowDefinition Height="Auto"></RowDefinition>
       <RowDefinition Height="*"></RowDefinition>
     </Grid.RowDefinitions>
-    <Grid>
+    <Grid Style="{DynamicResource SubContentGrid}">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*"></ColumnDefinition>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
       </Grid.ColumnDefinitions>
       <TextBlock Name="FileText" Text="{Binding FilePath, Mode=TwoWay}"></TextBlock>
-      <Button Grid.Column="1" Click="ButtonBase_OnClick" Content="Load"></Button>
+      <Button Grid.Column="1" Click="ButtonBase_OnClick" Content="Load Game"></Button>
     </Grid>
     <TextBlock Grid.Row="1" Text="{Binding CartridgeTitle}"></TextBlock>
     <ContentPresenter Grid.Row="2" Content="{Binding Memory}"/>
   </Grid>
+
 </UserControl>

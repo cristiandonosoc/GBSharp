@@ -3,14 +3,21 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:view="clr-namespace:GBSharp.View"
         xmlns:viewModel="clr-namespace:GBSharp.ViewModel;assembly=GBSharp.ViewModel"
-        Title="MainWindow" Height="600" Width="800">
+        Title="MainWindow" Height="600" Width="800" WindowState="Maximized">
   <Window.Resources>
     <DataTemplate DataType="{x:Type viewModel:CartridgeViewModel}">
       <view:CartridgeView></view:CartridgeView>
     </DataTemplate>
   </Window.Resources>
 
-  <Grid>
+  <Grid Style="{DynamicResource MainContentGrid}">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"></ColumnDefinition>
+      <ColumnDefinition Width="*"></ColumnDefinition>
+    </Grid.ColumnDefinitions>
     <ContentPresenter Content="{Binding Cartridge}"/>
+    <Grid Grid.Column="1" Style="{DynamicResource SubContentGrid}">
+      <Image Source="Images/Nintendo_Gameboy.jpg"></Image>
+    </Grid>
   </Grid>
 </Window>
