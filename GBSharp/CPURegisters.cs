@@ -44,70 +44,84 @@ namespace GBSharp
         [FieldOffset(6)]
         public ushort HL;
 
-        /// <summary>
-        /// Exports the registers values to the external interface.
-        /// </summary>
-        /// <returns>A List of IRegisters with the current values of the registers.</returns>
-        public IEnumerable<IRegister> Export()
+        public byte FZ
         {
-            var registers = new List<IRegister>();
-            
-            // TODO: Replace this with typeof(Register).getFields(...)
-            var register = new Register();
-            register.Value = this.A;
-            register.Size = 1;
-            register.Name = "A";
-            registers.Add(register);
+            get
+            {
+                return (byte)((F & 0x80) == 0x80 ? 1 : 0);
+            }
 
-            register = new Register();
-            register.Value = this.B;
-            register.Size = 1;
-            register.Name = "B";
-            registers.Add(register);
-
-            register = new Register();
-            register.Value = this.PC;
-            register.Size = 2;
-            register.Name = "PC";
-            registers.Add(register);
-
-            register = new Register();
-            register.Value = this.PC;
-            register.Size = 2;
-            register.Name = "SP";
-            registers.Add(register);
-
-            return registers;
-        }
-    }
-
-    /// <summary>
-    /// Struct used to export a register value outside the CPU.
-    /// </summary>
-    struct Register : IRegister
-    {
-        public event Action ValueChanged
-        {
-            add { throw new NotImplementedException(); }
-            remove { throw new NotImplementedException(); }
+            set
+            {
+                if (value == 0)
+                {
+                    F = (byte)(F & (~0x80));
+                }
+                else
+                {
+                    F = (byte)(F | 0x80);
+                }
+            }
         }
 
-        public string Name
+        public byte FN
         {
-            get;
-            internal set;
+            get
+            {
+                return (byte)((F & 0x40) == 0x40 ? 1 : 0);
+            }
+
+            set
+            {
+                if (value == 0)
+                {
+                    F = (byte)(F & (~0x40));
+                }
+                else
+                {
+                    F = (byte)(F | 0x40);
+                }
+            }
         }
 
-        public int Value
+        public byte FH
         {
-            get;
-            internal set;
+            get
+            {
+                return (byte)((F & 0x20) == 0x20 ? 1 : 0);
+            }
+
+            set
+            {
+                if (value == 0)
+                {
+                    F = (byte)(F & (~0x20));
+                }
+                else
+                {
+                    F = (byte)(F | 0x20);
+                }
+            }
         }
 
-        public int Size
+        public byte FC
         {
-            get;
-            internal set;
+            get
+            {
+                return (byte)((F & 0x10) == 0x10 ? 1 : 0);
+            }
+
+            set
+            {
+                if (value == 0)
+                {
+                    F = (byte)(F & (~0x10));
+                }
+                else
+                {
+                    F = (byte)(F | 0x10);
+                }
+            }
         }
     }
 }
