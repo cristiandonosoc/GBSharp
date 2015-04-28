@@ -10,6 +10,7 @@ namespace GBSharp.CPU
     {
         internal CPURegisters registers;
         internal Memory.Memory memory;
+        internal ushort clock;
 
         #region Lengths and clocks
         Dictionary<byte, byte> instructionLengths = new Dictionary<byte, byte>() {
