@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using GBSharp.Utils;
 
 namespace GBSharp.CPU
 {
@@ -1099,7 +1097,7 @@ namespace GBSharp.CPU
             {0x0D, (n) => { registers.C--; }},
 
             // LD C,n: Load 8-bit immediate into C
-            {0x0E, (n)=>{throw new NotImplementedException();}},
+            {0x0E, (n)=>{ registers.C = (byte)n;}},
 
             // RRC A: Rotate A right with carry
             {0x0F, (n)=>{throw new NotImplementedException();}},
@@ -1108,22 +1106,22 @@ namespace GBSharp.CPU
             {0x10, (n)=>{throw new NotImplementedException();}},
 
             // LD DE,nn: Load 16-bit immediate into DE
-            {0x11, (n)=>{throw new NotImplementedException();}},
+            {0x11, (n)=>{registers.DE = n;}},
 
             // LD (DE),A: Save A to address pointed by DE
-            {0x12, (n)=>{throw new NotImplementedException();}},
+            {0x12, (n)=>{memory.Write(registers.DE, registers.A);}},
 
             // INC DE: Increment 16-bit DE
-            {0x13, (n)=>{throw new NotImplementedException();}},
+            {0x13, (n)=>{registers.DE++;}},
 
             // INC D: Increment D
-            {0x14, (n)=>{throw new NotImplementedException();}},
+            {0x14, (n)=>{registers.D++;}},
 
             // DEC D: Decrement D
-            {0x15, (n)=>{throw new NotImplementedException();}},
+            {0x15, (n)=>{registers.D--;}},
 
             // LD D,n: Load 8-bit immediate into D
-            {0x16, (n)=>{throw new NotImplementedException();}},
+            {0x16, (n)=>{registers.D = (byte)n;}},
 
             // RL A: Rotate A left
             {0x17, (n)=>{throw new NotImplementedException();}},
@@ -1132,22 +1130,22 @@ namespace GBSharp.CPU
             {0x18, (n)=>{throw new NotImplementedException();}},
 
             // ADD HL,DE: Add 16-bit DE to HL
-            {0x19, (n)=>{throw new NotImplementedException();}},
+            {0x19, (n)=>{registers.HL += registers.DE;}},
 
             // LD A,(DE): Load A from address pointed to by DE
-            {0x1A, (n)=>{throw new NotImplementedException();}},
+            {0x1A, (n)=>{registers.A = memory.Read(registers.DE);}},
 
             // DEC DE: Decrement 16-bit DE
-            {0x1B, (n)=>{throw new NotImplementedException();}},
+            {0x1B, (n)=>{registers.DE--;}},
 
             // INC E: Increment E
-            {0x1C, (n)=>{throw new NotImplementedException();}},
+            {0x1C, (n)=>{registers.E++;}},
 
             // DEC E: Decrement E
-            {0x1D, (n)=>{throw new NotImplementedException();}},
+            {0x1D, (n)=>{registers.E--;}},
 
             // LD E,n: Load 8-bit immediate into E
-            {0x1E, (n)=>{throw new NotImplementedException();}},
+            {0x1E, (n)=>{registers.E = (byte)n;}},
 
             // RR A: Rotate A right
             {0x1F, (n)=>{throw new NotImplementedException();}},
@@ -1156,22 +1154,22 @@ namespace GBSharp.CPU
             {0x20, (n)=>{throw new NotImplementedException();}},
 
             // LD HL,nn: Load 16-bit immediate into HL
-            {0x21, (n)=>{throw new NotImplementedException();}},
+            {0x21, (n)=>{registers.HL = n;}},
 
             // LDI (HL),A: Save A to address pointed by HL, and increment HL
-            {0x22, (n)=>{throw new NotImplementedException();}},
+            {0x22, (n)=>{memory.Write(registers.HL, registers.A);}},
 
             // INC HL: Increment 16-bit HL
-            {0x23, (n)=>{throw new NotImplementedException();}},
+            {0x23, (n)=>{registers.HL++;}},
 
             // INC H: Increment H
-            {0x24, (n)=>{throw new NotImplementedException();}},
+            {0x24, (n)=>{registers.H++;}},
 
             // DEC H: Decrement H
-            {0x25, (n)=>{throw new NotImplementedException();}},
+            {0x25, (n)=>{registers.H--;}},
 
             // LD H,n: Load 8-bit immediate into H
-            {0x26, (n)=>{throw new NotImplementedException();}},
+            {0x26, (n)=>{registers.H = (byte)n;}},
 
             // DAA: Adjust A for BCD addition
             {0x27, (n)=>{throw new NotImplementedException();}},
@@ -1180,226 +1178,226 @@ namespace GBSharp.CPU
             {0x28, (n)=>{throw new NotImplementedException();}},
 
             // ADD HL,HL: Add 16-bit HL to HL
-            {0x29, (n)=>{throw new NotImplementedException();}},
+            {0x29, (n)=>{registers.HL+=registers.HL;}},
 
             // LDI A,(HL): Load A from address pointed to by HL, and increment HL
-            {0x2A, (n)=>{throw new NotImplementedException();}},
+            {0x2A, (n)=>{registers.A = memory.Read(registers.HL++);}},
 
             // DEC HL: Decrement 16-bit HL
-            {0x2B, (n)=>{throw new NotImplementedException();}},
+            {0x2B, (n)=>{registers.HL--;}},
 
             // INC L: Increment L
-            {0x2C, (n)=>{throw new NotImplementedException();}},
+            {0x2C, (n)=>{registers.L++;}},
 
             // DEC L: Decrement L
-            {0x2D, (n)=>{throw new NotImplementedException();}},
+            {0x2D, (n)=>{registers.L--;}},
 
             // LD L,n: Load 8-bit immediate into L
-            {0x2E, (n)=>{throw new NotImplementedException();}},
+            {0x2E, (n)=>{registers.L = (byte)n;}},
 
             // CPL: Complement (logical NOT) on A
-            {0x2F, (n)=>{throw new NotImplementedException();}},
+            {0x2F, (n)=>{registers.A = (byte)~registers.A;}},
 
             // JR NC,n: Relative jump by signed immediate if last result caused no carry
             {0x30, (n)=>{throw new NotImplementedException();}},
 
             // LD SP,nn: Load 16-bit immediate into SP
-            {0x31, (n)=>{throw new NotImplementedException();}},
+            {0x31, (n)=>{registers.SP = n;}},
 
             // LDD (HL),A: Save A to address pointed by HL, and decrement HL
-            {0x32, (n)=>{throw new NotImplementedException();}},
+            {0x32, (n)=>{memory.Write(registers.HL, registers.A);}},
 
             // INC SP: Increment 16-bit HL
-            {0x33, (n)=>{throw new NotImplementedException();}},
+            {0x33, (n)=>{registers.SP++;}},
 
             // INC (HL): Increment value pointed by HL
-            {0x34, (n)=>{throw new NotImplementedException();}},
+            {0x34, (n)=>{memory.Write(registers.HL, (byte)(memory.Read(registers.HL) + 1));}},
 
             // DEC (HL): Decrement value pointed by HL
-            {0x35, (n)=>{throw new NotImplementedException();}},
+            {0x35, (n)=>{memory.Write(registers.HL, (byte)(memory.Read(registers.HL) - 1));}},
 
             // LD (HL),n: Load 8-bit immediate into address pointed by HL
-            {0x36, (n)=>{throw new NotImplementedException();}},
+            {0x36, (n) => { memory.Write(registers.HL, n);}},
 
             // SCF: Set carry flag
-            {0x37, (n)=>{throw new NotImplementedException();}},
+            {0x37, (n)=>{registers.F = UtilFuncs.SetBit(registers.F, (int)Flags.C);}},
 
             // JR C,n: Relative jump by signed immediate if last result caused carry
             {0x38, (n)=>{throw new NotImplementedException();}},
 
             // ADD HL,SP: Add 16-bit SP to HL
-            {0x39, (n)=>{throw new NotImplementedException();}},
+            {0x39, (n)=>{registers.HL += registers.SP;}},
 
             // LDD A,(HL): Load A from address pointed to by HL, and decrement HL
-            {0x3A, (n)=>{throw new NotImplementedException();}},
+            {0x3A, (n) => { registers.A = memory.Read(registers.HL--);}},
 
             // DEC SP: Decrement 16-bit SP
-            {0x3B, (n)=>{throw new NotImplementedException();}},
+            {0x3B, (n)=>{registers.SP--;}},
 
             // INC A: Increment A
-            {0x3C, (n)=>{throw new NotImplementedException();}},
+            {0x3C, (n)=>{registers.A++;}},
 
             // DEC A: Decrement A
-            {0x3D, (n)=>{throw new NotImplementedException();}},
+            {0x3D, (n)=>{registers.A--;}},
 
             // LD A,n: Load 8-bit immediate into A
-            {0x3E, (n)=>{throw new NotImplementedException();}},
+            {0x3E, (n)=>{registers.A = (byte)n;}},
 
             // CCF: Clear carry flag
-            {0x3F, (n)=>{throw new NotImplementedException();}},
+            {0x3F, (n)=>{registers.F = UtilFuncs.ClearBit(registers.F, (int)Flags.C);}},
 
             // LD B,B: Copy B to B
-            {0x40, (n)=>{throw new NotImplementedException();}},
+            {0x40, (n)=>{registers.B = registers.B;}}, //love this instruction
 
             // LD B,C: Copy C to B
-            {0x41, (n)=>{throw new NotImplementedException();}},
+            {0x41, (n)=>{registers.B = registers.C;}},
 
             // LD B,D: Copy D to B
-            {0x42, (n)=>{throw new NotImplementedException();}},
+            {0x42, (n)=>{registers.B = registers.D;}},
 
             // LD B,E: Copy E to B
-            {0x43, (n)=>{throw new NotImplementedException();}},
+            {0x43, (n)=>{registers.B = registers.E;}},
 
             // LD B,H: Copy H to B
-            {0x44, (n)=>{throw new NotImplementedException();}},
+            {0x44, (n)=>{registers.B = registers.H;}},
 
             // LD B,L: Copy L to B
-            {0x45, (n)=>{throw new NotImplementedException();}},
+            {0x45, (n)=>{registers.B = registers.L;}},
 
             // LD B,(HL): Copy value pointed by HL to B
-            {0x46, (n)=>{throw new NotImplementedException();}},
+            {0x46, (n)=>{registers.B = memory.Read(registers.HL);}},
 
             // LD B,A: Copy A to B
-            {0x47, (n)=>{throw new NotImplementedException();}},
+            {0x47, (n)=>{registers.B = registers.A;}},
 
             // LD C,B: Copy B to C
-            {0x48, (n)=>{throw new NotImplementedException();}},
+            {0x48, (n)=>{registers.C = registers.B;}},
 
             // LD C,C: Copy C to C
-            {0x49, (n)=>{throw new NotImplementedException();}},
+            {0x49, (n)=>{registers.C = registers.C;}},
 
             // LD C,D: Copy D to C
-            {0x4A, (n)=>{throw new NotImplementedException();}},
+            {0x4A, (n)=>{registers.C = registers.D;}},
 
             // LD C,E: Copy E to C
-            {0x4B, (n)=>{throw new NotImplementedException();}},
+            {0x4B, (n)=>{registers.C = registers.E;}},
 
             // LD C,H: Copy H to C
-            {0x4C, (n)=>{throw new NotImplementedException();}},
+            {0x4C, (n)=>{registers.C = registers.H;}},
 
             // LD C,L: Copy L to C
-            {0x4D, (n)=>{throw new NotImplementedException();}},
+            {0x4D, (n)=>{registers.C = registers.L;}},
 
             // LD C,(HL): Copy value pointed by HL to C
-            {0x4E, (n)=>{throw new NotImplementedException();}},
+            {0x4E, (n)=>{registers.C = memory.Read(registers.HL);}},
 
             // LD C,A: Copy A to C
-            {0x4F, (n)=>{throw new NotImplementedException();}},
+            {0x4F, (n)=>{registers.C = registers.A;}},
 
             // LD D,B: Copy B to D
-            {0x50, (n)=>{throw new NotImplementedException();}},
+            {0x50, (n)=>{registers.D = registers.B;}},
 
             // LD D,C: Copy C to D
-            {0x51, (n)=>{throw new NotImplementedException();}},
+            {0x51, (n)=>{registers.D = registers.C;}},
 
             // LD D,D: Copy D to D
-            {0x52, (n)=>{throw new NotImplementedException();}},
+            {0x52, (n)=>{registers.D = registers.D;}},
 
             // LD D,E: Copy E to D
-            {0x53, (n)=>{throw new NotImplementedException();}},
+            {0x53, (n)=>{registers.D = registers.E;}},
 
             // LD D,H: Copy H to D
-            {0x54, (n)=>{throw new NotImplementedException();}},
+            {0x54, (n)=>{registers.D = registers.H;}},
 
             // LD D,L: Copy L to D
-            {0x55, (n)=>{throw new NotImplementedException();}},
+            {0x55, (n)=>{registers.D = registers.L;}},
 
             // LD D,(HL): Copy value pointed by HL to D
-            {0x56, (n)=>{throw new NotImplementedException();}},
+            {0x56, (n)=>{registers.D = memory.Read(registers.HL);}},
 
             // LD D,A: Copy A to D
-            {0x57, (n)=>{throw new NotImplementedException();}},
+            {0x57, (n)=>{registers.D = registers.A;}},
 
             // LD E,B: Copy B to E
-            {0x58, (n)=>{throw new NotImplementedException();}},
+            {0x58, (n)=>{registers.E = registers.B;}},
 
             // LD E,C: Copy C to E
-            {0x59, (n)=>{throw new NotImplementedException();}},
+            {0x59, (n)=>{registers.E = registers.C;}},
 
             // LD E,D: Copy D to E
-            {0x5A, (n)=>{throw new NotImplementedException();}},
+            {0x5A, (n)=>{registers.E = registers.D;}},
 
             // LD E,E: Copy E to E
-            {0x5B, (n)=>{throw new NotImplementedException();}},
+            {0x5B, (n)=>{registers.E = registers.E;}},
 
             // LD E,H: Copy H to E
-            {0x5C, (n)=>{throw new NotImplementedException();}},
+            {0x5C, (n)=>{registers.E = registers.H;}},
 
             // LD E,L: Copy L to E
-            {0x5D, (n)=>{throw new NotImplementedException();}},
+            {0x5D, (n)=>{registers.E = registers.L;}},
 
             // LD E,(HL): Copy value pointed by HL to E
-            {0x5E, (n)=>{throw new NotImplementedException();}},
+            {0x5E, (n)=>{registers.E = memory.Read(registers.HL);}},
 
             // LD E,A: Copy A to E
-            {0x5F, (n)=>{throw new NotImplementedException();}},
+            {0x5F, (n)=>{registers.E = registers.A;}},
 
             // LD H,B: Copy B to H
-            {0x60, (n)=>{throw new NotImplementedException();}},
+            {0x60, (n)=>{registers.H = registers.B;}},
 
             // LD H,C: Copy C to H
-            {0x61, (n)=>{throw new NotImplementedException();}},
+            {0x61, (n)=>{registers.H = registers.C;}},
 
             // LD H,D: Copy D to H
-            {0x62, (n)=>{throw new NotImplementedException();}},
+            {0x62, (n)=>{registers.H = registers.D;}},
 
             // LD H,E: Copy E to H
-            {0x63, (n)=>{throw new NotImplementedException();}},
+            {0x63, (n)=>{registers.H = registers.E;}},
 
             // LD H,H: Copy H to H
-            {0x64, (n)=>{throw new NotImplementedException();}},
+            {0x64, (n)=>{registers.H = registers.H;}},
 
             // LD H,L: Copy L to H
-            {0x65, (n)=>{throw new NotImplementedException();}},
+            {0x65, (n)=>{registers.H = registers.L;}},
 
             // LD H,(HL): Copy value pointed by HL to H
-            {0x66, (n)=>{throw new NotImplementedException();}},
+            {0x66, (n)=>{registers.H = memory.Read(registers.HL);}},
 
             // LD H,A: Copy A to H
-            {0x67, (n)=>{throw new NotImplementedException();}},
+            {0x67, (n)=>{registers.H = registers.A;}},
 
             // LD L,B: Copy B to L
-            {0x68, (n)=>{throw new NotImplementedException();}},
+            {0x68, (n)=>{registers.L = registers.B;}},
 
             // LD L,C: Copy C to L
-            {0x69, (n)=>{throw new NotImplementedException();}},
+            {0x69, (n)=>{registers.L = registers.C;}},
 
             // LD L,D: Copy D to L
-            {0x6A, (n)=>{throw new NotImplementedException();}},
+            {0x6A, (n)=>{registers.L = registers.D;}},
 
             // LD L,E: Copy E to L
-            {0x6B, (n)=>{throw new NotImplementedException();}},
+            {0x6B, (n)=>{registers.L = registers.E;}},
 
             // LD L,H: Copy H to L
-            {0x6C, (n)=>{throw new NotImplementedException();}},
+            {0x6C, (n)=>{registers.L = registers.H;}},
 
             // LD L,L: Copy L to L
-            {0x6D, (n)=>{throw new NotImplementedException();}},
+            {0x6D, (n)=>{registers.L = registers.L;}},
 
             // LD L,(HL): Copy value pointed by HL to L
-            {0x6E, (n)=>{throw new NotImplementedException();}},
+            {0x6E, (n)=>{registers.L = memory.Read(registers.HL);}},
 
             // LD L,A: Copy A to L
-            {0x6F, (n)=>{throw new NotImplementedException();}},
+            {0x6F, (n)=>{registers.L = registers.A;}},
 
             // LD (HL),B: Copy B to address pointed by HL
-            {0x70, (n)=>{throw new NotImplementedException();}},
+            {0x70, (n)=>{memory.Write(registers.HL, registers.B);}},
 
             // LD (HL),C: Copy C to address pointed by HL
-            {0x71, (n)=>{throw new NotImplementedException();}},
+            {0x71, (n)=>{memory.Write(registers.HL, registers.C);}},
 
             // LD (HL),D: Copy D to address pointed by HL
-            {0x72, (n)=>{throw new NotImplementedException();}},
+            {0x72, (n)=>{memory.Write(registers.HL, registers.D);}},
 
             // LD (HL),E: Copy E to address pointed by HL
             {0x73, (n)=>{throw new NotImplementedException();}},
