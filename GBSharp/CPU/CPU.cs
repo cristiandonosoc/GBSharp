@@ -1050,6 +1050,7 @@ namespace GBSharp.CPU
     #region Instruction Lambdas
 
     private Dictionary<byte, Action<ushort>> instructionLambdas;
+    private Dictionary<byte, Action<ushort>> CBInstructionLambdas;
 
     private void CreateInstructionLambdas()
     {
@@ -1400,67 +1401,67 @@ namespace GBSharp.CPU
             {0x72, (n)=>{memory.Write(registers.HL, registers.D);}},
 
             // LD (HL),E: Copy E to address pointed by HL
-            {0x73, (n)=>{throw new NotImplementedException();}},
+            {0x73, (n)=>{memory.Write(registers.HL, registers.E);}},
 
             // LD (HL),H: Copy H to address pointed by HL
-            {0x74, (n)=>{throw new NotImplementedException();}},
+            {0x74, (n)=>{memory.Write(registers.HL, registers.H);}},
 
             // LD (HL),L: Copy L to address pointed by HL
-            {0x75, (n)=>{throw new NotImplementedException();}},
+            {0x75, (n)=>{memory.Write(registers.HL, registers.L);}},
 
             // HALT: Halt processor
             {0x76, (n)=>{throw new NotImplementedException();}},
 
             // LD (HL),A: Copy A to address pointed by HL
-            {0x77, (n)=>{throw new NotImplementedException();}},
+            {0x77, (n)=>{memory.Write(registers.HL, registers.A);}},
 
             // LD A,B: Copy B to A
-            {0x78, (n)=>{throw new NotImplementedException();}},
+            {0x78, (n)=>{registers.A = registers.B;}},
 
             // LD A,C: Copy C to A
-            {0x79, (n)=>{throw new NotImplementedException();}},
+            {0x79, (n)=>{registers.A = registers.C;}},
 
             // LD A,D: Copy D to A
-            {0x7A, (n)=>{throw new NotImplementedException();}},
+            {0x7A, (n)=>{registers.A = registers.D;}},
 
             // LD A,E: Copy E to A
-            {0x7B, (n)=>{throw new NotImplementedException();}},
+            {0x7B, (n)=>{registers.A = registers.E;}},
 
             // LD A,H: Copy H to A
-            {0x7C, (n)=>{throw new NotImplementedException();}},
+            {0x7C, (n)=>{registers.A = registers.H;}},
 
             // LD A,L: Copy L to A
-            {0x7D, (n)=>{throw new NotImplementedException();}},
+            {0x7D, (n)=>{registers.A = registers.L;}},
 
             // LD A,(HL): Copy value pointed by HL to A
-            {0x7E, (n)=>{throw new NotImplementedException();}},
+            {0x7E, (n)=>{registers.A = memory.Read(registers.HL);}},
 
             // LD A,A: Copy A to A
-            {0x7F, (n)=>{throw new NotImplementedException();}},
+            {0x7F, (n)=>{registers.A = registers.A;}},
 
             // ADD A,B: Add B to A
-            {0x80, (n)=>{throw new NotImplementedException();}},
+            {0x80, (n)=>{registers.A += registers.B;}},
 
             // ADD A,C: Add C to A
-            {0x81, (n)=>{throw new NotImplementedException();}},
+            {0x81, (n)=>{registers.A += registers.C;}},
 
             // ADD A,D: Add D to A
-            {0x82, (n)=>{throw new NotImplementedException();}},
+            {0x82, (n)=>{registers.A += registers.D;}},
 
             // ADD A,E: Add E to A
-            {0x83, (n)=>{throw new NotImplementedException();}},
+            {0x83, (n)=>{registers.A += registers.E;}},
 
             // ADD A,H: Add H to A
-            {0x84, (n)=>{throw new NotImplementedException();}},
+            {0x84, (n)=>{registers.A += registers.H;}},
 
             // ADD A,L: Add L to A
-            {0x85, (n)=>{throw new NotImplementedException();}},
+            {0x85, (n)=>{registers.A += registers.L;}},
 
             // ADD A,(HL): Add value pointed by HL to A
-            {0x86, (n)=>{throw new NotImplementedException();}},
+            {0x86, (n)=>{registers.A += memory.Read(registers.HL);}},
 
             // ADD A,A: Add A to A
-            {0x87, (n)=>{throw new NotImplementedException();}},
+            {0x87, (n)=>{registers.A += registers.A;}},
 
             // ADC A,B: Add B and carry flag to A
             {0x88, (n)=>{throw new NotImplementedException();}},
@@ -1487,28 +1488,28 @@ namespace GBSharp.CPU
             {0x8F, (n)=>{throw new NotImplementedException();}},
 
             // SUB A,B: Subtract B from A
-            {0x90, (n)=>{throw new NotImplementedException();}},
+            {0x90, (n)=>{registers.A -= registers.B;}},
 
             // SUB A,C: Subtract C from A
-            {0x91, (n)=>{throw new NotImplementedException();}},
+            {0x91, (n)=>{registers.A -= registers.C;}},
 
             // SUB A,D: Subtract D from A
-            {0x92, (n)=>{throw new NotImplementedException();}},
+            {0x92, (n)=>{registers.A -= registers.D;}},
 
             // SUB A,E: Subtract E from A
-            {0x93, (n)=>{throw new NotImplementedException();}},
+            {0x93, (n)=>{registers.A -= registers.E;}},
 
             // SUB A,H: Subtract H from A
-            {0x94, (n)=>{throw new NotImplementedException();}},
+            {0x94, (n)=>{registers.A -= registers.H;}},
 
             // SUB A,L: Subtract L from A
-            {0x95, (n)=>{throw new NotImplementedException();}},
+            {0x95, (n)=>{registers.A -= registers.L;}},
 
             // SUB A,(HL): Subtract value pointed by HL from A
-            {0x96, (n)=>{throw new NotImplementedException();}},
+            {0x96, (n)=>{registers.A -= memory.Read(registers.HL);}},
 
             // SUB A,A: Subtract A from A
-            {0x97, (n)=>{throw new NotImplementedException();}},
+            {0x97, (n)=>{registers.A -= registers.A;}},
 
             // SBC A,B: Subtract B and carry flag from A
             {0x98, (n)=>{throw new NotImplementedException();}},
@@ -1535,76 +1536,76 @@ namespace GBSharp.CPU
             {0x9F, (n)=>{throw new NotImplementedException();}},
 
             // AND B: Logical AND B against A
-            {0xA0, (n)=>{throw new NotImplementedException();}},
+            {0xA0, (n)=>{registers.A &= registers.B;}},
 
             // AND C: Logical AND C against A
-            {0xA1, (n)=>{throw new NotImplementedException();}},
+            {0xA1, (n)=>{registers.A &= registers.C;}},
 
             // AND D: Logical AND D against A
-            {0xA2, (n)=>{throw new NotImplementedException();}},
+            {0xA2, (n)=>{registers.A &= registers.D;}},
 
             // AND E: Logical AND E against A
-            {0xA3, (n)=>{throw new NotImplementedException();}},
+            {0xA3, (n)=>{registers.A &= registers.E;}},
 
             // AND H: Logical AND H against A
-            {0xA4, (n)=>{throw new NotImplementedException();}},
+            {0xA4, (n)=>{registers.A &= registers.H;}},
 
             // AND L: Logical AND L against A
-            {0xA5, (n)=>{throw new NotImplementedException();}},
+            {0xA5, (n)=>{registers.A &= registers.L;}},
 
             // AND (HL): Logical AND value pointed by HL against A
-            {0xA6, (n)=>{throw new NotImplementedException();}},
+            {0xA6, (n)=>{registers.A &= memory.Read(registers.HL);}},
 
             // AND A: Logical AND A against A
-            {0xA7, (n)=>{throw new NotImplementedException();}},
+            {0xA7, (n)=>{registers.A &= registers.A;}},
 
             // XOR B: Logical XOR B against A
-            {0xA8, (n)=>{throw new NotImplementedException();}},
+            {0xA8, (n)=>{registers.A ^= registers.B;}},
 
             // XOR C: Logical XOR C against A
-            {0xA9, (n)=>{throw new NotImplementedException();}},
+            {0xA9, (n)=>{registers.A ^= registers.C;}},
 
             // XOR D: Logical XOR D against A
-            {0xAA, (n)=>{throw new NotImplementedException();}},
+            {0xAA, (n)=>{registers.A ^= registers.D;}},
 
             // XOR E: Logical XOR E against A
-            {0xAB, (n)=>{throw new NotImplementedException();}},
+            {0xAB, (n)=>{registers.A ^= registers.E;}},
 
             // XOR H: Logical XOR H against A
-            {0xAC, (n)=>{throw new NotImplementedException();}},
+            {0xAC, (n)=>{registers.A ^= registers.H;}},
 
             // XOR L: Logical XOR L against A
-            {0xAD, (n)=>{throw new NotImplementedException();}},
+            {0xAD, (n)=>{registers.A ^= registers.L;}},
 
             // XOR (HL): Logical XOR value pointed by HL against A
-            {0xAE, (n)=>{throw new NotImplementedException();}},
+            {0xAE, (n)=>{registers.A ^= memory.Read(registers.HL);}},
 
             // XOR A: Logical XOR A against A
-            {0xAF, (n)=>{throw new NotImplementedException();}},
+            {0xAF, (n)=>{registers.A ^= registers.A;}},
 
             // OR B: Logical OR B against A
-            {0xB0, (n)=>{throw new NotImplementedException();}},
+            {0xB0, (n)=>{registers.A |= registers.B;}},
 
             // OR C: Logical OR C against A
-            {0xB1, (n)=>{throw new NotImplementedException();}},
+            {0xB1, (n)=>{registers.A |= registers.C;}},
 
             // OR D: Logical OR D against A
-            {0xB2, (n)=>{throw new NotImplementedException();}},
+            {0xB2, (n)=>{registers.A |= registers.D;}},
 
             // OR E: Logical OR E against A
-            {0xB3, (n)=>{throw new NotImplementedException();}},
+            {0xB3, (n)=>{registers.A |= registers.E;}},
 
             // OR H: Logical OR H against A
-            {0xB4, (n)=>{throw new NotImplementedException();}},
+            {0xB4, (n)=>{registers.A |= registers.H;}},
 
             // OR L: Logical OR L against A
-            {0xB5, (n)=>{throw new NotImplementedException();}},
+            {0xB5, (n)=>{registers.A |= registers.L;}},
 
             // OR (HL): Logical OR value pointed by HL against A
-            {0xB6, (n)=>{throw new NotImplementedException();}},
+            {0xB6, (n)=>{registers.A |= memory.Read(registers.HL);}},
 
             // OR A: Logical OR A against A
-            {0xB7, (n)=>{throw new NotImplementedException();}},
+            {0xB7, (n)=>{registers.A |= registers.A;}},
 
             // CP B: Compare B against A
             {0xB8, (n)=>{throw new NotImplementedException();}},
@@ -1649,7 +1650,7 @@ namespace GBSharp.CPU
             {0xC5, (n)=>{throw new NotImplementedException();}},
 
             // ADD A,n: Add 8-bit immediate to A
-            {0xC6, (n)=>{throw new NotImplementedException();}},
+            {0xC6, (n)=>{registers.A += (byte)n;}},
 
             // RST 0: Call routine at address 0000h
             {0xC7, (n)=>{throw new NotImplementedException();}},
@@ -1697,7 +1698,7 @@ namespace GBSharp.CPU
             {0xD5, (n)=>{throw new NotImplementedException();}},
 
             // SUB A,n: Subtract 8-bit immediate from A
-            {0xD6, (n)=>{throw new NotImplementedException();}},
+            {0xD6, (n)=>{registers.A -= (byte)n;}},
 
             // RST 10: Call routine at address 0010h
             {0xD7, (n)=>{throw new NotImplementedException();}},
@@ -1727,13 +1728,13 @@ namespace GBSharp.CPU
             {0xDF, (n)=>{throw new NotImplementedException();}},
 
             // LDH (n),A: Save A at address pointed to by (FF00h + 8-bit immediate)
-            {0xE0, (n)=>{throw new NotImplementedException();}},
+            {0xE0, (n)=>{memory.Write((ushort)(0xFF00 & n), registers.A);}},
 
             // POP HL: Pop 16-bit value from stack into HL
             {0xE1, (n)=>{throw new NotImplementedException();}},
 
             // LDH (C),A: Save A at address pointed to by (FF00h + C)
-            {0xE2, (n)=>{throw new NotImplementedException();}},
+            {0xE2, (n)=>{memory.Write((ushort)(0xFF00 & registers.C), registers.A);}},
 
             // XX: Operation removed in this CPU
             {0xE3, (n)=>{throw new NotImplementedException();}},
@@ -1745,7 +1746,7 @@ namespace GBSharp.CPU
             {0xE5, (n)=>{throw new NotImplementedException();}},
 
             // AND n: Logical AND 8-bit immediate against A
-            {0xE6, (n)=>{throw new NotImplementedException();}},
+            {0xE6, (n)=>{registers.A &= (byte)n;}},
 
             // RST 20: Call routine at address 0020h
             {0xE7, (n)=>{throw new NotImplementedException();}},
@@ -1757,7 +1758,7 @@ namespace GBSharp.CPU
             {0xE9, (n)=>{throw new NotImplementedException();}},
 
             // LD (nn),A: Save A at given 16-bit address
-            {0xEA, (n)=>{throw new NotImplementedException();}},
+            {0xEA, (n)=>{memory.Write(n, registers.A);}},
 
             // XX: Operation removed in this CPU
             {0xEB, (n)=>{throw new NotImplementedException();}},
@@ -1769,19 +1770,19 @@ namespace GBSharp.CPU
             {0xED, (n)=>{throw new NotImplementedException();}},
 
             // XOR n: Logical XOR 8-bit immediate against A
-            {0xEE, (n)=>{throw new NotImplementedException();}},
+            {0xEE, (n)=>{registers.A ^= (byte)n;}},
 
             // RST 28: Call routine at address 0028h
             {0xEF, (n)=>{throw new NotImplementedException();}},
 
             // LDH A,(n): Load A from address pointed to by (FF00h + 8-bit immediate)
-            {0xF0, (n)=>{throw new NotImplementedException();}},
+            {0xF0, (n)=>{registers.A = memory.Read((ushort)(0xFF00 & n));}},
 
             // POP AF: Pop 16-bit value from stack into AF
             {0xF1, (n)=>{throw new NotImplementedException();}},
 
             // LDH A, (C): Operation removed in this CPU? (Or Load into A memory from FF00 + C?)
-            {0xF2, (n)=>{throw new NotImplementedException();}},
+            {0xF2, (n)=>{registers.A = memory.Read((ushort)(0xFF00 & registers.C));}},
 
             // DI: DIsable interrupts
             {0xF3, (n)=>{throw new NotImplementedException();}},
@@ -1793,7 +1794,7 @@ namespace GBSharp.CPU
             {0xF5, (n)=>{throw new NotImplementedException();}},
 
             // OR n: Logical OR 8-bit immediate against A
-            {0xF6, (n)=>{throw new NotImplementedException();}},
+            {0xF6, (n)=>{registers.A |= (byte)n;}},
 
             // RST 30: Call routine at address 0030h
             {0xF7, (n)=>{throw new NotImplementedException();}},
@@ -1802,10 +1803,10 @@ namespace GBSharp.CPU
             {0xF8, (n)=>{throw new NotImplementedException();}},
 
             // LD SP,HL: Copy HL to SP
-            {0xF9, (n)=>{throw new NotImplementedException();}},
+            {0xF9, (n)=>{registers.SP = registers.HL;}},
 
             // LD A,(nn): Load A from given 16-bit address
-            {0xFA, (n)=>{throw new NotImplementedException();}},
+            {0xFA, (n)=>{registers.A = memory.Read(n);}},
 
             // EI: Enable interrupts
             {0xFB, (n)=>{throw new NotImplementedException();}},
@@ -1824,780 +1825,788 @@ namespace GBSharp.CPU
         };
     }
 
-    Dictionary<byte, Action<ushort>> CBInstructionLambdas = new Dictionary<byte, Action<ushort>>() {            
+    private void CreateCBInstructionLambdas()
+    {
+      CBInstructionLambdas = new Dictionary<byte, Action<ushort>>()
+      {
         // RLC B: Rotate B left with carry
-        {0x00, (n)=>{throw new NotImplementedException();}},
+        {0x00, (n) => { throw new NotImplementedException(); }},
 
         // RLC C: Rotate C left with carry
-        {0x01, (n)=>{throw new NotImplementedException();}},
+        {0x01, (n) => { throw new NotImplementedException(); }},
 
         // RLC D: Rotate D left with carry
-        {0x02, (n)=>{throw new NotImplementedException();}},
+        {0x02, (n) => { throw new NotImplementedException(); }},
 
         // RLC E: Rotate E left with carry
-        {0x03, (n)=>{throw new NotImplementedException();}},
+        {0x03, (n) => { throw new NotImplementedException(); }},
 
         // RLC H: Rotate H left with carry
-        {0x04, (n)=>{throw new NotImplementedException();}},
+        {0x04, (n) => { throw new NotImplementedException(); }},
 
         // RLC L: Rotate L left with carry
-        {0x05, (n)=>{throw new NotImplementedException();}},
+        {0x05, (n) => { throw new NotImplementedException(); }},
 
         // RLC (HL): Rotate value pointed by HL left with carry
-        {0x06, (n)=>{throw new NotImplementedException();}},
+        {0x06, (n) => { throw new NotImplementedException(); }},
 
         // RLC A: Rotate A left with carry
-        {0x07, (n)=>{throw new NotImplementedException();}},
+        {0x07, (n) => { throw new NotImplementedException(); }},
 
         // RRC B: Rotate B right with carry
-        {0x08, (n)=>{throw new NotImplementedException();}},
+        {0x08, (n) => { throw new NotImplementedException(); }},
 
         // RRC C: Rotate C right with carry
-        {0x09, (n)=>{throw new NotImplementedException();}},
+        {0x09, (n) => { throw new NotImplementedException(); }},
 
         // RRC D: Rotate D right with carry
-        {0x0A, (n)=>{throw new NotImplementedException();}},
+        {0x0A, (n) => { throw new NotImplementedException(); }},
 
         // RRC E: Rotate E right with carry
-        {0x0B, (n)=>{throw new NotImplementedException();}},
+        {0x0B, (n) => { throw new NotImplementedException(); }},
 
         // RRC H: Rotate H right with carry
-        {0x0C, (n)=>{throw new NotImplementedException();}},
+        {0x0C, (n) => { throw new NotImplementedException(); }},
 
         // RRC L: Rotate L right with carry
-        {0x0D, (n)=>{throw new NotImplementedException();}},
+        {0x0D, (n) => { throw new NotImplementedException(); }},
 
         // RRC (HL): Rotate value pointed by HL right with carry
-        {0x0E, (n)=>{throw new NotImplementedException();}},
+        {0x0E, (n) => { throw new NotImplementedException(); }},
 
         // RRC A: Rotate A right with carry
-        {0x0F, (n)=>{throw new NotImplementedException();}},
+        {0x0F, (n) => { throw new NotImplementedException(); }},
 
         // RL B: Rotate B left
-        {0x10, (n)=>{throw new NotImplementedException();}},
+        {0x10, (n) => { throw new NotImplementedException(); }},
 
         // RL C: Rotate C left
-        {0x11, (n)=>{throw new NotImplementedException();}},
+        {0x11, (n) => { throw new NotImplementedException(); }},
 
         // RL D: Rotate D left
-        {0x12, (n)=>{throw new NotImplementedException();}},
+        {0x12, (n) => { throw new NotImplementedException(); }},
 
         // RL E: Rotate E left
-        {0x13, (n)=>{throw new NotImplementedException();}},
+        {0x13, (n) => { throw new NotImplementedException(); }},
 
         // RL H: Rotate H left
-        {0x14, (n)=>{throw new NotImplementedException();}},
+        {0x14, (n) => { throw new NotImplementedException(); }},
 
         // RL L: Rotate L left
-        {0x15, (n)=>{throw new NotImplementedException();}},
+        {0x15, (n) => { throw new NotImplementedException(); }},
 
         // RL (HL): Rotate value pointed by HL left
-        {0x16, (n)=>{throw new NotImplementedException();}},
+        {0x16, (n) => { throw new NotImplementedException(); }},
 
         // RL A: Rotate A left
-        {0x17, (n)=>{throw new NotImplementedException();}},
+        {0x17, (n) => { throw new NotImplementedException(); }},
 
         // RR B: Rotate B right
-        {0x18, (n)=>{throw new NotImplementedException();}},
+        {0x18, (n) => { throw new NotImplementedException(); }},
 
         // RR C: Rotate C right
-        {0x19, (n)=>{throw new NotImplementedException();}},
+        {0x19, (n) => { throw new NotImplementedException(); }},
 
         // RR D: Rotate D right
-        {0x1A, (n)=>{throw new NotImplementedException();}},
+        {0x1A, (n) => { throw new NotImplementedException(); }},
 
         // RR E: Rotate E right
-        {0x1B, (n)=>{throw new NotImplementedException();}},
+        {0x1B, (n) => { throw new NotImplementedException(); }},
 
         // RR H: Rotate H right
-        {0x1C, (n)=>{throw new NotImplementedException();}},
+        {0x1C, (n) => { throw new NotImplementedException(); }},
 
         // RR L: Rotate L right
-        {0x1D, (n)=>{throw new NotImplementedException();}},
+        {0x1D, (n) => { throw new NotImplementedException(); }},
 
         // RR (HL): Rotate value pointed by HL right
-        {0x1E, (n)=>{throw new NotImplementedException();}},
+        {0x1E, (n) => { throw new NotImplementedException(); }},
 
         // RR A: Rotate A right
-        {0x1F, (n)=>{throw new NotImplementedException();}},
+        {0x1F, (n) => { throw new NotImplementedException(); }},
 
         // SLA B: Shift B left preserving sign
-        {0x20, (n)=>{throw new NotImplementedException();}},
+        {0x20, (n) => { throw new NotImplementedException(); }},
 
         // SLA C: Shift C left preserving sign
-        {0x21, (n)=>{throw new NotImplementedException();}},
+        {0x21, (n) => { throw new NotImplementedException(); }},
 
         // SLA D: Shift D left preserving sign
-        {0x22, (n)=>{throw new NotImplementedException();}},
+        {0x22, (n) => { throw new NotImplementedException(); }},
 
         // SLA E: Shift E left preserving sign
-        {0x23, (n)=>{throw new NotImplementedException();}},
+        {0x23, (n) => { throw new NotImplementedException(); }},
 
         // SLA H: Shift H left preserving sign
-        {0x24, (n)=>{throw new NotImplementedException();}},
+        {0x24, (n) => { throw new NotImplementedException(); }},
 
         // SLA L: Shift L left preserving sign
-        {0x25, (n)=>{throw new NotImplementedException();}},
+        {0x25, (n) => { throw new NotImplementedException(); }},
 
         // SLA (HL): Shift value pointed by HL left preserving sign
-        {0x26, (n)=>{throw new NotImplementedException();}},
+        {0x26, (n) => { throw new NotImplementedException(); }},
 
         // SLA A: Shift A left preserving sign
-        {0x27, (n)=>{throw new NotImplementedException();}},
+        {0x27, (n) => { throw new NotImplementedException(); }},
 
         // SRA B: Shift B right preserving sign
-        {0x28, (n)=>{throw new NotImplementedException();}},
+        {0x28, (n) => { throw new NotImplementedException(); }},
 
         // SRA C: Shift C right preserving sign
-        {0x29, (n)=>{throw new NotImplementedException();}},
+        {0x29, (n) => { throw new NotImplementedException(); }},
 
         // SRA D: Shift D right preserving sign
-        {0x2A, (n)=>{throw new NotImplementedException();}},
+        {0x2A, (n) => { throw new NotImplementedException(); }},
 
         // SRA E: Shift E right preserving sign
-        {0x2B, (n)=>{throw new NotImplementedException();}},
+        {0x2B, (n) => { throw new NotImplementedException(); }},
 
         // SRA H: Shift H right preserving sign
-        {0x2C, (n)=>{throw new NotImplementedException();}},
+        {0x2C, (n) => { throw new NotImplementedException(); }},
 
         // SRA L: Shift L right preserving sign
-        {0x2D, (n)=>{throw new NotImplementedException();}},
+        {0x2D, (n) => { throw new NotImplementedException(); }},
 
         // SRA (HL): Shift value pointed by HL right preserving sign
-        {0x2E, (n)=>{throw new NotImplementedException();}},
+        {0x2E, (n) => { throw new NotImplementedException(); }},
 
         // SRA A: Shift A right preserving sign
-        {0x2F, (n)=>{throw new NotImplementedException();}},
+        {0x2F, (n) => { throw new NotImplementedException(); }},
 
         // SWAP B: Swap nybbles in B
-        {0x30, (n)=>{throw new NotImplementedException();}},
+        {0x30, (n) => { throw new NotImplementedException(); }},
 
         // SWAP C: Swap nybbles in C
-        {0x31, (n)=>{throw new NotImplementedException();}},
+        {0x31, (n) => { throw new NotImplementedException(); }},
 
         // SWAP D: Swap nybbles in D
-        {0x32, (n)=>{throw new NotImplementedException();}},
+        {0x32, (n) => { throw new NotImplementedException(); }},
 
         // SWAP E: Swap nybbles in E
-        {0x33, (n)=>{throw new NotImplementedException();}},
+        {0x33, (n) => { throw new NotImplementedException(); }},
 
         // SWAP H: Swap nybbles in H
-        {0x34, (n)=>{throw new NotImplementedException();}},
+        {0x34, (n) => { throw new NotImplementedException(); }},
 
         // SWAP L: Swap nybbles in L
-        {0x35, (n)=>{throw new NotImplementedException();}},
+        {0x35, (n) => { throw new NotImplementedException(); }},
 
         // SWAP (HL): Swap nybbles in value pointed by HL
-        {0x36, (n)=>{throw new NotImplementedException();}},
+        {0x36, (n) => { throw new NotImplementedException(); }},
 
         // SWAP A: Swap nybbles in A
-        {0x37, (n)=>{throw new NotImplementedException();}},
+        {0x37, (n) => { throw new NotImplementedException(); }},
 
         // SRL B: Shift B right
-        {0x38, (n)=>{throw new NotImplementedException();}},
+        {0x38, (n) => { registers.B >>= 1; }},
 
         // SRL C: Shift C right
-        {0x39, (n)=>{throw new NotImplementedException();}},
+        {0x39, (n) => { registers.C >>= 1; }},
 
         // SRL D: Shift D right
-        {0x3A, (n)=>{throw new NotImplementedException();}},
+        {0x3A, (n) => { registers.D >>= 1; }},
 
         // SRL E: Shift E right
-        {0x3B, (n)=>{throw new NotImplementedException();}},
+        {0x3B, (n) => { registers.E >>= 1; }},
 
         // SRL H: Shift H right
-        {0x3C, (n)=>{throw new NotImplementedException();}},
+        {0x3C, (n) => { registers.H >>= 1; }},
 
         // SRL L: Shift L right
-        {0x3D, (n)=>{throw new NotImplementedException();}},
+        {0x3D, (n) => { registers.L >>= 1; }},
 
         // SRL (HL): Shift value pointed by HL right
-        {0x3E, (n)=>{throw new NotImplementedException();}},
+        {0x3E, (n) => { memory.Write(registers.HL, (byte)(memory.Read(registers.HL) >> 1)); }},
 
         // SRL A: Shift A right
-        {0x3F, (n)=>{throw new NotImplementedException();}},
+        {0x3F, (n) => { registers.A >>= 1; }},
 
         // BIT 0,B: Test bit 0 of B
-        {0x40, (n)=>{throw new NotImplementedException();}},
+        {0x40, (n) => { throw new NotImplementedException(); }},
 
         // BIT 0,C: Test bit 0 of C
-        {0x41, (n)=>{throw new NotImplementedException();}},
+        {0x41, (n) => { throw new NotImplementedException(); }},
 
         // BIT 0,D: Test bit 0 of D
-        {0x42, (n)=>{throw new NotImplementedException();}},
+        {0x42, (n) => { throw new NotImplementedException(); }},
 
         // BIT 0,E: Test bit 0 of E
-        {0x43, (n)=>{throw new NotImplementedException();}},
+        {0x43, (n) => { throw new NotImplementedException(); }},
 
         // BIT 0,H: Test bit 0 of H
-        {0x44, (n)=>{throw new NotImplementedException();}},
+        {0x44, (n) => { throw new NotImplementedException(); }},
 
         // BIT 0,L: Test bit 0 of L
-        {0x45, (n)=>{throw new NotImplementedException();}},
+        {0x45, (n) => { throw new NotImplementedException(); }},
 
         // BIT 0,(HL): Test bit 0 of value pointed by HL
-        {0x46, (n)=>{throw new NotImplementedException();}},
+        {0x46, (n) => { throw new NotImplementedException(); }},
 
         // BIT 0,A: Test bit 0 of A
-        {0x47, (n)=>{throw new NotImplementedException();}},
+        {0x47, (n) => { throw new NotImplementedException(); }},
 
         // BIT 1,B: Test bit 1 of B
-        {0x48, (n)=>{throw new NotImplementedException();}},
+        {0x48, (n) => { throw new NotImplementedException(); }},
 
         // BIT 1,C: Test bit 1 of C
-        {0x49, (n)=>{throw new NotImplementedException();}},
+        {0x49, (n) => { throw new NotImplementedException(); }},
 
         // BIT 1,D: Test bit 1 of D
-        {0x4A, (n)=>{throw new NotImplementedException();}},
+        {0x4A, (n) => { throw new NotImplementedException(); }},
 
         // BIT 1,E: Test bit 1 of E
-        {0x4B, (n)=>{throw new NotImplementedException();}},
+        {0x4B, (n) => { throw new NotImplementedException(); }},
 
         // BIT 1,H: Test bit 1 of H
-        {0x4C, (n)=>{throw new NotImplementedException();}},
+        {0x4C, (n) => { throw new NotImplementedException(); }},
 
         // BIT 1,L: Test bit 1 of L
-        {0x4D, (n)=>{throw new NotImplementedException();}},
+        {0x4D, (n) => { throw new NotImplementedException(); }},
 
         // BIT 1,(HL): Test bit 1 of value pointed by HL
-        {0x4E, (n)=>{throw new NotImplementedException();}},
+        {0x4E, (n) => { throw new NotImplementedException(); }},
 
         // BIT 1,A: Test bit 1 of A
-        {0x4F, (n)=>{throw new NotImplementedException();}},
+        {0x4F, (n) => { throw new NotImplementedException(); }},
 
         // BIT 2,B: Test bit 2 of B
-        {0x50, (n)=>{throw new NotImplementedException();}},
+        {0x50, (n) => { throw new NotImplementedException(); }},
 
         // BIT 2,C: Test bit 2 of C
-        {0x51, (n)=>{throw new NotImplementedException();}},
+        {0x51, (n) => { throw new NotImplementedException(); }},
 
         // BIT 2,D: Test bit 2 of D
-        {0x52, (n)=>{throw new NotImplementedException();}},
+        {0x52, (n) => { throw new NotImplementedException(); }},
 
         // BIT 2,E: Test bit 2 of E
-        {0x53, (n)=>{throw new NotImplementedException();}},
+        {0x53, (n) => { throw new NotImplementedException(); }},
 
         // BIT 2,H: Test bit 2 of H
-        {0x54, (n)=>{throw new NotImplementedException();}},
+        {0x54, (n) => { throw new NotImplementedException(); }},
 
         // BIT 2,L: Test bit 2 of L
-        {0x55, (n)=>{throw new NotImplementedException();}},
+        {0x55, (n) => { throw new NotImplementedException(); }},
 
         // BIT 2,(HL): Test bit 2 of value pointed by HL
-        {0x56, (n)=>{throw new NotImplementedException();}},
+        {0x56, (n) => { throw new NotImplementedException(); }},
 
         // BIT 2,A: Test bit 2 of A
-        {0x57, (n)=>{throw new NotImplementedException();}},
+        {0x57, (n) => { throw new NotImplementedException(); }},
 
         // BIT 3,B: Test bit 3 of B
-        {0x58, (n)=>{throw new NotImplementedException();}},
+        {0x58, (n) => { throw new NotImplementedException(); }},
 
         // BIT 3,C: Test bit 3 of C
-        {0x59, (n)=>{throw new NotImplementedException();}},
+        {0x59, (n) => { throw new NotImplementedException(); }},
 
         // BIT 3,D: Test bit 3 of D
-        {0x5A, (n)=>{throw new NotImplementedException();}},
+        {0x5A, (n) => { throw new NotImplementedException(); }},
 
         // BIT 3,E: Test bit 3 of E
-        {0x5B, (n)=>{throw new NotImplementedException();}},
+        {0x5B, (n) => { throw new NotImplementedException(); }},
 
         // BIT 3,H: Test bit 3 of H
-        {0x5C, (n)=>{throw new NotImplementedException();}},
+        {0x5C, (n) => { throw new NotImplementedException(); }},
 
         // BIT 3,L: Test bit 3 of L
-        {0x5D, (n)=>{throw new NotImplementedException();}},
+        {0x5D, (n) => { throw new NotImplementedException(); }},
 
         // BIT 3,(HL): Test bit 3 of value pointed by HL
-        {0x5E, (n)=>{throw new NotImplementedException();}},
+        {0x5E, (n) => { throw new NotImplementedException(); }},
 
         // BIT 3,A: Test bit 3 of A
-        {0x5F, (n)=>{throw new NotImplementedException();}},
+        {0x5F, (n) => { throw new NotImplementedException(); }},
 
         // BIT 4,B: Test bit 4 of B
-        {0x60, (n)=>{throw new NotImplementedException();}},
+        {0x60, (n) => { throw new NotImplementedException(); }},
 
         // BIT 4,C: Test bit 4 of C
-        {0x61, (n)=>{throw new NotImplementedException();}},
+        {0x61, (n) => { throw new NotImplementedException(); }},
 
         // BIT 4,D: Test bit 4 of D
-        {0x62, (n)=>{throw new NotImplementedException();}},
+        {0x62, (n) => { throw new NotImplementedException(); }},
 
         // BIT 4,E: Test bit 4 of E
-        {0x63, (n)=>{throw new NotImplementedException();}},
+        {0x63, (n) => { throw new NotImplementedException(); }},
 
         // BIT 4,H: Test bit 4 of H
-        {0x64, (n)=>{throw new NotImplementedException();}},
+        {0x64, (n) => { throw new NotImplementedException(); }},
 
         // BIT 4,L: Test bit 4 of L
-        {0x65, (n)=>{throw new NotImplementedException();}},
+        {0x65, (n) => { throw new NotImplementedException(); }},
 
         // BIT 4,(HL): Test bit 4 of value pointed by HL
-        {0x66, (n)=>{throw new NotImplementedException();}},
+        {0x66, (n) => { throw new NotImplementedException(); }},
 
         // BIT 4,A: Test bit 4 of A
-        {0x67, (n)=>{throw new NotImplementedException();}},
+        {0x67, (n) => { throw new NotImplementedException(); }},
 
         // BIT 5,B: Test bit 5 of B
-        {0x68, (n)=>{throw new NotImplementedException();}},
+        {0x68, (n) => { throw new NotImplementedException(); }},
 
         // BIT 5,C: Test bit 5 of C
-        {0x69, (n)=>{throw new NotImplementedException();}},
+        {0x69, (n) => { throw new NotImplementedException(); }},
 
         // BIT 5,D: Test bit 5 of D
-        {0x6A, (n)=>{throw new NotImplementedException();}},
+        {0x6A, (n) => { throw new NotImplementedException(); }},
 
         // BIT 5,E: Test bit 5 of E
-        {0x6B, (n)=>{throw new NotImplementedException();}},
+        {0x6B, (n) => { throw new NotImplementedException(); }},
 
         // BIT 5,H: Test bit 5 of H
-        {0x6C, (n)=>{throw new NotImplementedException();}},
+        {0x6C, (n) => { throw new NotImplementedException(); }},
 
         // BIT 5,L: Test bit 5 of L
-        {0x6D, (n)=>{throw new NotImplementedException();}},
+        {0x6D, (n) => { throw new NotImplementedException(); }},
 
         // BIT 5,(HL): Test bit 5 of value pointed by HL
-        {0x6E, (n)=>{throw new NotImplementedException();}},
+        {0x6E, (n) => { throw new NotImplementedException(); }},
 
         // BIT 5,A: Test bit 5 of A
-        {0x6F, (n)=>{throw new NotImplementedException();}},
+        {0x6F, (n) => { throw new NotImplementedException(); }},
 
         // BIT 6,B: Test bit 6 of B
-        {0x70, (n)=>{throw new NotImplementedException();}},
+        {0x70, (n) => { throw new NotImplementedException(); }},
 
         // BIT 6,C: Test bit 6 of C
-        {0x71, (n)=>{throw new NotImplementedException();}},
+        {0x71, (n) => { throw new NotImplementedException(); }},
 
         // BIT 6,D: Test bit 6 of D
-        {0x72, (n)=>{throw new NotImplementedException();}},
+        {0x72, (n) => { throw new NotImplementedException(); }},
 
         // BIT 6,E: Test bit 6 of E
-        {0x73, (n)=>{throw new NotImplementedException();}},
+        {0x73, (n) => { throw new NotImplementedException(); }},
 
         // BIT 6,H: Test bit 6 of H
-        {0x74, (n)=>{throw new NotImplementedException();}},
+        {0x74, (n) => { throw new NotImplementedException(); }},
 
         // BIT 6,L: Test bit 6 of L
-        {0x75, (n)=>{throw new NotImplementedException();}},
+        {0x75, (n) => { throw new NotImplementedException(); }},
 
         // BIT 6,(HL): Test bit 6 of value pointed by HL
-        {0x76, (n)=>{throw new NotImplementedException();}},
+        {0x76, (n) => { throw new NotImplementedException(); }},
 
         // BIT 6,A: Test bit 6 of A
-        {0x77, (n)=>{throw new NotImplementedException();}},
+        {0x77, (n) => { throw new NotImplementedException(); }},
 
         // BIT 7,B: Test bit 7 of B
-        {0x78, (n)=>{throw new NotImplementedException();}},
+        {0x78, (n) => { throw new NotImplementedException(); }},
 
         // BIT 7,C: Test bit 7 of C
-        {0x79, (n)=>{throw new NotImplementedException();}},
+        {0x79, (n) => { throw new NotImplementedException(); }},
 
         // BIT 7,D: Test bit 7 of D
-        {0x7A, (n)=>{throw new NotImplementedException();}},
+        {0x7A, (n) => { throw new NotImplementedException(); }},
 
         // BIT 7,E: Test bit 7 of E
-        {0x7B, (n)=>{throw new NotImplementedException();}},
+        {0x7B, (n) => { throw new NotImplementedException(); }},
 
         // BIT 7,H: Test bit 7 of H
-        {0x7C, (n)=>{throw new NotImplementedException();}},
+        {0x7C, (n) => { throw new NotImplementedException(); }},
 
         // BIT 7,L: Test bit 7 of L
-        {0x7D, (n)=>{throw new NotImplementedException();}},
+        {0x7D, (n) => { throw new NotImplementedException(); }},
 
         // BIT 7,(HL): Test bit 7 of value pointed by HL
-        {0x7E, (n)=>{throw new NotImplementedException();}},
+        {0x7E, (n) => { throw new NotImplementedException(); }},
 
         // BIT 7,A: Test bit 7 of A
-        {0x7F, (n)=>{throw new NotImplementedException();}},
+        {0x7F, (n) => { throw new NotImplementedException(); }},
 
         // RES 0,B: Clear (reset) bit 0 of B
-        {0x80, (n)=>{throw new NotImplementedException();}},
+        {0x80, (n) => { registers.B = UtilFuncs.ClearBit(registers.B, 0); }},
 
         // RES 0,C: Clear (reset) bit 0 of C
-        {0x81, (n)=>{throw new NotImplementedException();}},
+        {0x81, (n) => { registers.C = UtilFuncs.ClearBit(registers.C, 0); }},
 
         // RES 0,D: Clear (reset) bit 0 of D
-        {0x82, (n)=>{throw new NotImplementedException();}},
+        {0x82, (n) => { registers.D = UtilFuncs.ClearBit(registers.D, 0); }},
 
         // RES 0,E: Clear (reset) bit 0 of E
-        {0x83, (n)=>{throw new NotImplementedException();}},
+        {0x83, (n) => { registers.E = UtilFuncs.ClearBit(registers.E, 0); }},
 
         // RES 0,H: Clear (reset) bit 0 of H
-        {0x84, (n)=>{throw new NotImplementedException();}},
+        {0x84, (n) => { registers.H = UtilFuncs.ClearBit(registers.H, 0); }},
 
         // RES 0,L: Clear (reset) bit 0 of L
-        {0x85, (n)=>{throw new NotImplementedException();}},
+        {0x85, (n) => { registers.L = UtilFuncs.ClearBit(registers.L, 0); }},
 
         // RES 0,(HL): Clear (reset) bit 0 of value pointed by HL
-        {0x86, (n)=>{throw new NotImplementedException();}},
+        {0x86, (n) => { memory.Write(registers.HL,  UtilFuncs.ClearBit(memory.Read(registers.HL), 0)); }},
 
         // RES 0,A: Clear (reset) bit 0 of A
-        {0x87, (n)=>{throw new NotImplementedException();}},
+        {0x87, (n) => { registers.A = UtilFuncs.ClearBit(registers.A, 0); }},
 
         // RES 1,B: Clear (reset) bit 1 of B
-        {0x88, (n)=>{throw new NotImplementedException();}},
+        {0x88, (n) => { throw new NotImplementedException(); }},
 
         // RES 1,C: Clear (reset) bit 1 of C
-        {0x89, (n)=>{throw new NotImplementedException();}},
+        {0x89, (n) => { throw new NotImplementedException(); }},
 
         // RES 1,D: Clear (reset) bit 1 of D
-        {0x8A, (n)=>{throw new NotImplementedException();}},
+        {0x8A, (n) => { throw new NotImplementedException(); }},
 
         // RES 1,E: Clear (reset) bit 1 of E
-        {0x8B, (n)=>{throw new NotImplementedException();}},
+        {0x8B, (n) => { throw new NotImplementedException(); }},
 
         // RES 1,H: Clear (reset) bit 1 of H
-        {0x8C, (n)=>{throw new NotImplementedException();}},
+        {0x8C, (n) => { throw new NotImplementedException(); }},
 
         // RES 1,L: Clear (reset) bit 1 of L
-        {0x8D, (n)=>{throw new NotImplementedException();}},
+        {0x8D, (n) => { throw new NotImplementedException(); }},
 
         // RES 1,(HL): Clear (reset) bit 1 of value pointed by HL
-        {0x8E, (n)=>{throw new NotImplementedException();}},
+        {0x8E, (n) => { throw new NotImplementedException(); }},
 
         // RES 1,A: Clear (reset) bit 1 of A
-        {0x8F, (n)=>{throw new NotImplementedException();}},
+        {0x8F, (n) => { throw new NotImplementedException(); }},
 
         // RES 2,B: Clear (reset) bit 2 of B
-        {0x90, (n)=>{throw new NotImplementedException();}},
+        {0x90, (n) => { throw new NotImplementedException(); }},
 
         // RES 2,C: Clear (reset) bit 2 of C
-        {0x91, (n)=>{throw new NotImplementedException();}},
+        {0x91, (n) => { throw new NotImplementedException(); }},
 
         // RES 2,D: Clear (reset) bit 2 of D
-        {0x92, (n)=>{throw new NotImplementedException();}},
+        {0x92, (n) => { throw new NotImplementedException(); }},
 
         // RES 2,E: Clear (reset) bit 2 of E
-        {0x93, (n)=>{throw new NotImplementedException();}},
+        {0x93, (n) => { throw new NotImplementedException(); }},
 
         // RES 2,H: Clear (reset) bit 2 of H
-        {0x94, (n)=>{throw new NotImplementedException();}},
+        {0x94, (n) => { throw new NotImplementedException(); }},
 
         // RES 2,L: Clear (reset) bit 2 of L
-        {0x95, (n)=>{throw new NotImplementedException();}},
+        {0x95, (n) => { throw new NotImplementedException(); }},
 
         // RES 2,(HL): Clear (reset) bit 2 of value pointed by HL
-        {0x96, (n)=>{throw new NotImplementedException();}},
+        {0x96, (n) => { throw new NotImplementedException(); }},
 
         // RES 2,A: Clear (reset) bit 2 of A
-        {0x97, (n)=>{throw new NotImplementedException();}},
+        {0x97, (n) => { throw new NotImplementedException(); }},
 
         // RES 3,B: Clear (reset) bit 3 of B
-        {0x98, (n)=>{throw new NotImplementedException();}},
+        {0x98, (n) => { throw new NotImplementedException(); }},
 
         // RES 3,C: Clear (reset) bit 3 of C
-        {0x99, (n)=>{throw new NotImplementedException();}},
+        {0x99, (n) => { throw new NotImplementedException(); }},
 
         // RES 3,D: Clear (reset) bit 3 of D
-        {0x9A, (n)=>{throw new NotImplementedException();}},
+        {0x9A, (n) => { throw new NotImplementedException(); }},
 
         // RES 3,E: Clear (reset) bit 3 of E
-        {0x9B, (n)=>{throw new NotImplementedException();}},
+        {0x9B, (n) => { throw new NotImplementedException(); }},
 
         // RES 3,H: Clear (reset) bit 3 of H
-        {0x9C, (n)=>{throw new NotImplementedException();}},
+        {0x9C, (n) => { throw new NotImplementedException(); }},
 
         // RES 3,L: Clear (reset) bit 3 of L
-        {0x9D, (n)=>{throw new NotImplementedException();}},
+        {0x9D, (n) => { throw new NotImplementedException(); }},
 
         // RES 3,(HL): Clear (reset) bit 3 of value pointed by HL
-        {0x9E, (n)=>{throw new NotImplementedException();}},
+        {0x9E, (n) => { throw new NotImplementedException(); }},
 
         // RES 3,A: Clear (reset) bit 3 of A
-        {0x9F, (n)=>{throw new NotImplementedException();}},
+        {0x9F, (n) => { throw new NotImplementedException(); }},
 
         // RES 4,B: Clear (reset) bit 4 of B
-        {0xA0, (n)=>{throw new NotImplementedException();}},
+        {0xA0, (n) => { throw new NotImplementedException(); }},
 
         // RES 4,C: Clear (reset) bit 4 of C
-        {0xA1, (n)=>{throw new NotImplementedException();}},
+        {0xA1, (n) => { throw new NotImplementedException(); }},
 
         // RES 4,D: Clear (reset) bit 4 of D
-        {0xA2, (n)=>{throw new NotImplementedException();}},
+        {0xA2, (n) => { throw new NotImplementedException(); }},
 
         // RES 4,E: Clear (reset) bit 4 of E
-        {0xA3, (n)=>{throw new NotImplementedException();}},
+        {0xA3, (n) => { throw new NotImplementedException(); }},
 
         // RES 4,H: Clear (reset) bit 4 of H
-        {0xA4, (n)=>{throw new NotImplementedException();}},
+        {0xA4, (n) => { throw new NotImplementedException(); }},
 
         // RES 4,L: Clear (reset) bit 4 of L
-        {0xA5, (n)=>{throw new NotImplementedException();}},
+        {0xA5, (n) => { throw new NotImplementedException(); }},
 
         // RES 4,(HL): Clear (reset) bit 4 of value pointed by HL
-        {0xA6, (n)=>{throw new NotImplementedException();}},
+        {0xA6, (n) => { throw new NotImplementedException(); }},
 
         // RES 4,A: Clear (reset) bit 4 of A
-        {0xA7, (n)=>{throw new NotImplementedException();}},
+        {0xA7, (n) => { throw new NotImplementedException(); }},
 
         // RES 5,B: Clear (reset) bit 5 of B
-        {0xA8, (n)=>{throw new NotImplementedException();}},
+        {0xA8, (n) => { throw new NotImplementedException(); }},
 
         // RES 5,C: Clear (reset) bit 5 of C
-        {0xA9, (n)=>{throw new NotImplementedException();}},
+        {0xA9, (n) => { throw new NotImplementedException(); }},
 
         // RES 5,D: Clear (reset) bit 5 of D
-        {0xAA, (n)=>{throw new NotImplementedException();}},
+        {0xAA, (n) => { throw new NotImplementedException(); }},
 
         // RES 5,E: Clear (reset) bit 5 of E
-        {0xAB, (n)=>{throw new NotImplementedException();}},
+        {0xAB, (n) => { throw new NotImplementedException(); }},
 
         // RES 5,H: Clear (reset) bit 5 of H
-        {0xAC, (n)=>{throw new NotImplementedException();}},
+        {0xAC, (n) => { throw new NotImplementedException(); }},
 
         // RES 5,L: Clear (reset) bit 5 of L
-        {0xAD, (n)=>{throw new NotImplementedException();}},
+        {0xAD, (n) => { throw new NotImplementedException(); }},
 
         // RES 5,(HL): Clear (reset) bit 5 of value pointed by HL
-        {0xAE, (n)=>{throw new NotImplementedException();}},
+        {0xAE, (n) => { throw new NotImplementedException(); }},
 
         // RES 5,A: Clear (reset) bit 5 of A
-        {0xAF, (n)=>{throw new NotImplementedException();}},
+        {0xAF, (n) => { throw new NotImplementedException(); }},
 
         // RES 6,B: Clear (reset) bit 6 of B
-        {0xB0, (n)=>{throw new NotImplementedException();}},
+        {0xB0, (n) => { throw new NotImplementedException(); }},
 
         // RES 6,C: Clear (reset) bit 6 of C
-        {0xB1, (n)=>{throw new NotImplementedException();}},
+        {0xB1, (n) => { throw new NotImplementedException(); }},
 
         // RES 6,D: Clear (reset) bit 6 of D
-        {0xB2, (n)=>{throw new NotImplementedException();}},
+        {0xB2, (n) => { throw new NotImplementedException(); }},
 
         // RES 6,E: Clear (reset) bit 6 of E
-        {0xB3, (n)=>{throw new NotImplementedException();}},
+        {0xB3, (n) => { throw new NotImplementedException(); }},
 
         // RES 6,H: Clear (reset) bit 6 of H
-        {0xB4, (n)=>{throw new NotImplementedException();}},
+        {0xB4, (n) => { throw new NotImplementedException(); }},
 
         // RES 6,L: Clear (reset) bit 6 of L
-        {0xB5, (n)=>{throw new NotImplementedException();}},
+        {0xB5, (n) => { throw new NotImplementedException(); }},
 
         // RES 6,(HL): Clear (reset) bit 6 of value pointed by HL
-        {0xB6, (n)=>{throw new NotImplementedException();}},
+        {0xB6, (n) => { throw new NotImplementedException(); }},
 
         // RES 6,A: Clear (reset) bit 6 of A
-        {0xB7, (n)=>{throw new NotImplementedException();}},
+        {0xB7, (n) => { throw new NotImplementedException(); }},
 
         // RES 7,B: Clear (reset) bit 7 of B
-        {0xB8, (n)=>{throw new NotImplementedException();}},
+        {0xB8, (n) => { throw new NotImplementedException(); }},
 
         // RES 7,C: Clear (reset) bit 7 of C
-        {0xB9, (n)=>{throw new NotImplementedException();}},
+        {0xB9, (n) => { throw new NotImplementedException(); }},
 
         // RES 7,D: Clear (reset) bit 7 of D
-        {0xBA, (n)=>{throw new NotImplementedException();}},
+        {0xBA, (n) => { throw new NotImplementedException(); }},
 
         // RES 7,E: Clear (reset) bit 7 of E
-        {0xBB, (n)=>{throw new NotImplementedException();}},
+        {0xBB, (n) => { throw new NotImplementedException(); }},
 
         // RES 7,H: Clear (reset) bit 7 of H
-        {0xBC, (n)=>{throw new NotImplementedException();}},
+        {0xBC, (n) => { throw new NotImplementedException(); }},
 
         // RES 7,L: Clear (reset) bit 7 of L
-        {0xBD, (n)=>{throw new NotImplementedException();}},
+        {0xBD, (n) => { throw new NotImplementedException(); }},
 
         // RES 7,(HL): Clear (reset) bit 7 of value pointed by HL
-        {0xBE, (n)=>{throw new NotImplementedException();}},
+        {0xBE, (n) => { throw new NotImplementedException(); }},
 
         // RES 7,A: Clear (reset) bit 7 of A
-        {0xBF, (n)=>{throw new NotImplementedException();}},
+        {0xBF, (n) => { throw new NotImplementedException(); }},
 
         // SET 0,B: Set bit 0 of B
-        {0xC0, (n)=>{throw new NotImplementedException();}},
+        {0xC0, (n) => { throw new NotImplementedException(); }},
 
         // SET 0,C: Set bit 0 of C
-        {0xC1, (n)=>{throw new NotImplementedException();}},
+        {0xC1, (n) => { throw new NotImplementedException(); }},
 
         // SET 0,D: Set bit 0 of D
-        {0xC2, (n)=>{throw new NotImplementedException();}},
+        {0xC2, (n) => { throw new NotImplementedException(); }},
 
         // SET 0,E: Set bit 0 of E
-        {0xC3, (n)=>{throw new NotImplementedException();}},
+        {0xC3, (n) => { throw new NotImplementedException(); }},
 
         // SET 0,H: Set bit 0 of H
-        {0xC4, (n)=>{throw new NotImplementedException();}},
+        {0xC4, (n) => { throw new NotImplementedException(); }},
 
         // SET 0,L: Set bit 0 of L
-        {0xC5, (n)=>{throw new NotImplementedException();}},
+        {0xC5, (n) => { throw new NotImplementedException(); }},
 
         // SET 0,(HL): Set bit 0 of value pointed by HL
-        {0xC6, (n)=>{throw new NotImplementedException();}},
+        {0xC6, (n) => { throw new NotImplementedException(); }},
 
         // SET 0,A: Set bit 0 of A
-        {0xC7, (n)=>{throw new NotImplementedException();}},
+        {0xC7, (n) => { throw new NotImplementedException(); }},
 
         // SET 1,B: Set bit 1 of B
-        {0xC8, (n)=>{throw new NotImplementedException();}},
+        {0xC8, (n) => { throw new NotImplementedException(); }},
 
         // SET 1,C: Set bit 1 of C
-        {0xC9, (n)=>{throw new NotImplementedException();}},
+        {0xC9, (n) => { throw new NotImplementedException(); }},
 
         // SET 1,D: Set bit 1 of D
-        {0xCA, (n)=>{throw new NotImplementedException();}},
+        {0xCA, (n) => { throw new NotImplementedException(); }},
 
         // SET 1,E: Set bit 1 of E
-        {0xCB, (n)=>{throw new NotImplementedException();}},
+        {0xCB, (n) => { throw new NotImplementedException(); }},
 
         // SET 1,H: Set bit 1 of H
-        {0xCC, (n)=>{throw new NotImplementedException();}},
+        {0xCC, (n) => { throw new NotImplementedException(); }},
 
         // SET 1,L: Set bit 1 of L
-        {0xCD, (n)=>{throw new NotImplementedException();}},
+        {0xCD, (n) => { throw new NotImplementedException(); }},
 
         // SET 1,(HL): Set bit 1 of value pointed by HL
-        {0xCE, (n)=>{throw new NotImplementedException();}},
+        {0xCE, (n) => { throw new NotImplementedException(); }},
 
         // SET 1,A: Set bit 1 of A
-        {0xCF, (n)=>{throw new NotImplementedException();}},
+        {0xCF, (n) => { throw new NotImplementedException(); }},
 
         // SET 2,B: Set bit 2 of B
-        {0xD0, (n)=>{throw new NotImplementedException();}},
+        {0xD0, (n) => { throw new NotImplementedException(); }},
 
         // SET 2,C: Set bit 2 of C
-        {0xD1, (n)=>{throw new NotImplementedException();}},
+        {0xD1, (n) => { throw new NotImplementedException(); }},
 
         // SET 2,D: Set bit 2 of D
-        {0xD2, (n)=>{throw new NotImplementedException();}},
+        {0xD2, (n) => { throw new NotImplementedException(); }},
 
         // SET 2,E: Set bit 2 of E
-        {0xD3, (n)=>{throw new NotImplementedException();}},
+        {0xD3, (n) => { throw new NotImplementedException(); }},
 
         // SET 2,H: Set bit 2 of H
-        {0xD4, (n)=>{throw new NotImplementedException();}},
+        {0xD4, (n) => { throw new NotImplementedException(); }},
 
         // SET 2,L: Set bit 2 of L
-        {0xD5, (n)=>{throw new NotImplementedException();}},
+        {0xD5, (n) => { throw new NotImplementedException(); }},
 
         // SET 2,(HL): Set bit 2 of value pointed by HL
-        {0xD6, (n)=>{throw new NotImplementedException();}},
+        {0xD6, (n) => { throw new NotImplementedException(); }},
 
         // SET 2,A: Set bit 2 of A
-        {0xD7, (n)=>{throw new NotImplementedException();}},
+        {0xD7, (n) => { throw new NotImplementedException(); }},
 
         // SET 3,B: Set bit 3 of B
-        {0xD8, (n)=>{throw new NotImplementedException();}},
+        {0xD8, (n) => { throw new NotImplementedException(); }},
 
         // SET 3,C: Set bit 3 of C
-        {0xD9, (n)=>{throw new NotImplementedException();}},
+        {0xD9, (n) => { throw new NotImplementedException(); }},
 
         // SET 3,D: Set bit 3 of D
-        {0xDA, (n)=>{throw new NotImplementedException();}},
+        {0xDA, (n) => { throw new NotImplementedException(); }},
 
         // SET 3,E: Set bit 3 of E
-        {0xDB, (n)=>{throw new NotImplementedException();}},
+        {0xDB, (n) => { throw new NotImplementedException(); }},
 
         // SET 3,H: Set bit 3 of H
-        {0xDC, (n)=>{throw new NotImplementedException();}},
+        {0xDC, (n) => { throw new NotImplementedException(); }},
 
         // SET 3,L: Set bit 3 of L
-        {0xDD, (n)=>{throw new NotImplementedException();}},
+        {0xDD, (n) => { throw new NotImplementedException(); }},
 
         // SET 3,(HL): Set bit 3 of value pointed by HL
-        {0xDE, (n)=>{throw new NotImplementedException();}},
+        {0xDE, (n) => { throw new NotImplementedException(); }},
 
         // SET 3,A: Set bit 3 of A
-        {0xDF, (n)=>{throw new NotImplementedException();}},
+        {0xDF, (n) => { throw new NotImplementedException(); }},
 
         // SET 4,B: Set bit 4 of B
-        {0xE0, (n)=>{throw new NotImplementedException();}},
+        {0xE0, (n) => { throw new NotImplementedException(); }},
 
         // SET 4,C: Set bit 4 of C
-        {0xE1, (n)=>{throw new NotImplementedException();}},
+        {0xE1, (n) => { throw new NotImplementedException(); }},
 
         // SET 4,D: Set bit 4 of D
-        {0xE2, (n)=>{throw new NotImplementedException();}},
+        {0xE2, (n) => { throw new NotImplementedException(); }},
 
         // SET 4,E: Set bit 4 of E
-        {0xE3, (n)=>{throw new NotImplementedException();}},
+        {0xE3, (n) => { throw new NotImplementedException(); }},
 
         // SET 4,H: Set bit 4 of H
-        {0xE4, (n)=>{throw new NotImplementedException();}},
+        {0xE4, (n) => { throw new NotImplementedException(); }},
 
         // SET 4,L: Set bit 4 of L
-        {0xE5, (n)=>{throw new NotImplementedException();}},
+        {0xE5, (n) => { throw new NotImplementedException(); }},
 
         // SET 4,(HL): Set bit 4 of value pointed by HL
-        {0xE6, (n)=>{throw new NotImplementedException();}},
+        {0xE6, (n) => { throw new NotImplementedException(); }},
 
         // SET 4,A: Set bit 4 of A
-        {0xE7, (n)=>{throw new NotImplementedException();}},
+        {0xE7, (n) => { throw new NotImplementedException(); }},
 
         // SET 5,B: Set bit 5 of B
-        {0xE8, (n)=>{throw new NotImplementedException();}},
+        {0xE8, (n) => { throw new NotImplementedException(); }},
 
         // SET 5,C: Set bit 5 of C
-        {0xE9, (n)=>{throw new NotImplementedException();}},
+        {0xE9, (n) => { throw new NotImplementedException(); }},
 
         // SET 5,D: Set bit 5 of D
-        {0xEA, (n)=>{throw new NotImplementedException();}},
+        {0xEA, (n) => { throw new NotImplementedException(); }},
 
         // SET 5,E: Set bit 5 of E
-        {0xEB, (n)=>{throw new NotImplementedException();}},
+        {0xEB, (n) => { throw new NotImplementedException(); }},
 
         // SET 5,H: Set bit 5 of H
-        {0xEC, (n)=>{throw new NotImplementedException();}},
+        {0xEC, (n) => { throw new NotImplementedException(); }},
 
         // SET 5,L: Set bit 5 of L
-        {0xED, (n)=>{throw new NotImplementedException();}},
+        {0xED, (n) => { throw new NotImplementedException(); }},
 
         // SET 5,(HL): Set bit 5 of value pointed by HL
-        {0xEE, (n)=>{throw new NotImplementedException();}},
+        {0xEE, (n) => { throw new NotImplementedException(); }},
 
         // SET 5,A: Set bit 5 of A
-        {0xEF, (n)=>{throw new NotImplementedException();}},
+        {0xEF, (n) => { throw new NotImplementedException(); }},
 
         // SET 6,B: Set bit 6 of B
-        {0xF0, (n)=>{throw new NotImplementedException();}},
+        {0xF0, (n) => { throw new NotImplementedException(); }},
 
         // SET 6,C: Set bit 6 of C
-        {0xF1, (n)=>{throw new NotImplementedException();}},
+        {0xF1, (n) => { throw new NotImplementedException(); }},
 
         // SET 6,D: Set bit 6 of D
-        {0xF2, (n)=>{throw new NotImplementedException();}},
+        {0xF2, (n) => { throw new NotImplementedException(); }},
 
         // SET 6,E: Set bit 6 of E
-        {0xF3, (n)=>{throw new NotImplementedException();}},
+        {0xF3, (n) => { throw new NotImplementedException(); }},
 
         // SET 6,H: Set bit 6 of H
-        {0xF4, (n)=>{throw new NotImplementedException();}},
+        {0xF4, (n) => { throw new NotImplementedException(); }},
 
         // SET 6,L: Set bit 6 of L
-        {0xF5, (n)=>{throw new NotImplementedException();}},
+        {0xF5, (n) => { throw new NotImplementedException(); }},
 
         // SET 6,(HL): Set bit 6 of value pointed by HL
-        {0xF6, (n)=>{throw new NotImplementedException();}},
+        {0xF6, (n) => { throw new NotImplementedException(); }},
 
         // SET 6,A: Set bit 6 of A
-        {0xF7, (n)=>{throw new NotImplementedException();}},
+        {0xF7, (n) => { throw new NotImplementedException(); }},
 
         // SET 7,B: Set bit 7 of B
-        {0xF8, (n)=>{throw new NotImplementedException();}},
+        {0xF8, (n) => { throw new NotImplementedException(); }},
 
         // SET 7,C: Set bit 7 of C
-        {0xF9, (n)=>{throw new NotImplementedException();}},
+        {0xF9, (n) => { throw new NotImplementedException(); }},
 
         // SET 7,D: Set bit 7 of D
-        {0xFA, (n)=>{throw new NotImplementedException();}},
+        {0xFA, (n) => { throw new NotImplementedException(); }},
 
         // SET 7,E: Set bit 7 of E
-        {0xFB, (n)=>{throw new NotImplementedException();}},
+        {0xFB, (n) => { throw new NotImplementedException(); }},
 
         // SET 7,H: Set bit 7 of H
-        {0xFC, (n)=>{throw new NotImplementedException();}},
+        {0xFC, (n) => { throw new NotImplementedException(); }},
 
         // SET 7,L: Set bit 7 of L
-        {0xFD, (n)=>{throw new NotImplementedException();}},
+        {0xFD, (n) => { throw new NotImplementedException(); }},
 
         // SET 7,(HL): Set bit 7 of value pointed by HL
-        {0xFE, (n)=>{throw new NotImplementedException();}},
+        {0xFE, (n) => { throw new NotImplementedException(); }},
 
         // SET 7,A: Set bit 7 of A
-        {0xFF, (n)=>{throw new NotImplementedException();}}
-        };
+        {0xFF, (n) => { throw new NotImplementedException(); }}
+      };
+    }
 
     #endregion
 
     public CPU(Memory.Memory memory)
     {
+      //Create Instruction Lambdas
+      CreateInstructionLambdas();
+      CreateCBInstructionLambdas();
+
       // Magic CPU initial values (after bios execution).
       this.registers.BC = 0x0013;
       this.registers.DE = 0x00D8;
