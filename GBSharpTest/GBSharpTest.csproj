@@ -51,6 +51,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="GameBoyTests.cs" />
+    <Compile Include="Memory\MemoryHandlers\RomOnlyMemoryHandlerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
