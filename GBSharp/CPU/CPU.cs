@@ -2238,28 +2238,28 @@ namespace GBSharp.CPU
         {0x87, (n) => { registers.A = UtilFuncs.ClearBit(registers.A, 0); }},
 
         // RES 1,B: Clear (reset) bit 1 of B
-        {0x88, (n) => { throw new NotImplementedException(); }},
+        {0x88, (n) => { registers.B = UtilFuncs.ClearBit(registers.B, 1); }},
 
         // RES 1,C: Clear (reset) bit 1 of C
-        {0x89, (n) => { throw new NotImplementedException(); }},
+        {0x89, (n) => { registers.C = UtilFuncs.ClearBit(registers.C, 1); }},
 
         // RES 1,D: Clear (reset) bit 1 of D
-        {0x8A, (n) => { throw new NotImplementedException(); }},
+        {0x8A, (n) => { registers.D = UtilFuncs.ClearBit(registers.D, 1); }},
 
         // RES 1,E: Clear (reset) bit 1 of E
-        {0x8B, (n) => { throw new NotImplementedException(); }},
+        {0x8B, (n) => { registers.E = UtilFuncs.ClearBit(registers.E, 1); }},
 
         // RES 1,H: Clear (reset) bit 1 of H
-        {0x8C, (n) => { throw new NotImplementedException(); }},
+        {0x8C, (n) => { registers.H = UtilFuncs.ClearBit(registers.H, 1); }},
 
         // RES 1,L: Clear (reset) bit 1 of L
-        {0x8D, (n) => { throw new NotImplementedException(); }},
+        {0x8D, (n) => { registers.L = UtilFuncs.ClearBit(registers.L, 1); }},
 
         // RES 1,(HL): Clear (reset) bit 1 of value pointed by HL
-        {0x8E, (n) => { throw new NotImplementedException(); }},
+        {0x8E, (n) => { memory.Write(registers.HL,  UtilFuncs.ClearBit(memory.Read(registers.HL), 1)); }},
 
         // RES 1,A: Clear (reset) bit 1 of A
-        {0x8F, (n) => { throw new NotImplementedException(); }},
+        {0x8F, (n) => { registers.A = UtilFuncs.ClearBit(registers.A, 1); }},
 
         // RES 2,B: Clear (reset) bit 2 of B
         {0x90, (n) => { throw new NotImplementedException(); }},
