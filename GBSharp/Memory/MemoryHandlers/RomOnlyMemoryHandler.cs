@@ -11,21 +11,26 @@ namespace GBSharp.Memory.MemoryHandlers
     /// It is 32 kB of size and the mapping spans from the addresses
     /// 0x0000 to 0x7FFF.
     /// </summary>
-    class RomOnlyMemoryHandler : MemoryHandler
+    public class RomOnlyMemoryHandler : MemoryHandler
     {
         public RomOnlyMemoryHandler(GBSharp.Catridge.Cartridge cartridge)
             : base(cartridge)
         {
+        }
+
+        public override void LoadInternalMemory(byte[] data)
+        {
+            base.LoadInternalMemory(data);
             // We copy the ROM areas to the internal memory of the GB
             ushort min = 0x0000;
             ushort max = 0x7FFF;
 
             // TODO(Cristián): Perform fast memory copy
-            for(ushort i = min;
+            for (ushort i = min;
                 i < max;
                 i++)
             {
-                internalMemory[i] = cartridge.Data[i];
+                internalMemory[i] = this.cartridge.Data[i];
             }
         }
 

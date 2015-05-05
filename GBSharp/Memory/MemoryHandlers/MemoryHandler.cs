@@ -13,14 +13,12 @@ namespace GBSharp.Memory.MemoryHandlers
     /// catdridges handle memory mapping and storing in
     /// different ways, but should be transparent to the CPU.
     /// </summary>
-    abstract class MemoryHandler
+    public abstract class MemoryHandler
     {
         #region ATTRIBUTES
 
         protected byte[] internalMemory;
-        protected Cartridge catdridge;
-
-        #region ADDRESS VERIFICATION
+        protected Cartridge cartridge;
 
         /// <summary>
         /// The minimum address that is addressable for
@@ -33,30 +31,36 @@ namespace GBSharp.Memory.MemoryHandlers
         /// </summary>
         protected ushort maxAddress = 0xFFFF;
 
-        /// <summary>
-        /// Validates that the address given is within the 
-        /// valid range for the memory manager. The range
-        /// is defined with the minAddress and maxAddress
-        /// variables
-        /// </summary>
-        /// <param name="address"></param>
-        protected void ValidateAddress(ushort address)
-        {
-            throw new NotImplementedException();
-        }
-
-        #endregion
-
         #endregion
 
         #region CONSTRUCTORS
 
         public MemoryHandler(Cartridge cartridge)
         {
-            this.catdridge = cartridge;
+            this.cartridge = cartridge;
         }
 
         #endregion
+
+        #region PROTECTED METHODS
+
+        /// <summary>
+        /// Validates that the address given is within the 
+        /// valid range for the memory manager. The range
+        /// is defined with the minAddress and maxAddress
+        /// variables
+        /// </summary>
+        /// <param name="address">A 16 bit address</param>
+        protected void ValidateAddress(ushort address)
+        {
+          if (address < minAddress || maxAddress < address)
+          {
+            throw new ArgumentOutOfRangeException();
+          }
+        }
+
+        #endregion
+
 
         #region PUBLIC METHODS
 
@@ -102,6 +106,11 @@ namespace GBSharp.Memory.MemoryHandlers
         #endregion
 
         #region ABSTRACT METHODS
+
+        public virtual void LoadInternalMemory(byte[] data)
+        {
+            this.internalMemory = data;
+        }
 
         /// <summary>
         /// Writes 8 bits value to memory according to
