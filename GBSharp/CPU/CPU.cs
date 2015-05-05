@@ -2286,316 +2286,316 @@ namespace GBSharp.CPU
         {0x97, (n) => { registers.A = UtilFuncs.ClearBit(registers.A, 2); }},
 
         // RES 3,B: Clear (reset) bit 3 of B
-        {0x98, (n) => { throw new NotImplementedException(); }},
+        {0x98, (n) => { registers.B = UtilFuncs.ClearBit(registers.B, 3); }},
 
         // RES 3,C: Clear (reset) bit 3 of C
-        {0x99, (n) => { throw new NotImplementedException(); }},
+        {0x99, (n) => { registers.C = UtilFuncs.ClearBit(registers.C, 3); }},
 
         // RES 3,D: Clear (reset) bit 3 of D
-        {0x9A, (n) => { throw new NotImplementedException(); }},
+        {0x9A, (n) => { registers.D = UtilFuncs.ClearBit(registers.D, 3); }},
 
         // RES 3,E: Clear (reset) bit 3 of E
-        {0x9B, (n) => { throw new NotImplementedException(); }},
+        {0x9B, (n) => { registers.E = UtilFuncs.ClearBit(registers.E, 3); }},
 
         // RES 3,H: Clear (reset) bit 3 of H
-        {0x9C, (n) => { throw new NotImplementedException(); }},
+        {0x9C, (n) => { registers.H = UtilFuncs.ClearBit(registers.H, 3); }},
 
         // RES 3,L: Clear (reset) bit 3 of L
-        {0x9D, (n) => { throw new NotImplementedException(); }},
+        {0x9D, (n) => { registers.L = UtilFuncs.ClearBit(registers.L, 3); }},
 
         // RES 3,(HL): Clear (reset) bit 3 of value pointed by HL
-        {0x9E, (n) => { throw new NotImplementedException(); }},
+        {0x9E, (n) => { memory.Write(registers.HL,  UtilFuncs.ClearBit(memory.Read(registers.HL), 3)); }},
 
         // RES 3,A: Clear (reset) bit 3 of A
-        {0x9F, (n) => { throw new NotImplementedException(); }},
+        {0x9F, (n) => { registers.A = UtilFuncs.ClearBit(registers.A, 3); }},
 
         // RES 4,B: Clear (reset) bit 4 of B
-        {0xA0, (n) => { throw new NotImplementedException(); }},
+        {0xA0, (n) => { registers.B = UtilFuncs.ClearBit(registers.B, 4); }},
 
         // RES 4,C: Clear (reset) bit 4 of C
-        {0xA1, (n) => { throw new NotImplementedException(); }},
+        {0xA1, (n) => { registers.C = UtilFuncs.ClearBit(registers.C, 4); }},
 
         // RES 4,D: Clear (reset) bit 4 of D
-        {0xA2, (n) => { throw new NotImplementedException(); }},
+        {0xA4, (n) => { registers.D = UtilFuncs.ClearBit(registers.D, 4); }},
 
         // RES 4,E: Clear (reset) bit 4 of E
-        {0xA3, (n) => { throw new NotImplementedException(); }},
+        {0xA5, (n) => { registers.E = UtilFuncs.ClearBit(registers.E, 4); }},
 
         // RES 4,H: Clear (reset) bit 4 of H
-        {0xA4, (n) => { throw new NotImplementedException(); }},
+        {0xA4, (n) => { registers.H = UtilFuncs.ClearBit(registers.H, 4); }},
 
         // RES 4,L: Clear (reset) bit 4 of L
-        {0xA5, (n) => { throw new NotImplementedException(); }},
+        {0xA5, (n) => { registers.L = UtilFuncs.ClearBit(registers.L, 4); }},
 
         // RES 4,(HL): Clear (reset) bit 4 of value pointed by HL
-        {0xA6, (n) => { throw new NotImplementedException(); }},
+        {0xA6, (n) => { memory.Write(registers.HL,  UtilFuncs.ClearBit(memory.Read(registers.HL), 4)); }},
 
         // RES 4,A: Clear (reset) bit 4 of A
-        {0xA7, (n) => { throw new NotImplementedException(); }},
+        {0xA7, (n) => { registers.A = UtilFuncs.ClearBit(registers.A, 4); }},
 
         // RES 5,B: Clear (reset) bit 5 of B
-        {0xA8, (n) => { throw new NotImplementedException(); }},
+        {0xA8, (n) => { registers.B = UtilFuncs.ClearBit(registers.B, 5); }},
 
         // RES 5,C: Clear (reset) bit 5 of C
-        {0xA9, (n) => { throw new NotImplementedException(); }},
+        {0xA9, (n) => { registers.C = UtilFuncs.ClearBit(registers.C, 5); }},
 
         // RES 5,D: Clear (reset) bit 5 of D
-        {0xAA, (n) => { throw new NotImplementedException(); }},
+        {0xAA, (n) => { registers.D = UtilFuncs.ClearBit(registers.D, 5); }},
 
         // RES 5,E: Clear (reset) bit 5 of E
-        {0xAB, (n) => { throw new NotImplementedException(); }},
+        {0xAB, (n) => { registers.E = UtilFuncs.ClearBit(registers.E, 5); }},
 
         // RES 5,H: Clear (reset) bit 5 of H
-        {0xAC, (n) => { throw new NotImplementedException(); }},
+        {0xAC, (n) => { registers.H = UtilFuncs.ClearBit(registers.H, 5); }},
 
         // RES 5,L: Clear (reset) bit 5 of L
-        {0xAD, (n) => { throw new NotImplementedException(); }},
+        {0xAD, (n) => { registers.L = UtilFuncs.ClearBit(registers.L, 5); }},
 
         // RES 5,(HL): Clear (reset) bit 5 of value pointed by HL
-        {0xAE, (n) => { throw new NotImplementedException(); }},
+        {0xAE, (n) => { memory.Write(registers.HL,  UtilFuncs.ClearBit(memory.Read(registers.HL), 5)); }},
 
         // RES 5,A: Clear (reset) bit 5 of A
-        {0xAF, (n) => { throw new NotImplementedException(); }},
+        {0xAF, (n) => { registers.A = UtilFuncs.ClearBit(registers.A, 5); }},
 
         // RES 6,B: Clear (reset) bit 6 of B
-        {0xB0, (n) => { throw new NotImplementedException(); }},
+        {0xB0, (n) => { registers.B = UtilFuncs.ClearBit(registers.B, 6); }},
 
         // RES 6,C: Clear (reset) bit 6 of C
-        {0xB1, (n) => { throw new NotImplementedException(); }},
+        {0xB1, (n) => { registers.C = UtilFuncs.ClearBit(registers.C, 6); }},
 
         // RES 6,D: Clear (reset) bit 6 of D
-        {0xB2, (n) => { throw new NotImplementedException(); }},
+        {0xB6, (n) => { registers.D = UtilFuncs.ClearBit(registers.D, 6); }},
 
         // RES 6,E: Clear (reset) bit 6 of E
-        {0xB3, (n) => { throw new NotImplementedException(); }},
+        {0xB7, (n) => { registers.E = UtilFuncs.ClearBit(registers.E, 6); }},
 
         // RES 6,H: Clear (reset) bit 6 of H
-        {0xB4, (n) => { throw new NotImplementedException(); }},
+        {0xB6, (n) => { registers.H = UtilFuncs.ClearBit(registers.H, 6); }},
 
         // RES 6,L: Clear (reset) bit 6 of L
-        {0xB5, (n) => { throw new NotImplementedException(); }},
+        {0xB7, (n) => { registers.L = UtilFuncs.ClearBit(registers.L, 6); }},
 
         // RES 6,(HL): Clear (reset) bit 6 of value pointed by HL
-        {0xB6, (n) => { throw new NotImplementedException(); }},
+        {0xB6, (n) => { memory.Write(registers.HL,  UtilFuncs.ClearBit(memory.Read(registers.HL), 6)); }},
 
         // RES 6,A: Clear (reset) bit 6 of A
-        {0xB7, (n) => { throw new NotImplementedException(); }},
+        {0xB7, (n) => { registers.A = UtilFuncs.ClearBit(registers.A, 6); }},
 
         // RES 7,B: Clear (reset) bit 7 of B
-        {0xB8, (n) => { throw new NotImplementedException(); }},
+        {0xB8, (n) => { registers.B = UtilFuncs.ClearBit(registers.B, 7); }},
 
         // RES 7,C: Clear (reset) bit 7 of C
-        {0xB9, (n) => { throw new NotImplementedException(); }},
+        {0xB9, (n) => { registers.C = UtilFuncs.ClearBit(registers.C, 7); }},
 
         // RES 7,D: Clear (reset) bit 7 of D
-        {0xBA, (n) => { throw new NotImplementedException(); }},
+        {0xBA, (n) => { registers.D = UtilFuncs.ClearBit(registers.D, 7); }},
 
         // RES 7,E: Clear (reset) bit 7 of E
-        {0xBB, (n) => { throw new NotImplementedException(); }},
+        {0xBB, (n) => { registers.E = UtilFuncs.ClearBit(registers.E, 7); }},
 
         // RES 7,H: Clear (reset) bit 7 of H
-        {0xBC, (n) => { throw new NotImplementedException(); }},
+        {0xBC, (n) => { registers.H = UtilFuncs.ClearBit(registers.H, 7); }},
 
         // RES 7,L: Clear (reset) bit 7 of L
-        {0xBD, (n) => { throw new NotImplementedException(); }},
+        {0xBD, (n) => { registers.L = UtilFuncs.ClearBit(registers.L, 7); }},
 
         // RES 7,(HL): Clear (reset) bit 7 of value pointed by HL
-        {0xBE, (n) => { throw new NotImplementedException(); }},
+        {0xBE, (n) => { memory.Write(registers.HL,  UtilFuncs.ClearBit(memory.Read(registers.HL), 7)); }},
 
         // RES 7,A: Clear (reset) bit 7 of A
-        {0xBF, (n) => { throw new NotImplementedException(); }},
+        {0xBF, (n) => { registers.A = UtilFuncs.ClearBit(registers.A, 7); }},
 
         // SET 0,B: Set bit 0 of B
-        {0xC0, (n) => { throw new NotImplementedException(); }},
+        {0xC0, (n) => { registers.B = UtilFuncs.SetBit(registers.B, 0); }},
 
         // SET 0,C: Set bit 0 of C
-        {0xC1, (n) => { throw new NotImplementedException(); }},
+        {0xC1, (n) => { registers.C = UtilFuncs.SetBit(registers.C, 0); }},
 
         // SET 0,D: Set bit 0 of D
-        {0xC2, (n) => { throw new NotImplementedException(); }},
+        {0xC2, (n) => { registers.D = UtilFuncs.SetBit(registers.D, 0); }},
 
         // SET 0,E: Set bit 0 of E
-        {0xC3, (n) => { throw new NotImplementedException(); }},
+        {0xC3, (n) => { registers.E = UtilFuncs.SetBit(registers.E, 0); }},
 
         // SET 0,H: Set bit 0 of H
-        {0xC4, (n) => { throw new NotImplementedException(); }},
+        {0xC4, (n) => { registers.H = UtilFuncs.SetBit(registers.H, 0); }},
 
         // SET 0,L: Set bit 0 of L
-        {0xC5, (n) => { throw new NotImplementedException(); }},
+        {0xC5, (n) => { registers.L = UtilFuncs.SetBit(registers.L, 0); }},
 
         // SET 0,(HL): Set bit 0 of value pointed by HL
-        {0xC6, (n) => { throw new NotImplementedException(); }},
+        {0xC6, (n) => { memory.Write(registers.HL,  UtilFuncs.SetBit(memory.Read(registers.HL), 0)); }},
 
         // SET 0,A: Set bit 0 of A
-        {0xC7, (n) => { throw new NotImplementedException(); }},
+        {0xC7, (n) => { registers.A = UtilFuncs.SetBit(registers.A, 0); }},
 
         // SET 1,B: Set bit 1 of B
-        {0xC8, (n) => { throw new NotImplementedException(); }},
+        {0xC8, (n) => { registers.B = UtilFuncs.SetBit(registers.B, 1); }},
 
         // SET 1,C: Set bit 1 of C
-        {0xC9, (n) => { throw new NotImplementedException(); }},
+        {0xC9, (n) => { registers.C = UtilFuncs.SetBit(registers.C, 1); }},
 
         // SET 1,D: Set bit 1 of D
-        {0xCA, (n) => { throw new NotImplementedException(); }},
+        {0xCA, (n) => { registers.D = UtilFuncs.SetBit(registers.D, 1); }},
 
         // SET 1,E: Set bit 1 of E
-        {0xCB, (n) => { throw new NotImplementedException(); }},
+        {0xCB, (n) => { registers.E = UtilFuncs.SetBit(registers.E, 1); }},
 
         // SET 1,H: Set bit 1 of H
-        {0xCC, (n) => { throw new NotImplementedException(); }},
+        {0xCC, (n) => { registers.H = UtilFuncs.SetBit(registers.H, 1); }},
 
         // SET 1,L: Set bit 1 of L
-        {0xCD, (n) => { throw new NotImplementedException(); }},
+        {0xCD, (n) => { registers.L = UtilFuncs.SetBit(registers.L, 1); }},
 
         // SET 1,(HL): Set bit 1 of value pointed by HL
-        {0xCE, (n) => { throw new NotImplementedException(); }},
+        {0xCE, (n) => { memory.Write(registers.HL,  UtilFuncs.SetBit(memory.Read(registers.HL), 1)); }},
 
         // SET 1,A: Set bit 1 of A
-        {0xCF, (n) => { throw new NotImplementedException(); }},
+        {0xCF, (n) => { registers.A = UtilFuncs.SetBit(registers.A, 1); }},
 
         // SET 2,B: Set bit 2 of B
-        {0xD0, (n) => { throw new NotImplementedException(); }},
+        {0xD0, (n) => { registers.B = UtilFuncs.SetBit(registers.B, 2); }},
 
         // SET 2,C: Set bit 2 of C
-        {0xD1, (n) => { throw new NotImplementedException(); }},
+        {0xD1, (n) => { registers.C = UtilFuncs.SetBit(registers.C, 2); }},
 
         // SET 2,D: Set bit 2 of D
-        {0xD2, (n) => { throw new NotImplementedException(); }},
+        {0xD2, (n) => { registers.D = UtilFuncs.SetBit(registers.D, 2); }},
 
         // SET 2,E: Set bit 2 of E
-        {0xD3, (n) => { throw new NotImplementedException(); }},
+        {0xD3, (n) => { registers.E = UtilFuncs.SetBit(registers.E, 2); }},
 
         // SET 2,H: Set bit 2 of H
-        {0xD4, (n) => { throw new NotImplementedException(); }},
+        {0xD4, (n) => { registers.H = UtilFuncs.SetBit(registers.H, 2); }},
 
         // SET 2,L: Set bit 2 of L
-        {0xD5, (n) => { throw new NotImplementedException(); }},
+        {0xD5, (n) => { registers.L = UtilFuncs.SetBit(registers.L, 2); }},
 
         // SET 2,(HL): Set bit 2 of value pointed by HL
-        {0xD6, (n) => { throw new NotImplementedException(); }},
+        {0xD6, (n) => { memory.Write(registers.HL,  UtilFuncs.SetBit(memory.Read(registers.HL), 2)); }},
 
         // SET 2,A: Set bit 2 of A
-        {0xD7, (n) => { throw new NotImplementedException(); }},
+        {0xD7, (n) => { registers.A = UtilFuncs.SetBit(registers.A, 2); }},
 
         // SET 3,B: Set bit 3 of B
-        {0xD8, (n) => { throw new NotImplementedException(); }},
+        {0xD8, (n) => { registers.B = UtilFuncs.SetBit(registers.B, 3); }},
 
         // SET 3,C: Set bit 3 of C
-        {0xD9, (n) => { throw new NotImplementedException(); }},
+        {0xD9, (n) => { registers.C = UtilFuncs.SetBit(registers.C, 3); }},
 
         // SET 3,D: Set bit 3 of D
-        {0xDA, (n) => { throw new NotImplementedException(); }},
+        {0xDA, (n) => { registers.D = UtilFuncs.SetBit(registers.D, 3); }},
 
         // SET 3,E: Set bit 3 of E
-        {0xDB, (n) => { throw new NotImplementedException(); }},
+        {0xDB, (n) => { registers.E = UtilFuncs.SetBit(registers.E, 3); }},
 
         // SET 3,H: Set bit 3 of H
-        {0xDC, (n) => { throw new NotImplementedException(); }},
+        {0xDC, (n) => { registers.H = UtilFuncs.SetBit(registers.H, 3); }},
 
         // SET 3,L: Set bit 3 of L
-        {0xDD, (n) => { throw new NotImplementedException(); }},
+        {0xDD, (n) => { registers.L = UtilFuncs.SetBit(registers.L, 3); }},
 
         // SET 3,(HL): Set bit 3 of value pointed by HL
-        {0xDE, (n) => { throw new NotImplementedException(); }},
+        {0xDE, (n) => { memory.Write(registers.HL,  UtilFuncs.SetBit(memory.Read(registers.HL), 3)); }},
 
         // SET 3,A: Set bit 3 of A
-        {0xDF, (n) => { throw new NotImplementedException(); }},
+        {0xDF, (n) => { registers.A = UtilFuncs.SetBit(registers.A, 3); }},
 
         // SET 4,B: Set bit 4 of B
-        {0xE0, (n) => { throw new NotImplementedException(); }},
+        {0xE0, (n) => { registers.B = UtilFuncs.SetBit(registers.B, 4); }},
 
         // SET 4,C: Set bit 4 of C
-        {0xE1, (n) => { throw new NotImplementedException(); }},
+        {0xE1, (n) => { registers.C = UtilFuncs.SetBit(registers.C, 4); }},
 
         // SET 4,D: Set bit 4 of D
-        {0xE2, (n) => { throw new NotImplementedException(); }},
+        {0xE4, (n) => { registers.D = UtilFuncs.SetBit(registers.D, 4); }},
 
         // SET 4,E: Set bit 4 of E
-        {0xE3, (n) => { throw new NotImplementedException(); }},
+        {0xE5, (n) => { registers.E = UtilFuncs.SetBit(registers.E, 4); }},
 
         // SET 4,H: Set bit 4 of H
-        {0xE4, (n) => { throw new NotImplementedException(); }},
+        {0xE4, (n) => { registers.H = UtilFuncs.SetBit(registers.H, 4); }},
 
         // SET 4,L: Set bit 4 of L
-        {0xE5, (n) => { throw new NotImplementedException(); }},
+        {0xE5, (n) => { registers.L = UtilFuncs.SetBit(registers.L, 4); }},
 
         // SET 4,(HL): Set bit 4 of value pointed by HL
-        {0xE6, (n) => { throw new NotImplementedException(); }},
+        {0xE6, (n) => { memory.Write(registers.HL,  UtilFuncs.SetBit(memory.Read(registers.HL), 4)); }},
 
         // SET 4,A: Set bit 4 of A
-        {0xE7, (n) => { throw new NotImplementedException(); }},
+        {0xE7, (n) => { registers.A = UtilFuncs.SetBit(registers.A, 4); }},
 
         // SET 5,B: Set bit 5 of B
-        {0xE8, (n) => { throw new NotImplementedException(); }},
+        {0xE8, (n) => { registers.B = UtilFuncs.SetBit(registers.B, 5); }},
 
         // SET 5,C: Set bit 5 of C
-        {0xE9, (n) => { throw new NotImplementedException(); }},
+        {0xE9, (n) => { registers.C = UtilFuncs.SetBit(registers.C, 5); }},
 
         // SET 5,D: Set bit 5 of D
-        {0xEA, (n) => { throw new NotImplementedException(); }},
+        {0xEA, (n) => { registers.D = UtilFuncs.SetBit(registers.D, 5); }},
 
         // SET 5,E: Set bit 5 of E
-        {0xEB, (n) => { throw new NotImplementedException(); }},
+        {0xEB, (n) => { registers.E = UtilFuncs.SetBit(registers.E, 5); }},
 
         // SET 5,H: Set bit 5 of H
-        {0xEC, (n) => { throw new NotImplementedException(); }},
+        {0xEC, (n) => { registers.H = UtilFuncs.SetBit(registers.H, 5); }},
 
         // SET 5,L: Set bit 5 of L
-        {0xED, (n) => { throw new NotImplementedException(); }},
+        {0xED, (n) => { registers.L = UtilFuncs.SetBit(registers.L, 5); }},
 
         // SET 5,(HL): Set bit 5 of value pointed by HL
-        {0xEE, (n) => { throw new NotImplementedException(); }},
+        {0xEE, (n) => { memory.Write(registers.HL,  UtilFuncs.SetBit(memory.Read(registers.HL), 5)); }},
 
         // SET 5,A: Set bit 5 of A
-        {0xEF, (n) => { throw new NotImplementedException(); }},
+        {0xEF, (n) => { registers.A = UtilFuncs.SetBit(registers.A, 5); }},
 
         // SET 6,B: Set bit 6 of B
-        {0xF0, (n) => { throw new NotImplementedException(); }},
+        {0xF0, (n) => { registers.B = UtilFuncs.SetBit(registers.B, 6); }},
 
         // SET 6,C: Set bit 6 of C
-        {0xF1, (n) => { throw new NotImplementedException(); }},
+        {0xF1, (n) => { registers.C = UtilFuncs.SetBit(registers.C, 6); }},
 
         // SET 6,D: Set bit 6 of D
-        {0xF2, (n) => { throw new NotImplementedException(); }},
+        {0xF6, (n) => { registers.D = UtilFuncs.SetBit(registers.D, 6); }},
 
         // SET 6,E: Set bit 6 of E
-        {0xF3, (n) => { throw new NotImplementedException(); }},
+        {0xF7, (n) => { registers.E = UtilFuncs.SetBit(registers.E, 6); }},
 
         // SET 6,H: Set bit 6 of H
-        {0xF4, (n) => { throw new NotImplementedException(); }},
+        {0xF6, (n) => { registers.H = UtilFuncs.SetBit(registers.H, 6); }},
 
         // SET 6,L: Set bit 6 of L
-        {0xF5, (n) => { throw new NotImplementedException(); }},
+        {0xF7, (n) => { registers.L = UtilFuncs.SetBit(registers.L, 6); }},
 
         // SET 6,(HL): Set bit 6 of value pointed by HL
-        {0xF6, (n) => { throw new NotImplementedException(); }},
+        {0xF6, (n) => { memory.Write(registers.HL,  UtilFuncs.SetBit(memory.Read(registers.HL), 6)); }},
 
         // SET 6,A: Set bit 6 of A
-        {0xF7, (n) => { throw new NotImplementedException(); }},
+        {0xF7, (n) => { registers.A = UtilFuncs.SetBit(registers.A, 6); }},
 
         // SET 7,B: Set bit 7 of B
-        {0xF8, (n) => { throw new NotImplementedException(); }},
+        {0xF8, (n) => { registers.B = UtilFuncs.SetBit(registers.B, 7); }},
 
         // SET 7,C: Set bit 7 of C
-        {0xF9, (n) => { throw new NotImplementedException(); }},
+        {0xF9, (n) => { registers.C = UtilFuncs.SetBit(registers.C, 7); }},
 
         // SET 7,D: Set bit 7 of D
-        {0xFA, (n) => { throw new NotImplementedException(); }},
+        {0xFA, (n) => { registers.D = UtilFuncs.SetBit(registers.D, 7); }},
 
         // SET 7,E: Set bit 7 of E
-        {0xFB, (n) => { throw new NotImplementedException(); }},
+        {0xFB, (n) => { registers.E = UtilFuncs.SetBit(registers.E, 7); }},
 
         // SET 7,H: Set bit 7 of H
-        {0xFC, (n) => { throw new NotImplementedException(); }},
+        {0xFC, (n) => { registers.H = UtilFuncs.SetBit(registers.H, 7); }},
 
         // SET 7,L: Set bit 7 of L
-        {0xFD, (n) => { throw new NotImplementedException(); }},
+        {0xFD, (n) => { registers.L = UtilFuncs.SetBit(registers.L, 7); }},
 
         // SET 7,(HL): Set bit 7 of value pointed by HL
-        {0xFE, (n) => { throw new NotImplementedException(); }},
+        {0xFE, (n) => { memory.Write(registers.HL,  UtilFuncs.SetBit(memory.Read(registers.HL), 7)); }},
 
         // SET 7,A: Set bit 7 of A
-        {0xFF, (n) => { throw new NotImplementedException(); }}
+        {0xFF, (n) => { registers.A = UtilFuncs.SetBit(registers.A, 7); }},
       };
     }
 
