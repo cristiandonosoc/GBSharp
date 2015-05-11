@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GBSharp.Catridge
 {
-    class Cartridge : ICartridge
+    public class Cartridge : ICartridge
     {
         byte[] rom;
         int romSize;
