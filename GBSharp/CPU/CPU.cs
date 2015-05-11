@@ -2316,10 +2316,10 @@ namespace GBSharp.CPU
         {0xA1, (n) => { registers.C = UtilFuncs.ClearBit(registers.C, 4); }},
 
         // RES 4,D: Clear (reset) bit 4 of D
-        {0xA4, (n) => { registers.D = UtilFuncs.ClearBit(registers.D, 4); }},
+        {0xA2, (n) => { registers.D = UtilFuncs.ClearBit(registers.D, 4); }},
 
         // RES 4,E: Clear (reset) bit 4 of E
-        {0xA5, (n) => { registers.E = UtilFuncs.ClearBit(registers.E, 4); }},
+        {0xA3, (n) => { registers.E = UtilFuncs.ClearBit(registers.E, 4); }},
 
         // RES 4,H: Clear (reset) bit 4 of H
         {0xA4, (n) => { registers.H = UtilFuncs.ClearBit(registers.H, 4); }},
@@ -2364,16 +2364,16 @@ namespace GBSharp.CPU
         {0xB1, (n) => { registers.C = UtilFuncs.ClearBit(registers.C, 6); }},
 
         // RES 6,D: Clear (reset) bit 6 of D
-        {0xB6, (n) => { registers.D = UtilFuncs.ClearBit(registers.D, 6); }},
+        {0xB2, (n) => { registers.D = UtilFuncs.ClearBit(registers.D, 6); }},
 
         // RES 6,E: Clear (reset) bit 6 of E
-        {0xB7, (n) => { registers.E = UtilFuncs.ClearBit(registers.E, 6); }},
+        {0xB3, (n) => { registers.E = UtilFuncs.ClearBit(registers.E, 6); }},
 
         // RES 6,H: Clear (reset) bit 6 of H
-        {0xB6, (n) => { registers.H = UtilFuncs.ClearBit(registers.H, 6); }},
+        {0xB4, (n) => { registers.H = UtilFuncs.ClearBit(registers.H, 6); }},
 
         // RES 6,L: Clear (reset) bit 6 of L
-        {0xB7, (n) => { registers.L = UtilFuncs.ClearBit(registers.L, 6); }},
+        {0xB5, (n) => { registers.L = UtilFuncs.ClearBit(registers.L, 6); }},
 
         // RES 6,(HL): Clear (reset) bit 6 of value pointed by HL
         {0xB6, (n) => { memory.Write(registers.HL,  UtilFuncs.ClearBit(memory.Read(registers.HL), 6)); }},
@@ -2508,10 +2508,10 @@ namespace GBSharp.CPU
         {0xE1, (n) => { registers.C = UtilFuncs.SetBit(registers.C, 4); }},
 
         // SET 4,D: Set bit 4 of D
-        {0xE4, (n) => { registers.D = UtilFuncs.SetBit(registers.D, 4); }},
+        {0xE2, (n) => { registers.D = UtilFuncs.SetBit(registers.D, 4); }},
 
         // SET 4,E: Set bit 4 of E
-        {0xE5, (n) => { registers.E = UtilFuncs.SetBit(registers.E, 4); }},
+        {0xE3, (n) => { registers.E = UtilFuncs.SetBit(registers.E, 4); }},
 
         // SET 4,H: Set bit 4 of H
         {0xE4, (n) => { registers.H = UtilFuncs.SetBit(registers.H, 4); }},
@@ -2556,16 +2556,16 @@ namespace GBSharp.CPU
         {0xF1, (n) => { registers.C = UtilFuncs.SetBit(registers.C, 6); }},
 
         // SET 6,D: Set bit 6 of D
-        {0xF6, (n) => { registers.D = UtilFuncs.SetBit(registers.D, 6); }},
+        {0xF2, (n) => { registers.D = UtilFuncs.SetBit(registers.D, 6); }},
 
         // SET 6,E: Set bit 6 of E
-        {0xF7, (n) => { registers.E = UtilFuncs.SetBit(registers.E, 6); }},
+        {0xF3, (n) => { registers.E = UtilFuncs.SetBit(registers.E, 6); }},
 
         // SET 6,H: Set bit 6 of H
-        {0xF6, (n) => { registers.H = UtilFuncs.SetBit(registers.H, 6); }},
+        {0xF4, (n) => { registers.H = UtilFuncs.SetBit(registers.H, 6); }},
 
         // SET 6,L: Set bit 6 of L
-        {0xF7, (n) => { registers.L = UtilFuncs.SetBit(registers.L, 6); }},
+        {0xF5, (n) => { registers.L = UtilFuncs.SetBit(registers.L, 6); }},
 
         // SET 6,(HL): Set bit 6 of value pointed by HL
         {0xF6, (n) => { memory.Write(registers.HL,  UtilFuncs.SetBit(memory.Read(registers.HL), 6)); }},
