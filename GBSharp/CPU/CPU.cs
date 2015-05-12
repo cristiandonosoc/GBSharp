@@ -1125,7 +1125,7 @@ namespace GBSharp.CPU
             {0x16, (n)=>{registers.D = (byte)n;}},
 
             // RL A: Rotate A left
-            {0x17, (n)=>{throw new NotImplementedException();}},
+            {0x17, (n)=>{UtilFuncs.RotateLeft(registers.A,1);}},
 
             // JR n: Relative jump by signed immediate
             {0x18, (n)=>{throw new NotImplementedException();}},
@@ -1149,7 +1149,7 @@ namespace GBSharp.CPU
             {0x1E, (n)=>{registers.E = (byte)n;}},
 
             // RR A: Rotate A right
-            {0x1F, (n)=>{throw new NotImplementedException();}},
+            {0x1F, (n)=>{UtilFuncs.RotateRight(registers.A,1);}},
 
             // JR NZ,n: Relative jump by signed immediate if last result was not zero
             {0x20, (n)=>{throw new NotImplementedException();}},
@@ -1464,28 +1464,117 @@ namespace GBSharp.CPU
             {0x87, (n)=>{registers.A += registers.A;}},
 
             // ADC A,B: Add B and carry flag to A
-            {0x88, (n)=>{throw new NotImplementedException();}},
+            {0x88, (n)=>{
+              ushort A = registers.A;
+              byte initial = registers.A;
+              A += registers.B;
+              A += registers.FC;
+              registers.A = (byte)A;
+
+              // Update flags
+              registers.FC = (byte)((A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.B ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADC A,C: Add C and carry flag to A
-            {0x89, (n)=>{throw new NotImplementedException();}},
+            {0x89, (n)=>{
+              ushort A = registers.A;
+              byte initial = registers.A;
+              A += registers.C;
+              A += registers.FC;
+              registers.A = (byte)A;
+
+              // Update flags
+              registers.FC = (byte)((A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.C ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADC A,D: Add D and carry flag to A
-            {0x8A, (n)=>{throw new NotImplementedException();}},
+            {0x8A, (n)=>{
+              ushort A = registers.A;
+              byte initial = registers.A;
+              A += registers.D;
+              A += registers.FC;
+              registers.A = (byte)A;
+
+              // Update flags
+              registers.FC = (byte)((A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.D ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADC A,E: Add E and carry flag to A
-            {0x8B, (n)=>{throw new NotImplementedException();}},
+            {0x8B, (n)=>{
+              ushort A = registers.A;
+              byte initial = registers.A;
+              A += registers.E;
+              A += registers.FC;
+              registers.A = (byte)A;
+
+              // Update flags
+              registers.FC = (byte)((A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.E ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADC A,H: Add H and carry flag to A
-            {0x8C, (n)=>{throw new NotImplementedException();}},
+            {0x8C, (n)=>{
+              ushort A = registers.A;
+              byte initial = registers.A;
+              A += registers.H;
+              A += registers.FC;
+              registers.A = (byte)A;
+
+              // Update flags
+              registers.FC = (byte)((A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.H ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADC A,L: Add and carry flag L to A
-            {0x8D, (n)=>{throw new NotImplementedException();}},
+            {0x8D, (n)=>{
+              ushort A = registers.A;
+              byte initial = registers.A;
+              A += registers.L;
+              A += registers.FC;
+              registers.A = (byte)A;
+
+              // Update flags
+              registers.FC = (byte)((A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.L ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADC A,(HL): Add value pointed by HL and carry flag to A
-            {0x8E, (n)=>{throw new NotImplementedException();}},
+            {0x8E, (n)=>{
+              ushort A = registers.A;
+              byte initial = registers.A;
+              byte m = memory.Read(registers.HL);
+              A += m;
+              A += registers.FC;
+              registers.A = (byte)A;
+
+              // Update flags
+              registers.FC = (byte)((A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ m ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADC A,A: Add A and carry flag to A
-            {0x8F, (n)=>{throw new NotImplementedException();}},
+            {0x8F, (n)=>{
+              ushort A = registers.A;
+              byte initial = registers.A;
+              A += registers.A;
+              A += registers.FC;
+              registers.A = (byte)A;
+
+              // Update flags
+              registers.FC = (byte)((A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.A ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // SUB A,B: Subtract B from A
             {0x90, (n)=>{registers.A -= registers.B;}},
@@ -1674,7 +1763,18 @@ namespace GBSharp.CPU
             {0xCD, (n)=>{throw new NotImplementedException();}},
 
             // ADC A,n: Add 8-bit immediate and carry to A
-            {0xCE, (n)=>{throw new NotImplementedException();}},
+            {0xCE, (n)=>{
+              ushort A = registers.A;
+              byte initial = registers.A;
+              A += n;
+              A += registers.FC;
+              registers.A = (byte)A;
+
+              // Update flags
+              registers.FC = (byte)((A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ n ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // RST 8: Call routine at address 0008h
             {0xCF, (n)=>{throw new NotImplementedException();}},
@@ -1830,196 +1930,368 @@ namespace GBSharp.CPU
       CBInstructionLambdas = new Dictionary<byte, Action<ushort>>()
       {
         // RLC B: Rotate B left with carry
-        {0x00, (n) => { throw new NotImplementedException(); }},
+        {0x00, (n) => { var rotateCarry = UtilFuncs.RotateLeftAndCarry(registers.B);
+                        registers.B = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RLC C: Rotate C left with carry
-        {0x01, (n) => { throw new NotImplementedException(); }},
+        {0x01, (n) => { var rotateCarry = UtilFuncs.RotateLeftAndCarry(registers.C);
+                        registers.C = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RLC D: Rotate D left with carry
-        {0x02, (n) => { throw new NotImplementedException(); }},
+        {0x02, (n) => { var rotateCarry = UtilFuncs.RotateLeftAndCarry(registers.D);
+                        registers.D = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RLC E: Rotate E left with carry
-        {0x03, (n) => { throw new NotImplementedException(); }},
+        {0x03, (n) => { var rotateCarry = UtilFuncs.RotateLeftAndCarry(registers.E);
+                        registers.E = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RLC H: Rotate H left with carry
-        {0x04, (n) => { throw new NotImplementedException(); }},
+        {0x04, (n) => { var rotateCarry = UtilFuncs.RotateLeftAndCarry(registers.H);
+                        registers.H = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RLC L: Rotate L left with carry
-        {0x05, (n) => { throw new NotImplementedException(); }},
+        {0x05, (n) => { var rotateCarry = UtilFuncs.RotateLeftAndCarry(registers.L);
+                        registers.L = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RLC (HL): Rotate value pointed by HL left with carry
-        {0x06, (n) => { throw new NotImplementedException(); }},
+        {0x06, (n) => { var rotateCarry = UtilFuncs.RotateLeftAndCarry(memory.Read(registers.HL));
+                        memory.Write(registers.HL, rotateCarry.Item1);
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RLC A: Rotate A left with carry
-        {0x07, (n) => { throw new NotImplementedException(); }},
+        {0x07, (n) => { var rotateCarry = UtilFuncs.RotateLeftAndCarry(registers.A);
+                        registers.A = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RRC B: Rotate B right with carry
-        {0x08, (n) => { throw new NotImplementedException(); }},
+        {0x08, (n) => { var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.B);
+                        registers.B = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RRC C: Rotate C right with carry
-        {0x09, (n) => { throw new NotImplementedException(); }},
+        {0x09, (n) => { var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.C);
+                        registers.C = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RRC D: Rotate D right with carry
-        {0x0A, (n) => { throw new NotImplementedException(); }},
+        {0x0A, (n) => { var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.D);
+                        registers.D = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RRC E: Rotate E right with carry
-        {0x0B, (n) => { throw new NotImplementedException(); }},
+        {0x0B, (n) => { var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.E);
+                        registers.E = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
+
 
         // RRC H: Rotate H right with carry
-        {0x0C, (n) => { throw new NotImplementedException(); }},
+        {0x0C, (n) => { var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.H);
+                        registers.H = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
+
 
         // RRC L: Rotate L right with carry
-        {0x0D, (n) => { throw new NotImplementedException(); }},
+        {0x0D, (n) => { var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.L);
+                        registers.L = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
+
 
         // RRC (HL): Rotate value pointed by HL right with carry
-        {0x0E, (n) => { throw new NotImplementedException(); }},
+        {0x0E, (n) => { var rotateCarry = UtilFuncs.RotateRightAndCarry(memory.Read(registers.HL));
+                        memory.Write(registers.HL, rotateCarry.Item1);
+                        registers.FC = rotateCarry.Item2;
+        }},
+
 
         // RRC A: Rotate A right with carry
-        {0x0F, (n) => { throw new NotImplementedException(); }},
+        {0x0F, (n) =>{ var rotateCarry = UtilFuncs.RotateRightAndCarry
+          (registers.A);
+                        registers.A = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RL B: Rotate B left
-        {0x10, (n) => { throw new NotImplementedException(); }},
+        {0x10, (n) => { var rotateCarry = UtilFuncs.RotateLeftThroughCarry(registers.B,1,registers.FC);
+                        registers.B = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RL C: Rotate C left
-        {0x11, (n) => { throw new NotImplementedException(); }},
+        {0x11, (n) => { var rotateCarry = UtilFuncs.RotateLeftThroughCarry(registers.C,1,registers.FC);
+                        registers.C = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RL D: Rotate D left
-        {0x12, (n) => { throw new NotImplementedException(); }},
+        {0x12, (n) => { var rotateCarry = UtilFuncs.RotateLeftThroughCarry(registers.D,1,registers.FC);
+                        registers.D = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RL E: Rotate E left
-        {0x13, (n) => { throw new NotImplementedException(); }},
+        {0x13, (n) => { var rotateCarry = UtilFuncs.RotateLeftThroughCarry(registers.E,1,registers.FC);
+                        registers.E = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RL H: Rotate H left
-        {0x14, (n) => { throw new NotImplementedException(); }},
+        {0x14, (n) => { var rotateCarry = UtilFuncs.RotateLeftThroughCarry(registers.H,1,registers.FC);
+                        registers.H = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RL L: Rotate L left
-        {0x15, (n) => { throw new NotImplementedException(); }},
+        {0x15, (n) => { var rotateCarry = UtilFuncs.RotateLeftThroughCarry(registers.L,1,registers.FC);
+                        registers.L = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RL (HL): Rotate value pointed by HL left
-        {0x16, (n) => { throw new NotImplementedException(); }},
+        {0x16, (n) => { var rotateCarry = UtilFuncs.RotateLeftThroughCarry(memory.Read(registers.HL),1,registers.FC);
+                        memory.Write(registers.HL, rotateCarry.Item1);
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RL A: Rotate A left
-        {0x17, (n) => { throw new NotImplementedException(); }},
+        {0x17, (n) => { var rotateCarry = UtilFuncs.RotateLeftThroughCarry(registers.A,1,registers.FC);
+                        registers.A = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RR B: Rotate B right
-        {0x18, (n) => { throw new NotImplementedException(); }},
+        {0x18, (n) => { var rotateCarry = UtilFuncs.RotateRightThroughCarry(registers.B,1,registers.FC);
+                        registers.B = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RR C: Rotate C right
-        {0x19, (n) => { throw new NotImplementedException(); }},
+        {0x19, (n) => { var rotateCarry = UtilFuncs.RotateRightThroughCarry(registers.C,1,registers.FC);
+                        registers.C = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RR D: Rotate D right
-        {0x1A, (n) => { throw new NotImplementedException(); }},
+        {0x1A, (n) => { var rotateCarry = UtilFuncs.RotateRightThroughCarry(registers.D,1,registers.FC);
+                        registers.D = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RR E: Rotate E right
-        {0x1B, (n) => { throw new NotImplementedException(); }},
+        {0x1B, (n) => { var rotateCarry = UtilFuncs.RotateRightThroughCarry(registers.E,1,registers.FC);
+                        registers.E = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RR H: Rotate H right
-        {0x1C, (n) => { throw new NotImplementedException(); }},
+        {0x1C, (n) => { var rotateCarry = UtilFuncs.RotateRightThroughCarry(registers.H,1,registers.FC);
+                        registers.H = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RR L: Rotate L right
-        {0x1D, (n) => { throw new NotImplementedException(); }},
+        {0x1D, (n) => { var rotateCarry = UtilFuncs.RotateRightThroughCarry(registers.L,1,registers.FC);
+                        registers.L = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RR (HL): Rotate value pointed by HL right
-        {0x1E, (n) => { throw new NotImplementedException(); }},
+        {0x1E, (n) => { var rotateCarry = UtilFuncs.RotateRightThroughCarry(memory.Read(registers.HL),1,registers.FC);
+                        memory.Write(registers.HL, rotateCarry.Item1);
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // RR A: Rotate A right
-        {0x1F, (n) => { throw new NotImplementedException(); }},
+        {0x1F, (n) => { var rotateCarry = UtilFuncs.RotateRightThroughCarry(registers.A,1,registers.FC);
+                        registers.A = rotateCarry.Item1;
+                        registers.FC = rotateCarry.Item2;
+        }},
 
         // SLA B: Shift B left preserving sign
-        {0x20, (n) => { throw new NotImplementedException(); }},
+        {0x20, (n) => { var shiftCarry = UtilFuncs.ShiftLeft(registers.B);
+                        registers.B = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SLA C: Shift C left preserving sign
-        {0x21, (n) => { throw new NotImplementedException(); }},
+        {0x21, (n) => { var shiftCarry = UtilFuncs.ShiftLeft(registers.C);
+                        registers.C = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SLA D: Shift D left preserving sign
-        {0x22, (n) => { throw new NotImplementedException(); }},
+        {0x22, (n) => { var shiftCarry = UtilFuncs.ShiftLeft(registers.D);
+                        registers.D = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SLA E: Shift E left preserving sign
-        {0x23, (n) => { throw new NotImplementedException(); }},
+        {0x23, (n) => { var shiftCarry = UtilFuncs.ShiftLeft(registers.E);
+                        registers.E = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SLA H: Shift H left preserving sign
-        {0x24, (n) => { throw new NotImplementedException(); }},
+        {0x24, (n) => { var shiftCarry = UtilFuncs.ShiftLeft(registers.H);
+                        registers.H = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SLA L: Shift L left preserving sign
-        {0x25, (n) => { throw new NotImplementedException(); }},
+        {0x25, (n) => { var shiftCarry = UtilFuncs.ShiftLeft(registers.L);
+                        registers.L = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SLA (HL): Shift value pointed by HL left preserving sign
-        {0x26, (n) => { throw new NotImplementedException(); }},
+        {0x26, (n) => { var shiftCarry = UtilFuncs.ShiftLeft(memory.Read(registers.HL));
+                        memory.Write(registers.HL, shiftCarry.Item1);
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SLA A: Shift A left preserving sign
-        {0x27, (n) => { throw new NotImplementedException(); }},
-
+        {0x27, (n) => { var shiftCarry = UtilFuncs.ShiftLeft(registers.A);
+                        registers.A = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
         // SRA B: Shift B right preserving sign
-        {0x28, (n) => { throw new NotImplementedException(); }},
+        {0x28, (n) => { var shiftCarry = UtilFuncs.ShiftRightArithmetic(registers.B);
+                        registers.B = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SRA C: Shift C right preserving sign
-        {0x29, (n) => { throw new NotImplementedException(); }},
+        {0x29, (n) => { var shiftCarry = UtilFuncs.ShiftRightArithmetic(registers.C);
+                        registers.C = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SRA D: Shift D right preserving sign
-        {0x2A, (n) => { throw new NotImplementedException(); }},
+        {0x2A, (n) => { var shiftCarry = UtilFuncs.ShiftRightArithmetic(registers.D);
+                        registers.D = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SRA E: Shift E right preserving sign
-        {0x2B, (n) => { throw new NotImplementedException(); }},
+        {0x2B, (n) => { var shiftCarry = UtilFuncs.ShiftRightArithmetic(registers.E);
+                        registers.E = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SRA H: Shift H right preserving sign
-        {0x2C, (n) => { throw new NotImplementedException(); }},
+        {0x2C, (n) => { var shiftCarry = UtilFuncs.ShiftRightArithmetic(registers.H);
+                        registers.H = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SRA L: Shift L right preserving sign
-        {0x2D, (n) => { throw new NotImplementedException(); }},
+        {0x2D, (n) => { var shiftCarry = UtilFuncs.ShiftRightArithmetic(registers.L);
+                        registers.L = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SRA (HL): Shift value pointed by HL right preserving sign
-        {0x2E, (n) => { throw new NotImplementedException(); }},
+        {0x2E, (n) => { var shiftCarry = UtilFuncs.ShiftRightArithmetic(memory.Read(registers.HL));
+                        memory.Write(registers.HL, shiftCarry.Item1);
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SRA A: Shift A right preserving sign
-        {0x2F, (n) => { throw new NotImplementedException(); }},
+        {0x2F, (n) => { var shiftCarry = UtilFuncs.ShiftRightArithmetic(registers.A);
+                        registers.A = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SWAP B: Swap nybbles in B
-        {0x30, (n) => { throw new NotImplementedException(); }},
+        {0x30, (n) => { registers.B = UtilFuncs.SwapNibbles(registers.B); }},
 
         // SWAP C: Swap nybbles in C
-        {0x31, (n) => { throw new NotImplementedException(); }},
+        {0x31, (n) => { registers.C = UtilFuncs.SwapNibbles(registers.C); }},
 
         // SWAP D: Swap nybbles in D
-        {0x32, (n) => { throw new NotImplementedException(); }},
+        {0x32, (n) => { registers.D = UtilFuncs.SwapNibbles(registers.D); }},
 
         // SWAP E: Swap nybbles in E
-        {0x33, (n) => { throw new NotImplementedException(); }},
+        {0x33, (n) => { registers.E = UtilFuncs.SwapNibbles(registers.E); }},
 
         // SWAP H: Swap nybbles in H
-        {0x34, (n) => { throw new NotImplementedException(); }},
+        {0x34, (n) => { registers.H = UtilFuncs.SwapNibbles(registers.H); }},
 
         // SWAP L: Swap nybbles in L
-        {0x35, (n) => { throw new NotImplementedException(); }},
+        {0x35, (n) => {registers.L = UtilFuncs.SwapNibbles(registers.L); }},
 
         // SWAP (HL): Swap nybbles in value pointed by HL
-        {0x36, (n) => { throw new NotImplementedException(); }},
+        {0x36, (n) => { memory.Write(registers.HL, UtilFuncs.SwapNibbles(memory.Read(registers.HL))); }},
 
         // SWAP A: Swap nybbles in A
-        {0x37, (n) => { throw new NotImplementedException(); }},
+        {0x37, (n) => { registers.A = UtilFuncs.SwapNibbles(registers.A); }},
 
         // SRL B: Shift B right
-        {0x38, (n) => { registers.B >>= 1; }},
+        {0x38, (n) => { var shiftCarry = UtilFuncs.ShiftRightLogic(registers.B);
+                        registers.B = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SRL C: Shift C right
-        {0x39, (n) => { registers.C >>= 1; }},
+        {0x39, (n) => { var shiftCarry = UtilFuncs.ShiftRightLogic(registers.C);
+                        registers.C = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SRL D: Shift D right
-        {0x3A, (n) => { registers.D >>= 1; }},
+        {0x3A, (n) => { var shiftCarry = UtilFuncs.ShiftRightLogic(registers.D);
+                        registers.D = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SRL E: Shift E right
-        {0x3B, (n) => { registers.E >>= 1; }},
+        {0x3B, (n) => { var shiftCarry = UtilFuncs.ShiftRightLogic(registers.E);
+                        registers.E = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SRL H: Shift H right
-        {0x3C, (n) => { registers.H >>= 1; }},
+        {0x3C, (n) => { var shiftCarry = UtilFuncs.ShiftRightLogic(registers.H);
+                        registers.H = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SRL L: Shift L right
-        {0x3D, (n) => { registers.L >>= 1; }},
+        {0x3D, (n) => { var shiftCarry = UtilFuncs.ShiftRightLogic(registers.L);
+                        registers.L = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SRL (HL): Shift value pointed by HL right
-        {0x3E, (n) => { memory.Write(registers.HL, (byte)(memory.Read(registers.HL) >> 1)); }},
+        {0x3E, (n) => { var shiftCarry = UtilFuncs.ShiftRightLogic(memory.Read(registers.HL));
+                        memory.Write(registers.HL, shiftCarry.Item1);
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // SRL A: Shift A right
-        {0x3F, (n) => { registers.A >>= 1; }},
+        {0x3F, (n) => { var shiftCarry = UtilFuncs.ShiftRightLogic(registers.A);
+                        registers.A = shiftCarry.Item1;
+                        registers.FC = shiftCarry.Item2;
+        }},
 
         // BIT 0,B: Test bit 0 of B
         {0x40, (n) => { throw new NotImplementedException(); }},
