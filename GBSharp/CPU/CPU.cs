@@ -1173,7 +1173,21 @@ namespace GBSharp.CPU
             {0x26, (n)=>{registers.H = (byte)n;}},
 
             // DAA: Adjust A for BCD addition
-            {0x27, (n)=>{throw new NotImplementedException();}},
+            {0x27, (n)=>{
+              // TODO: test against this table http://www.z80.info/z80syntx.htm#DAA
+              ushort initial = registers.A;
+
+              // Check first digit
+              if((registers.FH != 0) || ((registers.A & 0x0F) > 0x09)) {
+                registers.A += 0x06;
+              }
+
+              // Check second digit
+              if((registers.FC != 0) || ( initial > 0x99 )) {
+                registers.A += 0x60;
+                registers.FC = 1;
+              }
+            }},
 
             // JR Z,n: Relative jump by signed immediate if last result was zero
             {0x28, (n)=>{throw new NotImplementedException();}},
