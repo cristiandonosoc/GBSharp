@@ -13,7 +13,7 @@ namespace GBSharp.Memory.MemoryHandlers
     /// catdridges handle memory mapping and storing in
     /// different ways, but should be transparent to the CPU.
     /// </summary>
-    public abstract class MemoryHandler
+    abstract class MemoryHandler
     {
         #region ATTRIBUTES
 
@@ -24,7 +24,7 @@ namespace GBSharp.Memory.MemoryHandlers
 
         #region CONSTRUCTORS
 
-        public MemoryHandler(Cartridge cartridge)
+        internal MemoryHandler(Cartridge cartridge)
         {
             this.cartridge = cartridge;
         }
@@ -33,7 +33,7 @@ namespace GBSharp.Memory.MemoryHandlers
 
         #region PUBLIC METHODS
 
-        public virtual void LoadInternalMemory(byte[] data)
+        internal virtual void LoadInternalMemory(byte[] data)
         {
           this.internalMemory = data;
         }
@@ -44,7 +44,7 @@ namespace GBSharp.Memory.MemoryHandlers
         /// </summary>
         /// <param name="address">16 bits address.</param>
         /// <param name="value">8 bits value.</param>
-        abstract public void Write(ushort address, byte value);
+        abstract internal void Write(ushort address, byte value);
 
         /// <summary>
         /// Writes 16 bits value to memory according to
@@ -52,7 +52,7 @@ namespace GBSharp.Memory.MemoryHandlers
         /// </summary>
         /// <param name="address">16 bit address.</param>
         /// <param name="value">16 bit value.</param>
-        abstract public void Write(ushort address, ushort value);
+        abstract internal void Write(ushort address, ushort value);
 
         /// <summary>
         /// Reads 8 bit value from memory according to
@@ -63,7 +63,7 @@ namespace GBSharp.Memory.MemoryHandlers
         /// 8 bit value located at the address
         /// correspondant to the memory management scheme.
         /// </returns>
-        abstract public byte Read(ushort address);
+        abstract internal byte Read(ushort address);
 
         #endregion
     }

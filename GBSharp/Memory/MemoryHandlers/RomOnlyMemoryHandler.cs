@@ -11,17 +11,17 @@ namespace GBSharp.Memory.MemoryHandlers
   /// It is 32 kB of size and the mapping spans from the addresses
   /// 0x0000 to 0x7FFF.
   /// </summary>
-  public class RomOnlyMemoryHandler : MemoryHandler
+  class RomOnlyMemoryHandler : MemoryHandler
   {
     private ushort romOnlyStart = 0x0000;
     private ushort romOnlyEnd = 0x7FFF;
 
-    public RomOnlyMemoryHandler(GBSharp.Catridge.Cartridge cartridge)
+    internal RomOnlyMemoryHandler(GBSharp.Catridge.Cartridge cartridge)
       : base(cartridge)
     {
     }
 
-    public override void LoadInternalMemory(byte[] data)
+    internal override void LoadInternalMemory(byte[] data)
     {
       base.LoadInternalMemory(data);
 
@@ -35,7 +35,7 @@ namespace GBSharp.Memory.MemoryHandlers
       }
     }
 
-    public override void Write(ushort address, byte value)
+    internal override void Write(ushort address, byte value)
     {
       // If the address is within the rom only address space,
       // we do nothing at all.
@@ -47,13 +47,13 @@ namespace GBSharp.Memory.MemoryHandlers
       internalMemory[address] = value; 
     }
 
-    public override void Write(ushort address, ushort value)
+    internal override void Write(ushort address, ushort value)
     {
       internalMemory[address] = (byte)(value & 0x00FF);
       internalMemory[address + 1] = (byte)(value >> 8);
     }
 
-    public override byte Read(ushort address)
+    internal override byte Read(ushort address)
     {
       return internalMemory[address];
     }
