@@ -19,7 +19,6 @@ namespace GBSharp.Memory.MemoryHandlers
     public RomOnlyMemoryHandler(GBSharp.Catridge.Cartridge cartridge)
       : base(cartridge)
     {
-
     }
 
     public override void LoadInternalMemory(byte[] data)
@@ -36,7 +35,7 @@ namespace GBSharp.Memory.MemoryHandlers
       }
     }
 
-    protected override void InternalWrite(ushort address, byte value)
+    public override void Write(ushort address, byte value)
     {
       // If the address is within the rom only address space,
       // we do nothing at all.
@@ -45,16 +44,16 @@ namespace GBSharp.Memory.MemoryHandlers
         return;
       }
 
-      internalMemory[address] = value;
+      internalMemory[address] = value; 
     }
 
-    protected override void InternalWrite(ushort address, ushort value)
+    public override void Write(ushort address, ushort value)
     {
       internalMemory[address] = (byte)(value & 0x00FF);
       internalMemory[address + 1] = (byte)(value >> 8);
     }
 
-    protected override byte InternalRead(ushort address)
+    public override byte Read(ushort address)
     {
       return internalMemory[address];
     }

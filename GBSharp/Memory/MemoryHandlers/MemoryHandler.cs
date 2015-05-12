@@ -20,17 +20,6 @@ namespace GBSharp.Memory.MemoryHandlers
         protected byte[] internalMemory;
         protected Cartridge cartridge;
 
-        /// <summary>
-        /// The minimum address that is addressable for
-        /// this memory manager.
-        /// </summary>
-        protected ushort minAddress = 0x0000;
-        /// <summary>
-        /// The maximum address that is addressable for
-        /// this memory manager.
-        /// </summary>
-        protected ushort maxAddress = 0xFFFF;
-
         #endregion
 
         #region CONSTRUCTORS
@@ -44,59 +33,18 @@ namespace GBSharp.Memory.MemoryHandlers
 
         #region PUBLIC METHODS
 
-        /// <summary>
-        /// Writes 8 bits value to memory according to
-        /// the correspondant memory management scheme.
-        /// </summary>
-        /// <param name="address">16 bits address.</param>
-        /// <param name="value">8 bits value.</param>
-        public void Write(ushort address, byte value)
-        {
-            InternalWrite(address, value);
-        }
-
-        /// <summary>
-        /// Writes 16 bits value to memory according to
-        /// the correspondant memory management scheme.
-        /// </summary>
-        /// <param name="address">16 bit address.</param>
-        /// <param name="value">16 bit value.</param>
-        public void Write(ushort address, ushort value)
-        {
-            InternalWrite(address, value);
-        }
-
-        /// <summary>
-        /// Reads 8 bit value from memory according to
-        /// the correspondant memory management scheme.
-        /// </summary>
-        /// <param name="address">16 bit address.</param>
-        /// <returns>
-        /// 8 bit value located at the address
-        /// correspondant to the memory management scheme.
-        /// </returns>
-        public byte Read(ushort address)
-        {
-            return InternalRead(address);
-        }
-
-        #endregion
-
-        #region ABSTRACT METHODS
-
         public virtual void LoadInternalMemory(byte[] data)
         {
-            this.internalMemory = data;
+          this.internalMemory = data;
         }
 
         /// <summary>
         /// Writes 8 bits value to memory according to
         /// the correspondant memory management scheme.
-        /// Only called within a public Write method call.
         /// </summary>
         /// <param name="address">16 bits address.</param>
         /// <param name="value">8 bits value.</param>
-        abstract protected void InternalWrite(ushort address, byte value);
+        abstract public void Write(ushort address, byte value);
 
         /// <summary>
         /// Writes 16 bits value to memory according to
@@ -104,19 +52,18 @@ namespace GBSharp.Memory.MemoryHandlers
         /// </summary>
         /// <param name="address">16 bit address.</param>
         /// <param name="value">16 bit value.</param>
-        abstract protected void InternalWrite(ushort address, ushort value);
+        abstract public void Write(ushort address, ushort value);
 
         /// <summary>
         /// Reads 8 bit value from memory according to
         /// the correspondant memory management scheme.
-        /// Only called within a public Read method call.
         /// </summary>
         /// <param name="address">16 bit address.</param>
         /// <returns>
         /// 8 bit value located at the address
         /// correspondant to the memory management scheme.
         /// </returns>
-        abstract protected byte InternalRead(ushort address);
+        abstract public byte Read(ushort address);
 
         #endregion
     }
