@@ -42,26 +42,6 @@ namespace GBSharp.Memory.MemoryHandlers
 
         #endregion
 
-        #region PROTECTED METHODS
-
-        /// <summary>
-        /// Validates that the address given is within the 
-        /// valid range for the memory manager. The range
-        /// is defined with the minAddress and maxAddress
-        /// variables
-        /// </summary>
-        /// <param name="address">A 16 bit address</param>
-        protected void ValidateAddress(ushort address)
-        {
-          if (address < minAddress || maxAddress < address)
-          {
-            throw new ArgumentOutOfRangeException();
-          }
-        }
-
-        #endregion
-
-
         #region PUBLIC METHODS
 
         /// <summary>
@@ -72,7 +52,6 @@ namespace GBSharp.Memory.MemoryHandlers
         /// <param name="value">8 bits value.</param>
         public void Write(ushort address, byte value)
         {
-            ValidateAddress(address);
             InternalWrite(address, value);
         }
 
@@ -84,7 +63,6 @@ namespace GBSharp.Memory.MemoryHandlers
         /// <param name="value">16 bit value.</param>
         public void Write(ushort address, ushort value)
         {
-            ValidateAddress(address);
             InternalWrite(address, value);
         }
 
@@ -99,7 +77,6 @@ namespace GBSharp.Memory.MemoryHandlers
         /// </returns>
         public byte Read(ushort address)
         {
-            ValidateAddress(address);
             return InternalRead(address);
         }
 
