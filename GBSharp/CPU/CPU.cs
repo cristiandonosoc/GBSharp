@@ -1464,28 +1464,117 @@ namespace GBSharp.CPU
             {0x87, (n)=>{registers.A += registers.A;}},
 
             // ADC A,B: Add B and carry flag to A
-            {0x88, (n)=>{throw new NotImplementedException();}},
+            {0x88, (n)=>{
+              ushort A = registers.A;
+              byte initial = registers.A;
+              A += registers.B;
+              A += registers.FC;
+              registers.A = (byte)A;
+
+              // Update flags
+              registers.FC = (byte)((A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.B ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADC A,C: Add C and carry flag to A
-            {0x89, (n)=>{throw new NotImplementedException();}},
+            {0x89, (n)=>{
+              ushort A = registers.A;
+              byte initial = registers.A;
+              A += registers.C;
+              A += registers.FC;
+              registers.A = (byte)A;
+
+              // Update flags
+              registers.FC = (byte)((A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.C ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADC A,D: Add D and carry flag to A
-            {0x8A, (n)=>{throw new NotImplementedException();}},
+            {0x8A, (n)=>{
+              ushort A = registers.A;
+              byte initial = registers.A;
+              A += registers.D;
+              A += registers.FC;
+              registers.A = (byte)A;
+
+              // Update flags
+              registers.FC = (byte)((A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.D ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADC A,E: Add E and carry flag to A
-            {0x8B, (n)=>{throw new NotImplementedException();}},
+            {0x8B, (n)=>{
+              ushort A = registers.A;
+              byte initial = registers.A;
+              A += registers.E;
+              A += registers.FC;
+              registers.A = (byte)A;
+
+              // Update flags
+              registers.FC = (byte)((A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.E ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADC A,H: Add H and carry flag to A
-            {0x8C, (n)=>{throw new NotImplementedException();}},
+            {0x8C, (n)=>{
+              ushort A = registers.A;
+              byte initial = registers.A;
+              A += registers.H;
+              A += registers.FC;
+              registers.A = (byte)A;
+
+              // Update flags
+              registers.FC = (byte)((A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.H ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADC A,L: Add and carry flag L to A
-            {0x8D, (n)=>{throw new NotImplementedException();}},
+            {0x8D, (n)=>{
+              ushort A = registers.A;
+              byte initial = registers.A;
+              A += registers.L;
+              A += registers.FC;
+              registers.A = (byte)A;
+
+              // Update flags
+              registers.FC = (byte)((A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.L ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADC A,(HL): Add value pointed by HL and carry flag to A
-            {0x8E, (n)=>{throw new NotImplementedException();}},
+            {0x8E, (n)=>{
+              ushort A = registers.A;
+              byte initial = registers.A;
+              byte m = memory.Read(registers.HL);
+              A += m;
+              A += registers.FC;
+              registers.A = (byte)A;
+
+              // Update flags
+              registers.FC = (byte)((A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ m ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADC A,A: Add A and carry flag to A
-            {0x8F, (n)=>{throw new NotImplementedException();}},
+            {0x8F, (n)=>{
+              ushort A = registers.A;
+              byte initial = registers.A;
+              A += registers.A;
+              A += registers.FC;
+              registers.A = (byte)A;
+
+              // Update flags
+              registers.FC = (byte)((A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.A ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // SUB A,B: Subtract B from A
             {0x90, (n)=>{registers.A -= registers.B;}},
@@ -1674,7 +1763,18 @@ namespace GBSharp.CPU
             {0xCD, (n)=>{throw new NotImplementedException();}},
 
             // ADC A,n: Add 8-bit immediate and carry to A
-            {0xCE, (n)=>{throw new NotImplementedException();}},
+            {0xCE, (n)=>{
+              ushort A = registers.A;
+              byte initial = registers.A;
+              A += n;
+              A += registers.FC;
+              registers.A = (byte)A;
+
+              // Update flags
+              registers.FC = (byte)((A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ n ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // RST 8: Call routine at address 0008h
             {0xCF, (n)=>{throw new NotImplementedException();}},
