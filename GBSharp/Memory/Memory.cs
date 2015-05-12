@@ -22,9 +22,19 @@ namespace GBSharp.Memory
     /// </summary>
     internal Memory()
     {
+      this.memoryHandler = new InitialMemoryHandler();
+      this.memoryHandler.LoadInternalMemory(this.data);
+      ResetMemory();
+    }
+
+    /// <summary>
+    /// Clears the internal memory
+    /// </summary>
+    private void ResetMemory()
+    {
       for (int i = 0; i < this.data.Length; ++i)
       {
-        this.data[i] = 0;
+        this.memoryHandler.Write((ushort)i, 0);
       }
     }
 
@@ -43,7 +53,7 @@ namespace GBSharp.Memory
     {
       // TODO: Perform I/O and block magics?
       // TODO: Notify writes, maybe this is the same.
-      this.data[address] = value;
+      this.memoryHandler.Write(address, value);
     }
 
     /// <summary>
@@ -53,8 +63,7 @@ namespace GBSharp.Memory
     /// <param name="value">16 bit value.</param>
     internal void Write(ushort address, ushort value)
     {
-      this.data[address] = (byte)(value & 0x00FF);
-      this.data[address + 1] = (byte)(value >> 8);
+      this.memoryHandler.Write(address, value);
     }
 
     /// <summary>
@@ -64,7 +73,7 @@ namespace GBSharp.Memory
     /// <returns>8 bit value located at Mem[address]</returns>
     internal byte Read(ushort address)
     {
-      return this.data[address];
+      return this.memoryHandler.Read(address);
     }
 
     #region External memory interface

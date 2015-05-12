@@ -49,6 +49,7 @@
     <Compile Include="IGameBoy.cs" />
     <Compile Include="IMemory.cs" />
     <Compile Include="Memory\Memory.cs" />
+    <Compile Include="Memory\MemoryHandlers\InitialMemoryHandler.cs" />
     <Compile Include="Memory\MemoryHandlers\MemoryHandler.cs" />
     <Compile Include="Memory\MemoryHandlers\MemoryHandlerFactory.cs" />
     <Compile Include="Memory\MemoryHandlers\RomOnlyMemoryHandler.cs" />
