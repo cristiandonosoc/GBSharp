@@ -26,7 +26,7 @@ namespace GBSharp
       this.cpu = new CPU.CPU(this.memory);
       this.cartridge = new Cartridge();
       this.manualResetEvent = new ManualResetEventSlim(false);
-      this.clockThread = new Thread(new ThreadStart(this.Step));
+      this.clockThread = new Thread(new ThreadStart(this.ThreadedRun));
     }
 
     public ICPU CPU
