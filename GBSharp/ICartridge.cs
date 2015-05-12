@@ -18,7 +18,6 @@ namespace GBSharp
         /// </summary>
         CartridgeType Type { get; }
 
-
         /// <summary>
         /// Game title, max 16 characters.
         /// </summary>
