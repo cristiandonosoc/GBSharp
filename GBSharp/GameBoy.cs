@@ -51,6 +51,14 @@ namespace GBSharp
     public void LoadCartridge(byte[] cartridgeData)
     {
       this.cartridge.Load(cartridgeData);
+      // We create the MemoryHandler according to the data
+      // from the cartridge and set it to the memory.
+      // From this point onwards, all the access to memory
+      // are done throught the MemoryHandler
+      this.memory.SetMemoryHandler(
+        GBSharp.Memory.MemoryHandlers.
+        MemoryHandlerFactory.CreateMemoryHandler(this.cartridge));
+
     }
 
     /// <summary>
