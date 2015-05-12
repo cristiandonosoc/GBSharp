@@ -37,5 +37,36 @@ namespace GBSharpTest.Memory.MemoryHandlers
         Assert.AreEqual<byte>(0, handler.Read(address));
       }
     }
+
+    [TestMethod]
+    public void RomOnlyMemoryHandlerDoestWriteInOtherSections()
+    {
+      // Arrange
+      Cartridge cartridge = new Cartridge();
+      cartridge.Load(new byte[65536]);
+      RomOnlyMemoryHandler handler = new RomOnlyMemoryHandler(cartridge);
+      handler.LoadInternalMemory(new byte[65536]);
+      ushort[] addresses = {
+                             0x8000,
+                             0x9010,
+                             0xA100,
+                             0xB000,
+                             0xC468,
+                             0xD000,
+                             0xFFFF
+                           };
+      byte writeValue = 0x22;
+      // Act
+      foreach (ushort address in addresses)
+      {
+        handler.Write(address, writeValue);
+      }
+
+      // Assert
+      foreach (ushort address in addresses)
+      {
+        Assert.AreEqual<byte>(writeValue, handler.Read(address));
+      }
+    }
   }
 }
