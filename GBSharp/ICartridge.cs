@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GBSharp.Catridge
+namespace GBSharp
 {
     public interface ICartridge : IMemory
     {
@@ -17,7 +17,6 @@ namespace GBSharp.Catridge
         /// See: CatridgeType enum.
         /// </summary>
         CartridgeType Type { get; }
-
 
         /// <summary>
         /// Game title, max 16 characters.

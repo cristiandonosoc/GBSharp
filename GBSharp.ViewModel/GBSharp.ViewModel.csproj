@@ -46,7 +46,6 @@
     <Compile Include="MemoryWordViewModel.cs" />
     <Compile Include="MemoryFormatViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RegisterViewModel.cs" />
     <Compile Include="ViewModelBase.cs" />
   </ItemGroup>
   <ItemGroup>

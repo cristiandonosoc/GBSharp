@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GBSharp.Catridge
+namespace GBSharp
 {
     public enum CartridgeType : byte
     {
