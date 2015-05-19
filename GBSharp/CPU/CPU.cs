@@ -1174,19 +1174,46 @@ namespace GBSharp.CPU
 
             // DAA: Adjust A for BCD addition
             {0x27, (n)=>{
-              // TODO: test against this table http://www.z80.info/z80syntx.htm#DAA
-              ushort initial = registers.A;
+              // Based on this table http://www.z80.info/z80syntx.htm#DAA
+              ushort value = registers.A;
 
-              // Check first digit
-              if((registers.FH != 0) || ((registers.A & 0x0F) > 0x09)) {
-                registers.A += 0x06;
+              if (registers.FN == 0) // ADD, ADC, INC
+              {
+                // Check first digit
+                if ((registers.FH != 0) || (value & 0x0F) > 0x09)
+                {
+                  registers.A += 0x06;
+                }
+
+                // Check second digit
+                if ((registers.FC != 0) || ((value & 0xF0) > 0x90) || (((value & 0xF0) > 0x80) && ((value & 0x0F) > 0x09)))
+                {
+                  registers.A += 0x60;
+                  registers.FC = 1;
+                }
+                else
+                {
+                  registers.FC = 0;
+                }
+              }
+              else // SUB, SBC, DEC, NEG
+              {
+                if((registers.FC == 0) && (registers.FH != 0) && ((value & 0xF0) < 0x90) && ((value & 0x0F) > 0x05)) {
+                  registers.A += 0xFA;
+                  registers.FC = 0;
+                } else if ((registers.FC != 0) && (registers.FH == 0) && ((value & 0xF0) > 0x60) && ((value & 0x0F) < 0x0A)) {
+                  registers.A += 0xA0;
+                  registers.FC = 1;
+                } else if ((registers.FC != 0) && (registers.FH != 0) && ((value & 0xF0) > 0x50) && ((value & 0x0F) > 0x05)) {
+                  registers.A += 0x9A;
+                  registers.FC = 1;
+                } else {
+                  registers.FC = 0;
+                }
               }
 
-              // Check second digit
-              if((registers.FC != 0) || ( initial > 0x99 )) {
-                registers.A += 0x60;
-                registers.FC = 1;
-              }
+              registers.FH = 0;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
             }},
 
             // JR Z,n: Relative jump by signed immediate if last result was zero
