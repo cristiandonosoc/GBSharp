@@ -13,6 +13,12 @@ namespace GBSharp.Utils
 
   static class UtilFuncs
   {
+    public static byte TestBit(byte word, int bit)
+    {
+      byte mask = (byte)(1 << bit);
+      return (byte)(word & mask);
+    }
+
     public static byte SetBit(byte word, int bit)
     {
       byte mask = (byte)(1 << bit);

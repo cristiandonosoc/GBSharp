@@ -2308,196 +2308,388 @@ namespace GBSharp.CPU
         }},
 
         // BIT 0,B: Test bit 0 of B
-        {0x40, (n) => { throw new NotImplementedException(); }},
+        {0x40, (n) => { registers.FZ = UtilFuncs.TestBit(registers.B, 0);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 0,C: Test bit 0 of C
-        {0x41, (n) => { throw new NotImplementedException(); }},
+        {0x41, (n) => { registers.FZ = UtilFuncs.TestBit(registers.C, 0);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 0,D: Test bit 0 of D
-        {0x42, (n) => { throw new NotImplementedException(); }},
+        {0x42, (n) => { registers.FZ = UtilFuncs.TestBit(registers.D, 0);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 0,E: Test bit 0 of E
-        {0x43, (n) => { throw new NotImplementedException(); }},
+        {0x43, (n) => { registers.FZ = UtilFuncs.TestBit(registers.E, 0);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 0,H: Test bit 0 of H
-        {0x44, (n) => { throw new NotImplementedException(); }},
+        {0x44, (n) => { registers.FZ = UtilFuncs.TestBit(registers.H, 0);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 0,L: Test bit 0 of L
-        {0x45, (n) => { throw new NotImplementedException(); }},
+        {0x45, (n) => { registers.FZ = UtilFuncs.TestBit(registers.L, 0);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 0,(HL): Test bit 0 of value pointed by HL
-        {0x46, (n) => { throw new NotImplementedException(); }},
+        {0x46, (n) => { registers.FZ = UtilFuncs.TestBit(memory.Read(registers.HL), 0);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 0,A: Test bit 0 of A
-        {0x47, (n) => { throw new NotImplementedException(); }},
+        {0x47, (n) => { registers.FZ = UtilFuncs.TestBit(registers.A, 0);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 1,B: Test bit 1 of B
-        {0x48, (n) => { throw new NotImplementedException(); }},
+        {0x48, (n) => { registers.FZ = UtilFuncs.TestBit(registers.B, 1);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 1,C: Test bit 1 of C
-        {0x49, (n) => { throw new NotImplementedException(); }},
+        {0x49, (n) => { registers.FZ = UtilFuncs.TestBit(registers.C, 1);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 1,D: Test bit 1 of D
-        {0x4A, (n) => { throw new NotImplementedException(); }},
+        {0x4A, (n) => { registers.FZ = UtilFuncs.TestBit(registers.D, 1);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 1,E: Test bit 1 of E
-        {0x4B, (n) => { throw new NotImplementedException(); }},
+        {0x4B, (n) => { registers.FZ = UtilFuncs.TestBit(registers.E, 1);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 1,H: Test bit 1 of H
-        {0x4C, (n) => { throw new NotImplementedException(); }},
+        {0x4C, (n) => { registers.FZ = UtilFuncs.TestBit(registers.H, 1);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 1,L: Test bit 1 of L
-        {0x4D, (n) => { throw new NotImplementedException(); }},
+        {0x4D, (n) => { registers.FZ = UtilFuncs.TestBit(registers.L, 1);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 1,(HL): Test bit 1 of value pointed by HL
-        {0x4E, (n) => { throw new NotImplementedException(); }},
+        {0x4E, (n) => { registers.FZ = UtilFuncs.TestBit(memory.Read(registers.HL), 1);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 1,A: Test bit 1 of A
-        {0x4F, (n) => { throw new NotImplementedException(); }},
+        {0x4F, (n) => { registers.FZ = UtilFuncs.TestBit(registers.A, 1);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 2,B: Test bit 2 of B
-        {0x50, (n) => { throw new NotImplementedException(); }},
+        {0x50, (n) => { registers.FZ = UtilFuncs.TestBit(registers.B, 2);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 2,C: Test bit 2 of C
-        {0x51, (n) => { throw new NotImplementedException(); }},
+        {0x51, (n) => { registers.FZ = UtilFuncs.TestBit(registers.C, 2);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 2,D: Test bit 2 of D
-        {0x52, (n) => { throw new NotImplementedException(); }},
+        {0x52, (n) => { registers.FZ = UtilFuncs.TestBit(registers.D, 2);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 2,E: Test bit 2 of E
-        {0x53, (n) => { throw new NotImplementedException(); }},
+        {0x53, (n) => { registers.FZ = UtilFuncs.TestBit(registers.E, 2);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 2,H: Test bit 2 of H
-        {0x54, (n) => { throw new NotImplementedException(); }},
+        {0x54, (n) => { registers.FZ = UtilFuncs.TestBit(registers.H, 2);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 2,L: Test bit 2 of L
-        {0x55, (n) => { throw new NotImplementedException(); }},
+        {0x55, (n) => { registers.FZ = UtilFuncs.TestBit(registers.L, 2);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 2,(HL): Test bit 2 of value pointed by HL
-        {0x56, (n) => { throw new NotImplementedException(); }},
+        {0x56, (n) => { registers.FZ = UtilFuncs.TestBit(memory.Read(registers.HL), 2);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 2,A: Test bit 2 of A
-        {0x57, (n) => { throw new NotImplementedException(); }},
+        {0x57, (n) => { registers.FZ = UtilFuncs.TestBit(registers.A, 2);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 3,B: Test bit 3 of B
-        {0x58, (n) => { throw new NotImplementedException(); }},
+        {0x58, (n) => { registers.FZ = UtilFuncs.TestBit(registers.B, 3);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 3,C: Test bit 3 of C
-        {0x59, (n) => { throw new NotImplementedException(); }},
+        {0x59, (n) => { registers.FZ = UtilFuncs.TestBit(registers.C, 3);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 3,D: Test bit 3 of D
-        {0x5A, (n) => { throw new NotImplementedException(); }},
+        {0x5A, (n) => { registers.FZ = UtilFuncs.TestBit(registers.D, 3);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 3,E: Test bit 3 of E
-        {0x5B, (n) => { throw new NotImplementedException(); }},
+        {0x5B, (n) => { registers.FZ = UtilFuncs.TestBit(registers.E, 3);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 3,H: Test bit 3 of H
-        {0x5C, (n) => { throw new NotImplementedException(); }},
+        {0x5C, (n) => { registers.FZ = UtilFuncs.TestBit(registers.H, 3);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 3,L: Test bit 3 of L
-        {0x5D, (n) => { throw new NotImplementedException(); }},
+        {0x5D, (n) => { registers.FZ = UtilFuncs.TestBit(registers.L, 3);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 3,(HL): Test bit 3 of value pointed by HL
-        {0x5E, (n) => { throw new NotImplementedException(); }},
+        {0x5E, (n) => { registers.FZ = UtilFuncs.TestBit(memory.Read(registers.HL), 3);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 3,A: Test bit 3 of A
-        {0x5F, (n) => { throw new NotImplementedException(); }},
+        {0x5F, (n) => { registers.FZ = UtilFuncs.TestBit(registers.A, 3);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 4,B: Test bit 4 of B
-        {0x60, (n) => { throw new NotImplementedException(); }},
+        {0x60, (n) => { registers.FZ = UtilFuncs.TestBit(registers.B, 4);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 4,C: Test bit 4 of C
-        {0x61, (n) => { throw new NotImplementedException(); }},
+        {0x61, (n) => { registers.FZ = UtilFuncs.TestBit(registers.C, 4);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 4,D: Test bit 4 of D
-        {0x62, (n) => { throw new NotImplementedException(); }},
+        {0x62, (n) => { registers.FZ = UtilFuncs.TestBit(registers.D, 4);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 4,E: Test bit 4 of E
-        {0x63, (n) => { throw new NotImplementedException(); }},
+        {0x63, (n) => { registers.FZ = UtilFuncs.TestBit(registers.E, 4);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 4,H: Test bit 4 of H
-        {0x64, (n) => { throw new NotImplementedException(); }},
+        {0x64, (n) => { registers.FZ = UtilFuncs.TestBit(registers.H, 4);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 4,L: Test bit 4 of L
-        {0x65, (n) => { throw new NotImplementedException(); }},
+        {0x65, (n) => { registers.FZ = UtilFuncs.TestBit(registers.L, 4);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 4,(HL): Test bit 4 of value pointed by HL
-        {0x66, (n) => { throw new NotImplementedException(); }},
+        {0x66, (n) => { registers.FZ = UtilFuncs.TestBit(memory.Read(registers.HL), 4);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 4,A: Test bit 4 of A
-        {0x67, (n) => { throw new NotImplementedException(); }},
+        {0x67, (n) => { registers.FZ = UtilFuncs.TestBit(registers.A, 4);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 5,B: Test bit 5 of B
-        {0x68, (n) => { throw new NotImplementedException(); }},
+        {0x68, (n) => { registers.FZ = UtilFuncs.TestBit(registers.B, 5);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 5,C: Test bit 5 of C
-        {0x69, (n) => { throw new NotImplementedException(); }},
+        {0x69, (n) => { registers.FZ = UtilFuncs.TestBit(registers.C, 5);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 5,D: Test bit 5 of D
-        {0x6A, (n) => { throw new NotImplementedException(); }},
+        {0x6A, (n) => { registers.FZ = UtilFuncs.TestBit(registers.D, 5);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 5,E: Test bit 5 of E
-        {0x6B, (n) => { throw new NotImplementedException(); }},
+        {0x6B, (n) => { registers.FZ = UtilFuncs.TestBit(registers.E, 5);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 5,H: Test bit 5 of H
-        {0x6C, (n) => { throw new NotImplementedException(); }},
+        {0x6C, (n) => { registers.FZ = UtilFuncs.TestBit(registers.H, 5);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 5,L: Test bit 5 of L
-        {0x6D, (n) => { throw new NotImplementedException(); }},
+        {0x6D, (n) => { registers.FZ = UtilFuncs.TestBit(registers.L, 5);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 5,(HL): Test bit 5 of value pointed by HL
-        {0x6E, (n) => { throw new NotImplementedException(); }},
+        {0x6E, (n) => { registers.FZ = UtilFuncs.TestBit(memory.Read(registers.HL), 5);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 5,A: Test bit 5 of A
-        {0x6F, (n) => { throw new NotImplementedException(); }},
+        {0x6F, (n) => { registers.FZ = UtilFuncs.TestBit(registers.A, 5);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 6,B: Test bit 6 of B
-        {0x70, (n) => { throw new NotImplementedException(); }},
+        {0x70, (n) => { registers.FZ = UtilFuncs.TestBit(registers.B, 6);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 6,C: Test bit 6 of C
-        {0x71, (n) => { throw new NotImplementedException(); }},
+        {0x71, (n) => { registers.FZ = UtilFuncs.TestBit(registers.C, 6);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 6,D: Test bit 6 of D
-        {0x72, (n) => { throw new NotImplementedException(); }},
+        {0x72, (n) => { registers.FZ = UtilFuncs.TestBit(registers.D, 6);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 6,E: Test bit 6 of E
-        {0x73, (n) => { throw new NotImplementedException(); }},
+        {0x73, (n) => { registers.FZ = UtilFuncs.TestBit(registers.E, 6);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 6,H: Test bit 6 of H
-        {0x74, (n) => { throw new NotImplementedException(); }},
+        {0x74, (n) => { registers.FZ = UtilFuncs.TestBit(registers.H, 6);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 6,L: Test bit 6 of L
-        {0x75, (n) => { throw new NotImplementedException(); }},
+        {0x75, (n) => { registers.FZ = UtilFuncs.TestBit(registers.L, 6);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 6,(HL): Test bit 6 of value pointed by HL
-        {0x76, (n) => { throw new NotImplementedException(); }},
+        {0x76, (n) => { registers.FZ = UtilFuncs.TestBit(memory.Read(registers.HL), 6);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 6,A: Test bit 6 of A
-        {0x77, (n) => { throw new NotImplementedException(); }},
+        {0x77, (n) => { registers.FZ = UtilFuncs.TestBit(registers.A, 6);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 7,B: Test bit 7 of B
-        {0x78, (n) => { throw new NotImplementedException(); }},
+        {0x78, (n) => { registers.FZ = UtilFuncs.TestBit(registers.B, 7);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 7,C: Test bit 7 of C
-        {0x79, (n) => { throw new NotImplementedException(); }},
+        {0x79, (n) => { registers.FZ = UtilFuncs.TestBit(registers.C, 7);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 7,D: Test bit 7 of D
-        {0x7A, (n) => { throw new NotImplementedException(); }},
+        {0x7A, (n) => { registers.FZ = UtilFuncs.TestBit(registers.D, 7);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 7,E: Test bit 7 of E
-        {0x7B, (n) => { throw new NotImplementedException(); }},
+        {0x7B, (n) => { registers.FZ = UtilFuncs.TestBit(registers.E, 7);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 7,H: Test bit 7 of H
-        {0x7C, (n) => { throw new NotImplementedException(); }},
+        {0x7C, (n) => { registers.FZ = UtilFuncs.TestBit(registers.H, 7);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 7,L: Test bit 7 of L
-        {0x7D, (n) => { throw new NotImplementedException(); }},
+        {0x7D, (n) => { registers.FZ = UtilFuncs.TestBit(registers.L, 7);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 7,(HL): Test bit 7 of value pointed by HL
-        {0x7E, (n) => { throw new NotImplementedException(); }},
+        {0x7E, (n) => { registers.FZ = UtilFuncs.TestBit(memory.Read(registers.HL), 7);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 7,A: Test bit 7 of A
-        {0x7F, (n) => { throw new NotImplementedException(); }},
+        {0x7F, (n) => { registers.FZ = UtilFuncs.TestBit(registers.A, 7);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // RES 0,B: Clear (reset) bit 0 of B
         {0x80, (n) => { registers.B = UtilFuncs.ClearBit(registers.B, 0); }},
