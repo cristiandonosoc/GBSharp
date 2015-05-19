@@ -9,6 +9,7 @@ namespace GBSharp.CPU
     internal CPURegisters registers;
     internal Memory.Memory memory;
     internal ulong clock;
+    internal ushort nextPC;
 
     #region Lengths and clocks
     Dictionary<byte, byte> instructionLengths = new Dictionary<byte, byte>() {
@@ -3007,11 +3008,15 @@ namespace GBSharp.CPU
         clocks = this.CBInstructionClocks[(byte)opcode];
       }
 
-      // Move program counter!
-      this.registers.PC += instructionLength;
+      // Prepare for program counter movement, but wait for instruction execution.
+      // Overwrite nextPC in the instruction lambdas if you want to implement jumps.
+      this.nextPC = (ushort)(this.registers.PC + instructionLength);
 
       // Execute instruction
       instruction(literal);
+
+      // Push the next program counter value into the real program counter!
+      this.registers.PC = this.nextPC;
 
       // Update clock
       this.clock += clocks;

@@ -31,6 +31,11 @@ namespace GBSharp
         // 2 byte registers
         [FieldOffset(8)]
         public ushort SP;
+
+        /// <summary>
+        /// Program Counter. Do not write directly to this register to implement jumps.
+        /// Write to CPU.nextPC intead, that's the value that is going to be pushed to the PC at the end of the step.
+        /// </summary>
         [FieldOffset(10)]
         public ushort PC;
 
