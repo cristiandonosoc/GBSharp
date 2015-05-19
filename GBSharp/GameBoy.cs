@@ -67,7 +67,7 @@ namespace GBSharp
     /// </summary>
     public void Step()
     {
-      // this.cpu.Step();
+      this.cpu.Step();
     }
 
     /// <summary>

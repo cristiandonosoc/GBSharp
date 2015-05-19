@@ -8,6 +8,8 @@ namespace GBSharp.CPU
   {
     internal CPURegisters registers;
     internal Memory.Memory memory;
+    internal ulong clock;
+    internal ushort nextPC;
 
     #region Lengths and clocks
     Dictionary<byte, byte> instructionLengths = new Dictionary<byte, byte>() {
@@ -1174,19 +1176,46 @@ namespace GBSharp.CPU
 
             // DAA: Adjust A for BCD addition
             {0x27, (n)=>{
-              // TODO: test against this table http://www.z80.info/z80syntx.htm#DAA
-              ushort initial = registers.A;
+              // Based on this table http://www.z80.info/z80syntx.htm#DAA
+              ushort value = registers.A;
 
-              // Check first digit
-              if((registers.FH != 0) || ((registers.A & 0x0F) > 0x09)) {
-                registers.A += 0x06;
+              if (registers.FN == 0) // ADD, ADC, INC
+              {
+                // Check first digit
+                if ((registers.FH != 0) || (value & 0x0F) > 0x09)
+                {
+                  registers.A += 0x06;
+                }
+
+                // Check second digit
+                if ((registers.FC != 0) || ((value & 0xF0) > 0x90) || (((value & 0xF0) > 0x80) && ((value & 0x0F) > 0x09)))
+                {
+                  registers.A += 0x60;
+                  registers.FC = 1;
+                }
+                else
+                {
+                  registers.FC = 0;
+                }
+              }
+              else // SUB, SBC, DEC, NEG
+              {
+                if((registers.FC == 0) && (registers.FH != 0) && ((value & 0xF0) < 0x90) && ((value & 0x0F) > 0x05)) {
+                  registers.A += 0xFA;
+                  registers.FC = 0;
+                } else if ((registers.FC != 0) && (registers.FH == 0) && ((value & 0xF0) > 0x60) && ((value & 0x0F) < 0x0A)) {
+                  registers.A += 0xA0;
+                  registers.FC = 1;
+                } else if ((registers.FC != 0) && (registers.FH != 0) && ((value & 0xF0) > 0x50) && ((value & 0x0F) > 0x05)) {
+                  registers.A += 0x9A;
+                  registers.FC = 1;
+                } else {
+                  registers.FC = 0;
+                }
               }
 
-              // Check second digit
-              if((registers.FC != 0) || ( initial > 0x99 )) {
-                registers.A += 0x60;
-                registers.FC = 1;
-              }
+              registers.FH = 0;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
             }},
 
             // JR Z,n: Relative jump by signed immediate if last result was zero
@@ -3081,6 +3110,8 @@ namespace GBSharp.CPU
 
     public CPU(Memory.Memory memory)
     {
+      this.clock = 0;
+
       //Create Instruction Lambdas
       CreateInstructionLambdas();
       CreateCBInstructionLambdas();
@@ -3126,6 +3157,61 @@ namespace GBSharp.CPU
       this.memory.Write(0xFF4B, 0x00); // WX
       this.memory.Write(0xFFFF, 0x00); // IE
 
+    }
+
+    /// <summary>
+    /// Executes one instruction, requiring arbitrary machine and clock cycles.
+    /// </summary>
+    public void Step()
+    {
+      // Instruction fetch and decode
+      byte instructionLength;
+      byte clocks;
+      Action<ushort> instruction;
+      ushort literal = 0;
+      ushort opcode = this.memory.Read(this.registers.PC);
+
+      if (opcode != 0xCB)
+      {
+        // Normal instructions
+        instructionLength = this.instructionLengths[(byte)opcode];
+
+        // Extract literal
+        if(instructionLength == 2) {
+          // 8 bit literal
+          literal = this.memory.Read((ushort)(this.registers.PC + 1));
+        } else if (instructionLength == 3){
+          // 16 bit literal, little endian
+          literal = this.memory.Read((ushort)(this.registers.PC + 1));
+          literal += (ushort)(this.memory.Read((ushort)(this.registers.PC + 2)) << 8);
+        }
+
+        instruction = this.instructionLambdas[(byte)opcode];
+        clocks = this.instructionClocks[(byte)opcode];
+
+      } else {
+        // CB instructions block
+        opcode <<= 8;
+        opcode += this.memory.Read((ushort)(this.registers.PC + 1));
+        instructionLength = this.CBInstructionLengths[(byte)opcode];
+        // There is no literal in CB instructions!
+
+        instruction = this.CBInstructionLambdas[(byte)opcode];
+        clocks = this.CBInstructionClocks[(byte)opcode];
+      }
+
+      // Prepare for program counter movement, but wait for instruction execution.
+      // Overwrite nextPC in the instruction lambdas if you want to implement jumps.
+      this.nextPC = (ushort)(this.registers.PC + instructionLength);
+
+      // Execute instruction
+      instruction(literal);
+
+      // Push the next program counter value into the real program counter!
+      this.registers.PC = this.nextPC;
+
+      // Update clock
+      this.clock += clocks;
     }
 
 
