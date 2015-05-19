@@ -8,6 +8,7 @@ namespace GBSharp.CPU
   {
     internal CPURegisters registers;
     internal Memory.Memory memory;
+    internal ulong clock;
 
     #region Lengths and clocks
     Dictionary<byte, byte> instructionLengths = new Dictionary<byte, byte>() {
@@ -2916,6 +2917,8 @@ namespace GBSharp.CPU
 
     public CPU(Memory.Memory memory)
     {
+      this.clock = 0;
+
       //Create Instruction Lambdas
       CreateInstructionLambdas();
       CreateCBInstructionLambdas();
@@ -2961,6 +2964,57 @@ namespace GBSharp.CPU
       this.memory.Write(0xFF4B, 0x00); // WX
       this.memory.Write(0xFFFF, 0x00); // IE
 
+    }
+
+    /// <summary>
+    /// Executes one instruction, requiring arbitrary machine and clock cycles.
+    /// </summary>
+    public void Step()
+    {
+      // Instruction fetch and decode
+      byte instructionLength;
+      byte clocks;
+      Action<ushort> instruction;
+      ushort literal = 0;
+      ushort opcode = this.memory.Read(this.registers.PC);
+
+      if (opcode != 0xCB)
+      {
+        // Normal instructions
+        instructionLength = this.instructionLengths[(byte)opcode];
+
+        // Extract literal
+        if(instructionLength == 2) {
+          // 8 bit literal
+          literal = this.memory.Read((ushort)(this.registers.PC + 1));
+        } else if (instructionLength == 3){
+          // 16 bit literal, little endian
+          literal = this.memory.Read((ushort)(this.registers.PC + 1));
+          literal += (ushort)(this.memory.Read((ushort)(this.registers.PC + 2)) << 8);
+        }
+
+        instruction = this.instructionLambdas[(byte)opcode];
+        clocks = this.instructionClocks[(byte)opcode];
+
+      } else {
+        // CB instructions block
+        opcode <<= 8;
+        opcode += this.memory.Read((ushort)(this.registers.PC + 1));
+        instructionLength = this.CBInstructionLengths[(byte)opcode];
+        // There is no literal in CB instructions!
+
+        instruction = this.CBInstructionLambdas[(byte)opcode];
+        clocks = this.CBInstructionClocks[(byte)opcode];
+      }
+
+      // Move program counter!
+      this.registers.PC += instructionLength;
+
+      // Execute instruction
+      instruction(literal);
+
+      // Update clock
+      this.clock += clocks;
     }
 
 
