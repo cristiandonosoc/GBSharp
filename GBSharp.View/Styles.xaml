@@ -4,28 +4,50 @@
   <SolidColorBrush x:Key="MedBrush" Color="#595B68"/>
   <SolidColorBrush x:Key="LightBrush" Color="#BFBEBA"/>
   <SolidColorBrush x:Key="HoverBrush" Color="White"/>
+  <SolidColorBrush x:Key="TextBrush" Color="#0E1879"/>
 
+  <Style x:Key="ControlStyle" TargetType="{x:Type Control}">
+    <Setter Property="FontFamily" Value="Nes Controller"/>
+    <Setter Property="FontSize" Value="12"/>
+  </Style>
+  
   <Style TargetType="Grid" x:Key="SpacingGrid">
     <Setter Property="Margin" Value="5"/>
   </Style>
   <Style TargetType="Grid" x:Key="SubContentGrid">
-    <Setter Property="Margin" Value="1"/>
+    <Setter Property="Margin" Value="5"/>
+    <Setter Property="Background" Value="{StaticResource LightBrush}" />
   </Style>
   <Style x:Key="MainContentGrid" TargetType="Grid">
     <Setter Property="Background" Value="{StaticResource MedBrush}" />
   </Style>
-  
 
 
-  <Style TargetType="TextBlock">
-    <Setter Property="Foreground" Value="{StaticResource LightBrush}"/>
-    <Setter Property="TextWrapping" Value="Wrap"/>
+  <Style TargetType="ComboBox" BasedOn="{StaticResource ControlStyle}">
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="Margin" Value="1"/>
+
   </Style>
 
-  <Style TargetType="Button" >
-    <Setter Property="Foreground" Value="{StaticResource LightBrush}"/>
-    <Setter Property="Background" Value="{StaticResource DarkBrush}"/>
-    <Setter Property="BorderThickness" Value="0"/>
+  <Style TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="Nes Controller"/>
+    <Setter Property="FontSize" Value="14"/>
+    <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="Margin" Value="1"/>
+  </Style>
+
+  <Style TargetType="TextBlock" x:Key="NumericText">
+    <Setter Property="FontFamily" Value="Digital-7"/>
+    <Setter Property="FontSize" Value="11"/>
+    </Style>
+
+  <Style TargetType="Button" BasedOn="{StaticResource ControlStyle}">
+    <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+    <Setter Property="Background" Value="{StaticResource LightBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="BorderBrush" Value="{StaticResource TextBrush}"/>
     <Setter Property="Padding" Value="5,2"/>
     <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
     <Setter Property="Template">

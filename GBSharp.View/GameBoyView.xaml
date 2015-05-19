@@ -16,8 +16,31 @@
       <ColumnDefinition Width="*"></ColumnDefinition>
     </Grid.ColumnDefinitions>
     <ContentPresenter Content="{Binding Cartridge}"/>
-    <Grid Grid.Column="1" Style="{DynamicResource SubContentGrid}">
+    <Grid Grid.Column="1" Style="{DynamicResource MainContentGrid}">
       <Image Source="Images/Nintendo_Gameboy.jpg"></Image>
+      <Button HorizontalAlignment="Left" Margin="296,344,0,0" VerticalAlignment="Top" Width="44" Height="44">
+        <Button.Template>
+          <ControlTemplate TargetType="Button">
+            <Grid>
+              <Ellipse Stroke="Transparent" Fill="Transparent">
+              </Ellipse>
+              <ContentPresenter HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"/>
+            </Grid>
+          </ControlTemplate>
+        </Button.Template>
+      </Button>
+      <Button HorizontalAlignment="Left" Margin="242,369,0,0" VerticalAlignment="Top" Width="44" Height="44">
+        <Button.Template>
+          <ControlTemplate TargetType="{x:Type Button}">
+            <Grid>
+              <Ellipse Stroke="Transparent" Fill="Transparent"/>
+              <ContentPresenter HorizontalAlignment="Center"
+      					VerticalAlignment="Center"/>
+            </Grid>
+          </ControlTemplate>
+        </Button.Template>
+      </Button>
     </Grid>
   </Grid>
 </Window>

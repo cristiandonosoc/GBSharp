@@ -48,8 +48,9 @@ namespace GBSharp.ViewModel
 
     private void NotifyCartridgeFileLoaded()
     {
-      if (CartridgeFileLoaded != null)
-        CartridgeFileLoaded(File.ReadAllBytes(_filePath));
+      if (CartridgeFileLoaded != null && _filePath != null)
+        if(File.Exists(_filePath))
+          CartridgeFileLoaded(File.ReadAllBytes(_filePath));
     }
 
     public CartridgeViewModel(ICartridge cartridge)

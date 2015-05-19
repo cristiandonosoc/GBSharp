@@ -15,9 +15,9 @@
           <ColumnDefinition Width="Auto"></ColumnDefinition>
           <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <TextBlock Text="{Binding Address}"></TextBlock>
-        <TextBlock Grid.Column="1" Text="-> "></TextBlock>
-        <TextBlock Grid.Column="2" Text="{Binding Value}"></TextBlock>
+        <TextBlock Text="{Binding Address}" Style="{StaticResource NumericText}"></TextBlock>
+        <TextBlock Grid.Column="1" Text="-> " Style="{StaticResource NumericText}"></TextBlock>
+        <TextBlock Grid.Column="2" Text="{Binding Value}" Style="{StaticResource NumericText}"></TextBlock>
       </Grid>
 
     </DataTemplate>
