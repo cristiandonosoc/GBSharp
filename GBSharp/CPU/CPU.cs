@@ -7,7 +7,7 @@ namespace GBSharp.CPU
   class CPU : ICPU
   {
     internal CPURegisters registers;
-    internal Memory.Memory memory;
+    internal MemorySpace.Memory memory;
     internal ulong clock;
     internal ushort nextPC;
 
@@ -3108,7 +3108,7 @@ namespace GBSharp.CPU
 
     #endregion
 
-    public CPU(Memory.Memory memory)
+    public CPU(MemorySpace.Memory memory)
     {
       this.clock = 0;
 

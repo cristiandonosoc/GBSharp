@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Data;
+using GBSharp.MemorySpace.MemoryHandlers;
 
 namespace GBSharpTest.CPU
 {

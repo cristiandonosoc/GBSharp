@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using GBSharp.Catridge;
 using GBSharp.CPU;
-using GBSharp.Memory;
+using GBSharp.MemorySpace;
 using System;
 
 namespace GBSharp
@@ -9,7 +9,7 @@ namespace GBSharp
   public class GameBoy : IGameBoy
   {
     private CPU.CPU cpu;
-    private Memory.Memory memory;
+    private MemorySpace.Memory memory;
     private Cartridge cartridge;
     private bool run;
     private Thread clockThread;
@@ -22,7 +22,7 @@ namespace GBSharp
     public GameBoy()
     {
       this.run = false;
-      this.memory = new Memory.Memory();
+      this.memory = new MemorySpace.Memory();
       this.cpu = new CPU.CPU(this.memory);
       this.cartridge = new Cartridge();
       this.manualResetEvent = new ManualResetEventSlim(false);
@@ -56,7 +56,7 @@ namespace GBSharp
       // From this point onwards, all the access to memory
       // are done throught the MemoryHandler
       this.memory.SetMemoryHandler(
-        GBSharp.Memory.MemoryHandlers.
+        GBSharp.MemorySpace.MemoryHandlers.
         MemoryHandlerFactory.CreateMemoryHandler(this.cartridge));
 
     }

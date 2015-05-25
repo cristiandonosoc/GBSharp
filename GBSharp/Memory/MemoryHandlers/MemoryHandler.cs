@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GBSharp.Catridge;
 
-namespace GBSharp.Memory.MemoryHandlers
+namespace GBSharp.MemorySpace.MemoryHandlers
 {
     /// <summary>
     /// A memory handler contains the logic for the management
