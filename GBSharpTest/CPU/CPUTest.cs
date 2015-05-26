@@ -1,9 +1,10 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Data;
-using GBSharp.MemorySpace.MemoryHandlers;
+using GBSharp.MemorySpace;
+using GBSharp.CPUSpace;
 
-namespace GBSharpTest.CPU
+namespace GBSharpTest.CPUSpace
 {
   [TestClass]
   public class CPUTest
@@ -11,10 +12,10 @@ namespace GBSharpTest.CPU
     // NOTE(Cristián): We need the damned accessor
     // because it will be called to assing the context
     // Microsoft, nice way of not documenting it!
-    private TestContext testContext
+    private TestContext testContext;
     public TestContext TestContext
     {
-      get{ return testContext }
+      get { return testContext; }
       set{ testContext = value; }
     }        
 

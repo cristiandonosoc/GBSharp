@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using GBSharp.Utils;
 
-namespace GBSharp.CPU
+namespace GBSharp.CPUSpace
 {
   class CPU : ICPU
   {

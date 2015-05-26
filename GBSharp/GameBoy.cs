@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 using GBSharp.Catridge;
-using GBSharp.CPU;
+using GBSharp.CPUSpace;
 using GBSharp.MemorySpace;
 using System;
 
@@ -8,7 +8,7 @@ namespace GBSharp
 {
   public class GameBoy : IGameBoy
   {
-    private CPU.CPU cpu;
+    private CPUSpace.CPU cpu;
     private MemorySpace.Memory memory;
     private Cartridge cartridge;
     private bool run;
@@ -23,7 +23,7 @@ namespace GBSharp
     {
       this.run = false;
       this.memory = new MemorySpace.Memory();
-      this.cpu = new CPU.CPU(this.memory);
+      this.cpu = new CPUSpace.CPU(this.memory);
       this.cartridge = new Cartridge();
       this.manualResetEvent = new ManualResetEventSlim(false);
       this.clockThread = new Thread(new ThreadStart(this.ThreadedRun));
