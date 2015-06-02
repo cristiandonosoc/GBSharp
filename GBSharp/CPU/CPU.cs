@@ -1070,22 +1070,50 @@ namespace GBSharp.CPUSpace
             {0x03, (n)=>{ registers.BC++; }},
 
             // INC B: Increment B
-            {0x04, (n)=>{ registers.B++; }},
+            {0x04, (n)=>{
+              registers.B++;
+
+              registers.FZ = (byte)(registers.B == 0 ? 1 : 0);
+              registers.FN = 0;
+              registers.FH = (byte)((registers.B & 0x0F) == 0x00 ? 1 : 0);
+            }},
 
             // DEC B: Decrement B
-            {0x05, (n)=>{ registers.B--; }},
+            {0x05, (n)=>{
+              registers.B--;
+
+              registers.FZ = (byte)(registers.B == 0 ? 1 : 0);
+              registers.FN = 1;
+              registers.FH = (byte)((registers.B & 0x0F) == 0x0F ? 1 : 0);
+            }},
 
             // LD B,n: Load 8-bit immediate into B
             {0x06, (n)=>{ registers.B = (byte)n; }},
 
             // RLC A: Rotate A left with carry
-            {0x07, (n)=>{throw new NotImplementedException();}},
+            {0x07, (n)=>{
+              byte bit7 = (byte)(registers.A >> 7);
+              registers.A <<= 1;
+              registers.A += bit7;
+
+              registers.FZ = 0; // TODO: CHECK THIS, 2 sources say it's 0, 1 n/a, 1 conditional.
+              registers.FN = 0;
+              registers.FH = 0;
+              registers.FC = bit7;
+            }},
 
             // LD (nn),SP: Save SP to given address
             {0x08, (n)=>memory.Write(n, registers.SP)},
 
             // ADD HL,BC: Add 16-bit BC to HL
-            {0x09, (n)=>{ registers.HL += registers.BC; }},
+            {0x09, (n)=>{
+              var initialH = registers.H;
+              registers.HL += registers.BC;
+
+              registers.FN = 0;
+              registers.FH = (byte)(((registers.H ^ registers.B ^ initialH) & 0x10) == 0 ? 0 : 1);
+              registers.FC = (byte)(initialH > registers.H ? 1 : 0);
+            }},
 
             // LD A,(BC): Load A from address pointed to by BC
             {0x0A, (n) => registers.A = memory.Read(registers.BC)},
@@ -1094,16 +1122,37 @@ namespace GBSharp.CPUSpace
             {0x0B, (n) => { registers.BC--; }},
 
             // INC C: Increment C
-            {0x0C, (n) => { registers.C++; }},
+            {0x0C, (n) => {
+              registers.C++;
+
+              registers.FZ = (byte)(registers.C == 0 ? 1 : 0);
+              registers.FN = 0;
+              registers.FH = (byte)((registers.C & 0x0F) == 0x00 ? 1 : 0);
+            }},
 
             // DEC C: Decrement C
-            {0x0D, (n) => { registers.C--; }},
+            {0x0D, (n) => {
+              registers.C--;
+
+              registers.FZ = (byte)(registers.C == 0 ? 1 : 0);
+              registers.FN = 1;
+              registers.FH = (byte)((registers.C & 0x0F) == 0x0F ? 1 : 0);
+            }},
 
             // LD C,n: Load 8-bit immediate into C
             {0x0E, (n)=>{ registers.C = (byte)n;}},
 
             // RRC A: Rotate A right with carry
-            {0x0F, (n)=>{throw new NotImplementedException();}},
+            {0x0F, (n)=>{
+              byte bit0 = (byte)(registers.A & 0x01);
+              registers.A >>= 1;
+              registers.A += (byte)(registers.FC << 7);
+              
+              registers.FZ = 0; // TODO: CHECK THIS, 2 sources say it's 0, 1 n/a, 1 conditional.
+              registers.FN = 0;
+              registers.FH = 0;
+              registers.FC = bit0;
+            }},
 
             // STOP: Stop processor
             {0x10, (n)=>{throw new NotImplementedException();}},
@@ -1118,10 +1167,22 @@ namespace GBSharp.CPUSpace
             {0x13, (n)=>{registers.DE++;}},
 
             // INC D: Increment D
-            {0x14, (n)=>{registers.D++;}},
+            {0x14, (n)=>{
+              registers.D++;
+
+              registers.FZ = (byte)(registers.D == 0 ? 1 : 0);
+              registers.FN = 0;
+              registers.FH = (byte)((registers.D & 0x0F) == 0x00 ? 1 : 0);
+            }},
 
             // DEC D: Decrement D
-            {0x15, (n)=>{registers.D--;}},
+            {0x15, (n)=>{
+              registers.D--;
+
+              registers.FZ = (byte)(registers.D == 0 ? 1 : 0);
+              registers.FN = 1;
+              registers.FH = (byte)((registers.D & 0x0F) == 0x0F ? 1 : 0);
+            }},
 
             // LD D,n: Load 8-bit immediate into D
             {0x16, (n)=>{registers.D = (byte)n;}},
@@ -1133,7 +1194,14 @@ namespace GBSharp.CPUSpace
             {0x18, (n)=>{throw new NotImplementedException();}},
 
             // ADD HL,DE: Add 16-bit DE to HL
-            {0x19, (n)=>{registers.HL += registers.DE;}},
+            {0x19, (n)=>{
+              var initialH = registers.H;
+              registers.HL += registers.DE;
+
+              registers.FN = 0;
+              registers.FH = (byte)(((registers.H ^ registers.D ^ initialH) & 0x10) == 0 ? 0 : 1);
+              registers.FC = (byte)(initialH > registers.H ? 1 : 0);
+            }},
 
             // LD A,(DE): Load A from address pointed to by DE
             {0x1A, (n)=>{registers.A = memory.Read(registers.DE);}},
@@ -1142,10 +1210,22 @@ namespace GBSharp.CPUSpace
             {0x1B, (n)=>{registers.DE--;}},
 
             // INC E: Increment E
-            {0x1C, (n)=>{registers.E++;}},
+            {0x1C, (n)=>{
+              registers.E++;
+
+              registers.FZ = (byte)(registers.E == 0 ? 1 : 0);
+              registers.FN = 0;
+              registers.FH = (byte)((registers.E & 0x0F) == 0x00 ? 1 : 0);
+            }},
 
             // DEC E: Decrement E
-            {0x1D, (n)=>{registers.E--;}},
+            {0x1D, (n)=>{
+              registers.E--;
+
+              registers.FZ = (byte)(registers.E == 0 ? 1 : 0);
+              registers.FN = 1;
+              registers.FH = (byte)((registers.E & 0x0F) == 0x0F ? 1 : 0);
+            }},
 
             // LD E,n: Load 8-bit immediate into E
             {0x1E, (n)=>{registers.E = (byte)n;}},
@@ -1222,7 +1302,14 @@ namespace GBSharp.CPUSpace
             {0x28, (n)=>{throw new NotImplementedException();}},
 
             // ADD HL,HL: Add 16-bit HL to HL
-            {0x29, (n)=>{registers.HL+=registers.HL;}},
+            {0x29, (n)=>{
+              var initialH = registers.H;
+              registers.HL += registers.HL;
+
+              registers.FN = 0;
+              registers.FH = (byte)(((registers.H ^ registers.H ^ initialH) & 0x10) == 0 ? 0 : 1);
+              registers.FC = (byte)(initialH > registers.H ? 1 : 0);
+            }},
 
             // LDI A,(HL): Load A from address pointed to by HL, and increment HL
             {0x2A, (n)=>{registers.A = memory.Read(registers.HL++);}},
@@ -1270,7 +1357,14 @@ namespace GBSharp.CPUSpace
             {0x38, (n)=>{throw new NotImplementedException();}},
 
             // ADD HL,SP: Add 16-bit SP to HL
-            {0x39, (n)=>{registers.HL += registers.SP;}},
+            {0x39, (n)=>{
+              var initialH = registers.H;
+              registers.HL += registers.SP;
+
+              registers.FN = 0;
+              registers.FH = (byte)(((registers.H ^ (registers.SP >> 8) ^ initialH) & 0x10) == 0 ? 0 : 1);
+              registers.FC = (byte)(initialH > registers.H ? 1 : 0);
+            }},
 
             // LDD A,(HL): Load A from address pointed to by HL, and decrement HL
             {0x3A, (n) => { registers.A = memory.Read(registers.HL--);}},
