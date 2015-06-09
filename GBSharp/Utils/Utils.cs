@@ -43,7 +43,7 @@ namespace GBSharp.Utils
 
     public static Tuple<byte, byte> RotateLeftThroughCarry(byte value, int count = 1, int carry = 0)
     {
-      var carryOut = (byte)((value >> 8) & 1);
+      var carryOut = (byte)((value >> 7) & 1);
       var valueShifted = value << count;
       var valueRotated = (byte)(valueShifted | carry);
       return new Tuple<byte, byte>(valueRotated, carryOut);
@@ -51,7 +51,7 @@ namespace GBSharp.Utils
 
     public static Tuple<byte, byte> RotateLeftAndCarry(byte value, int count = 1)
     {
-      var carryOut = (byte)((value >> 8) & 1);
+      var carryOut = (byte)((value >> 7) & 1);
       var valueShifted = value << count;
       var valueRotated = (byte)(valueShifted | carryOut);
       return new Tuple<byte, byte>(valueRotated, carryOut);
@@ -61,7 +61,7 @@ namespace GBSharp.Utils
     {
       var carryOut = (byte)(value & 1);
       var valueShifted = value >> count;
-      var valueRotated = (byte)(valueShifted | (carry << 8));
+      var valueRotated = (byte)(valueShifted | (carry << 7));
       return new Tuple<byte, byte>(valueRotated, carryOut);
     }
 
@@ -69,13 +69,13 @@ namespace GBSharp.Utils
     {
       var carryOut = (byte)(value & 1);
       var valueShifted = value >> count;
-      var valueRotated = (byte)(valueShifted | (carryOut << 8));
+      var valueRotated = (byte)(valueShifted | (carryOut << 7));
       return new Tuple<byte, byte>(valueRotated, carryOut);
     }
 
     public static Tuple<byte, byte> ShiftLeft(byte value, int count = 1)
     {
-      var carryOut = (byte)((value >> 8) & 1);
+      var carryOut = (byte)((value >> 7) & 1);
       var valueShifted = (byte)(value << count);
       return new Tuple<byte, byte>(valueShifted, carryOut);
     }

@@ -1146,9 +1146,9 @@ namespace GBSharp.CPUSpace
             {0x0F, (n)=>{
               byte bit0 = (byte)(registers.A & 0x01);
               registers.A >>= 1;
-              registers.A += (byte)(registers.FC << 7);
+              registers.A += (byte)(bit0 << 7);
               
-              registers.FZ = 0; // TODO: CHECK THIS, 2 sources say it's 0, 1 n/a, 1 conditional.
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0); // TODO: CHECK THIS, 2 sources say it's 0, 1 n/a, 1 conditional.
               registers.FN = 0;
               registers.FH = 0;
               registers.FC = bit0;
@@ -1188,7 +1188,15 @@ namespace GBSharp.CPUSpace
             {0x16, (n)=>{registers.D = (byte)n;}},
 
             // RL A: Rotate A left
-            {0x17, (n)=>{UtilFuncs.RotateLeft(registers.A,1);}},
+            {0x17, (n)=>{
+              byte carryOut = (byte)(registers.A >> 7);
+              registers.A = (byte)((registers.A << 1) | registers.FC);
+              
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FN = 0;
+              registers.FH = 0;
+              registers.FC = carryOut;
+            }},
 
             // JR n: Relative jump by signed immediate
             {0x18, (n)=>{throw new NotImplementedException();}},
@@ -1231,7 +1239,15 @@ namespace GBSharp.CPUSpace
             {0x1E, (n)=>{registers.E = (byte)n;}},
 
             // RR A: Rotate A right
-            {0x1F, (n)=>{UtilFuncs.RotateRight(registers.A,1);}},
+            {0x1F, (n)=>{
+              byte carryOut = (byte)(registers.A & 0x01);
+              registers.A = (byte)((registers.A >> 1) | (registers.FC << 7));
+              
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FN = 0;
+              registers.FH = 0;
+              registers.FC = carryOut;
+            }},
 
             // JR NZ,n: Relative jump by signed immediate if last result was not zero
             {0x20, (n)=>{throw new NotImplementedException();}},
