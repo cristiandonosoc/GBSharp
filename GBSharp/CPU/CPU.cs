@@ -1147,7 +1147,7 @@ namespace GBSharp.CPUSpace
               byte bit0 = (byte)(registers.A & 0x01);
               registers.A >>= 1;
               registers.A += (byte)(bit0 << 7);
-              
+
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0); // TODO: CHECK THIS, 2 sources say it's 0, 1 n/a, 1 conditional.
               registers.FN = 0;
               registers.FH = 0;
@@ -1191,7 +1191,7 @@ namespace GBSharp.CPUSpace
             {0x17, (n)=>{
               byte carryOut = (byte)(registers.A >> 7);
               registers.A = (byte)((registers.A << 1) | registers.FC);
-              
+
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
               registers.FN = 0;
               registers.FH = 0;
@@ -1199,7 +1199,25 @@ namespace GBSharp.CPUSpace
             }},
 
             // JR n: Relative jump by signed immediate
-            {0x18, (n)=>{throw new NotImplementedException();}},
+            {0x18, (n)=>{
+              // We cast down the input, ignoring the overflows
+              sbyte sn = 0;
+              unchecked{
+                sn = (sbyte)n;
+              }
+              short offset = sn;
+              if (sn >= 0)
+              {
+                this.nextPC = registers.PC;
+                this.nextPC += (ushort)offset;
+              }
+              else
+              {
+                offset *= -1;  // We invert the value
+                this.nextPC = registers.PC;
+                this.nextPC -= (ushort)offset;
+              }
+            }},
 
             // ADD HL,DE: Add 16-bit DE to HL
             {0x19, (n)=>{
@@ -1242,7 +1260,7 @@ namespace GBSharp.CPUSpace
             {0x1F, (n)=>{
               byte carryOut = (byte)(registers.A & 0x01);
               registers.A = (byte)((registers.A >> 1) | (registers.FC << 7));
-              
+
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
               registers.FN = 0;
               registers.FH = 0;
