@@ -1765,7 +1765,23 @@ namespace GBSharp.CPUSpace
             {0x97, (n)=>{registers.A -= registers.A;}},
 
             // SBC A,B: Subtract B and carry flag from A
-            {0x98, (n)=>{throw new NotImplementedException();}},
+            {0x98, (n)=>{
+              byte substractee = registers.A;
+              byte substractor = registers.B;
+              byte extraSub = registers.FC;
+
+              // Some flags have to be calculated before
+              registers.FN = 1;
+              // We use += so we don't cast to byte with unchecked
+              registers.FH = (byte)(
+                ((substractee & 0x0F) < (substractor & 0x0F) + extraSub)
+                ? 1 : 0);
+              int res = substractee - substractor - extraSub;
+              registers.FC = (byte)((res < 0) ? 1 : 0);
+              registers.FZ = (byte)((res == 0) ? 1 : 0);
+
+              unchecked { registers.A = (byte)res; } // unchecked so it wraps
+            }},
 
             // SBC A,C: Subtract C and carry flag from A
             {0x99, (n)=>{throw new NotImplementedException();}},
