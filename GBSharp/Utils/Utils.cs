@@ -101,5 +101,19 @@ namespace GBSharp.Utils
       var lowNibble = (byte)(value << 4);
       return (byte)(highNibble | lowNibble);
     }
+
+    public static void SignedAdd(ref ushort target, sbyte operand)
+    {
+      short offset = operand;
+      if (offset >= 0)
+      {
+        target += (ushort)offset;
+      }
+      else
+      {
+        offset *= -1;  // We invert the value
+        target -= (ushort)offset;
+      }
+    }
   }
 }

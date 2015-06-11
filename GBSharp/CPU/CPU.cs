@@ -1205,18 +1205,11 @@ namespace GBSharp.CPUSpace
               unchecked{
                 sn = (sbyte)n;
               }
-              short offset = sn;
-              if (sn >= 0)
-              {
-                this.nextPC = registers.PC;
-                this.nextPC += (ushort)offset;
-              }
-              else
-              {
-                offset *= -1;  // We invert the value
-                this.nextPC = registers.PC;
-                this.nextPC -= (ushort)offset;
-              }
+
+              // We prepare the nextPC variable
+              this.nextPC = registers.PC;
+
+              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
             }},
 
             // ADD HL,DE: Add 16-bit DE to HL
