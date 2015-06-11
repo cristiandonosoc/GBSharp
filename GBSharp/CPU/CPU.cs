@@ -1741,28 +1741,68 @@ namespace GBSharp.CPUSpace
             }},
 
             // SUB A,B: Subtract B from A
-            {0x90, (n)=>{registers.A -= registers.B;}},
+            {0x90, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.B,
+                            0);
+            }},
 
             // SUB A,C: Subtract C from A
-            {0x91, (n)=>{registers.A -= registers.C;}},
+            {0x91, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.C,
+                            0);
+            }},
 
             // SUB A,D: Subtract D from A
-            {0x92, (n)=>{registers.A -= registers.D;}},
+            {0x92, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.D,
+                            0);
+            }},
 
             // SUB A,E: Subtract E from A
-            {0x93, (n)=>{registers.A -= registers.E;}},
+            {0x93, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.E,
+                            0);
+            }},
 
             // SUB A,H: Subtract H from A
-            {0x94, (n)=>{registers.A -= registers.H;}},
+            {0x94, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.H,
+                            0);
+            }},
 
             // SUB A,L: Subtract L from A
-            {0x95, (n)=>{registers.A -= registers.L;}},
+            {0x95, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.L,
+                            0);
+            }},
 
             // SUB A,(HL): Subtract value pointed by HL from A
-            {0x96, (n)=>{registers.A -= memory.Read(registers.HL);}},
+            {0x96, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            memory.Read(registers.HL),
+                            0);
+            }},
 
             // SUB A,A: Subtract A from A
-            {0x97, (n)=>{registers.A -= registers.A;}},
+            {0x97, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.A,
+                            0);
+            }},
 
             // SBC A,B: Subtract B and carry flag from A
             {0x98, (n)=>{
