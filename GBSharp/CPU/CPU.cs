@@ -1155,7 +1155,7 @@ namespace GBSharp.CPUSpace
             }},
 
             // STOP: Stop processor
-            {0x10, (n)=>{throw new NotImplementedException();}},
+            {0x10, (n)=>{throw new NotImplementedException("STOP (0x10)");}},
 
             // LD DE,nn: Load 16-bit immediate into DE
             {0x11, (n)=>{registers.DE = n;}},
@@ -1261,7 +1261,7 @@ namespace GBSharp.CPUSpace
             }},
 
             // JR NZ,n: Relative jump by signed immediate if last result was not zero
-            {0x20, (n)=>{throw new NotImplementedException();}},
+            {0x20, (n)=>{throw new NotImplementedException("JR NZ,n (0x20)");}},
 
             // LD HL,nn: Load 16-bit immediate into HL
             {0x21, (n)=>{registers.HL = n;}},
@@ -1326,7 +1326,7 @@ namespace GBSharp.CPUSpace
             }},
 
             // JR Z,n: Relative jump by signed immediate if last result was zero
-            {0x28, (n)=>{throw new NotImplementedException();}},
+            {0x28, (n)=>{throw new NotImplementedException("JR Z,n (0x28)");}},
 
             // ADD HL,HL: Add 16-bit HL to HL
             {0x29, (n)=>{
@@ -1357,7 +1357,7 @@ namespace GBSharp.CPUSpace
             {0x2F, (n)=>{registers.A = (byte)~registers.A;}},
 
             // JR NC,n: Relative jump by signed immediate if last result caused no carry
-            {0x30, (n)=>{throw new NotImplementedException();}},
+            {0x30, (n)=>{throw new NotImplementedException("JR NC,n (0x30)");}},
 
             // LD SP,nn: Load 16-bit immediate into SP
             {0x31, (n)=>{registers.SP = n;}},
@@ -1381,7 +1381,7 @@ namespace GBSharp.CPUSpace
             {0x37, (n)=>{registers.F = UtilFuncs.SetBit(registers.F, (int)Flags.C);}},
 
             // JR C,n: Relative jump by signed immediate if last result caused carry
-            {0x38, (n)=>{throw new NotImplementedException();}},
+            {0x38, (n)=>{throw new NotImplementedException("JR C,n (0x38)");}},
 
             // ADD HL,SP: Add 16-bit SP to HL
             {0x39, (n)=>{
@@ -1574,7 +1574,7 @@ namespace GBSharp.CPUSpace
             {0x75, (n)=>{memory.Write(registers.HL, registers.L);}},
 
             // HALT: Halt processor
-            {0x76, (n)=>{throw new NotImplementedException();}},
+            {0x76, (n)=>{throw new NotImplementedException("HALT (0x76)");}},
 
             // LD (HL),A: Copy A to address pointed by HL
             {0x77, (n)=>{memory.Write(registers.HL, registers.A);}},
@@ -1784,25 +1784,25 @@ namespace GBSharp.CPUSpace
             }},
 
             // SBC A,C: Subtract C and carry flag from A
-            {0x99, (n)=>{throw new NotImplementedException();}},
+            {0x99, (n)=>{throw new NotImplementedException("SBC A,C (0x99)");}},
 
             // SBC A,D: Subtract D and carry flag from A
-            {0x9A, (n)=>{throw new NotImplementedException();}},
+            {0x9A, (n)=>{throw new NotImplementedException("SBC A,D (0x9A)");}},
 
             // SBC A,E: Subtract E and carry flag from A
-            {0x9B, (n)=>{throw new NotImplementedException();}},
+            {0x9B, (n)=>{throw new NotImplementedException("SBC A,E (0x9B)");}},
 
             // SBC A,H: Subtract H and carry flag from A
-            {0x9C, (n)=>{throw new NotImplementedException();}},
+            {0x9C, (n)=>{throw new NotImplementedException("SBC A,H (0x9C)");}},
 
             // SBC A,L: Subtract and carry flag L from A
-            {0x9D, (n)=>{throw new NotImplementedException();}},
+            {0x9D, (n)=>{throw new NotImplementedException("SBC A,L (0x9D)");}},
 
             // SBC A,(HL): Subtract value pointed by HL and carry flag from A
-            {0x9E, (n)=>{throw new NotImplementedException();}},
+            {0x9E, (n)=>{throw new NotImplementedException("SBC A,(HL) (0x9E)");}},
 
             // SBC A,A: Subtract A and carry flag from A
-            {0x9F, (n)=>{throw new NotImplementedException();}},
+            {0x9F, (n)=>{throw new NotImplementedException("SBC A,A (0x9F)");}},
 
             // AND B: Logical AND B against A
             {0xA0, (n)=>{registers.A &= registers.B;}},
@@ -1877,70 +1877,70 @@ namespace GBSharp.CPUSpace
             {0xB7, (n)=>{registers.A |= registers.A;}},
 
             // CP B: Compare B against A
-            {0xB8, (n)=>{throw new NotImplementedException();}},
+            {0xB8, (n)=>{throw new NotImplementedException("CP B (0xB8)");}},
 
             // CP C: Compare C against A
-            {0xB9, (n)=>{throw new NotImplementedException();}},
+            {0xB9, (n)=>{throw new NotImplementedException("CP C (0xB9)");}},
 
             // CP D: Compare D against A
-            {0xBA, (n)=>{throw new NotImplementedException();}},
+            {0xBA, (n)=>{throw new NotImplementedException("CP D (0xBA)");}},
 
             // CP E: Compare E against A
-            {0xBB, (n)=>{throw new NotImplementedException();}},
+            {0xBB, (n)=>{throw new NotImplementedException("CP E (0xBB)");}},
 
             // CP H: Compare H against A
-            {0xBC, (n)=>{throw new NotImplementedException();}},
+            {0xBC, (n)=>{throw new NotImplementedException("CP H (0xBC)");}},
 
             // CP L: Compare L against A
-            {0xBD, (n)=>{throw new NotImplementedException();}},
+            {0xBD, (n)=>{throw new NotImplementedException("CP L (0xBD)");}},
 
             // CP (HL): Compare value pointed by HL against A
-            {0xBE, (n)=>{throw new NotImplementedException();}},
+            {0xBE, (n)=>{throw new NotImplementedException("CP (HL) (0xBE)");}},
 
             // CP A: Compare A against A
-            {0xBF, (n)=>{throw new NotImplementedException();}},
+            {0xBF, (n)=>{throw new NotImplementedException("CP A (0xBF)");}},
 
             // RET NZ: Return if last result was not zero
-            {0xC0, (n)=>{throw new NotImplementedException();}},
+            {0xC0, (n)=>{throw new NotImplementedException("RET NZ (0xC0)");}},
 
             // POP BC: Pop 16-bit value from stack into BC
-            {0xC1, (n)=>{throw new NotImplementedException();}},
+            {0xC1, (n)=>{throw new NotImplementedException("POP BC (0xC1)");}},
 
             // JP NZ,nn: Absolute jump to 16-bit location if last result was not zero
-            {0xC2, (n)=>{throw new NotImplementedException();}},
+            {0xC2, (n)=>{throw new NotImplementedException("JP NZ,nn (0xC2)");}},
 
             // JP nn: Absolute jump to 16-bit location
-            {0xC3, (n)=>{throw new NotImplementedException();}},
+            {0xC3, (n)=>{throw new NotImplementedException("JP nn (0xC3)");}},
 
             // CALL NZ,nn: Call routine at 16-bit location if last result was not zero
-            {0xC4, (n)=>{throw new NotImplementedException();}},
+            {0xC4, (n)=>{throw new NotImplementedException("CALL NZ,nn (0xC4)");}},
 
             // PUSH BC: Push 16-bit BC onto stack
-            {0xC5, (n)=>{throw new NotImplementedException();}},
+            {0xC5, (n)=>{throw new NotImplementedException("PUSH BC (0xC5)");}},
 
             // ADD A,n: Add 8-bit immediate to A
             {0xC6, (n)=>{registers.A += (byte)n;}},
 
             // RST 0: Call routine at address 0000h
-            {0xC7, (n)=>{throw new NotImplementedException();}},
+            {0xC7, (n)=>{throw new NotImplementedException("RST 0 (0xC7)");}},
 
             // RET Z: Return if last result was zero
-            {0xC8, (n)=>{throw new NotImplementedException();}},
+            {0xC8, (n)=>{throw new NotImplementedException("RET Z (0xC8)");}},
 
             // RET: Return to calling routine
-            {0xC9, (n)=>{throw new NotImplementedException();}},
+            {0xC9, (n)=>{throw new NotImplementedException("RET (0xC9)");}},
 
             // JP Z,nn: Absolute jump to 16-bit location if last result was zero
-            {0xCA, (n)=>{throw new NotImplementedException();}},
+            {0xCA, (n)=>{throw new NotImplementedException("JP Z,nn (0xCA)");}},
 
             // Ext ops: Extended operations (two-byte instruction code)
-            {0xCB, (n)=>{throw new NotImplementedException();}},
+            {0xCB, (n)=>{throw new NotImplementedException("Ext ops (0xCB)");}},
 
             // CALL Z,nn: Call routine at 16-bit location if last result was zero
-            {0xCC, (n)=>{throw new NotImplementedException();}},
+            {0xCC, (n)=>{throw new NotImplementedException("CALL Z,nn (0xCC)");}},
 
             // CALL nn: Call routine at 16-bit location
-            {0xCD, (n)=>{throw new NotImplementedException();}},
+            {0xCD, (n)=>{throw new NotImplementedException("CALL nn (0xCD)");}},
 
             // ADC A,n: Add 8-bit immediate and carry to A
             {0xCE, (n)=>{
@@ -1957,130 +1957,130 @@ namespace GBSharp.CPUSpace
             }},
 
             // RST 8: Call routine at address 0008h
-            {0xCF, (n)=>{throw new NotImplementedException();}},
+            {0xCF, (n)=>{throw new NotImplementedException("RST 8 (0xCF)");}},
 
             // RET NC: Return if last result caused no carry
-            {0xD0, (n)=>{throw new NotImplementedException();}},
+            {0xD0, (n)=>{throw new NotImplementedException("RET NC (0xD0)");}},
 
             // POP DE: Pop 16-bit value from stack into DE
-            {0xD1, (n)=>{throw new NotImplementedException();}},
+            {0xD1, (n)=>{throw new NotImplementedException("POP DE (0xD1)");}},
 
             // JP NC,nn: Absolute jump to 16-bit location if last result caused no carry
-            {0xD2, (n)=>{throw new NotImplementedException();}},
+            {0xD2, (n)=>{throw new NotImplementedException("JP NC,nn (0xD2)");}},
 
             // XX: Operation removed in this CPU
-            {0xD3, (n)=>{throw new NotImplementedException();}},
+            {0xD3, (n)=>{throw new NotImplementedException("XX (0xD3)");}},
 
             // CALL NC,nn: Call routine at 16-bit location if last result caused no carry
-            {0xD4, (n)=>{throw new NotImplementedException();}},
+            {0xD4, (n)=>{throw new NotImplementedException("CALL NC,nn (0xD4)");}},
 
             // PUSH DE: Push 16-bit DE onto stack
-            {0xD5, (n)=>{throw new NotImplementedException();}},
+            {0xD5, (n)=>{throw new NotImplementedException("PUSH DE (0xD5)");}},
 
             // SUB A,n: Subtract 8-bit immediate from A
             {0xD6, (n)=>{registers.A -= (byte)n;}},
 
             // RST 10: Call routine at address 0010h
-            {0xD7, (n)=>{throw new NotImplementedException();}},
+            {0xD7, (n)=>{throw new NotImplementedException("RST 10 (0xD7)");}},
 
             // RET C: Return if last result caused carry
-            {0xD8, (n)=>{throw new NotImplementedException();}},
+            {0xD8, (n)=>{throw new NotImplementedException("RET C (0xD8)");}},
 
             // RETI: Enable interrupts and return to calling routine
-            {0xD9, (n)=>{throw new NotImplementedException();}},
+            {0xD9, (n)=>{throw new NotImplementedException("RETI (0xD9)");}},
 
             // JP C,nn: Absolute jump to 16-bit location if last result caused carry
-            {0xDA, (n)=>{throw new NotImplementedException();}},
+            {0xDA, (n)=>{throw new NotImplementedException("JP C,nn (0xDA)");}},
 
             // XX: Operation removed in this CPU
-            {0xDB, (n)=>{throw new NotImplementedException();}},
+            {0xDB, (n)=>{throw new NotImplementedException("XX (0xDB)");}},
 
             // CALL C,nn: Call routine at 16-bit location if last result caused carry
-            {0xDC, (n)=>{throw new NotImplementedException();}},
+            {0xDC, (n)=>{throw new NotImplementedException("CALL C,nn (0xDC)");}},
 
             // XX: Operation removed in this CPU
-            {0xDD, (n)=>{throw new NotImplementedException();}},
+            {0xDD, (n)=>{throw new NotImplementedException("XX (0xDD)");}},
 
             // SBC A,n: Subtract 8-bit immediate and carry from A
-            {0xDE, (n)=>{throw new NotImplementedException();}},
+            {0xDE, (n)=>{throw new NotImplementedException("SBC A,n (0xDE)");}},
 
             // RST 18: Call routine at address 0018h
-            {0xDF, (n)=>{throw new NotImplementedException();}},
+            {0xDF, (n)=>{throw new NotImplementedException("RST 18 (0xDF)");}},
 
             // LDH (n),A: Save A at address pointed to by (FF00h + 8-bit immediate)
             {0xE0, (n)=>{memory.Write((ushort)(0xFF00 & n), registers.A);}},
 
             // POP HL: Pop 16-bit value from stack into HL
-            {0xE1, (n)=>{throw new NotImplementedException();}},
+            {0xE1, (n)=>{throw new NotImplementedException("POP HL (0xE1)");}},
 
             // LDH (C),A: Save A at address pointed to by (FF00h + C)
             {0xE2, (n)=>{memory.Write((ushort)(0xFF00 & registers.C), registers.A);}},
 
             // XX: Operation removed in this CPU
-            {0xE3, (n)=>{throw new NotImplementedException();}},
+            {0xE3, (n)=>{throw new NotImplementedException("XX (0xE3)");}},
 
             // XX: Operation removed in this CPU
-            {0xE4, (n)=>{throw new NotImplementedException();}},
+            {0xE4, (n)=>{throw new NotImplementedException("XX (0xE4)");}},
 
             // PUSH HL: Push 16-bit HL onto stack
-            {0xE5, (n)=>{throw new NotImplementedException();}},
+            {0xE5, (n)=>{throw new NotImplementedException("PUSH HL (0xE5)");}},
 
             // AND n: Logical AND 8-bit immediate against A
             {0xE6, (n)=>{registers.A &= (byte)n;}},
 
             // RST 20: Call routine at address 0020h
-            {0xE7, (n)=>{throw new NotImplementedException();}},
+            {0xE7, (n)=>{throw new NotImplementedException("RST 20 (0xE7)");}},
 
             // ADD SP,d: Add signed 8-bit immediate to SP
-            {0xE8, (n)=>{throw new NotImplementedException();}},
+            {0xE8, (n)=>{throw new NotImplementedException("ADD SP,d (0xE8)");}},
 
             // JP (HL): Jump to 16-bit value pointed by HL
-            {0xE9, (n)=>{throw new NotImplementedException();}},
+            {0xE9, (n)=>{throw new NotImplementedException("JP (HL) (0xE9)");}},
 
             // LD (nn),A: Save A at given 16-bit address
             {0xEA, (n)=>{memory.Write(n, registers.A);}},
 
             // XX: Operation removed in this CPU
-            {0xEB, (n)=>{throw new NotImplementedException();}},
+            {0xEB, (n)=>{throw new NotImplementedException("XX (0xEB)");}},
 
             // XX: Operation removed in this CPU
-            {0xEC, (n)=>{throw new NotImplementedException();}},
+            {0xEC, (n)=>{throw new NotImplementedException("XX (0xEC)");}},
 
             // XX: Operation removed in this CPU
-            {0xED, (n)=>{throw new NotImplementedException();}},
+            {0xED, (n)=>{throw new NotImplementedException("XX (0xED)");}},
 
             // XOR n: Logical XOR 8-bit immediate against A
             {0xEE, (n)=>{registers.A ^= (byte)n;}},
 
             // RST 28: Call routine at address 0028h
-            {0xEF, (n)=>{throw new NotImplementedException();}},
+            {0xEF, (n)=>{throw new NotImplementedException("RST 28 (0xEF)");}},
 
             // LDH A,(n): Load A from address pointed to by (FF00h + 8-bit immediate)
             {0xF0, (n)=>{registers.A = memory.Read((ushort)(0xFF00 & n));}},
 
             // POP AF: Pop 16-bit value from stack into AF
-            {0xF1, (n)=>{throw new NotImplementedException();}},
+            {0xF1, (n)=>{throw new NotImplementedException("POP AF (0xF1)");}},
 
             // LDH A, (C): Operation removed in this CPU? (Or Load into A memory from FF00 + C?)
             {0xF2, (n)=>{registers.A = memory.Read((ushort)(0xFF00 & registers.C));}},
 
             // DI: DIsable interrupts
-            {0xF3, (n)=>{throw new NotImplementedException();}},
+            {0xF3, (n)=>{throw new NotImplementedException("DI (0xF3)");}},
 
             // XX: Operation removed in this CPU
-            {0xF4, (n)=>{throw new NotImplementedException();}},
+            {0xF4, (n)=>{throw new NotImplementedException("XX (0xF4)");}},
 
             // PUSH AF: Push 16-bit AF onto stack
-            {0xF5, (n)=>{throw new NotImplementedException();}},
+            {0xF5, (n)=>{throw new NotImplementedException("PUSH AF (0xF5)");}},
 
             // OR n: Logical OR 8-bit immediate against A
             {0xF6, (n)=>{registers.A |= (byte)n;}},
 
             // RST 30: Call routine at address 0030h
-            {0xF7, (n)=>{throw new NotImplementedException();}},
+            {0xF7, (n)=>{throw new NotImplementedException("RST 30 (0xF7)");}},
 
             // LDHL SP,d: Add signed 8-bit immediate to SP and save result in HL
-            {0xF8, (n)=>{throw new NotImplementedException();}},
+            {0xF8, (n)=>{throw new NotImplementedException("LDHL SP,d (0xF8)");}},
 
             // LD SP,HL: Copy HL to SP
             {0xF9, (n)=>{registers.SP = registers.HL;}},
@@ -2089,19 +2089,19 @@ namespace GBSharp.CPUSpace
             {0xFA, (n)=>{registers.A = memory.Read(n);}},
 
             // EI: Enable interrupts
-            {0xFB, (n)=>{throw new NotImplementedException();}},
+            {0xFB, (n)=>{throw new NotImplementedException("EI (0xFB)");}},
 
             // XX: Operation removed in this CPU
-            {0xFC, (n)=>{throw new NotImplementedException();}},
+            {0xFC, (n)=>{throw new NotImplementedException("XX (0xFC)");}},
 
             // XX: Operation removed in this CPU
-            {0xFD, (n)=>{throw new NotImplementedException();}},
+            {0xFD, (n)=>{throw new NotImplementedException("XX (0xFD)");}},
 
             // CP n: Compare 8-bit immediate against A
-            {0xFE, (n)=>{throw new NotImplementedException();}},
+            {0xFE, (n)=>{throw new NotImplementedException("CP n (0xFE)");}},
 
             // RST 38: Call routine at address 0038h
-            {0xFF, (n)=>{throw new NotImplementedException();}}
+            {0xFF, (n)=>{throw new NotImplementedException("RST 38 (0xFF)");}}
         };
     }
 
