@@ -115,5 +115,23 @@ namespace GBSharp.Utils
         target -= (ushort)offset;
       }
     }
+
+    public static void
+    SBC(ref CPURegisters registers, ref byte substractee,
+                                    byte substractor,
+                                    byte extraSub)
+    {
+      // Some flags have to be calculated before
+      registers.FN = 1;
+      // We use += so we don't cast to byte with unchecked
+      registers.FH = (byte)(
+        ((substractee & 0x0F) < (substractor & 0x0F) + extraSub)
+        ? 1 : 0);
+      int res = substractee - substractor - extraSub;
+      registers.FC = (byte)((res < 0) ? 1 : 0);
+      registers.FZ = (byte)((res == 0) ? 1 : 0);
+
+      unchecked { registers.A = (byte)res; } // unchecked so it wraps
+    }
   }
 }

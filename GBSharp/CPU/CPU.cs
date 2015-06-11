@@ -1766,43 +1766,67 @@ namespace GBSharp.CPUSpace
 
             // SBC A,B: Subtract B and carry flag from A
             {0x98, (n)=>{
-              byte substractee = registers.A;
-              byte substractor = registers.B;
-              byte extraSub = registers.FC;
-
-              // Some flags have to be calculated before
-              registers.FN = 1;
-              // We use += so we don't cast to byte with unchecked
-              registers.FH = (byte)(
-                ((substractee & 0x0F) < (substractor & 0x0F) + extraSub)
-                ? 1 : 0);
-              int res = substractee - substractor - extraSub;
-              registers.FC = (byte)((res < 0) ? 1 : 0);
-              registers.FZ = (byte)((res == 0) ? 1 : 0);
-
-              unchecked { registers.A = (byte)res; } // unchecked so it wraps
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.B,
+                            registers.FC);
             }},
 
             // SBC A,C: Subtract C and carry flag from A
-            {0x99, (n)=>{throw new NotImplementedException("SBC A,C (0x99)");}},
+            {0x99, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.C,
+                            registers.FC);
+            }},
 
             // SBC A,D: Subtract D and carry flag from A
-            {0x9A, (n)=>{throw new NotImplementedException("SBC A,D (0x9A)");}},
+            {0x9A, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.D,
+                            registers.FC);
+            }},
 
             // SBC A,E: Subtract E and carry flag from A
-            {0x9B, (n)=>{throw new NotImplementedException("SBC A,E (0x9B)");}},
+            {0x9B, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.E,
+                            registers.FC);
+            }},
 
             // SBC A,H: Subtract H and carry flag from A
-            {0x9C, (n)=>{throw new NotImplementedException("SBC A,H (0x9C)");}},
+            {0x9C, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.H,
+                            registers.FC);
+            }},
 
             // SBC A,L: Subtract and carry flag L from A
-            {0x9D, (n)=>{throw new NotImplementedException("SBC A,L (0x9D)");}},
+            {0x9D, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.L,
+                            registers.FC);
+            }},
 
             // SBC A,(HL): Subtract value pointed by HL and carry flag from A
-            {0x9E, (n)=>{throw new NotImplementedException("SBC A,(HL) (0x9E)");}},
+            {0x9E, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            memory.Read(registers.HL),
+                            registers.FC);
+            }},
 
             // SBC A,A: Subtract A and carry flag from A
-            {0x9F, (n)=>{throw new NotImplementedException("SBC A,A (0x9F)");}},
+            {0x9F, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.A,
+                            registers.FC);
+            }},
 
             // AND B: Logical AND B against A
             {0xA0, (n)=>{registers.A &= registers.B;}},
