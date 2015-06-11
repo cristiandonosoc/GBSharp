@@ -2066,7 +2066,14 @@ namespace GBSharp.CPUSpace
             {0xDD, (n)=>{throw new NotImplementedException("XX (0xDD)");}},
 
             // SBC A,n: Subtract 8-bit immediate and carry from A
-            {0xDE, (n)=>{throw new NotImplementedException("SBC A,n (0xDE)");}},
+            {0xDE, (n)=>{
+              byte substractor = 0;
+              unchecked { substractor = (byte)n; }
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            substractor,
+                            0);
+            }},
 
             // RST 18: Call routine at address 0018h
             {0xDF, (n)=>{throw new NotImplementedException("RST 18 (0xDF)");}},
