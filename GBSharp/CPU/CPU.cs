@@ -992,7 +992,15 @@ namespace GBSharp.CPUSpace
             }},
 
             // CALL NZ,nn: Call routine at 16-bit location if last result was not zero
-            {0xC4, (n)=>{throw new NotImplementedException("CALL NZ,nn (0xC4)");}},
+            {0xC4, (n)=>{
+              if (registers.FZ == 0) { return; }
+              // We decrease the SP by 2
+              registers.SP -= 2;
+              // We but the nextPC in the stack (high byte first get the higher address)
+              memory.Write(registers.SP, this.nextPC);
+              // We jump
+              this.nextPC = n;
+            }},
 
             // PUSH BC: Push 16-bit BC onto stack
             {0xC5, (n)=>{throw new NotImplementedException("PUSH BC (0xC5)");}},
@@ -1019,10 +1027,25 @@ namespace GBSharp.CPUSpace
             {0xCB, (n)=>{throw new NotImplementedException("Ext ops (0xCB)");}},
 
             // CALL Z,nn: Call routine at 16-bit location if last result was zero
-            {0xCC, (n)=>{throw new NotImplementedException("CALL Z,nn (0xCC)");}},
+            {0xCC, (n)=>{
+              if (registers.FZ != 0) { return; }
+              // We decrease the SP by 2
+              registers.SP -= 2;
+              // We but the nextPC in the stack (high byte first get the higher address)
+              memory.Write(registers.SP, this.nextPC);
+              // We jump
+              this.nextPC = n;
+            }},
 
             // CALL nn: Call routine at 16-bit location
-            {0xCD, (n)=>{throw new NotImplementedException("CALL nn (0xCD)");}},
+            {0xCD, (n)=>{
+              // We decrease the SP by 2
+              registers.SP -= 2;
+              // We but the nextPC in the stack (high byte first get the higher address)
+              memory.Write(registers.SP, this.nextPC);
+              // We jump
+              this.nextPC = n;
+            }},
 
             // ADC A,n: Add 8-bit immediate and carry to A
             {0xCE, (n)=>{
@@ -1057,7 +1080,15 @@ namespace GBSharp.CPUSpace
             {0xD3, (n)=>{throw new NotImplementedException("XX (0xD3)");}},
 
             // CALL NC,nn: Call routine at 16-bit location if last result caused no carry
-            {0xD4, (n)=>{throw new NotImplementedException("CALL NC,nn (0xD4)");}},
+            {0xD4, (n)=>{
+              if (registers.FC != 0) { return; }
+              // We decrease the SP by 2
+              registers.SP -= 2;
+              // We but the nextPC in the stack (high byte first get the higher address)
+              memory.Write(registers.SP, this.nextPC);
+              // We jump
+              this.nextPC = n;
+            }},
 
             // PUSH DE: Push 16-bit DE onto stack
             {0xD5, (n)=>{throw new NotImplementedException("PUSH DE (0xD5)");}},
@@ -1084,7 +1115,15 @@ namespace GBSharp.CPUSpace
             {0xDB, (n)=>{throw new NotImplementedException("XX (0xDB)");}},
 
             // CALL C,nn: Call routine at 16-bit location if last result caused carry
-            {0xDC, (n)=>{throw new NotImplementedException("CALL C,nn (0xDC)");}},
+            {0xDC, (n)=>{
+              if (registers.FC == 0) { return; }
+              // We decrease the SP by 2
+              registers.SP -= 2;
+              // We but the nextPC in the stack (high byte first get the higher address)
+              memory.Write(registers.SP, this.nextPC);
+              // We jump
+              this.nextPC = n;
+            }},
 
             // XX: Operation removed in this CPU
             {0xDD, (n)=>{throw new NotImplementedException("XX (0xDD)");}},
