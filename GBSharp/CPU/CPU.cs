@@ -177,10 +177,8 @@ namespace GBSharp.CPUSpace
               unchecked{
                 sn = (sbyte)n;
               }
-
               // We prepare the nextPC variable
               this.nextPC = registers.PC;
-
               Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
             }},
 
@@ -233,7 +231,17 @@ namespace GBSharp.CPUSpace
             }},
 
             // JR NZ,n: Relative jump by signed immediate if last result was not zero
-            {0x20, (n)=>{throw new NotImplementedException("JR NZ,n (0x20)");}},
+            {0x20, (n)=>{
+              if (registers.FZ == 0) { return; }
+              // We cast down the input, ignoring the overflows
+              sbyte sn = 0;
+              unchecked{
+                sn = (sbyte)n;
+              }
+              // We prepare the nextPC variable
+              this.nextPC = registers.PC;
+              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
+            }},
 
             // LD HL,nn: Load 16-bit immediate into HL
             {0x21, (n)=>{registers.HL = n;}},
@@ -298,7 +306,17 @@ namespace GBSharp.CPUSpace
             }},
 
             // JR Z,n: Relative jump by signed immediate if last result was zero
-            {0x28, (n)=>{throw new NotImplementedException("JR Z,n (0x28)");}},
+            {0x28, (n)=>{
+              if (registers.FZ != 0) { return; }
+              // We cast down the input, ignoring the overflows
+              sbyte sn = 0;
+              unchecked{
+                sn = (sbyte)n;
+              }
+              // We prepare the nextPC variable
+              this.nextPC = registers.PC;
+              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
+            }},
 
             // ADD HL,HL: Add 16-bit HL to HL
             {0x29, (n)=>{
@@ -329,7 +347,17 @@ namespace GBSharp.CPUSpace
             {0x2F, (n)=>{registers.A = (byte)~registers.A;}},
 
             // JR NC,n: Relative jump by signed immediate if last result caused no carry
-            {0x30, (n)=>{throw new NotImplementedException("JR NC,n (0x30)");}},
+            {0x30, (n)=>{
+              if (registers.FC != 0) { return; }
+              // We cast down the input, ignoring the overflows
+              sbyte sn = 0;
+              unchecked{
+                sn = (sbyte)n;
+              }
+              // We prepare the nextPC variable
+              this.nextPC = registers.PC;
+              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
+            }},
 
             // LD SP,nn: Load 16-bit immediate into SP
             {0x31, (n)=>{registers.SP = n;}},
@@ -353,7 +381,17 @@ namespace GBSharp.CPUSpace
             {0x37, (n)=>{registers.F = UtilFuncs.SetBit(registers.F, (int)Flags.C);}},
 
             // JR C,n: Relative jump by signed immediate if last result caused carry
-            {0x38, (n)=>{throw new NotImplementedException("JR C,n (0x38)");}},
+            {0x38, (n)=>{
+              if (registers.FC == 0) { return; }
+              // We cast down the input, ignoring the overflows
+              sbyte sn = 0;
+              unchecked{
+                sn = (sbyte)n;
+              }
+              // We prepare the nextPC variable
+              this.nextPC = registers.PC;
+              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
+            }},
 
             // ADD HL,SP: Add 16-bit SP to HL
             {0x39, (n)=>{
