@@ -975,7 +975,13 @@ namespace GBSharp.CPUSpace
             {0xBF, (n)=>{throw new NotImplementedException("CP A (0xBF)");}},
 
             // RET NZ: Return if last result was not zero
-            {0xC0, (n)=>{throw new NotImplementedException("RET NZ (0xC0)");}},
+            {0xC0, (n)=>{
+              if (registers.FZ == 0) { return; }
+              // We load the program counter (high byte is in higher address)
+              this.nextPC = memory.Read(registers.SP);
+              // We increase (shrink) the stack
+              registers.SP += 2;
+            }},
 
             // POP BC: Pop 16-bit value from stack into BC
             {0xC1, (n)=>{throw new NotImplementedException("POP BC (0xC1)");}},
@@ -1012,10 +1018,21 @@ namespace GBSharp.CPUSpace
             {0xC7, (n)=>{throw new NotImplementedException("RST 0 (0xC7)");}},
 
             // RET Z: Return if last result was zero
-            {0xC8, (n)=>{throw new NotImplementedException("RET Z (0xC8)");}},
+            {0xC8, (n)=>{
+              if (registers.FZ != 0) { return; }
+              // We load the program counter (high byte is in higher address)
+              this.nextPC = memory.Read(registers.SP);
+              // We increase (shrink) the stack
+              registers.SP += 2;
+            }},
 
             // RET: Return to calling routine
-            {0xC9, (n)=>{throw new NotImplementedException("RET (0xC9)");}},
+            {0xC9, (n)=>{
+              // We load the program counter (high byte is in higher address)
+              this.nextPC = memory.Read(registers.SP);
+              // We increase (shrink) the stack
+              registers.SP += 2;
+            }},
 
             // JP Z,nn: Absolute jump to 16-bit location if last result was zero
             {0xCA, (n)=>{
@@ -1065,7 +1082,13 @@ namespace GBSharp.CPUSpace
             {0xCF, (n)=>{throw new NotImplementedException("RST 8 (0xCF)");}},
 
             // RET NC: Return if last result caused no carry
-            {0xD0, (n)=>{throw new NotImplementedException("RET NC (0xD0)");}},
+            {0xD0, (n)=>{
+              if (registers.FC != 0) { return; }
+              // We load the program counter (high byte is in higher address)
+              this.nextPC = memory.Read(registers.SP);
+              // We increase (shrink) the stack
+              registers.SP += 2;
+            }},
 
             // POP DE: Pop 16-bit value from stack into DE
             {0xD1, (n)=>{throw new NotImplementedException("POP DE (0xD1)");}},
@@ -1100,7 +1123,13 @@ namespace GBSharp.CPUSpace
             {0xD7, (n)=>{throw new NotImplementedException("RST 10 (0xD7)");}},
 
             // RET C: Return if last result caused carry
-            {0xD8, (n)=>{throw new NotImplementedException("RET C (0xD8)");}},
+            {0xD8, (n)=>{
+              if (registers.FC == 0) { return; }
+              // We load the program counter (high byte is in higher address)
+              this.nextPC = memory.Read(registers.SP);
+              // We increase (shrink) the stack
+              registers.SP += 2;
+            }},
 
             // RETI: Enable interrupts and return to calling routine
             {0xD9, (n)=>{throw new NotImplementedException("RETI (0xD9)");}},
