@@ -232,7 +232,7 @@ namespace GBSharp.CPUSpace
 
             // JR NZ,n: Relative jump by signed immediate if last result was not zero
             {0x20, (n)=>{
-              if (registers.FZ == 0) { return; }
+              if (registers.FZ != 0) { return; }
               // We cast down the input, ignoring the overflows
               sbyte sn = 0;
               unchecked{
@@ -307,7 +307,7 @@ namespace GBSharp.CPUSpace
 
             // JR Z,n: Relative jump by signed immediate if last result was zero
             {0x28, (n)=>{
-              if (registers.FZ != 0) { return; }
+              if (registers.FZ == 0) { return; }
               // We cast down the input, ignoring the overflows
               sbyte sn = 0;
               unchecked{
@@ -976,7 +976,7 @@ namespace GBSharp.CPUSpace
 
             // RET NZ: Return if last result was not zero
             {0xC0, (n)=>{
-              if (registers.FZ == 0) { return; }
+              if (registers.FZ != 0) { return; }
               // We load the program counter (high byte is in higher address)
               this.nextPC = memory.Read(registers.SP);
               // We increase (shrink) the stack
@@ -988,7 +988,7 @@ namespace GBSharp.CPUSpace
 
             // JP NZ,nn: Absolute jump to 16-bit location if last result was not zero
             {0xC2, (n)=>{
-              if (registers.FZ == 0) { return; }
+              if (registers.FZ != 0) { return; }
               this.nextPC = n;
             }},
 
@@ -999,7 +999,7 @@ namespace GBSharp.CPUSpace
 
             // CALL NZ,nn: Call routine at 16-bit location if last result was not zero
             {0xC4, (n)=>{
-              if (registers.FZ == 0) { return; }
+              if (registers.FZ != 0) { return; }
               // We decrease the SP by 2
               registers.SP -= 2;
               // We but the nextPC in the stack (high byte first get the higher address)
@@ -1019,7 +1019,7 @@ namespace GBSharp.CPUSpace
 
             // RET Z: Return if last result was zero
             {0xC8, (n)=>{
-              if (registers.FZ != 0) { return; }
+              if (registers.FZ == 0) { return; }
               // We load the program counter (high byte is in higher address)
               this.nextPC = memory.Read(registers.SP);
               // We increase (shrink) the stack
@@ -1036,7 +1036,7 @@ namespace GBSharp.CPUSpace
 
             // JP Z,nn: Absolute jump to 16-bit location if last result was zero
             {0xCA, (n)=>{
-              if (registers.FZ != 0) { return; }
+              if (registers.FZ == 0) { return; }
               this.nextPC = n;
             }},
 
@@ -1045,7 +1045,7 @@ namespace GBSharp.CPUSpace
 
             // CALL Z,nn: Call routine at 16-bit location if last result was zero
             {0xCC, (n)=>{
-              if (registers.FZ != 0) { return; }
+              if (registers.FZ == 0) { return; }
               // We decrease the SP by 2
               registers.SP -= 2;
               // We but the nextPC in the stack (high byte first get the higher address)
