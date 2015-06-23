@@ -41,6 +41,10 @@
   <ItemGroup>
     <Compile Include="Catridge\Cartridge.cs" />
     <Compile Include="CartridgeType.cs" />
+    <Compile Include="CPU\Dictionaries\CPUCBInstructionLengths.cs" />
+    <Compile Include="CPU\Dictionaries\CPUCBIntructionClocks.cs" />
+    <Compile Include="CPU\Dictionaries\CPUInstructionClocks.cs" />
+    <Compile Include="CPU\Dictionaries\CPUInstructionLengths.cs" />
     <Compile Include="ICartridge.cs" />
     <Compile Include="CPU\CPU.cs" />
     <Compile Include="CPURegisters.cs" />
