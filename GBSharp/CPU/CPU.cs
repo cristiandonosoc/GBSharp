@@ -943,10 +943,15 @@ namespace GBSharp.CPUSpace
             {0xC1, (n)=>{throw new NotImplementedException("POP BC (0xC1)");}},
 
             // JP NZ,nn: Absolute jump to 16-bit location if last result was not zero
-            {0xC2, (n)=>{throw new NotImplementedException("JP NZ,nn (0xC2)");}},
+            {0xC2, (n)=>{
+              if (registers.FZ == 0) { return; }
+              this.nextPC = n;
+            }},
 
             // JP nn: Absolute jump to 16-bit location
-            {0xC3, (n)=>{throw new NotImplementedException("JP nn (0xC3)");}},
+            {0xC3, (n)=>{
+              this.nextPC = n;
+            }},
 
             // CALL NZ,nn: Call routine at 16-bit location if last result was not zero
             {0xC4, (n)=>{throw new NotImplementedException("CALL NZ,nn (0xC4)");}},
@@ -967,7 +972,10 @@ namespace GBSharp.CPUSpace
             {0xC9, (n)=>{throw new NotImplementedException("RET (0xC9)");}},
 
             // JP Z,nn: Absolute jump to 16-bit location if last result was zero
-            {0xCA, (n)=>{throw new NotImplementedException("JP Z,nn (0xCA)");}},
+            {0xCA, (n)=>{
+              if (registers.FZ != 0) { return; }
+              this.nextPC = n;
+            }},
 
             // Ext ops: Extended operations (two-byte instruction code)
             {0xCB, (n)=>{throw new NotImplementedException("Ext ops (0xCB)");}},
@@ -1002,7 +1010,10 @@ namespace GBSharp.CPUSpace
             {0xD1, (n)=>{throw new NotImplementedException("POP DE (0xD1)");}},
 
             // JP NC,nn: Absolute jump to 16-bit location if last result caused no carry
-            {0xD2, (n)=>{throw new NotImplementedException("JP NC,nn (0xD2)");}},
+            {0xD2, (n)=>{
+              if (registers.FC != 0) { return; }
+              this.nextPC = n;
+            }},
 
             // XX: Operation removed in this CPU
             {0xD3, (n)=>{throw new NotImplementedException("XX (0xD3)");}},
@@ -1026,7 +1037,10 @@ namespace GBSharp.CPUSpace
             {0xD9, (n)=>{throw new NotImplementedException("RETI (0xD9)");}},
 
             // JP C,nn: Absolute jump to 16-bit location if last result caused carry
-            {0xDA, (n)=>{throw new NotImplementedException("JP C,nn (0xDA)");}},
+            {0xDA, (n)=>{
+              if (registers.FC == 0) { return; }
+              this.nextPC = n;
+            }},
 
             // XX: Operation removed in this CPU
             {0xDB, (n)=>{throw new NotImplementedException("XX (0xDB)");}},
@@ -1078,7 +1092,9 @@ namespace GBSharp.CPUSpace
             {0xE8, (n)=>{throw new NotImplementedException("ADD SP,d (0xE8)");}},
 
             // JP (HL): Jump to 16-bit value pointed by HL
-            {0xE9, (n)=>{throw new NotImplementedException("JP (HL) (0xE9)");}},
+            {0xE9, (n)=>{
+              this.nextPC = memory.Read(n);
+            }},
 
             // LD (nn),A: Save A at given 16-bit address
             {0xEA, (n)=>{memory.Write(n, registers.A);}},
