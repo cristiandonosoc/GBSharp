@@ -951,28 +951,156 @@ namespace GBSharp.CPUSpace
             {0xB7, (n)=>{registers.A |= registers.A;}},
 
             // CP B: Compare B against A
-            {0xB8, (n)=>{throw new NotImplementedException("CP B (0xB8)");}},
+            {0xB8, (n)=>{
+              byte operand = registers.B;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP C: Compare C against A
-            {0xB9, (n)=>{throw new NotImplementedException("CP C (0xB9)");}},
+            {0xB9, (n)=>{
+              byte operand = registers.C;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP D: Compare D against A
-            {0xBA, (n)=>{throw new NotImplementedException("CP D (0xBA)");}},
+            {0xBA, (n)=>{
+              byte operand = registers.D;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP E: Compare E against A
-            {0xBB, (n)=>{throw new NotImplementedException("CP E (0xBB)");}},
+            {0xBB, (n)=>{
+              byte operand = registers.E;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP H: Compare H against A
-            {0xBC, (n)=>{throw new NotImplementedException("CP H (0xBC)");}},
+            {0xBC, (n)=>{
+              byte operand = registers.H;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP L: Compare L against A
-            {0xBD, (n)=>{throw new NotImplementedException("CP L (0xBD)");}},
+            {0xBD, (n)=>{
+              byte operand = registers.L;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP (HL): Compare value pointed by HL against A
-            {0xBE, (n)=>{throw new NotImplementedException("CP (HL) (0xBE)");}},
+            {0xBE, (n)=>{
+              byte operand = memory.Read(registers.HL);
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP A: Compare A against A
-            {0xBF, (n)=>{throw new NotImplementedException("CP A (0xBF)");}},
+            {0xBF, (n)=>{
+              byte operand = registers.A;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // RET NZ: Return if last result was not zero
             {0xC0, (n)=>{
