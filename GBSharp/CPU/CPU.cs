@@ -1112,7 +1112,11 @@ namespace GBSharp.CPUSpace
             }},
 
             // POP BC: Pop 16-bit value from stack into BC
-            {0xC1, (n)=>{throw new NotImplementedException("POP BC (0xC1)");}},
+            {0xC1, (n)=>{
+              ushort res = memory.Read(registers.SP++);
+              res += (ushort)(memory.Read(registers.SP++) << 8);
+              registers.BC = res;
+            }},
 
             // JP NZ,nn: Absolute jump to 16-bit location if last result was not zero
             {0xC2, (n)=>{
@@ -1219,7 +1223,11 @@ namespace GBSharp.CPUSpace
             }},
 
             // POP DE: Pop 16-bit value from stack into DE
-            {0xD1, (n)=>{throw new NotImplementedException("POP DE (0xD1)");}},
+            {0xD1, (n)=>{
+              ushort res = memory.Read(registers.SP++);
+              res += (ushort)(memory.Read(registers.SP++) << 8);
+              registers.DE = res;
+            }},
 
             // JP NC,nn: Absolute jump to 16-bit location if last result caused no carry
             {0xD2, (n)=>{
@@ -1302,7 +1310,11 @@ namespace GBSharp.CPUSpace
             {0xE0, (n)=>{memory.Write((ushort)(0xFF00 & n), registers.A);}},
 
             // POP HL: Pop 16-bit value from stack into HL
-            {0xE1, (n)=>{throw new NotImplementedException("POP HL (0xE1)");}},
+            {0xE1, (n)=>{
+              ushort res = memory.Read(registers.SP++);
+              res += (ushort)(memory.Read(registers.SP++) << 8);
+              registers.HL = res;
+            }},
 
             // LDH (C),A: Save A at address pointed to by (FF00h + C)
             {0xE2, (n)=>{memory.Write((ushort)(0xFF00 & registers.C), registers.A);}},
@@ -1352,7 +1364,11 @@ namespace GBSharp.CPUSpace
             {0xF0, (n)=>{registers.A = memory.Read((ushort)(0xFF00 & n));}},
 
             // POP AF: Pop 16-bit value from stack into AF
-            {0xF1, (n)=>{throw new NotImplementedException("POP AF (0xF1)");}},
+            {0xF1, (n)=>{
+              ushort res = memory.Read(registers.SP++);
+              res += (ushort)(memory.Read(registers.SP++) << 8);
+              registers.AF = res;
+            }},
 
             // LDH A, (C): Operation removed in this CPU? (Or Load into A memory from FF00 + C?)
             {0xF2, (n)=>{registers.A = memory.Read((ushort)(0xFF00 & registers.C));}},
