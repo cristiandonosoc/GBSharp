@@ -1294,13 +1294,16 @@ namespace GBSharp.CPUSpace
             {0xC0, (n)=>{
               if (registers.FZ != 0) { return; }
               // We load the program counter (high byte is in higher address)
-              this.nextPC = memory.Read(registers.SP);
-              // We increase (shrink) the stack
-              registers.SP += 2;
+              this.nextPC = memory.Read(registers.SP++);
+              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
             }},
 
             // POP BC: Pop 16-bit value from stack into BC
-            {0xC1, (n)=>{throw new NotImplementedException("POP BC (0xC1)");}},
+            {0xC1, (n)=>{
+              ushort res = memory.Read(registers.SP++);
+              res += (ushort)(memory.Read(registers.SP++) << 8);
+              registers.BC = res;
+            }},
 
             // JP NZ,nn: Absolute jump to 16-bit location if last result was not zero
             {0xC2, (n)=>{
@@ -1325,7 +1328,11 @@ namespace GBSharp.CPUSpace
             }},
 
             // PUSH BC: Push 16-bit BC onto stack
-            {0xC5, (n)=>{throw new NotImplementedException("PUSH BC (0xC5)");}},
+            {0xC5, (n)=>{
+              registers.SP -= 2;
+              // We push the value in the stack (high byte gets the higher address)
+              memory.Write(registers.SP, registers.BC);
+            }},
 
             // ADD A,n: Add 8-bit immediate to A
             {0xC6, (n)=>{registers.A += (byte)n;}},
@@ -1337,17 +1344,15 @@ namespace GBSharp.CPUSpace
             {0xC8, (n)=>{
               if (registers.FZ == 0) { return; }
               // We load the program counter (high byte is in higher address)
-              this.nextPC = memory.Read(registers.SP);
-              // We increase (shrink) the stack
-              registers.SP += 2;
+              this.nextPC = memory.Read(registers.SP++);
+              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
             }},
 
             // RET: Return to calling routine
             {0xC9, (n)=>{
               // We load the program counter (high byte is in higher address)
-              this.nextPC = memory.Read(registers.SP);
-              // We increase (shrink) the stack
-              registers.SP += 2;
+              this.nextPC = memory.Read(registers.SP++);
+              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
             }},
 
             // JP Z,nn: Absolute jump to 16-bit location if last result was zero
@@ -1401,13 +1406,16 @@ namespace GBSharp.CPUSpace
             {0xD0, (n)=>{
               if (registers.FC != 0) { return; }
               // We load the program counter (high byte is in higher address)
-              this.nextPC = memory.Read(registers.SP);
-              // We increase (shrink) the stack
-              registers.SP += 2;
+              this.nextPC = memory.Read(registers.SP++);
+              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
             }},
 
             // POP DE: Pop 16-bit value from stack into DE
-            {0xD1, (n)=>{throw new NotImplementedException("POP DE (0xD1)");}},
+            {0xD1, (n)=>{
+              ushort res = memory.Read(registers.SP++);
+              res += (ushort)(memory.Read(registers.SP++) << 8);
+              registers.DE = res;
+            }},
 
             // JP NC,nn: Absolute jump to 16-bit location if last result caused no carry
             {0xD2, (n)=>{
@@ -1430,7 +1438,11 @@ namespace GBSharp.CPUSpace
             }},
 
             // PUSH DE: Push 16-bit DE onto stack
-            {0xD5, (n)=>{throw new NotImplementedException("PUSH DE (0xD5)");}},
+            {0xD5, (n)=>{
+              registers.SP -= 2;
+              // We push the value in the stack (high byte gets the higher address)
+              memory.Write(registers.SP, registers.DE);
+            }},
 
             // SUB A,n: Subtract 8-bit immediate from A
             {0xD6, (n)=>{registers.A -= (byte)n;}},
@@ -1442,9 +1454,8 @@ namespace GBSharp.CPUSpace
             {0xD8, (n)=>{
               if (registers.FC == 0) { return; }
               // We load the program counter (high byte is in higher address)
-              this.nextPC = memory.Read(registers.SP);
-              // We increase (shrink) the stack
-              registers.SP += 2;
+              this.nextPC = memory.Read(registers.SP++);
+              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
             }},
 
             // RETI: Enable interrupts and return to calling routine
@@ -1490,7 +1501,11 @@ namespace GBSharp.CPUSpace
             {0xE0, (n)=>{memory.Write((ushort)(0xFF00 & n), registers.A);}},
 
             // POP HL: Pop 16-bit value from stack into HL
-            {0xE1, (n)=>{throw new NotImplementedException("POP HL (0xE1)");}},
+            {0xE1, (n)=>{
+              ushort res = memory.Read(registers.SP++);
+              res += (ushort)(memory.Read(registers.SP++) << 8);
+              registers.HL = res;
+            }},
 
             // LDH (C),A: Save A at address pointed to by (FF00h + C)
             {0xE2, (n)=>{memory.Write((ushort)(0xFF00 & registers.C), registers.A);}},
@@ -1502,7 +1517,11 @@ namespace GBSharp.CPUSpace
             {0xE4, (n)=>{throw new NotImplementedException("XX (0xE4)");}},
 
             // PUSH HL: Push 16-bit HL onto stack
-            {0xE5, (n)=>{throw new NotImplementedException("PUSH HL (0xE5)");}},
+            {0xE5, (n)=>{
+              registers.SP -= 2;
+              // We push the value in the stack (high byte gets the higher address)
+              memory.Write(registers.SP, registers.HL);
+            }},
 
             // AND n: Logical AND 8-bit immediate against A
             {0xE6, (n)=>{registers.A &= (byte)n;}},
@@ -1540,7 +1559,11 @@ namespace GBSharp.CPUSpace
             {0xF0, (n)=>{registers.A = memory.Read((ushort)(0xFF00 & n));}},
 
             // POP AF: Pop 16-bit value from stack into AF
-            {0xF1, (n)=>{throw new NotImplementedException("POP AF (0xF1)");}},
+            {0xF1, (n)=>{
+              ushort res = memory.Read(registers.SP++);
+              res += (ushort)(memory.Read(registers.SP++) << 8);
+              registers.AF = res;
+            }},
 
             // LDH A, (C): Operation removed in this CPU? (Or Load into A memory from FF00 + C?)
             {0xF2, (n)=>{registers.A = memory.Read((ushort)(0xFF00 & registers.C));}},
@@ -1552,7 +1575,11 @@ namespace GBSharp.CPUSpace
             {0xF4, (n)=>{throw new NotImplementedException("XX (0xF4)");}},
 
             // PUSH AF: Push 16-bit AF onto stack
-            {0xF5, (n)=>{throw new NotImplementedException("PUSH AF (0xF5)");}},
+            {0xF5, (n)=>{
+              registers.SP -= 2;
+              // We push the value in the stack (high byte gets the higher address)
+              memory.Write(registers.SP, registers.AF);
+            }},
 
             // OR n: Logical OR 8-bit immediate against A
             {0xF6, (n)=>{registers.A |= (byte)n;}},
@@ -1579,7 +1606,23 @@ namespace GBSharp.CPUSpace
             {0xFD, (n)=>{throw new NotImplementedException("XX (0xFD)");}},
 
             // CP n: Compare 8-bit immediate against A
-            {0xFE, (n)=>{throw new NotImplementedException("CP n (0xFE)");}},
+            {0xFE, (n)=>{
+              byte operand = (byte)n;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // RST 38: Call routine at address 0038h
             {0xFF, (n)=>{instructionLambdas[0xCD](0x38);}}
