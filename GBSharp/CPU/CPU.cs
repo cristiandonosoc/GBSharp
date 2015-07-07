@@ -1143,7 +1143,11 @@ namespace GBSharp.CPUSpace
             }},
 
             // PUSH BC: Push 16-bit BC onto stack
-            {0xC5, (n)=>{throw new NotImplementedException("PUSH BC (0xC5)");}},
+            {0xC5, (n)=>{
+              registers.SP -= 2;
+              // We push the value in the stack (high byte gets the higher address)
+              memory.Write(registers.SP, registers.BC);
+            }},
 
             // ADD A,n: Add 8-bit immediate to A
             {0xC6, (n)=>{registers.A += (byte)n;}},
@@ -1249,7 +1253,11 @@ namespace GBSharp.CPUSpace
             }},
 
             // PUSH DE: Push 16-bit DE onto stack
-            {0xD5, (n)=>{throw new NotImplementedException("PUSH DE (0xD5)");}},
+            {0xD5, (n)=>{
+              registers.SP -= 2;
+              // We push the value in the stack (high byte gets the higher address)
+              memory.Write(registers.SP, registers.DE);
+            }},
 
             // SUB A,n: Subtract 8-bit immediate from A
             {0xD6, (n)=>{registers.A -= (byte)n;}},
@@ -1324,7 +1332,11 @@ namespace GBSharp.CPUSpace
             {0xE4, (n)=>{throw new NotImplementedException("XX (0xE4)");}},
 
             // PUSH HL: Push 16-bit HL onto stack
-            {0xE5, (n)=>{throw new NotImplementedException("PUSH HL (0xE5)");}},
+            {0xE5, (n)=>{
+              registers.SP -= 2;
+              // We push the value in the stack (high byte gets the higher address)
+              memory.Write(registers.SP, registers.HL);
+            }},
 
             // AND n: Logical AND 8-bit immediate against A
             {0xE6, (n)=>{registers.A &= (byte)n;}},
@@ -1378,7 +1390,11 @@ namespace GBSharp.CPUSpace
             {0xF4, (n)=>{throw new NotImplementedException("XX (0xF4)");}},
 
             // PUSH AF: Push 16-bit AF onto stack
-            {0xF5, (n)=>{throw new NotImplementedException("PUSH AF (0xF5)");}},
+            {0xF5, (n)=>{
+              registers.SP -= 2;
+              // We push the value in the stack (high byte gets the higher address)
+              memory.Write(registers.SP, registers.AF);
+            }},
 
             // OR n: Logical OR 8-bit immediate against A
             {0xF6, (n)=>{registers.A |= (byte)n;}},
