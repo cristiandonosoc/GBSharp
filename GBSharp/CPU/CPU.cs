@@ -1391,7 +1391,23 @@ namespace GBSharp.CPUSpace
             {0xFD, (n)=>{throw new NotImplementedException("XX (0xFD)");}},
 
             // CP n: Compare 8-bit immediate against A
-            {0xFE, (n)=>{throw new NotImplementedException("CP n (0xFE)");}},
+            {0xFE, (n)=>{
+              byte operand = (byte)n;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // RST 38: Call routine at address 0038h
             {0xFF, (n)=>{throw new NotImplementedException("RST 38 (0xFF)");}}
