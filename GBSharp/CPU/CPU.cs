@@ -232,7 +232,7 @@ namespace GBSharp.CPUSpace
 
             // JR NZ,n: Relative jump by signed immediate if last result was not zero
             {0x20, (n)=>{
-              if (registers.FZ == 0) { return; }
+              if (registers.FZ != 0) { return; }
               // We cast down the input, ignoring the overflows
               sbyte sn = 0;
               unchecked{
@@ -247,7 +247,10 @@ namespace GBSharp.CPUSpace
             {0x21, (n)=>{registers.HL = n;}},
 
             // LDI (HL),A: Save A to address pointed by HL, and increment HL
-            {0x22, (n)=>{memory.Write(registers.HL, registers.A);}},
+            {0x22, (n) =>
+            {
+              memory.Write(registers.HL++, registers.A);
+            }},
 
             // INC HL: Increment 16-bit HL
             {0x23, (n)=>{registers.HL++;}},
@@ -307,7 +310,7 @@ namespace GBSharp.CPUSpace
 
             // JR Z,n: Relative jump by signed immediate if last result was zero
             {0x28, (n)=>{
-              if (registers.FZ != 0) { return; }
+              if (registers.FZ == 0) { return; }
               // We cast down the input, ignoring the overflows
               sbyte sn = 0;
               unchecked{
