@@ -954,38 +954,172 @@ namespace GBSharp.CPUSpace
             {0xB7, (n)=>{registers.A |= registers.A;}},
 
             // CP B: Compare B against A
-            {0xB8, (n)=>{throw new NotImplementedException("CP B (0xB8)");}},
+            {0xB8, (n)=>{
+              byte operand = registers.B;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP C: Compare C against A
-            {0xB9, (n)=>{throw new NotImplementedException("CP C (0xB9)");}},
+            {0xB9, (n)=>{
+              byte operand = registers.C;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP D: Compare D against A
-            {0xBA, (n)=>{throw new NotImplementedException("CP D (0xBA)");}},
+            {0xBA, (n)=>{
+              byte operand = registers.D;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP E: Compare E against A
-            {0xBB, (n)=>{throw new NotImplementedException("CP E (0xBB)");}},
+            {0xBB, (n)=>{
+              byte operand = registers.E;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP H: Compare H against A
-            {0xBC, (n)=>{throw new NotImplementedException("CP H (0xBC)");}},
+            {0xBC, (n)=>{
+              byte operand = registers.H;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP L: Compare L against A
-            {0xBD, (n)=>{throw new NotImplementedException("CP L (0xBD)");}},
+            {0xBD, (n)=>{
+              byte operand = registers.L;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP (HL): Compare value pointed by HL against A
-            {0xBE, (n)=>{throw new NotImplementedException("CP (HL) (0xBE)");}},
+            {0xBE, (n)=>{
+              byte operand = memory.Read(registers.HL);
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP A: Compare A against A
-            {0xBF, (n)=>{throw new NotImplementedException("CP A (0xBF)");}},
+            {0xBF, (n)=>{
+              byte operand = registers.A;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // RET NZ: Return if last result was not zero
-            {0xC0, (n)=>{throw new NotImplementedException("RET NZ (0xC0)");}},
+            {0xC0, (n)=>{
+              if (registers.FZ != 0) { return; }
+              // We load the program counter (high byte is in higher address)
+              this.nextPC = memory.Read(registers.SP);
+              // We increase (shrink) the stack
+              registers.SP += 2;
+            }},
 
             // POP BC: Pop 16-bit value from stack into BC
             {0xC1, (n)=>{throw new NotImplementedException("POP BC (0xC1)");}},
 
             // JP NZ,nn: Absolute jump to 16-bit location if last result was not zero
             {0xC2, (n)=>{
-              if (registers.FZ == 0) { return; }
+              if (registers.FZ != 0) { return; }
               this.nextPC = n;
             }},
 
@@ -995,7 +1129,15 @@ namespace GBSharp.CPUSpace
             }},
 
             // CALL NZ,nn: Call routine at 16-bit location if last result was not zero
-            {0xC4, (n)=>{throw new NotImplementedException("CALL NZ,nn (0xC4)");}},
+            {0xC4, (n)=>{
+              if (registers.FZ != 0) { return; }
+              // We decrease the SP by 2
+              registers.SP -= 2;
+              // We but the nextPC in the stack (high byte first get the higher address)
+              memory.Write(registers.SP, this.nextPC);
+              // We jump
+              this.nextPC = n;
+            }},
 
             // PUSH BC: Push 16-bit BC onto stack
             {0xC5, (n)=>{throw new NotImplementedException("PUSH BC (0xC5)");}},
@@ -1007,14 +1149,25 @@ namespace GBSharp.CPUSpace
             {0xC7, (n)=>{throw new NotImplementedException("RST 0 (0xC7)");}},
 
             // RET Z: Return if last result was zero
-            {0xC8, (n)=>{throw new NotImplementedException("RET Z (0xC8)");}},
+            {0xC8, (n)=>{
+              if (registers.FZ == 0) { return; }
+              // We load the program counter (high byte is in higher address)
+              this.nextPC = memory.Read(registers.SP);
+              // We increase (shrink) the stack
+              registers.SP += 2;
+            }},
 
             // RET: Return to calling routine
-            {0xC9, (n)=>{throw new NotImplementedException("RET (0xC9)");}},
+            {0xC9, (n)=>{
+              // We load the program counter (high byte is in higher address)
+              this.nextPC = memory.Read(registers.SP);
+              // We increase (shrink) the stack
+              registers.SP += 2;
+            }},
 
             // JP Z,nn: Absolute jump to 16-bit location if last result was zero
             {0xCA, (n)=>{
-              if (registers.FZ != 0) { return; }
+              if (registers.FZ == 0) { return; }
               this.nextPC = n;
             }},
 
@@ -1022,10 +1175,25 @@ namespace GBSharp.CPUSpace
             {0xCB, (n)=>{throw new NotImplementedException("Ext ops (0xCB)");}},
 
             // CALL Z,nn: Call routine at 16-bit location if last result was zero
-            {0xCC, (n)=>{throw new NotImplementedException("CALL Z,nn (0xCC)");}},
+            {0xCC, (n)=>{
+              if (registers.FZ == 0) { return; }
+              // We decrease the SP by 2
+              registers.SP -= 2;
+              // We but the nextPC in the stack (high byte first get the higher address)
+              memory.Write(registers.SP, this.nextPC);
+              // We jump
+              this.nextPC = n;
+            }},
 
             // CALL nn: Call routine at 16-bit location
-            {0xCD, (n)=>{throw new NotImplementedException("CALL nn (0xCD)");}},
+            {0xCD, (n)=>{
+              // We decrease the SP by 2
+              registers.SP -= 2;
+              // We but the nextPC in the stack (high byte first get the higher address)
+              memory.Write(registers.SP, this.nextPC);
+              // We jump
+              this.nextPC = n;
+            }},
 
             // ADC A,n: Add 8-bit immediate and carry to A
             {0xCE, (n)=>{
@@ -1045,7 +1213,13 @@ namespace GBSharp.CPUSpace
             {0xCF, (n)=>{throw new NotImplementedException("RST 8 (0xCF)");}},
 
             // RET NC: Return if last result caused no carry
-            {0xD0, (n)=>{throw new NotImplementedException("RET NC (0xD0)");}},
+            {0xD0, (n)=>{
+              if (registers.FC != 0) { return; }
+              // We load the program counter (high byte is in higher address)
+              this.nextPC = memory.Read(registers.SP);
+              // We increase (shrink) the stack
+              registers.SP += 2;
+            }},
 
             // POP DE: Pop 16-bit value from stack into DE
             {0xD1, (n)=>{throw new NotImplementedException("POP DE (0xD1)");}},
@@ -1060,7 +1234,15 @@ namespace GBSharp.CPUSpace
             {0xD3, (n)=>{throw new NotImplementedException("XX (0xD3)");}},
 
             // CALL NC,nn: Call routine at 16-bit location if last result caused no carry
-            {0xD4, (n)=>{throw new NotImplementedException("CALL NC,nn (0xD4)");}},
+            {0xD4, (n)=>{
+              if (registers.FC != 0) { return; }
+              // We decrease the SP by 2
+              registers.SP -= 2;
+              // We but the nextPC in the stack (high byte first get the higher address)
+              memory.Write(registers.SP, this.nextPC);
+              // We jump
+              this.nextPC = n;
+            }},
 
             // PUSH DE: Push 16-bit DE onto stack
             {0xD5, (n)=>{throw new NotImplementedException("PUSH DE (0xD5)");}},
@@ -1072,7 +1254,13 @@ namespace GBSharp.CPUSpace
             {0xD7, (n)=>{throw new NotImplementedException("RST 10 (0xD7)");}},
 
             // RET C: Return if last result caused carry
-            {0xD8, (n)=>{throw new NotImplementedException("RET C (0xD8)");}},
+            {0xD8, (n)=>{
+              if (registers.FC == 0) { return; }
+              // We load the program counter (high byte is in higher address)
+              this.nextPC = memory.Read(registers.SP);
+              // We increase (shrink) the stack
+              registers.SP += 2;
+            }},
 
             // RETI: Enable interrupts and return to calling routine
             {0xD9, (n)=>{throw new NotImplementedException("RETI (0xD9)");}},
@@ -1087,7 +1275,15 @@ namespace GBSharp.CPUSpace
             {0xDB, (n)=>{throw new NotImplementedException("XX (0xDB)");}},
 
             // CALL C,nn: Call routine at 16-bit location if last result caused carry
-            {0xDC, (n)=>{throw new NotImplementedException("CALL C,nn (0xDC)");}},
+            {0xDC, (n)=>{
+              if (registers.FC == 0) { return; }
+              // We decrease the SP by 2
+              registers.SP -= 2;
+              // We but the nextPC in the stack (high byte first get the higher address)
+              memory.Write(registers.SP, this.nextPC);
+              // We jump
+              this.nextPC = n;
+            }},
 
             // XX: Operation removed in this CPU
             {0xDD, (n)=>{throw new NotImplementedException("XX (0xDD)");}},
