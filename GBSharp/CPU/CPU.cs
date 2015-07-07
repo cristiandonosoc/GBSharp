@@ -621,28 +621,93 @@ namespace GBSharp.CPUSpace
             {0x7F, (n)=>{registers.A = registers.A;}},
 
             // ADD A,B: Add B to A
-            {0x80, (n)=>{registers.A += registers.B;}},
+            {0x80, (n) =>
+            {
+              byte initial = registers.A;
+              registers.A += registers.B;
+              // Update flags
+              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.B ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADD A,C: Add C to A
-            {0x81, (n)=>{registers.A += registers.C;}},
+            {0x81, (n) =>
+            {
+              byte initial = registers.A;
+              registers.A += registers.C;
+              // Update flags
+              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.C ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADD A,D: Add D to A
-            {0x82, (n)=>{registers.A += registers.D;}},
+            {0x82, (n) =>
+            {
+              byte initial = registers.A;
+              registers.A += registers.D;
+              // Update flags
+              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.D ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADD A,E: Add E to A
-            {0x83, (n)=>{registers.A += registers.E;}},
+            {0x83, (n) =>
+            {
+              byte initial = registers.A;
+              registers.A += registers.E;
+              // Update flags
+              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.E ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADD A,H: Add H to A
-            {0x84, (n)=>{registers.A += registers.H;}},
+            {0x84, (n) =>
+            {
+              byte initial = registers.A;
+              registers.A += registers.H;
+              // Update flags
+              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.H ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADD A,L: Add L to A
-            {0x85, (n)=>{registers.A += registers.L;}},
+            {0x85, (n) =>
+            {
+              byte initial = registers.A;
+              registers.A += registers.L;
+              // Update flags
+              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.L ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADD A,(HL): Add value pointed by HL to A
-            {0x86, (n)=>{registers.A += memory.Read(registers.HL);}},
+            {0x86, (n) =>
+            {
+              byte initial = registers.A;
+              byte mem = memory.Read(registers.HL);
+              registers.A += mem;
+              // Update flags
+              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ mem ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADD A,A: Add A to A
-            {0x87, (n)=>{registers.A += registers.A;}},
+            {0x87, (n) =>
+            {
+              byte initial = registers.A;
+              registers.A += registers.A;
+              // Update flags
+              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.A ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADC A,B: Add B and carry flag to A
             {0x88, (n)=>{
@@ -886,76 +951,196 @@ namespace GBSharp.CPUSpace
             }},
 
             // AND B: Logical AND B against A
-            {0xA0, (n)=>{registers.A &= registers.B;}},
+            {0xA0, (n) =>
+            {
+              registers.A &= registers.B;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)1;
+            }},
 
             // AND C: Logical AND C against A
-            {0xA1, (n)=>{registers.A &= registers.C;}},
+            {0xA1, (n) =>
+            {
+              registers.A &= registers.C;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)1;
+            }},
 
             // AND D: Logical AND D against A
-            {0xA2, (n)=>{registers.A &= registers.D;}},
+            {0xA2, (n) =>
+            {
+              registers.A &= registers.D;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)1;
+            }},
 
             // AND E: Logical AND E against A
-            {0xA3, (n)=>{registers.A &= registers.E;}},
+            {0xA3, (n) =>
+            {
+              registers.A &= registers.E;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)1;
+            }},
 
             // AND H: Logical AND H against A
-            {0xA4, (n)=>{registers.A &= registers.H;}},
+            {0xA4, (n) =>
+            {
+              registers.A &= registers.H;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)1;
+            }},
 
             // AND L: Logical AND L against A
-            {0xA5, (n)=>{registers.A &= registers.L;}},
+            {0xA5, (n) =>
+            {
+              registers.A &= registers.L;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)1;
+            }},
 
             // AND (HL): Logical AND value pointed by HL against A
-            {0xA6, (n)=>{registers.A &= memory.Read(registers.HL);}},
+            {0xA6, (n) =>
+            {
+              registers.A &= memory.Read(registers.HL);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)1;
+            }},
 
             // AND A: Logical AND A against A
-            {0xA7, (n)=>{registers.A &= registers.A;}},
+            {0xA7, (n) =>
+            {
+              registers.A &= registers.A;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)1;
+            }},
 
             // XOR B: Logical XOR B against A
-            {0xA8, (n)=>{registers.A ^= registers.B;}},
+            {0xA8, (n) =>
+            {
+              registers.A ^= registers.B;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // XOR C: Logical XOR C against A
-            {0xA9, (n)=>{registers.A ^= registers.C;}},
+            {0xA9, (n) =>
+            {
+              registers.A ^= registers.C;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // XOR D: Logical XOR D against A
-            {0xAA, (n)=>{registers.A ^= registers.D;}},
+            {0xAA, (n) =>
+            {
+              registers.A ^= registers.D;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // XOR E: Logical XOR E against A
-            {0xAB, (n)=>{registers.A ^= registers.E;}},
+            {0xAB, (n) =>
+            {
+              registers.A ^= registers.E;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // XOR H: Logical XOR H against A
-            {0xAC, (n)=>{registers.A ^= registers.H;}},
+            {0xAC, (n) =>
+            {
+              registers.A ^= registers.H;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // XOR L: Logical XOR L against A
-            {0xAD, (n)=>{registers.A ^= registers.L;}},
+            {0xAD, (n) =>
+            {
+              registers.A ^= registers.L;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // XOR (HL): Logical XOR value pointed by HL against A
-            {0xAE, (n)=>{registers.A ^= memory.Read(registers.HL);}},
+            {0xAE, (n) =>
+            {
+              registers.A ^= memory.Read(registers.HL);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // XOR A: Logical XOR A against A
-            {0xAF, (n)=>{registers.A ^= registers.A;}},
+            {0xAF, (n) =>
+            {
+              registers.A ^= registers.A;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // OR B: Logical OR B against A
-            {0xB0, (n)=>{registers.A |= registers.B;}},
+            {0xB0, (n) =>
+            {
+              registers.A |= registers.B;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // OR C: Logical OR C against A
-            {0xB1, (n)=>{registers.A |= registers.C;}},
+            {0xB1, (n) =>
+            {
+              registers.A |= registers.C;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // OR D: Logical OR D against A
-            {0xB2, (n)=>{registers.A |= registers.D;}},
+            {0xB2, (n) =>
+            {
+              registers.A |= registers.D;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // OR E: Logical OR E against A
-            {0xB3, (n)=>{registers.A |= registers.E;}},
+            {0xB3, (n) =>
+            {
+              registers.A |= registers.E;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // OR H: Logical OR H against A
-            {0xB4, (n)=>{registers.A |= registers.H;}},
+            {0xB4, (n) =>
+            {
+              registers.A |= registers.H;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // OR L: Logical OR L against A
-            {0xB5, (n)=>{registers.A |= registers.L;}},
+            {0xB5, (n) =>
+            {
+              registers.A |= registers.L;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // OR (HL): Logical OR value pointed by HL against A
-            {0xB6, (n)=>{registers.A |= memory.Read(registers.HL);}},
+            {0xB6, (n) =>
+            {
+              registers.A |= memory.Read(registers.HL);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // OR A: Logical OR A against A
-            {0xB7, (n)=>{registers.A |= registers.A;}},
+            {0xB7, (n) =>
+            {
+              registers.A |= registers.A;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // CP B: Compare B against A
             {0xB8, (n)=>{
