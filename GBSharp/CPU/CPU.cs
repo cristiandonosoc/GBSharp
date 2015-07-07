@@ -247,7 +247,10 @@ namespace GBSharp.CPUSpace
             {0x21, (n)=>{registers.HL = n;}},
 
             // LDI (HL),A: Save A to address pointed by HL, and increment HL
-            {0x22, (n)=>{memory.Write(registers.HL, registers.A);}},
+            {0x22, (n) =>
+            {
+              memory.Write(registers.HL++, registers.A);
+            }},
 
             // INC HL: Increment 16-bit HL
             {0x23, (n)=>{registers.HL++;}},
@@ -1146,7 +1149,7 @@ namespace GBSharp.CPUSpace
             {0xC6, (n)=>{registers.A += (byte)n;}},
 
             // RST 0: Call routine at address 0000h
-            {0xC7, (n)=>{throw new NotImplementedException("RST 0 (0xC7)");}},
+            {0xC7, (n)=>{instructionLambdas[0xCD](0);}},
 
             // RET Z: Return if last result was zero
             {0xC8, (n)=>{
@@ -1208,7 +1211,7 @@ namespace GBSharp.CPUSpace
             }},
 
             // RST 8: Call routine at address 0008h
-            {0xCF, (n)=>{throw new NotImplementedException("RST 8 (0xCF)");}},
+            {0xCF, (n)=>{instructionLambdas[0xCD](0x08);}},
 
             // RET NC: Return if last result caused no carry
             {0xD0, (n)=>{
@@ -1252,7 +1255,7 @@ namespace GBSharp.CPUSpace
             {0xD6, (n)=>{registers.A -= (byte)n;}},
 
             // RST 10: Call routine at address 0010h
-            {0xD7, (n)=>{throw new NotImplementedException("RST 10 (0xD7)");}},
+            {0xD7, (n)=>{instructionLambdas[0xCD](0x10);}},
 
             // RET C: Return if last result caused carry
             {0xD8, (n)=>{
@@ -1299,7 +1302,7 @@ namespace GBSharp.CPUSpace
             }},
 
             // RST 18: Call routine at address 0018h
-            {0xDF, (n)=>{throw new NotImplementedException("RST 18 (0xDF)");}},
+            {0xDF, (n)=>{instructionLambdas[0xCD](0x18);}},
 
             // LDH (n),A: Save A at address pointed to by (FF00h + 8-bit immediate)
             {0xE0, (n)=>{memory.Write((ushort)(0xFF00 & n), registers.A);}},
@@ -1327,7 +1330,7 @@ namespace GBSharp.CPUSpace
             {0xE6, (n)=>{registers.A &= (byte)n;}},
 
             // RST 20: Call routine at address 0020h
-            {0xE7, (n)=>{throw new NotImplementedException("RST 20 (0xE7)");}},
+            {0xE7, (n)=>{instructionLambdas[0xCD](0x20);}},
 
             // ADD SP,d: Add signed 8-bit immediate to SP
             {0xE8, (n)=>{throw new NotImplementedException("ADD SP,d (0xE8)");}},
@@ -1353,7 +1356,7 @@ namespace GBSharp.CPUSpace
             {0xEE, (n)=>{registers.A ^= (byte)n;}},
 
             // RST 28: Call routine at address 0028h
-            {0xEF, (n)=>{throw new NotImplementedException("RST 28 (0xEF)");}},
+            {0xEF, (n)=>{instructionLambdas[0xCD](0x28);}},
 
             // LDH A,(n): Load A from address pointed to by (FF00h + 8-bit immediate)
             {0xF0, (n)=>{registers.A = memory.Read((ushort)(0xFF00 & n));}},
@@ -1381,7 +1384,7 @@ namespace GBSharp.CPUSpace
             {0xF6, (n)=>{registers.A |= (byte)n;}},
 
             // RST 30: Call routine at address 0030h
-            {0xF7, (n)=>{throw new NotImplementedException("RST 30 (0xF7)");}},
+            {0xF7, (n)=>{instructionLambdas[0xCD](0x30);}},
 
             // LDHL SP,d: Add signed 8-bit immediate to SP and save result in HL
             {0xF8, (n)=>{throw new NotImplementedException("LDHL SP,d (0xF8)");}},
@@ -1421,7 +1424,7 @@ namespace GBSharp.CPUSpace
             }},
 
             // RST 38: Call routine at address 0038h
-            {0xFF, (n)=>{throw new NotImplementedException("RST 38 (0xFF)");}}
+            {0xFF, (n)=>{instructionLambdas[0xCD](0x38);}}
         };
     }
 
@@ -2634,10 +2637,13 @@ namespace GBSharp.CPUSpace
         instructionLength = this.instructionLengths[(byte)opcode];
 
         // Extract literal
-        if(instructionLength == 2) {
+        if (instructionLength == 2)
+        {
           // 8 bit literal
           literal = this.memory.Read((ushort)(this.registers.PC + 1));
-        } else if (instructionLength == 3){
+        }
+        else if (instructionLength == 3)
+        {
           // 16 bit literal, little endian
           literal = this.memory.Read((ushort)(this.registers.PC + 1));
           literal += (ushort)(this.memory.Read((ushort)(this.registers.PC + 2)) << 8);
@@ -2646,7 +2652,9 @@ namespace GBSharp.CPUSpace
         instruction = this.instructionLambdas[(byte)opcode];
         clocks = this.instructionClocks[(byte)opcode];
 
-      } else {
+      }
+      else
+      {
         // CB instructions block
         opcode <<= 8;
         opcode += this.memory.Read((ushort)(this.registers.PC + 1));
