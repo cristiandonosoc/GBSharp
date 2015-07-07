@@ -1106,9 +1106,8 @@ namespace GBSharp.CPUSpace
             {0xC0, (n)=>{
               if (registers.FZ != 0) { return; }
               // We load the program counter (high byte is in higher address)
-              this.nextPC = memory.Read(registers.SP);
-              // We increase (shrink) the stack
-              registers.SP += 2;
+              this.nextPC = memory.Read(registers.SP++);
+              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
             }},
 
             // POP BC: Pop 16-bit value from stack into BC
@@ -1153,17 +1152,15 @@ namespace GBSharp.CPUSpace
             {0xC8, (n)=>{
               if (registers.FZ == 0) { return; }
               // We load the program counter (high byte is in higher address)
-              this.nextPC = memory.Read(registers.SP);
-              // We increase (shrink) the stack
-              registers.SP += 2;
+              this.nextPC = memory.Read(registers.SP++);
+              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
             }},
 
             // RET: Return to calling routine
             {0xC9, (n)=>{
               // We load the program counter (high byte is in higher address)
-              this.nextPC = memory.Read(registers.SP);
-              // We increase (shrink) the stack
-              registers.SP += 2;
+              this.nextPC = memory.Read(registers.SP++);
+              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
             }},
 
             // JP Z,nn: Absolute jump to 16-bit location if last result was zero
@@ -1217,9 +1214,8 @@ namespace GBSharp.CPUSpace
             {0xD0, (n)=>{
               if (registers.FC != 0) { return; }
               // We load the program counter (high byte is in higher address)
-              this.nextPC = memory.Read(registers.SP);
-              // We increase (shrink) the stack
-              registers.SP += 2;
+              this.nextPC = memory.Read(registers.SP++);
+              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
             }},
 
             // POP DE: Pop 16-bit value from stack into DE
@@ -1262,9 +1258,8 @@ namespace GBSharp.CPUSpace
             {0xD8, (n)=>{
               if (registers.FC == 0) { return; }
               // We load the program counter (high byte is in higher address)
-              this.nextPC = memory.Read(registers.SP);
-              // We increase (shrink) the stack
-              registers.SP += 2;
+              this.nextPC = memory.Read(registers.SP++);
+              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
             }},
 
             // RETI: Enable interrupts and return to calling routine
