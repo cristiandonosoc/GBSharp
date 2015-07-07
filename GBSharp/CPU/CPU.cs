@@ -421,8 +421,12 @@ namespace GBSharp.CPUSpace
             // LD A,n: Load 8-bit immediate into A
             {0x3E, (n)=>{registers.A = (byte)n;}},
 
-            // CCF: Clear carry flag
-            {0x3F, (n)=>{registers.F = UtilFuncs.ClearBit(registers.F, (int)Flags.C);}},
+            // CCF: Complement Carry Flag
+            {0x3F, (n)=>{
+              registers.FN = 0;
+              registers.FH = 0;
+              registers.FC = (byte)(~registers.FC & 1);
+            }},
 
             // LD B,B: Copy B to B
             {0x40, (n)=>{registers.B = registers.B;}}, //love this instruction
