@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using GBSharp.Catridge;
+using GBSharp.Cartridge;
 using GBSharp.MemorySpace.MemoryHandlers;
 
 namespace GBSharpTest.MemorySpace.MemoryHandlers

@@ -39,25 +39,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Catridge\Cartridge.cs" />
+    <Compile Include="Cartridge\Cartridge.cs" />
     <Compile Include="CartridgeType.cs" />
-    <Compile Include="CPU\Dictionaries\CPUCBInstructionLengths.cs" />
-    <Compile Include="CPU\Dictionaries\CPUCBIntructionClocks.cs" />
-    <Compile Include="CPU\Dictionaries\CPUInstructionClocks.cs" />
-    <Compile Include="CPU\Dictionaries\CPUInstructionLengths.cs" />
-    <Compile Include="CPU\InterruptsHandler.cs" />
+    <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionLengths.cs" />
+    <Compile Include="CPUSpace\Dictionaries\CPUCBIntructionClocks.cs" />
+    <Compile Include="CPUSpace\Dictionaries\CPUInstructionClocks.cs" />
+    <Compile Include="CPUSpace\Dictionaries\CPUInstructionLengths.cs" />
+    <Compile Include="CPUSpace\InterruptController.cs" />
+    <Compile Include="CPUSpace\Interrupts.cs" />
     <Compile Include="ICartridge.cs" />
-    <Compile Include="CPU\CPU.cs" />
+    <Compile Include="CPUSpace\CPU.cs" />
     <Compile Include="CPURegisters.cs" />
     <Compile Include="GameBoy.cs" />
     <Compile Include="ICPU.cs" />
     <Compile Include="IGameBoy.cs" />
     <Compile Include="IMemory.cs" />
-    <Compile Include="Memory\Memory.cs" />
-    <Compile Include="Memory\MemoryHandlers\InitialMemoryHandler.cs" />
-    <Compile Include="Memory\MemoryHandlers\MemoryHandler.cs" />
-    <Compile Include="Memory\MemoryHandlers\MemoryHandlerFactory.cs" />
-    <Compile Include="Memory\MemoryHandlers\RomOnlyMemoryHandler.cs" />
+    <Compile Include="MemorySpace\Memory.cs" />
+    <Compile Include="MemorySpace\MemoryHandlers\InitialMemoryHandler.cs" />
+    <Compile Include="MemorySpace\MemoryHandlers\MemoryHandler.cs" />
+    <Compile Include="MemorySpace\MemoryHandlers\MemoryHandlerFactory.cs" />
+    <Compile Include="MemorySpace\MemoryHandlers\RomOnlyMemoryHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\Utils.cs" />
   </ItemGroup>

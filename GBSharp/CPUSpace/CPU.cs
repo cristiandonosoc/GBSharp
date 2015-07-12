@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using GBSharp.Utils;
-using GBSharp.CPU.Dictionaries;
+using GBSharp.CPUSpace.Dictionaries;
 
 namespace GBSharp.CPUSpace
 {

@@ -4,20 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GBSharp.CPU
+namespace GBSharp.CPUSpace
 {
-  class InterruptsHandler
+  class InterruptController
   {
-    [Flags]
-    enum Interrupts : byte
-    {
-      VerticalBlanking = 0x01,
-      LCDCStatus = 0x02,
-      TimerOverflow = 0x04,
-      SerialIOTransferCompleted = 0x08,
-      P10to13TerminalNegativeEdge = 0x10
-    }
-
     internal bool IME; // Interrupt Master Enable
     ushort IFAddress = 0xFF0F; // Interrupt Request
     ushort IEAddress = 0xFFFF; // Interrupt Enable

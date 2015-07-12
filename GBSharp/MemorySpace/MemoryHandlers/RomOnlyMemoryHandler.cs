@@ -16,7 +16,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     private ushort romOnlyStart = 0x0000;
     private ushort romOnlyEnd = 0x7FFF;
 
-    internal RomOnlyMemoryHandler(GBSharp.Catridge.Cartridge cartridge)
+    internal RomOnlyMemoryHandler(GBSharp.Cartridge.Cartridge cartridge)
       : base(cartridge)
     {
     }

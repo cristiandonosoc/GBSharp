@@ -1,4 +1,4 @@
-﻿using GBSharp.Catridge;
+﻿using GBSharp.Cartridge;
 
 namespace GBSharp
 {
