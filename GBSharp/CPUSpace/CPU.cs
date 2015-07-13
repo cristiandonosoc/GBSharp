@@ -29,6 +29,9 @@ namespace GBSharp.CPUSpace
     private Dictionary<byte, Action<ushort>> instructionLambdas;
     private Dictionary<byte, Action<ushort>> CBInstructionLambdas;
 
+    private Dictionary<byte, string> instructionNames;
+    private Dictionary<byte, string> CBinstructionNames;
+
     private void CreateInstructionLambdas()
     {
       instructionLambdas = new Dictionary<byte, Action<ushort>>() {
@@ -1576,7 +1579,7 @@ namespace GBSharp.CPUSpace
             {0xF2, (n)=>{registers.A = memory.Read((ushort)(0xFF00 & registers.C));}},
 
             // DI: DIsable interrupts
-            {0xF3, (n)=>{throw new NotImplementedException("DI (0xF3)");}},
+            {0xF3, (n)=>{Console.WriteLine("NOT IMP DI (0xF3)");}},
 
             // XX: Operation removed in this CPU
             {0xF4, (n)=>{throw new InvalidInstructionException("XX (0xF4)");}},
@@ -2781,6 +2784,8 @@ namespace GBSharp.CPUSpace
       //Create Instruction Lambdas
       CreateInstructionLambdas();
       CreateCBInstructionLambdas();
+      instructionNames = CPUOpcodeNames.Setup();
+      CBinstructionNames = CPUCBOpcodeNames.Setup();
 
       this.memory = memory;
 
@@ -2847,13 +2852,13 @@ namespace GBSharp.CPUSpace
     public void Step()
     {
       // Instruction fetch and decode
+      string instructionName;
       byte instructionLength;
       byte clocks;
       Action<ushort> instruction;
       ushort initialClock = this.clock;
       ushort literal = 0;
       ushort opcode = this.memory.Read(this.registers.PC);
-
       if (opcode != 0xCB)
       {
         // Normal instructions
@@ -2874,6 +2879,7 @@ namespace GBSharp.CPUSpace
 
         instruction = this.instructionLambdas[(byte)opcode];
         clocks = this.instructionClocks[(byte)opcode];
+        instructionName = instructionNames[(byte)opcode];
 
       }
       else
@@ -2886,12 +2892,16 @@ namespace GBSharp.CPUSpace
 
         instruction = this.CBInstructionLambdas[(byte)opcode];
         clocks = this.CBInstructionClocks[(byte)opcode];
+        instructionName = CBinstructionNames[(byte)opcode];
       }
 
       // Prepare for program counter movement, but wait for instruction execution.
       // Overwrite nextPC in the instruction lambdas if you want to implement jumps.
       this.nextPC = (ushort)(this.registers.PC + instructionLength);
 
+
+      Console.WriteLine("Instruction:" + instructionName + " , OpCode: " + opcode.ToString("x") + " , Literal: " + literal.ToString("x"));
+      Console.WriteLine(registers.ToString());
       // Execute instruction
       instruction(literal);
 
