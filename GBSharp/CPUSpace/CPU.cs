@@ -29,6 +29,9 @@ namespace GBSharp.CPUSpace
     private Dictionary<byte, Action<ushort>> instructionLambdas;
     private Dictionary<byte, Action<ushort>> CBInstructionLambdas;
 
+    private Dictionary<byte, string> instructionNames;
+    private Dictionary<byte, string> CBinstructionNames;
+
     private void CreateInstructionLambdas()
     {
       instructionLambdas = new Dictionary<byte, Action<ushort>>() {
@@ -2781,6 +2784,8 @@ namespace GBSharp.CPUSpace
       //Create Instruction Lambdas
       CreateInstructionLambdas();
       CreateCBInstructionLambdas();
+      instructionNames = CPUOpcodeNames.Setup();
+      CBinstructionNames = CPUCBOpcodeNames.Setup();
 
       this.memory = memory;
 
@@ -2847,6 +2852,7 @@ namespace GBSharp.CPUSpace
     public void Step()
     {
       // Instruction fetch and decode
+      string instructionName;
       byte instructionLength;
       byte clocks;
       Action<ushort> instruction;
@@ -2873,6 +2879,7 @@ namespace GBSharp.CPUSpace
 
         instruction = this.instructionLambdas[(byte)opcode];
         clocks = this.instructionClocks[(byte)opcode];
+        instructionName = instructionNames[(byte)opcode];
 
       }
       else
@@ -2885,13 +2892,15 @@ namespace GBSharp.CPUSpace
 
         instruction = this.CBInstructionLambdas[(byte)opcode];
         clocks = this.CBInstructionClocks[(byte)opcode];
+        instructionName = CBinstructionNames[(byte)opcode];
       }
 
       // Prepare for program counter movement, but wait for instruction execution.
       // Overwrite nextPC in the instruction lambdas if you want to implement jumps.
       this.nextPC = (ushort)(this.registers.PC + instructionLength);
 
-      Console.WriteLine("OpCode: " + opcode.ToString("x") + " , Literal: " + literal.ToString("x"));
+
+      Console.WriteLine("Instruction:" + instructionName + " , OpCode: " + opcode.ToString("x") + " , Literal: " + literal.ToString("x"));
       Console.WriteLine(registers.ToString());
       // Execute instruction
       instruction(literal);
