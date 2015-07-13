@@ -1576,7 +1576,7 @@ namespace GBSharp.CPUSpace
             {0xF2, (n)=>{registers.A = memory.Read((ushort)(0xFF00 & registers.C));}},
 
             // DI: DIsable interrupts
-            {0xF3, (n)=>{throw new NotImplementedException("DI (0xF3)");}},
+            {0xF3, (n)=>{Console.WriteLine("NOT IMP DI (0xF3)");}},
 
             // XX: Operation removed in this CPU
             {0xF4, (n)=>{throw new NotImplementedException("XX (0xF4)");}},
