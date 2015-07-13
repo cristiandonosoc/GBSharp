@@ -1,5 +1,5 @@
 ﻿using System.Threading;
-using GBSharp.Catridge;
+using GBSharp.Cartridge;
 using GBSharp.CPUSpace;
 using GBSharp.MemorySpace;
 using System;
@@ -10,7 +10,7 @@ namespace GBSharp
   {
     private CPUSpace.CPU cpu;
     private MemorySpace.Memory memory;
-    private Cartridge cartridge;
+    private Cartridge.Cartridge cartridge;
     private bool run;
     private Thread clockThread;
     private ManualResetEventSlim manualResetEvent;
@@ -24,7 +24,7 @@ namespace GBSharp
       this.run = false;
       this.memory = new MemorySpace.Memory();
       this.cpu = new CPUSpace.CPU(this.memory);
-      this.cartridge = new Cartridge();
+      this.cartridge = new Cartridge.Cartridge();
       this.manualResetEvent = new ManualResetEventSlim(false);
       this.clockThread = new Thread(new ThreadStart(this.ThreadedRun));
     }

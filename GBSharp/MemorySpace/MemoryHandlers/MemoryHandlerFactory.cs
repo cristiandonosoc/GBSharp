@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using GBSharp.Catridge;
+using GBSharp.Cartridge;
 
 namespace GBSharp.MemorySpace.MemoryHandlers
 {
@@ -14,7 +14,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     /// </summary>
     /// <param name="cartridge">The cartridge to be loaded into the GB</param>
     /// <returns>A MemoryHandler instance</returns>
-    internal static MemoryHandler CreateMemoryHandler(Cartridge cartridge)
+    internal static MemoryHandler CreateMemoryHandler(Cartridge.Cartridge cartridge)
     {
       if (cartridge.Type == CartridgeType.ROM_ONLY)
       {

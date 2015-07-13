@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GBSharp.CPU.Dictionaries
+namespace GBSharp.CPUSpace.Dictionaries
 {
   class CPUInstructionClocks
   {

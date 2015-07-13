@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using GBSharp.Catridge;
+using GBSharp.Cartridge;
 
 namespace GBSharp.ViewModel
 {
