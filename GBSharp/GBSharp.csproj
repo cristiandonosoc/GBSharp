@@ -43,8 +43,10 @@
     <Compile Include="CartridgeType.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionLengths.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBIntructionClocks.cs" />
+    <Compile Include="CPUSpace\Dictionaries\CPUCBOpcodeNames.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUInstructionClocks.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUInstructionLengths.cs" />
+    <Compile Include="CPUSpace\Dictionaries\CPUOpcodeNames.cs" />
     <Compile Include="CPUSpace\InterruptController.cs" />
     <Compile Include="CPUSpace\Interrupts.cs" />
     <Compile Include="ICartridge.cs" />
