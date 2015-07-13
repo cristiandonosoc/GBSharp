@@ -9,8 +9,11 @@ namespace GBSharp.CPUSpace
   {
     internal CPURegisters registers;
     internal MemorySpace.Memory memory;
-    internal ulong clock;
+    internal InterruptController interruptController;
     internal ushort nextPC;
+    internal ushort clock; // 16 bit oscillation counter at 4.1943 MHz
+    internal bool halted;
+    internal bool stopped;
 
     #region Lengths and clocks
 
@@ -2775,11 +2778,27 @@ namespace GBSharp.CPUSpace
 
     public CPU(MemorySpace.Memory memory)
     {
-      this.clock = 0;
-
       //Create Instruction Lambdas
       CreateInstructionLambdas();
       CreateCBInstructionLambdas();
+
+      this.memory = memory;
+
+
+      this.Initialize();
+
+    }
+
+    /// <summary>
+    /// Sets the initial values for the cpu registers and memory mapped registers.
+    /// </summary>
+    private void Initialize()
+    {
+      // Reset the clock state
+      this.clock = 0;
+
+      this.halted = false;
+      this.stopped = false;
 
       // Magic CPU initial values (after bios execution).
       this.registers.BC = 0x0013;
@@ -2788,8 +2807,7 @@ namespace GBSharp.CPUSpace
       this.registers.PC = 0x0100;
       this.registers.SP = 0xFFFE;
 
-      // Initialize the memory
-      this.memory = memory;
+      // Initialize memory mapped registers
       this.memory.Write(0xFF05, 0x00); // TIMA
       this.memory.Write(0xFF06, 0x00); // TMA
       this.memory.Write(0xFF07, 0x00); // TAC
@@ -2821,7 +2839,6 @@ namespace GBSharp.CPUSpace
       this.memory.Write(0xFF4A, 0x00); // WY
       this.memory.Write(0xFF4B, 0x00); // WX
       this.memory.Write(0xFFFF, 0x00); // IE
-
     }
 
     /// <summary>
@@ -2833,6 +2850,7 @@ namespace GBSharp.CPUSpace
       byte instructionLength;
       byte clocks;
       Action<ushort> instruction;
+      ushort initialClock = this.clock;
       ushort literal = 0;
       ushort opcode = this.memory.Read(this.registers.PC);
 
