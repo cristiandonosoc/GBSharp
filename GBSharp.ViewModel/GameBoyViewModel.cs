@@ -21,6 +21,8 @@
     {
       _gameBoy.LoadCartridge(data);
       _cartridge.Update();
+      while(true)
+        _gameBoy.CPU.Step();
     }
   }
 }

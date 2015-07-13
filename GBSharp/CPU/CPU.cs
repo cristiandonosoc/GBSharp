@@ -2831,7 +2831,6 @@ namespace GBSharp.CPUSpace
       Action<ushort> instruction;
       ushort literal = 0;
       ushort opcode = this.memory.Read(this.registers.PC);
-
       if (opcode != 0xCB)
       {
         // Normal instructions
@@ -2870,6 +2869,8 @@ namespace GBSharp.CPUSpace
       // Overwrite nextPC in the instruction lambdas if you want to implement jumps.
       this.nextPC = (ushort)(this.registers.PC + instructionLength);
 
+      Console.WriteLine("OpCode: " + opcode.ToString("x") + " , Literal: " + literal.ToString("x"));
+      Console.WriteLine(registers.ToString());
       // Execute instruction
       instruction(literal);
 
