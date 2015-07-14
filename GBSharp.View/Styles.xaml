@@ -7,7 +7,6 @@
   <SolidColorBrush x:Key="TextBrush" Color="#0E1879"/>
 
   <Style x:Key="ControlStyle" TargetType="{x:Type Control}">
-    <Setter Property="FontFamily" Value="Nes Controller"/>
     <Setter Property="FontSize" Value="12"/>
   </Style>
   
@@ -30,8 +29,8 @@
   </Style>
 
   <Style TargetType="TextBlock">
-    <Setter Property="FontFamily" Value="Nes Controller"/>
-    <Setter Property="FontSize" Value="14"/>
+    <!--<Setter Property="FontFamily" Value="Nes Controller"/>-->
+    <Setter Property="FontSize" Value="12"/>
     <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
     <Setter Property="TextWrapping" Value="Wrap"/>
     <Setter Property="VerticalAlignment" Value="Center"/>
