@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GBSharp.Memory.MemoryHandlers
+namespace GBSharp.MemorySpace.MemoryHandlers
 {
   class InitialMemoryHandler : MemoryHandler
   {

@@ -1,1056 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 using GBSharp.Utils;
+using GBSharp.CPUSpace.Dictionaries;
 
-namespace GBSharp.CPU
+namespace GBSharp.CPUSpace
 {
   class CPU : ICPU
   {
     internal CPURegisters registers;
-    internal Memory.Memory memory;
+    internal MemorySpace.Memory memory;
+    internal InterruptController interruptController;
+    internal ushort nextPC;
+    internal ushort clock; // 16 bit oscillation counter at 4.1943 MHz
+    internal bool halted;
+    internal bool stopped;
 
     #region Lengths and clocks
-    Dictionary<byte, byte> instructionLengths = new Dictionary<byte, byte>() {
-            {0x00, 1}, // NOP
-            {0x01, 3}, // LD BC,nn
-            {0x02, 1}, // LD (BC),A
-            {0x03, 1}, // INC BC
-            {0x04, 1}, // INC B
-            {0x05, 1}, // DEC B
-            {0x06, 2}, // LD B,n
-            {0x07, 1}, // RLC A
-            {0x08, 3}, // LD (nn),SP
-            {0x09, 1}, // ADD HL,BC
-            {0x0A, 1}, // LD A,(BC)
-            {0x0B, 1}, // DEC BC
-            {0x0C, 1}, // INC C
-            {0x0D, 1}, // DEC C
-            {0x0E, 2}, // LD C,n
-            {0x0F, 1}, // RRC A
-            {0x10, 2}, // STOP
-            {0x11, 3}, // LD DE,nn
-            {0x12, 1}, // LD (DE),A
-            {0x13, 1}, // INC DE
-            {0x14, 1}, // INC D
-            {0x15, 1}, // DEC D
-            {0x16, 2}, // LD D,n
-            {0x17, 1}, // RL A
-            {0x18, 2}, // JR n
-            {0x19, 1}, // ADD HL,DE
-            {0x1A, 1}, // LD A,(DE)
-            {0x1B, 1}, // DEC DE
-            {0x1C, 1}, // INC E
-            {0x1D, 1}, // DEC E
-            {0x1E, 2}, // LD E,n
-            {0x1F, 1}, // RR A
-            {0x20, 2}, // JR NZ,n
-            {0x21, 3}, // LD HL,nn
-            {0x22, 1}, // LDI (HL),A
-            {0x23, 1}, // INC HL
-            {0x24, 1}, // INC H
-            {0x25, 1}, // DEC H
-            {0x26, 2}, // LD H,n
-            {0x27, 1}, // DAA
-            {0x28, 2}, // JR Z,n
-            {0x29, 1}, // ADD HL,HL
-            {0x2A, 1}, // LDI A,(HL)
-            {0x2B, 1}, // DEC HL
-            {0x2C, 1}, // INC L
-            {0x2D, 1}, // DEC L
-            {0x2E, 2}, // LD L,n
-            {0x2F, 1}, // CPL
-            {0x30, 2}, // JR NC,n
-            {0x31, 3}, // LD SP,nn
-            {0x32, 1}, // LDD (HL),A
-            {0x33, 1}, // INC SP
-            {0x34, 1}, // INC (HL)
-            {0x35, 1}, // DEC (HL)
-            {0x36, 2}, // LD (HL),n
-            {0x37, 1}, // SCF
-            {0x38, 2}, // JR C,n
-            {0x39, 1}, // ADD HL,SP
-            {0x3A, 1}, // LDD A,(HL)
-            {0x3B, 1}, // DEC SP
-            {0x3C, 1}, // INC A
-            {0x3D, 1}, // DEC A
-            {0x3E, 2}, // LD A,n
-            {0x3F, 1}, // CCF
-            {0x40, 1}, // LD B,B
-            {0x41, 1}, // LD B,C
-            {0x42, 1}, // LD B,D
-            {0x43, 1}, // LD B,E
-            {0x44, 1}, // LD B,H
-            {0x45, 1}, // LD B,L
-            {0x46, 1}, // LD B,(HL)
-            {0x47, 1}, // LD B,A
-            {0x48, 1}, // LD C,B
-            {0x49, 1}, // LD C,C
-            {0x4A, 1}, // LD C,D
-            {0x4B, 1}, // LD C,E
-            {0x4C, 1}, // LD C,H
-            {0x4D, 1}, // LD C,L
-            {0x4E, 1}, // LD C,(HL)
-            {0x4F, 1}, // LD C,A
-            {0x50, 1}, // LD D,B
-            {0x51, 1}, // LD D,C
-            {0x52, 1}, // LD D,D
-            {0x53, 1}, // LD D,E
-            {0x54, 1}, // LD D,H
-            {0x55, 1}, // LD D,L
-            {0x56, 1}, // LD D,(HL)
-            {0x57, 1}, // LD D,A
-            {0x58, 1}, // LD E,B
-            {0x59, 1}, // LD E,C
-            {0x5A, 1}, // LD E,D
-            {0x5B, 1}, // LD E,E
-            {0x5C, 1}, // LD E,H
-            {0x5D, 1}, // LD E,L
-            {0x5E, 1}, // LD E,(HL)
-            {0x5F, 1}, // LD E,A
-            {0x60, 1}, // LD H,B
-            {0x61, 1}, // LD H,C
-            {0x62, 1}, // LD H,D
-            {0x63, 1}, // LD H,E
-            {0x64, 1}, // LD H,H
-            {0x65, 1}, // LD H,L
-            {0x66, 1}, // LD H,(HL)
-            {0x67, 1}, // LD H,A
-            {0x68, 1}, // LD L,B
-            {0x69, 1}, // LD L,C
-            {0x6A, 1}, // LD L,D
-            {0x6B, 1}, // LD L,E
-            {0x6C, 1}, // LD L,H
-            {0x6D, 1}, // LD L,L
-            {0x6E, 1}, // LD L,(HL)
-            {0x6F, 1}, // LD L,A
-            {0x70, 1}, // LD (HL),B
-            {0x71, 1}, // LD (HL),C
-            {0x72, 1}, // LD (HL),D
-            {0x73, 1}, // LD (HL),E
-            {0x74, 1}, // LD (HL),H
-            {0x75, 1}, // LD (HL),L
-            {0x76, 1}, // HALT
-            {0x77, 1}, // LD (HL),A
-            {0x78, 1}, // LD A,B
-            {0x79, 1}, // LD A,C
-            {0x7A, 1}, // LD A,D
-            {0x7B, 1}, // LD A,E
-            {0x7C, 1}, // LD A,H
-            {0x7D, 1}, // LD A,L
-            {0x7E, 1}, // LD A,(HL)
-            {0x7F, 1}, // LD A,A
-            {0x80, 1}, // ADD A,B
-            {0x81, 1}, // ADD A,C
-            {0x82, 1}, // ADD A,D
-            {0x83, 1}, // ADD A,E
-            {0x84, 1}, // ADD A,H
-            {0x85, 1}, // ADD A,L
-            {0x86, 1}, // ADD A,(HL)
-            {0x87, 1}, // ADD A,A
-            {0x88, 1}, // ADC A,B
-            {0x89, 1}, // ADC A,C
-            {0x8A, 1}, // ADC A,D
-            {0x8B, 1}, // ADC A,E
-            {0x8C, 1}, // ADC A,H
-            {0x8D, 1}, // ADC A,L
-            {0x8E, 1}, // ADC A,(HL)
-            {0x8F, 1}, // ADC A,A
-            {0x90, 1}, // SUB A,B
-            {0x91, 1}, // SUB A,C
-            {0x92, 1}, // SUB A,D
-            {0x93, 1}, // SUB A,E
-            {0x94, 1}, // SUB A,H
-            {0x95, 1}, // SUB A,L
-            {0x96, 1}, // SUB A,(HL)
-            {0x97, 1}, // SUB A,A
-            {0x98, 1}, // SBC A,B
-            {0x99, 1}, // SBC A,C
-            {0x9A, 1}, // SBC A,D
-            {0x9B, 1}, // SBC A,E
-            {0x9C, 1}, // SBC A,H
-            {0x9D, 1}, // SBC A,L
-            {0x9E, 1}, // SBC A,(HL)
-            {0x9F, 1}, // SBC A,A
-            {0xA0, 1}, // AND B
-            {0xA1, 1}, // AND C
-            {0xA2, 1}, // AND D
-            {0xA3, 1}, // AND E
-            {0xA4, 1}, // AND H
-            {0xA5, 1}, // AND L
-            {0xA6, 1}, // AND (HL)
-            {0xA7, 1}, // AND A
-            {0xA8, 1}, // XOR B
-            {0xA9, 1}, // XOR C
-            {0xAA, 1}, // XOR D
-            {0xAB, 1}, // XOR E
-            {0xAC, 1}, // XOR H
-            {0xAD, 1}, // XOR L
-            {0xAE, 1}, // XOR (HL)
-            {0xAF, 1}, // XOR A
-            {0xB0, 1}, // OR B
-            {0xB1, 1}, // OR C
-            {0xB2, 1}, // OR D
-            {0xB3, 1}, // OR E
-            {0xB4, 1}, // OR H
-            {0xB5, 1}, // OR L
-            {0xB6, 1}, // OR (HL)
-            {0xB7, 1}, // OR A
-            {0xB8, 1}, // CP B
-            {0xB9, 1}, // CP C
-            {0xBA, 1}, // CP D
-            {0xBB, 1}, // CP E
-            {0xBC, 1}, // CP H
-            {0xBD, 1}, // CP L
-            {0xBE, 1}, // CP (HL)
-            {0xBF, 1}, // CP A
-            {0xC0, 1}, // RET NZ
-            {0xC1, 1}, // POP BC
-            {0xC2, 3}, // JP NZ,nn
-            {0xC3, 3}, // JP nn
-            {0xC4, 3}, // CALL NZ,nn
-            {0xC5, 1}, // PUSH BC
-            {0xC6, 2}, // ADD A,n
-            {0xC7, 1}, // RST 0
-            {0xC8, 1}, // RET Z
-            {0xC9, 1}, // RET
-            {0xCA, 3}, // JP Z,nn
-            {0xCB, 2}, // Ext ops
-            {0xCC, 3}, // CALL Z,nn
-            {0xCD, 3}, // CALL nn
-            {0xCE, 2}, // ADC A,n
-            {0xCF, 1}, // RST 8
-            {0xD0, 1}, // RET NC
-            {0xD1, 1}, // POP DE
-            {0xD2, 3}, // JP NC,nn
-            // {0xD3, }, // XX
-            {0xD4, 3}, // CALL NC,nn
-            {0xD5, 1}, // PUSH DE
-            {0xD6, 2}, // SUB A,n
-            {0xD7, 1}, // RST 10
-            {0xD8, 1}, // RET C
-            {0xD9, 1}, // RETI
-            {0xDA, 3}, // JP C,nn
-            // {0xDB, }, // XX
-            {0xDC, 3}, // CALL C,nn
-            // {0xDD, }, // XX
-            {0xDE, 2}, // SBC A,n
-            {0xDF, 1}, // RST 18
-            {0xE0, 2}, // LDH (n),A
-            {0xE1, 1}, // POP HL
-            {0xE2, 2}, // LDH (C),A
-            // {0xE3, }, // XX
-            // {0xE4, }, // XX
-            {0xE5, 1}, // PUSH HL
-            {0xE6, 2}, // AND n
-            {0xE7, 1}, // RST 20
-            {0xE8, 2}, // ADD SP,d
-            {0xE9, 1}, // JP (HL)
-            {0xEA, 3}, // LD (nn),A
-            // {0xEB, }, // XX
-            // {0xEC, }, // XX
-            // {0xED, }, // XX
-            {0xEE, 2}, // XOR n
-            {0xEF, 1}, // RST 28
-            {0xF0, 2}, // LDH A,(n)
-            {0xF1, 1}, // POP AF
-            {0xF2, 2}, // LDH A, (C)
-            {0xF3, 1}, // DI
-            // {0xF4, }, // XX
-            {0xF5, 1}, // PUSH AF
-            {0xF6, 2}, // OR n
-            {0xF7, 1}, // RST 30
-            {0xF8, 2}, // LDHL SP,d
-            {0xF9, 1}, // LD SP,HL
-            {0xFA, 3}, // LD A,(nn)
-            {0xFB, 1}, // EI
-            // {0xFC, }, // XX
-            // {0xFD, }, // XX
-            {0xFE, 2}, // CP n
-            {0xFF, 1} // RST 38
-        };
 
-    Dictionary<byte, byte> instructionClocks = new Dictionary<byte, byte>{
-            {0x00, 4}, // NOP
-            {0x01, 12}, // LD BC,nn
-            {0x02, 8}, // LD (BC),A
-            {0x03, 8}, // INC BC
-            {0x04, 4}, // INC B
-            {0x05, 4}, // DEC B
-            {0x06, 8}, // LD B,n
-            {0x07, 4}, // RLC A
-            {0x08, 20}, // LD (nn),SP
-            {0x09, 8}, // ADD HL,BC
-            {0x0A, 8}, // LD A,(BC)
-            {0x0B, 8}, // DEC BC
-            {0x0C, 4}, // INC C
-            {0x0D, 4}, // DEC C
-            {0x0E, 8}, // LD C,n
-            {0x0F, 4}, // RRC A
-            {0x10, 4}, // STOP
-            {0x11, 12}, // LD DE,nn
-            {0x12, 8}, // LD (DE),A
-            {0x13, 8}, // INC DE
-            {0x14, 4}, // INC D
-            {0x15, 4}, // DEC D
-            {0x16, 8}, // LD D,n
-            {0x17, 4}, // RL A
-            {0x18, 12}, // JR n
-            {0x19, 8}, // ADD HL,DE
-            {0x1A, 8}, // LD A,(DE)
-            {0x1B, 8}, // DEC DE
-            {0x1C, 4}, // INC E
-            {0x1D, 4}, // DEC E
-            {0x1E, 8}, // LD E,n
-            {0x1F, 4}, // RR A
-            {0x20, 8}, // JR NZ,n
-            {0x21, 12}, // LD HL,nn
-            {0x22, 8}, // LDI (HL),A
-            {0x23, 8}, // INC HL
-            {0x24, 4}, // INC H
-            {0x25, 4}, // DEC H
-            {0x26, 8}, // LD H,n
-            {0x27, 4}, // DAA
-            {0x28, 8}, // JR Z,n
-            {0x29, 8}, // ADD HL,HL
-            {0x2A, 8}, // LDI A,(HL)
-            {0x2B, 8}, // DEC HL
-            {0x2C, 4}, // INC L
-            {0x2D, 4}, // DEC L
-            {0x2E, 8}, // LD L,n
-            {0x2F, 4}, // CPL
-            {0x30, 8}, // JR NC,n
-            {0x31, 12}, // LD SP,nn
-            {0x32, 8}, // LDD (HL),A
-            {0x33, 8}, // INC SP
-            {0x34, 12}, // INC (HL)
-            {0x35, 12}, // DEC (HL)
-            {0x36, 12}, // LD (HL),n
-            {0x37, 4}, // SCF
-            {0x38, 8}, // JR C,n
-            {0x39, 8}, // ADD HL,SP
-            {0x3A, 8}, // LDD A,(HL)
-            {0x3B, 8}, // DEC SP
-            {0x3C, 4}, // INC A
-            {0x3D, 4}, // DEC A
-            {0x3E, 8}, // LD A,n
-            {0x3F, 4}, // CCF
-            {0x40, 4}, // LD B,B
-            {0x41, 4}, // LD B,C
-            {0x42, 4}, // LD B,D
-            {0x43, 4}, // LD B,E
-            {0x44, 4}, // LD B,H
-            {0x45, 4}, // LD B,L
-            {0x46, 8}, // LD B,(HL)
-            {0x47, 4}, // LD B,A
-            {0x48, 4}, // LD C,B
-            {0x49, 4}, // LD C,C
-            {0x4A, 4}, // LD C,D
-            {0x4B, 4}, // LD C,E
-            {0x4C, 4}, // LD C,H
-            {0x4D, 4}, // LD C,L
-            {0x4E, 8}, // LD C,(HL)
-            {0x4F, 4}, // LD C,A
-            {0x50, 4}, // LD D,B
-            {0x51, 4}, // LD D,C
-            {0x52, 4}, // LD D,D
-            {0x53, 4}, // LD D,E
-            {0x54, 4}, // LD D,H
-            {0x55, 4}, // LD D,L
-            {0x56, 8}, // LD D,(HL)
-            {0x57, 4}, // LD D,A
-            {0x58, 4}, // LD E,B
-            {0x59, 4}, // LD E,C
-            {0x5A, 4}, // LD E,D
-            {0x5B, 4}, // LD E,E
-            {0x5C, 4}, // LD E,H
-            {0x5D, 4}, // LD E,L
-            {0x5E, 8}, // LD E,(HL)
-            {0x5F, 4}, // LD E,A
-            {0x60, 4}, // LD H,B
-            {0x61, 4}, // LD H,C
-            {0x62, 4}, // LD H,D
-            {0x63, 4}, // LD H,E
-            {0x64, 4}, // LD H,H
-            {0x65, 4}, // LD H,L
-            {0x66, 8}, // LD H,(HL)
-            {0x67, 4}, // LD H,A
-            {0x68, 4}, // LD L,B
-            {0x69, 4}, // LD L,C
-            {0x6A, 4}, // LD L,D
-            {0x6B, 4}, // LD L,E
-            {0x6C, 4}, // LD L,H
-            {0x6D, 4}, // LD L,L
-            {0x6E, 8}, // LD L,(HL)
-            {0x6F, 4}, // LD L,A
-            {0x70, 8}, // LD (HL),B
-            {0x71, 8}, // LD (HL),C
-            {0x72, 8}, // LD (HL),D
-            {0x73, 8}, // LD (HL),E
-            {0x74, 8}, // LD (HL),H
-            {0x75, 8}, // LD (HL),L
-            {0x76, 4}, // HALT
-            {0x77, 8}, // LD (HL),A
-            {0x78, 4}, // LD A,B
-            {0x79, 4}, // LD A,C
-            {0x7A, 4}, // LD A,D
-            {0x7B, 4}, // LD A,E
-            {0x7C, 4}, // LD A,H
-            {0x7D, 4}, // LD A,L
-            {0x7E, 8}, // LD A,(HL)
-            {0x7F, 4}, // LD A,A
-            {0x80, 4}, // ADD A,B
-            {0x81, 4}, // ADD A,C
-            {0x82, 4}, // ADD A,D
-            {0x83, 4}, // ADD A,E
-            {0x84, 4}, // ADD A,H
-            {0x85, 4}, // ADD A,L
-            {0x86, 8}, // ADD A,(HL)
-            {0x87, 4}, // ADD A,A
-            {0x88, 4}, // ADC A,B
-            {0x89, 4}, // ADC A,C
-            {0x8A, 4}, // ADC A,D
-            {0x8B, 4}, // ADC A,E
-            {0x8C, 4}, // ADC A,H
-            {0x8D, 4}, // ADC A,L
-            {0x8E, 8}, // ADC A,(HL)
-            {0x8F, 4}, // ADC A,A
-            {0x90, 4}, // SUB A,B
-            {0x91, 4}, // SUB A,C
-            {0x92, 4}, // SUB A,D
-            {0x93, 4}, // SUB A,E
-            {0x94, 4}, // SUB A,H
-            {0x95, 4}, // SUB A,L
-            {0x96, 8}, // SUB A,(HL)
-            {0x97, 4}, // SUB A,A
-            {0x98, 4}, // SBC A,B
-            {0x99, 4}, // SBC A,C
-            {0x9A, 4}, // SBC A,D
-            {0x9B, 4}, // SBC A,E
-            {0x9C, 4}, // SBC A,H
-            {0x9D, 4}, // SBC A,L
-            {0x9E, 8}, // SBC A,(HL)
-            {0x9F, 4}, // SBC A,A
-            {0xA0, 4}, // AND B
-            {0xA1, 4}, // AND C
-            {0xA2, 4}, // AND D
-            {0xA3, 4}, // AND E
-            {0xA4, 4}, // AND H
-            {0xA5, 4}, // AND L
-            {0xA6, 8}, // AND (HL)
-            {0xA7, 4}, // AND A
-            {0xA8, 4}, // XOR B
-            {0xA9, 4}, // XOR C
-            {0xAA, 4}, // XOR D
-            {0xAB, 4}, // XOR E
-            {0xAC, 4}, // XOR H
-            {0xAD, 4}, // XOR L
-            {0xAE, 8}, // XOR (HL)
-            {0xAF, 4}, // XOR A
-            {0xB0, 4}, // OR B
-            {0xB1, 4}, // OR C
-            {0xB2, 4}, // OR D
-            {0xB3, 4}, // OR E
-            {0xB4, 4}, // OR H
-            {0xB5, 4}, // OR L
-            {0xB6, 8}, // OR (HL)
-            {0xB7, 4}, // OR A
-            {0xB8, 4}, // CP B
-            {0xB9, 4}, // CP C
-            {0xBA, 4}, // CP D
-            {0xBB, 4}, // CP E
-            {0xBC, 4}, // CP H
-            {0xBD, 4}, // CP L
-            {0xBE, 8}, // CP (HL)
-            {0xBF, 4}, // CP A
-            {0xC0, 8}, // RET NZ
-            {0xC1, 12}, // POP BC
-            {0xC2, 12}, // JP NZ,nn
-            {0xC3, 16}, // JP nn
-            {0xC4, 12}, // CALL NZ,nn
-            {0xC5, 16}, // PUSH BC
-            {0xC6, 8}, // ADD A,n
-            {0xC7, 16}, // RST 0
-            {0xC8, 8}, // RET Z
-            {0xC9, 16}, // RET
-            {0xCA, 12}, // JP Z,nn
-            {0xCB, 4}, // Ext ops
-            {0xCC, 12}, // CALL Z,nn
-            {0xCD, 24}, // CALL nn
-            {0xCE, 8}, // ADC A,n
-            {0xCF, 16}, // RST 8
-            {0xD0, 8}, // RET NC
-            {0xD1, 12}, // POP DE
-            {0xD2, 12}, // JP NC,nn
-            // {0xD3, }, // XX
-            {0xD4, 12}, // CALL NC,nn
-            {0xD5, 16}, // PUSH DE
-            {0xD6, 8}, // SUB A,n
-            {0xD7, 16}, // RST 10
-            {0xD8, 8}, // RET C
-            {0xD9, 16}, // RETI
-            {0xDA, 12}, // JP C,nn
-            // {0xDB, }, // XX
-            {0xDC, 12}, // CALL C,nn
-            // {0xDD, }, // XX
-            {0xDE, 8}, // SBC A,n
-            {0xDF, 16}, // RST 18
-            {0xE0, 12}, // LDH (n),A
-            {0xE1, 12}, // POP HL
-            {0xE2, 8}, // LDH (C),A
-            // {0xE3, }, // XX
-            // {0xE4, }, // XX
-            {0xE5, 16}, // PUSH HL
-            {0xE6, 8}, // AND n
-            {0xE7, 16}, // RST 20
-            {0xE8, 16}, // ADD SP,d
-            {0xE9, 4}, // JP (HL)
-            {0xEA, 16}, // LD (nn),A
-            // {0xEB, }, // XX
-            // {0xEC, }, // XX
-            // {0xED, }, // XX
-            {0xEE, 8}, // XOR n
-            {0xEF, 16}, // RST 28
-            {0xF0, 12}, // LDH A,(n)
-            {0xF1, 12}, // POP AF
-            {0xF2, 8}, // LDH A, (C)
-            {0xF3, 4}, // DI
-            // {0xF4, }, // XX
-            {0xF5, 16}, // PUSH AF
-            {0xF6, 8}, // OR n
-            {0xF7, 16}, // RST 30
-            {0xF8, 12}, // LDHL SP,d
-            {0xF9, 8}, // LD SP,HL
-            {0xFA, 16}, // LD A,(nn)
-            {0xFB, 4}, // EI
-            // {0xFC, }, // XX
-            // {0xFD, }, // XX
-            // {0xFE, 8}, // CP n
-            {0xFF, 16} // RST 38
-        };
+    Dictionary<byte, byte> instructionLengths = CPUInstructionLengths.Setup();
+    Dictionary<byte, byte> instructionClocks = CPUInstructionClocks.Setup();
+    Dictionary<byte, byte> CBInstructionLengths = CPUCBInstructionLengths.Setup();
+    Dictionary<byte, byte> CBInstructionClocks = CPUCBIntructionClocks.Setup();
 
-    Dictionary<byte, byte> CBInstructionLengths = new Dictionary<byte, byte>() {
-            {0x00, 2}, // RLC B
-            {0x01, 2}, // RLC C
-            {0x02, 2}, // RLC D
-            {0x03, 2}, // RLC E
-            {0x04, 2}, // RLC H
-            {0x05, 2}, // RLC L
-            {0x06, 2}, // RLC (HL)
-            {0x07, 2}, // RLC A
-            {0x08, 2}, // RRC B
-            {0x09, 2}, // RRC C
-            {0x0A, 2}, // RRC D
-            {0x0B, 2}, // RRC E
-            {0x0C, 2}, // RRC H
-            {0x0D, 2}, // RRC L
-            {0x0E, 2}, // RRC (HL)
-            {0x0F, 2}, // RRC A
-            {0x10, 2}, // RL B
-            {0x11, 2}, // RL C
-            {0x12, 2}, // RL D
-            {0x13, 2}, // RL E
-            {0x14, 2}, // RL H
-            {0x15, 2}, // RL L
-            {0x16, 2}, // RL (HL)
-            {0x17, 2}, // RL A
-            {0x18, 2}, // RR B
-            {0x19, 2}, // RR C
-            {0x1A, 2}, // RR D
-            {0x1B, 2}, // RR E
-            {0x1C, 2}, // RR H
-            {0x1D, 2}, // RR L
-            {0x1E, 2}, // RR (HL)
-            {0x1F, 2}, // RR A
-            {0x20, 2}, // SLA B
-            {0x21, 2}, // SLA C
-            {0x22, 2}, // SLA D
-            {0x23, 2}, // SLA E
-            {0x24, 2}, // SLA H
-            {0x25, 2}, // SLA L
-            {0x26, 2}, // SLA (HL)
-            {0x27, 2}, // SLA A
-            {0x28, 2}, // SRA B
-            {0x29, 2}, // SRA C
-            {0x2A, 2}, // SRA D
-            {0x2B, 2}, // SRA E
-            {0x2C, 2}, // SRA H
-            {0x2D, 2}, // SRA L
-            {0x2E, 2}, // SRA (HL)
-            {0x2F, 2}, // SRA A
-            {0x30, 2}, // SWAP B
-            {0x31, 2}, // SWAP C
-            {0x32, 2}, // SWAP D
-            {0x33, 2}, // SWAP E
-            {0x34, 2}, // SWAP H
-            {0x35, 2}, // SWAP L
-            {0x36, 2}, // SWAP (HL)
-            {0x37, 2}, // SWAP A
-            {0x38, 2}, // SRL B
-            {0x39, 2}, // SRL C
-            {0x3A, 2}, // SRL D
-            {0x3B, 2}, // SRL E
-            {0x3C, 2}, // SRL H
-            {0x3D, 2}, // SRL L
-            {0x3E, 2}, // SRL (HL)
-            {0x3F, 2}, // SRL A
-            {0x40, 2}, // BIT 0,B
-            {0x41, 2}, // BIT 0,C
-            {0x42, 2}, // BIT 0,D
-            {0x43, 2}, // BIT 0,E
-            {0x44, 2}, // BIT 0,H
-            {0x45, 2}, // BIT 0,L
-            {0x46, 2}, // BIT 0,(HL)
-            {0x47, 2}, // BIT 0,A
-            {0x48, 2}, // BIT 1,B
-            {0x49, 2}, // BIT 1,C
-            {0x4A, 2}, // BIT 1,D
-            {0x4B, 2}, // BIT 1,E
-            {0x4C, 2}, // BIT 1,H
-            {0x4D, 2}, // BIT 1,L
-            {0x4E, 2}, // BIT 1,(HL)
-            {0x4F, 2}, // BIT 1,A
-            {0x50, 2}, // BIT 2,B
-            {0x51, 2}, // BIT 2,C
-            {0x52, 2}, // BIT 2,D
-            {0x53, 2}, // BIT 2,E
-            {0x54, 2}, // BIT 2,H
-            {0x55, 2}, // BIT 2,L
-            {0x56, 2}, // BIT 2,(HL)
-            {0x57, 2}, // BIT 2,A
-            {0x58, 2}, // BIT 3,B
-            {0x59, 2}, // BIT 3,C
-            {0x5A, 2}, // BIT 3,D
-            {0x5B, 2}, // BIT 3,E
-            {0x5C, 2}, // BIT 3,H
-            {0x5D, 2}, // BIT 3,L
-            {0x5E, 2}, // BIT 3,(HL)
-            {0x5F, 2}, // BIT 3,A
-            {0x60, 2}, // BIT 4,B
-            {0x61, 2}, // BIT 4,C
-            {0x62, 2}, // BIT 4,D
-            {0x63, 2}, // BIT 4,E
-            {0x64, 2}, // BIT 4,H
-            {0x65, 2}, // BIT 4,L
-            {0x66, 2}, // BIT 4,(HL)
-            {0x67, 2}, // BIT 4,A
-            {0x68, 2}, // BIT 5,B
-            {0x69, 2}, // BIT 5,C
-            {0x6A, 2}, // BIT 5,D
-            {0x6B, 2}, // BIT 5,E
-            {0x6C, 2}, // BIT 5,H
-            {0x6D, 2}, // BIT 5,L
-            {0x6E, 2}, // BIT 5,(HL)
-            {0x6F, 2}, // BIT 5,A
-            {0x70, 2}, // BIT 6,B
-            {0x71, 2}, // BIT 6,C
-            {0x72, 2}, // BIT 6,D
-            {0x73, 2}, // BIT 6,E
-            {0x74, 2}, // BIT 6,H
-            {0x75, 2}, // BIT 6,L
-            {0x76, 2}, // BIT 6,(HL)
-            {0x77, 2}, // BIT 6,A
-            {0x78, 2}, // BIT 7,B
-            {0x79, 2}, // BIT 7,C
-            {0x7A, 2}, // BIT 7,D
-            {0x7B, 2}, // BIT 7,E
-            {0x7C, 2}, // BIT 7,H
-            {0x7D, 2}, // BIT 7,L
-            {0x7E, 2}, // BIT 7,(HL)
-            {0x7F, 2}, // BIT 7,A
-            {0x80, 2}, // RES 0,B
-            {0x81, 2}, // RES 0,C
-            {0x82, 2}, // RES 0,D
-            {0x83, 2}, // RES 0,E
-            {0x84, 2}, // RES 0,H
-            {0x85, 2}, // RES 0,L
-            {0x86, 2}, // RES 0,(HL)
-            {0x87, 2}, // RES 0,A
-            {0x88, 2}, // RES 1,B
-            {0x89, 2}, // RES 1,C
-            {0x8A, 2}, // RES 1,D
-            {0x8B, 2}, // RES 1,E
-            {0x8C, 2}, // RES 1,H
-            {0x8D, 2}, // RES 1,L
-            {0x8E, 2}, // RES 1,(HL)
-            {0x8F, 2}, // RES 1,A
-            {0x90, 2}, // RES 2,B
-            {0x91, 2}, // RES 2,C
-            {0x92, 2}, // RES 2,D
-            {0x93, 2}, // RES 2,E
-            {0x94, 2}, // RES 2,H
-            {0x95, 2}, // RES 2,L
-            {0x96, 2}, // RES 2,(HL)
-            {0x97, 2}, // RES 2,A
-            {0x98, 2}, // RES 3,B
-            {0x99, 2}, // RES 3,C
-            {0x9A, 2}, // RES 3,D
-            {0x9B, 2}, // RES 3,E
-            {0x9C, 2}, // RES 3,H
-            {0x9D, 2}, // RES 3,L
-            {0x9E, 2}, // RES 3,(HL)
-            {0x9F, 2}, // RES 3,A
-            {0xA0, 2}, // RES 4,B
-            {0xA1, 2}, // RES 4,C
-            {0xA2, 2}, // RES 4,D
-            {0xA3, 2}, // RES 4,E
-            {0xA4, 2}, // RES 4,H
-            {0xA5, 2}, // RES 4,L
-            {0xA6, 2}, // RES 4,(HL)
-            {0xA7, 2}, // RES 4,A
-            {0xA8, 2}, // RES 5,B
-            {0xA9, 2}, // RES 5,C
-            {0xAA, 2}, // RES 5,D
-            {0xAB, 2}, // RES 5,E
-            {0xAC, 2}, // RES 5,H
-            {0xAD, 2}, // RES 5,L
-            {0xAE, 2}, // RES 5,(HL)
-            {0xAF, 2}, // RES 5,A
-            {0xB0, 2}, // RES 6,B
-            {0xB1, 2}, // RES 6,C
-            {0xB2, 2}, // RES 6,D
-            {0xB3, 2}, // RES 6,E
-            {0xB4, 2}, // RES 6,H
-            {0xB5, 2}, // RES 6,L
-            {0xB6, 2}, // RES 6,(HL)
-            {0xB7, 2}, // RES 6,A
-            {0xB8, 2}, // RES 7,B
-            {0xB9, 2}, // RES 7,C
-            {0xBA, 2}, // RES 7,D
-            {0xBB, 2}, // RES 7,E
-            {0xBC, 2}, // RES 7,H
-            {0xBD, 2}, // RES 7,L
-            {0xBE, 2}, // RES 7,(HL)
-            {0xBF, 2}, // RES 7,A
-            {0xC0, 2}, // SET 0,B
-            {0xC1, 2}, // SET 0,C
-            {0xC2, 2}, // SET 0,D
-            {0xC3, 2}, // SET 0,E
-            {0xC4, 2}, // SET 0,H
-            {0xC5, 2}, // SET 0,L
-            {0xC6, 2}, // SET 0,(HL)
-            {0xC7, 2}, // SET 0,A
-            {0xC8, 2}, // SET 1,B
-            {0xC9, 2}, // SET 1,C
-            {0xCA, 2}, // SET 1,D
-            {0xCB, 2}, // SET 1,E
-            {0xCC, 2}, // SET 1,H
-            {0xCD, 2}, // SET 1,L
-            {0xCE, 2}, // SET 1,(HL)
-            {0xCF, 2}, // SET 1,A
-            {0xD0, 2}, // SET 2,B
-            {0xD1, 2}, // SET 2,C
-            {0xD2, 2}, // SET 2,D
-            {0xD3, 2}, // SET 2,E
-            {0xD4, 2}, // SET 2,H
-            {0xD5, 2}, // SET 2,L
-            {0xD6, 2}, // SET 2,(HL)
-            {0xD7, 2}, // SET 2,A
-            {0xD8, 2}, // SET 3,B
-            {0xD9, 2}, // SET 3,C
-            {0xDA, 2}, // SET 3,D
-            {0xDB, 2}, // SET 3,E
-            {0xDC, 2}, // SET 3,H
-            {0xDD, 2}, // SET 3,L
-            {0xDE, 2}, // SET 3,(HL)
-            {0xDF, 2}, // SET 3,A
-            {0xE0, 2}, // SET 4,B
-            {0xE1, 2}, // SET 4,C
-            {0xE2, 2}, // SET 4,D
-            {0xE3, 2}, // SET 4,E
-            {0xE4, 2}, // SET 4,H
-            {0xE5, 2}, // SET 4,L
-            {0xE6, 2}, // SET 4,(HL)
-            {0xE7, 2}, // SET 4,A
-            {0xE8, 2}, // SET 5,B
-            {0xE9, 2}, // SET 5,C
-            {0xEA, 2}, // SET 5,D
-            {0xEB, 2}, // SET 5,E
-            {0xEC, 2}, // SET 5,H
-            {0xED, 2}, // SET 5,L
-            {0xEE, 2}, // SET 5,(HL)
-            {0xEF, 2}, // SET 5,A
-            {0xF0, 2}, // SET 6,B
-            {0xF1, 2}, // SET 6,C
-            {0xF2, 2}, // SET 6,D
-            {0xF3, 2}, // SET 6,E
-            {0xF4, 2}, // SET 6,H
-            {0xF5, 2}, // SET 6,L
-            {0xF6, 2}, // SET 6,(HL)
-            {0xF7, 2}, // SET 6,A
-            {0xF8, 2}, // SET 7,B
-            {0xF9, 2}, // SET 7,C
-            {0xFA, 2}, // SET 7,D
-            {0xFB, 2}, // SET 7,E
-            {0xFC, 2}, // SET 7,H
-            {0xFD, 2}, // SET 7,L
-            {0xFE, 2}, // SET 7,(HL)
-            {0xFF, 2} // SET 7,A
-        };
-
-    Dictionary<byte, byte> CBInstructionClocks = new Dictionary<byte, byte>(){
-            {0x00, 8}, // RLC B
-            {0x01, 8}, // RLC C
-            {0x02, 8}, // RLC D
-            {0x03, 8}, // RLC E
-            {0x04, 8}, // RLC H
-            {0x05, 8}, // RLC L
-            {0x06, 16}, // RLC (HL)
-            {0x07, 8}, // RLC A
-            {0x08, 8}, // RRC B
-            {0x09, 8}, // RRC C
-            {0x0A, 8}, // RRC D
-            {0x0B, 8}, // RRC E
-            {0x0C, 8}, // RRC H
-            {0x0D, 8}, // RRC L
-            {0x0E, 16}, // RRC (HL)
-            {0x0F, 8}, // RRC A
-            {0x10, 8}, // RL B
-            {0x11, 8}, // RL C
-            {0x12, 8}, // RL D
-            {0x13, 8}, // RL E
-            {0x14, 8}, // RL H
-            {0x15, 8}, // RL L
-            {0x16, 16}, // RL (HL)
-            {0x17, 8}, // RL A
-            {0x18, 8}, // RR B
-            {0x19, 8}, // RR C
-            {0x1A, 8}, // RR D
-            {0x1B, 8}, // RR E
-            {0x1C, 8}, // RR H
-            {0x1D, 8}, // RR L
-            {0x1E, 16}, // RR (HL)
-            {0x1F, 8}, // RR A
-            {0x20, 8}, // SLA B
-            {0x21, 8}, // SLA C
-            {0x22, 8}, // SLA D
-            {0x23, 8}, // SLA E
-            {0x24, 8}, // SLA H
-            {0x25, 8}, // SLA L
-            {0x26, 16}, // SLA (HL)
-            {0x27, 8}, // SLA A
-            {0x28, 8}, // SRA B
-            {0x29, 8}, // SRA C
-            {0x2A, 8}, // SRA D
-            {0x2B, 8}, // SRA E
-            {0x2C, 8}, // SRA H
-            {0x2D, 8}, // SRA L
-            {0x2E, 16}, // SRA (HL)
-            {0x2F, 8}, // SRA A
-            {0x30, 8}, // SWAP B
-            {0x31, 8}, // SWAP C
-            {0x32, 8}, // SWAP D
-            {0x33, 8}, // SWAP E
-            {0x34, 8}, // SWAP H
-            {0x35, 8}, // SWAP L
-            {0x36, 16}, // SWAP (HL)
-            {0x37, 8}, // SWAP A
-            {0x38, 8}, // SRL B
-            {0x39, 8}, // SRL C
-            {0x3A, 8}, // SRL D
-            {0x3B, 8}, // SRL E
-            {0x3C, 8}, // SRL H
-            {0x3D, 8}, // SRL L
-            {0x3E, 16}, // SRL (HL)
-            {0x3F, 8}, // SRL A
-            {0x40, 8}, // BIT 0,B
-            {0x41, 8}, // BIT 0,C
-            {0x42, 8}, // BIT 0,D
-            {0x43, 8}, // BIT 0,E
-            {0x44, 8}, // BIT 0,H
-            {0x45, 8}, // BIT 0,L
-            {0x46, 16}, // BIT 0,(HL)
-            {0x47, 8}, // BIT 0,A
-            {0x48, 8}, // BIT 1,B
-            {0x49, 8}, // BIT 1,C
-            {0x4A, 8}, // BIT 1,D
-            {0x4B, 8}, // BIT 1,E
-            {0x4C, 8}, // BIT 1,H
-            {0x4D, 8}, // BIT 1,L
-            {0x4E, 16}, // BIT 1,(HL)
-            {0x4F, 8}, // BIT 1,A
-            {0x50, 8}, // BIT 2,B
-            {0x51, 8}, // BIT 2,C
-            {0x52, 8}, // BIT 2,D
-            {0x53, 8}, // BIT 2,E
-            {0x54, 8}, // BIT 2,H
-            {0x55, 8}, // BIT 2,L
-            {0x56, 16}, // BIT 2,(HL)
-            {0x57, 8}, // BIT 2,A
-            {0x58, 8}, // BIT 3,B
-            {0x59, 8}, // BIT 3,C
-            {0x5A, 8}, // BIT 3,D
-            {0x5B, 8}, // BIT 3,E
-            {0x5C, 8}, // BIT 3,H
-            {0x5D, 8}, // BIT 3,L
-            {0x5E, 16}, // BIT 3,(HL)
-            {0x5F, 8}, // BIT 3,A
-            {0x60, 8}, // BIT 4,B
-            {0x61, 8}, // BIT 4,C
-            {0x62, 8}, // BIT 4,D
-            {0x63, 8}, // BIT 4,E
-            {0x64, 8}, // BIT 4,H
-            {0x65, 8}, // BIT 4,L
-            {0x66, 16}, // BIT 4,(HL)
-            {0x67, 8}, // BIT 4,A
-            {0x68, 8}, // BIT 5,B
-            {0x69, 8}, // BIT 5,C
-            {0x6A, 8}, // BIT 5,D
-            {0x6B, 8}, // BIT 5,E
-            {0x6C, 8}, // BIT 5,H
-            {0x6D, 8}, // BIT 5,L
-            {0x6E, 16}, // BIT 5,(HL)
-            {0x6F, 8}, // BIT 5,A
-            {0x70, 8}, // BIT 6,B
-            {0x71, 8}, // BIT 6,C
-            {0x72, 8}, // BIT 6,D
-            {0x73, 8}, // BIT 6,E
-            {0x74, 8}, // BIT 6,H
-            {0x75, 8}, // BIT 6,L
-            {0x76, 16}, // BIT 6,(HL)
-            {0x77, 8}, // BIT 6,A
-            {0x78, 8}, // BIT 7,B
-            {0x79, 8}, // BIT 7,C
-            {0x7A, 8}, // BIT 7,D
-            {0x7B, 8}, // BIT 7,E
-            {0x7C, 8}, // BIT 7,H
-            {0x7D, 8}, // BIT 7,L
-            {0x7E, 16}, // BIT 7,(HL)
-            {0x7F, 8}, // BIT 7,A
-            {0x80, 8}, // RES 0,B
-            {0x81, 8}, // RES 0,C
-            {0x82, 8}, // RES 0,D
-            {0x83, 8}, // RES 0,E
-            {0x84, 8}, // RES 0,H
-            {0x85, 8}, // RES 0,L
-            {0x86, 16}, // RES 0,(HL)
-            {0x87, 8}, // RES 0,A
-            {0x88, 8}, // RES 1,B
-            {0x89, 8}, // RES 1,C
-            {0x8A, 8}, // RES 1,D
-            {0x8B, 8}, // RES 1,E
-            {0x8C, 8}, // RES 1,H
-            {0x8D, 8}, // RES 1,L
-            {0x8E, 16}, // RES 1,(HL)
-            {0x8F, 8}, // RES 1,A
-            {0x90, 8}, // RES 2,B
-            {0x91, 8}, // RES 2,C
-            {0x92, 8}, // RES 2,D
-            {0x93, 8}, // RES 2,E
-            {0x94, 8}, // RES 2,H
-            {0x95, 8}, // RES 2,L
-            {0x96, 16}, // RES 2,(HL)
-            {0x97, 8}, // RES 2,A
-            {0x98, 8}, // RES 3,B
-            {0x99, 8}, // RES 3,C
-            {0x9A, 8}, // RES 3,D
-            {0x9B, 8}, // RES 3,E
-            {0x9C, 8}, // RES 3,H
-            {0x9D, 8}, // RES 3,L
-            {0x9E, 16}, // RES 3,(HL)
-            {0x9F, 8}, // RES 3,A
-            {0xA0, 8}, // RES 4,B
-            {0xA1, 8}, // RES 4,C
-            {0xA2, 8}, // RES 4,D
-            {0xA3, 8}, // RES 4,E
-            {0xA4, 8}, // RES 4,H
-            {0xA5, 8}, // RES 4,L
-            {0xA6, 16}, // RES 4,(HL)
-            {0xA7, 8}, // RES 4,A
-            {0xA8, 8}, // RES 5,B
-            {0xA9, 8}, // RES 5,C
-            {0xAA, 8}, // RES 5,D
-            {0xAB, 8}, // RES 5,E
-            {0xAC, 8}, // RES 5,H
-            {0xAD, 8}, // RES 5,L
-            {0xAE, 16}, // RES 5,(HL)
-            {0xAF, 8}, // RES 5,A
-            {0xB0, 8}, // RES 6,B
-            {0xB1, 8}, // RES 6,C
-            {0xB2, 8}, // RES 6,D
-            {0xB3, 8}, // RES 6,E
-            {0xB4, 8}, // RES 6,H
-            {0xB5, 8}, // RES 6,L
-            {0xB6, 16}, // RES 6,(HL)
-            {0xB7, 8}, // RES 6,A
-            {0xB8, 8}, // RES 7,B
-            {0xB9, 8}, // RES 7,C
-            {0xBA, 8}, // RES 7,D
-            {0xBB, 8}, // RES 7,E
-            {0xBC, 8}, // RES 7,H
-            {0xBD, 8}, // RES 7,L
-            {0xBE, 16}, // RES 7,(HL)
-            {0xBF, 8}, // RES 7,A
-            {0xC0, 8}, // SET 0,B
-            {0xC1, 8}, // SET 0,C
-            {0xC2, 8}, // SET 0,D
-            {0xC3, 8}, // SET 0,E
-            {0xC4, 8}, // SET 0,H
-            {0xC5, 8}, // SET 0,L
-            {0xC6, 16}, // SET 0,(HL)
-            {0xC7, 8}, // SET 0,A
-            {0xC8, 8}, // SET 1,B
-            {0xC9, 8}, // SET 1,C
-            {0xCA, 8}, // SET 1,D
-            {0xCB, 8}, // SET 1,E
-            {0xCC, 8}, // SET 1,H
-            {0xCD, 8}, // SET 1,L
-            {0xCE, 16}, // SET 1,(HL)
-            {0xCF, 8}, // SET 1,A
-            {0xD0, 8}, // SET 2,B
-            {0xD1, 8}, // SET 2,C
-            {0xD2, 8}, // SET 2,D
-            {0xD3, 8}, // SET 2,E
-            {0xD4, 8}, // SET 2,H
-            {0xD5, 8}, // SET 2,L
-            {0xD6, 16}, // SET 2,(HL)
-            {0xD7, 8}, // SET 2,A
-            {0xD8, 8}, // SET 3,B
-            {0xD9, 8}, // SET 3,C
-            {0xDA, 8}, // SET 3,D
-            {0xDB, 8}, // SET 3,E
-            {0xDC, 8}, // SET 3,H
-            {0xDD, 8}, // SET 3,L
-            {0xDE, 16}, // SET 3,(HL)
-            {0xDF, 8}, // SET 3,A
-            {0xE0, 8}, // SET 4,B
-            {0xE1, 8}, // SET 4,C
-            {0xE2, 8}, // SET 4,D
-            {0xE3, 8}, // SET 4,E
-            {0xE4, 8}, // SET 4,H
-            {0xE5, 8}, // SET 4,L
-            {0xE6, 16}, // SET 4,(HL)
-            {0xE7, 8}, // SET 4,A
-            {0xE8, 8}, // SET 5,B
-            {0xE9, 8}, // SET 5,C
-            {0xEA, 8}, // SET 5,D
-            {0xEB, 8}, // SET 5,E
-            {0xEC, 8}, // SET 5,H
-            {0xED, 8}, // SET 5,L
-            {0xEE, 16}, // SET 5,(HL)
-            {0xEF, 8}, // SET 5,A
-            {0xF0, 8}, // SET 6,B
-            {0xF1, 8}, // SET 6,C
-            {0xF2, 8}, // SET 6,D
-            {0xF3, 8}, // SET 6,E
-            {0xF4, 8}, // SET 6,H
-            {0xF5, 8}, // SET 6,L
-            {0xF6, 16}, // SET 6,(HL)
-            {0xF7, 8}, // SET 6,A
-            {0xF8, 8}, // SET 7,B
-            {0xF9, 8}, // SET 7,C
-            {0xFA, 8}, // SET 7,D
-            {0xFB, 8}, // SET 7,E
-            {0xFC, 8}, // SET 7,H
-            {0xFD, 8}, // SET 7,L
-            {0xFE, 16}, // SET 7,(HL)
-            {0xFF, 8}, // SET 7,A
-        };
     #endregion
 
     #region Instruction Lambdas
 
     private Dictionary<byte, Action<ushort>> instructionLambdas;
     private Dictionary<byte, Action<ushort>> CBInstructionLambdas;
+
+    private Dictionary<byte, string> instructionNames;
+    private Dictionary<byte, string> CBinstructionNames;
 
     private void CreateInstructionLambdas()
     {
@@ -1068,22 +48,50 @@ namespace GBSharp.CPU
             {0x03, (n)=>{ registers.BC++; }},
 
             // INC B: Increment B
-            {0x04, (n)=>{ registers.B++; }},
+            {0x04, (n)=>{
+              registers.B++;
+
+              registers.FZ = (byte)(registers.B == 0 ? 1 : 0);
+              registers.FN = 0;
+              registers.FH = (byte)((registers.B & 0x0F) == 0x00 ? 1 : 0);
+            }},
 
             // DEC B: Decrement B
-            {0x05, (n)=>{ registers.B--; }},
+            {0x05, (n)=>{
+              registers.B--;
+
+              registers.FZ = (byte)(registers.B == 0 ? 1 : 0);
+              registers.FN = 1;
+              registers.FH = (byte)((registers.B & 0x0F) == 0x0F ? 1 : 0);
+            }},
 
             // LD B,n: Load 8-bit immediate into B
             {0x06, (n)=>{ registers.B = (byte)n; }},
 
             // RLC A: Rotate A left with carry
-            {0x07, (n)=>{throw new NotImplementedException();}},
+            {0x07, (n)=>{
+              byte bit7 = (byte)(registers.A >> 7);
+              registers.A <<= 1;
+              registers.A += bit7;
+
+              registers.FZ = 0; // TODO: CHECK THIS, 2 sources say it's 0, 1 n/a, 1 conditional.
+              registers.FN = 0;
+              registers.FH = 0;
+              registers.FC = bit7;
+            }},
 
             // LD (nn),SP: Save SP to given address
             {0x08, (n)=>memory.Write(n, registers.SP)},
 
             // ADD HL,BC: Add 16-bit BC to HL
-            {0x09, (n)=>{ registers.HL += registers.BC; }},
+            {0x09, (n)=>{
+              var initialH = registers.H;
+              registers.HL += registers.BC;
+
+              registers.FN = 0;
+              registers.FH = (byte)(((registers.H ^ registers.B ^ initialH) & 0x10) == 0 ? 0 : 1);
+              registers.FC = (byte)(initialH > registers.H ? 1 : 0);
+            }},
 
             // LD A,(BC): Load A from address pointed to by BC
             {0x0A, (n) => registers.A = memory.Read(registers.BC)},
@@ -1092,19 +100,40 @@ namespace GBSharp.CPU
             {0x0B, (n) => { registers.BC--; }},
 
             // INC C: Increment C
-            {0x0C, (n) => { registers.C++; }},
+            {0x0C, (n) => {
+              registers.C++;
+
+              registers.FZ = (byte)(registers.C == 0 ? 1 : 0);
+              registers.FN = 0;
+              registers.FH = (byte)((registers.C & 0x0F) == 0x00 ? 1 : 0);
+            }},
 
             // DEC C: Decrement C
-            {0x0D, (n) => { registers.C--; }},
+            {0x0D, (n) => {
+              registers.C--;
+
+              registers.FZ = (byte)(registers.C == 0 ? 1 : 0);
+              registers.FN = 1;
+              registers.FH = (byte)((registers.C & 0x0F) == 0x0F ? 1 : 0);
+            }},
 
             // LD C,n: Load 8-bit immediate into C
             {0x0E, (n)=>{ registers.C = (byte)n;}},
 
             // RRC A: Rotate A right with carry
-            {0x0F, (n)=>{throw new NotImplementedException();}},
+            {0x0F, (n)=>{
+              byte bit0 = (byte)(registers.A & 0x01);
+              registers.A >>= 1;
+              registers.A += (byte)(bit0 << 7);
+
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0); // TODO: CHECK THIS, 2 sources say it's 0, 1 n/a, 1 conditional.
+              registers.FN = 0;
+              registers.FH = 0;
+              registers.FC = bit0;
+            }},
 
             // STOP: Stop processor
-            {0x10, (n)=>{throw new NotImplementedException();}},
+            {0x10, (n)=>{throw new NotImplementedException("STOP (0x10)");}},
 
             // LD DE,nn: Load 16-bit immediate into DE
             {0x11, (n)=>{registers.DE = n;}},
@@ -1116,22 +145,58 @@ namespace GBSharp.CPU
             {0x13, (n)=>{registers.DE++;}},
 
             // INC D: Increment D
-            {0x14, (n)=>{registers.D++;}},
+            {0x14, (n)=>{
+              registers.D++;
+
+              registers.FZ = (byte)(registers.D == 0 ? 1 : 0);
+              registers.FN = 0;
+              registers.FH = (byte)((registers.D & 0x0F) == 0x00 ? 1 : 0);
+            }},
 
             // DEC D: Decrement D
-            {0x15, (n)=>{registers.D--;}},
+            {0x15, (n)=>{
+              registers.D--;
+
+              registers.FZ = (byte)(registers.D == 0 ? 1 : 0);
+              registers.FN = 1;
+              registers.FH = (byte)((registers.D & 0x0F) == 0x0F ? 1 : 0);
+            }},
 
             // LD D,n: Load 8-bit immediate into D
             {0x16, (n)=>{registers.D = (byte)n;}},
 
             // RL A: Rotate A left
-            {0x17, (n)=>{UtilFuncs.RotateLeft(registers.A,1);}},
+            {0x17, (n)=>{
+              byte carryOut = (byte)(registers.A >> 7);
+              registers.A = (byte)((registers.A << 1) | registers.FC);
+
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FN = 0;
+              registers.FH = 0;
+              registers.FC = carryOut;
+            }},
 
             // JR n: Relative jump by signed immediate
-            {0x18, (n)=>{throw new NotImplementedException();}},
+            {0x18, (n)=>{
+              // We cast down the input, ignoring the overflows
+              sbyte sn = 0;
+              unchecked{
+                sn = (sbyte)n;
+              }
+              // We prepare the nextPC variable
+              this.nextPC = registers.PC;
+              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
+            }},
 
             // ADD HL,DE: Add 16-bit DE to HL
-            {0x19, (n)=>{registers.HL += registers.DE;}},
+            {0x19, (n)=>{
+              var initialH = registers.H;
+              registers.HL += registers.DE;
+
+              registers.FN = 0;
+              registers.FH = (byte)(((registers.H ^ registers.D ^ initialH) & 0x10) == 0 ? 0 : 1);
+              registers.FC = (byte)(initialH > registers.H ? 1 : 0);
+            }},
 
             // LD A,(DE): Load A from address pointed to by DE
             {0x1A, (n)=>{registers.A = memory.Read(registers.DE);}},
@@ -1140,25 +205,58 @@ namespace GBSharp.CPU
             {0x1B, (n)=>{registers.DE--;}},
 
             // INC E: Increment E
-            {0x1C, (n)=>{registers.E++;}},
+            {0x1C, (n)=>{
+              registers.E++;
+
+              registers.FZ = (byte)(registers.E == 0 ? 1 : 0);
+              registers.FN = 0;
+              registers.FH = (byte)((registers.E & 0x0F) == 0x00 ? 1 : 0);
+            }},
 
             // DEC E: Decrement E
-            {0x1D, (n)=>{registers.E--;}},
+            {0x1D, (n)=>{
+              registers.E--;
+
+              registers.FZ = (byte)(registers.E == 0 ? 1 : 0);
+              registers.FN = 1;
+              registers.FH = (byte)((registers.E & 0x0F) == 0x0F ? 1 : 0);
+            }},
 
             // LD E,n: Load 8-bit immediate into E
             {0x1E, (n)=>{registers.E = (byte)n;}},
 
             // RR A: Rotate A right
-            {0x1F, (n)=>{UtilFuncs.RotateRight(registers.A,1);}},
+            {0x1F, (n)=>{
+              byte carryOut = (byte)(registers.A & 0x01);
+              registers.A = (byte)((registers.A >> 1) | (registers.FC << 7));
+
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FN = 0;
+              registers.FH = 0;
+              registers.FC = carryOut;
+            }},
 
             // JR NZ,n: Relative jump by signed immediate if last result was not zero
-            {0x20, (n)=>{throw new NotImplementedException();}},
+            {0x20, (n)=>{
+              if (registers.FZ != 0) { return; }
+              // We cast down the input, ignoring the overflows
+              sbyte sn = 0;
+              unchecked{
+                sn = (sbyte)n;
+              }
+              // We prepare the nextPC variable
+              this.nextPC = registers.PC;
+              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
+            }},
 
             // LD HL,nn: Load 16-bit immediate into HL
             {0x21, (n)=>{registers.HL = n;}},
 
             // LDI (HL),A: Save A to address pointed by HL, and increment HL
-            {0x22, (n)=>{memory.Write(registers.HL, registers.A);}},
+            {0x22, (n) =>
+            {
+              memory.Write(registers.HL++, registers.A);
+            }},
 
             // INC HL: Increment 16-bit HL
             {0x23, (n)=>{registers.HL++;}},
@@ -1174,26 +272,70 @@ namespace GBSharp.CPU
 
             // DAA: Adjust A for BCD addition
             {0x27, (n)=>{
-              // TODO: test against this table http://www.z80.info/z80syntx.htm#DAA
-              ushort initial = registers.A;
+              // Based on this table http://www.z80.info/z80syntx.htm#DAA
+              ushort value = registers.A;
 
-              // Check first digit
-              if((registers.FH != 0) || ((registers.A & 0x0F) > 0x09)) {
-                registers.A += 0x06;
+              if (registers.FN == 0) // ADD, ADC, INC
+              {
+                // Check first digit
+                if ((registers.FH != 0) || (value & 0x0F) > 0x09)
+                {
+                  registers.A += 0x06;
+                }
+
+                // Check second digit
+                if ((registers.FC != 0) || ((value & 0xF0) > 0x90) || (((value & 0xF0) > 0x80) && ((value & 0x0F) > 0x09)))
+                {
+                  registers.A += 0x60;
+                  registers.FC = 1;
+                }
+                else
+                {
+                  registers.FC = 0;
+                }
+              }
+              else // SUB, SBC, DEC, NEG
+              {
+                if((registers.FC == 0) && (registers.FH != 0) && ((value & 0xF0) < 0x90) && ((value & 0x0F) > 0x05)) {
+                  registers.A += 0xFA;
+                  registers.FC = 0;
+                } else if ((registers.FC != 0) && (registers.FH == 0) && ((value & 0xF0) > 0x60) && ((value & 0x0F) < 0x0A)) {
+                  registers.A += 0xA0;
+                  registers.FC = 1;
+                } else if ((registers.FC != 0) && (registers.FH != 0) && ((value & 0xF0) > 0x50) && ((value & 0x0F) > 0x05)) {
+                  registers.A += 0x9A;
+                  registers.FC = 1;
+                } else {
+                  registers.FC = 0;
+                }
               }
 
-              // Check second digit
-              if((registers.FC != 0) || ( initial > 0x99 )) {
-                registers.A += 0x60;
-                registers.FC = 1;
-              }
+              registers.FH = 0;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
             }},
 
             // JR Z,n: Relative jump by signed immediate if last result was zero
-            {0x28, (n)=>{throw new NotImplementedException();}},
+            {0x28, (n)=>{
+              if (registers.FZ == 0) { return; }
+              // We cast down the input, ignoring the overflows
+              sbyte sn = 0;
+              unchecked{
+                sn = (sbyte)n;
+              }
+              // We prepare the nextPC variable
+              this.nextPC = registers.PC;
+              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
+            }},
 
             // ADD HL,HL: Add 16-bit HL to HL
-            {0x29, (n)=>{registers.HL+=registers.HL;}},
+            {0x29, (n)=>{
+              var initialH = registers.H;
+              registers.HL += registers.HL;
+
+              registers.FN = 0;
+              registers.FH = (byte)(((registers.H ^ registers.H ^ initialH) & 0x10) == 0 ? 0 : 1);
+              registers.FC = (byte)(initialH > registers.H ? 1 : 0);
+            }},
 
             // LDI A,(HL): Load A from address pointed to by HL, and increment HL
             {0x2A, (n)=>{registers.A = memory.Read(registers.HL++);}},
@@ -1214,7 +356,17 @@ namespace GBSharp.CPU
             {0x2F, (n)=>{registers.A = (byte)~registers.A;}},
 
             // JR NC,n: Relative jump by signed immediate if last result caused no carry
-            {0x30, (n)=>{throw new NotImplementedException();}},
+            {0x30, (n)=>{
+              if (registers.FC != 0) { return; }
+              // We cast down the input, ignoring the overflows
+              sbyte sn = 0;
+              unchecked{
+                sn = (sbyte)n;
+              }
+              // We prepare the nextPC variable
+              this.nextPC = registers.PC;
+              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
+            }},
 
             // LD SP,nn: Load 16-bit immediate into SP
             {0x31, (n)=>{registers.SP = n;}},
@@ -1238,10 +390,27 @@ namespace GBSharp.CPU
             {0x37, (n)=>{registers.F = UtilFuncs.SetBit(registers.F, (int)Flags.C);}},
 
             // JR C,n: Relative jump by signed immediate if last result caused carry
-            {0x38, (n)=>{throw new NotImplementedException();}},
+            {0x38, (n)=>{
+              if (registers.FC == 0) { return; }
+              // We cast down the input, ignoring the overflows
+              sbyte sn = 0;
+              unchecked{
+                sn = (sbyte)n;
+              }
+              // We prepare the nextPC variable
+              this.nextPC = registers.PC;
+              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
+            }},
 
             // ADD HL,SP: Add 16-bit SP to HL
-            {0x39, (n)=>{registers.HL += registers.SP;}},
+            {0x39, (n)=>{
+              var initialH = registers.H;
+              registers.HL += registers.SP;
+
+              registers.FN = 0;
+              registers.FH = (byte)(((registers.H ^ (registers.SP >> 8) ^ initialH) & 0x10) == 0 ? 0 : 1);
+              registers.FC = (byte)(initialH > registers.H ? 1 : 0);
+            }},
 
             // LDD A,(HL): Load A from address pointed to by HL, and decrement HL
             {0x3A, (n) => { registers.A = memory.Read(registers.HL--);}},
@@ -1258,8 +427,12 @@ namespace GBSharp.CPU
             // LD A,n: Load 8-bit immediate into A
             {0x3E, (n)=>{registers.A = (byte)n;}},
 
-            // CCF: Clear carry flag
-            {0x3F, (n)=>{registers.F = UtilFuncs.ClearBit(registers.F, (int)Flags.C);}},
+            // CCF: Complement Carry Flag
+            {0x3F, (n)=>{
+              registers.FN = 0;
+              registers.FH = 0;
+              registers.FC = (byte)(~registers.FC & 1);
+            }},
 
             // LD B,B: Copy B to B
             {0x40, (n)=>{registers.B = registers.B;}}, //love this instruction
@@ -1424,7 +597,7 @@ namespace GBSharp.CPU
             {0x75, (n)=>{memory.Write(registers.HL, registers.L);}},
 
             // HALT: Halt processor
-            {0x76, (n)=>{throw new NotImplementedException();}},
+            {0x76, (n)=>{throw new NotImplementedException("HALT (0x76)");}},
 
             // LD (HL),A: Copy A to address pointed by HL
             {0x77, (n)=>{memory.Write(registers.HL, registers.A);}},
@@ -1454,28 +627,93 @@ namespace GBSharp.CPU
             {0x7F, (n)=>{registers.A = registers.A;}},
 
             // ADD A,B: Add B to A
-            {0x80, (n)=>{registers.A += registers.B;}},
+            {0x80, (n) =>
+            {
+              byte initial = registers.A;
+              registers.A += registers.B;
+              // Update flags
+              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.B ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADD A,C: Add C to A
-            {0x81, (n)=>{registers.A += registers.C;}},
+            {0x81, (n) =>
+            {
+              byte initial = registers.A;
+              registers.A += registers.C;
+              // Update flags
+              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.C ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADD A,D: Add D to A
-            {0x82, (n)=>{registers.A += registers.D;}},
+            {0x82, (n) =>
+            {
+              byte initial = registers.A;
+              registers.A += registers.D;
+              // Update flags
+              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.D ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADD A,E: Add E to A
-            {0x83, (n)=>{registers.A += registers.E;}},
+            {0x83, (n) =>
+            {
+              byte initial = registers.A;
+              registers.A += registers.E;
+              // Update flags
+              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.E ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADD A,H: Add H to A
-            {0x84, (n)=>{registers.A += registers.H;}},
+            {0x84, (n) =>
+            {
+              byte initial = registers.A;
+              registers.A += registers.H;
+              // Update flags
+              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.H ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADD A,L: Add L to A
-            {0x85, (n)=>{registers.A += registers.L;}},
+            {0x85, (n) =>
+            {
+              byte initial = registers.A;
+              registers.A += registers.L;
+              // Update flags
+              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.L ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADD A,(HL): Add value pointed by HL to A
-            {0x86, (n)=>{registers.A += memory.Read(registers.HL);}},
+            {0x86, (n) =>
+            {
+              byte initial = registers.A;
+              byte mem = memory.Read(registers.HL);
+              registers.A += mem;
+              // Update flags
+              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ mem ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADD A,A: Add A to A
-            {0x87, (n)=>{registers.A += registers.A;}},
+            {0x87, (n) =>
+            {
+              byte initial = registers.A;
+              registers.A += registers.A;
+              // Update flags
+              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)(((registers.A ^ registers.A ^ initial) & 0x10) == 0 ? 0 : 1);
+            }},
 
             // ADC A,B: Add B and carry flag to A
             {0x88, (n)=>{
@@ -1591,190 +829,571 @@ namespace GBSharp.CPU
             }},
 
             // SUB A,B: Subtract B from A
-            {0x90, (n)=>{registers.A -= registers.B;}},
+            {0x90, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.B,
+                            0);
+            }},
 
             // SUB A,C: Subtract C from A
-            {0x91, (n)=>{registers.A -= registers.C;}},
+            {0x91, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.C,
+                            0);
+            }},
 
             // SUB A,D: Subtract D from A
-            {0x92, (n)=>{registers.A -= registers.D;}},
+            {0x92, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.D,
+                            0);
+            }},
 
             // SUB A,E: Subtract E from A
-            {0x93, (n)=>{registers.A -= registers.E;}},
+            {0x93, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.E,
+                            0);
+            }},
 
             // SUB A,H: Subtract H from A
-            {0x94, (n)=>{registers.A -= registers.H;}},
+            {0x94, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.H,
+                            0);
+            }},
 
             // SUB A,L: Subtract L from A
-            {0x95, (n)=>{registers.A -= registers.L;}},
+            {0x95, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.L,
+                            0);
+            }},
 
             // SUB A,(HL): Subtract value pointed by HL from A
-            {0x96, (n)=>{registers.A -= memory.Read(registers.HL);}},
+            {0x96, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            memory.Read(registers.HL),
+                            0);
+            }},
 
             // SUB A,A: Subtract A from A
-            {0x97, (n)=>{registers.A -= registers.A;}},
+            {0x97, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.A,
+                            0);
+            }},
 
             // SBC A,B: Subtract B and carry flag from A
-            {0x98, (n)=>{throw new NotImplementedException();}},
+            {0x98, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.B,
+                            registers.FC);
+            }},
 
             // SBC A,C: Subtract C and carry flag from A
-            {0x99, (n)=>{throw new NotImplementedException();}},
+            {0x99, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.C,
+                            registers.FC);
+            }},
 
             // SBC A,D: Subtract D and carry flag from A
-            {0x9A, (n)=>{throw new NotImplementedException();}},
+            {0x9A, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.D,
+                            registers.FC);
+            }},
 
             // SBC A,E: Subtract E and carry flag from A
-            {0x9B, (n)=>{throw new NotImplementedException();}},
+            {0x9B, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.E,
+                            registers.FC);
+            }},
 
             // SBC A,H: Subtract H and carry flag from A
-            {0x9C, (n)=>{throw new NotImplementedException();}},
+            {0x9C, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.H,
+                            registers.FC);
+            }},
 
             // SBC A,L: Subtract and carry flag L from A
-            {0x9D, (n)=>{throw new NotImplementedException();}},
+            {0x9D, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.L,
+                            registers.FC);
+            }},
 
             // SBC A,(HL): Subtract value pointed by HL and carry flag from A
-            {0x9E, (n)=>{throw new NotImplementedException();}},
+            {0x9E, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            memory.Read(registers.HL),
+                            registers.FC);
+            }},
 
             // SBC A,A: Subtract A and carry flag from A
-            {0x9F, (n)=>{throw new NotImplementedException();}},
+            {0x9F, (n)=>{
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            registers.A,
+                            registers.FC);
+            }},
 
             // AND B: Logical AND B against A
-            {0xA0, (n)=>{registers.A &= registers.B;}},
+            {0xA0, (n) =>
+            {
+              registers.A &= registers.B;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)1;
+            }},
 
             // AND C: Logical AND C against A
-            {0xA1, (n)=>{registers.A &= registers.C;}},
+            {0xA1, (n) =>
+            {
+              registers.A &= registers.C;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)1;
+            }},
 
             // AND D: Logical AND D against A
-            {0xA2, (n)=>{registers.A &= registers.D;}},
+            {0xA2, (n) =>
+            {
+              registers.A &= registers.D;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)1;
+            }},
 
             // AND E: Logical AND E against A
-            {0xA3, (n)=>{registers.A &= registers.E;}},
+            {0xA3, (n) =>
+            {
+              registers.A &= registers.E;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)1;
+            }},
 
             // AND H: Logical AND H against A
-            {0xA4, (n)=>{registers.A &= registers.H;}},
+            {0xA4, (n) =>
+            {
+              registers.A &= registers.H;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)1;
+            }},
 
             // AND L: Logical AND L against A
-            {0xA5, (n)=>{registers.A &= registers.L;}},
+            {0xA5, (n) =>
+            {
+              registers.A &= registers.L;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)1;
+            }},
 
             // AND (HL): Logical AND value pointed by HL against A
-            {0xA6, (n)=>{registers.A &= memory.Read(registers.HL);}},
+            {0xA6, (n) =>
+            {
+              registers.A &= memory.Read(registers.HL);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)1;
+            }},
 
             // AND A: Logical AND A against A
-            {0xA7, (n)=>{registers.A &= registers.A;}},
+            {0xA7, (n) =>
+            {
+              registers.A &= registers.A;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)1;
+            }},
 
             // XOR B: Logical XOR B against A
-            {0xA8, (n)=>{registers.A ^= registers.B;}},
+            {0xA8, (n) =>
+            {
+              registers.A ^= registers.B;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // XOR C: Logical XOR C against A
-            {0xA9, (n)=>{registers.A ^= registers.C;}},
+            {0xA9, (n) =>
+            {
+              registers.A ^= registers.C;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // XOR D: Logical XOR D against A
-            {0xAA, (n)=>{registers.A ^= registers.D;}},
+            {0xAA, (n) =>
+            {
+              registers.A ^= registers.D;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // XOR E: Logical XOR E against A
-            {0xAB, (n)=>{registers.A ^= registers.E;}},
+            {0xAB, (n) =>
+            {
+              registers.A ^= registers.E;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // XOR H: Logical XOR H against A
-            {0xAC, (n)=>{registers.A ^= registers.H;}},
+            {0xAC, (n) =>
+            {
+              registers.A ^= registers.H;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // XOR L: Logical XOR L against A
-            {0xAD, (n)=>{registers.A ^= registers.L;}},
+            {0xAD, (n) =>
+            {
+              registers.A ^= registers.L;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // XOR (HL): Logical XOR value pointed by HL against A
-            {0xAE, (n)=>{registers.A ^= memory.Read(registers.HL);}},
+            {0xAE, (n) =>
+            {
+              registers.A ^= memory.Read(registers.HL);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // XOR A: Logical XOR A against A
-            {0xAF, (n)=>{registers.A ^= registers.A;}},
+            {0xAF, (n) =>
+            {
+              registers.A ^= registers.A;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // OR B: Logical OR B against A
-            {0xB0, (n)=>{registers.A |= registers.B;}},
+            {0xB0, (n) =>
+            {
+              registers.A |= registers.B;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // OR C: Logical OR C against A
-            {0xB1, (n)=>{registers.A |= registers.C;}},
+            {0xB1, (n) =>
+            {
+              registers.A |= registers.C;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // OR D: Logical OR D against A
-            {0xB2, (n)=>{registers.A |= registers.D;}},
+            {0xB2, (n) =>
+            {
+              registers.A |= registers.D;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // OR E: Logical OR E against A
-            {0xB3, (n)=>{registers.A |= registers.E;}},
+            {0xB3, (n) =>
+            {
+              registers.A |= registers.E;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // OR H: Logical OR H against A
-            {0xB4, (n)=>{registers.A |= registers.H;}},
+            {0xB4, (n) =>
+            {
+              registers.A |= registers.H;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // OR L: Logical OR L against A
-            {0xB5, (n)=>{registers.A |= registers.L;}},
+            {0xB5, (n) =>
+            {
+              registers.A |= registers.L;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // OR (HL): Logical OR value pointed by HL against A
-            {0xB6, (n)=>{registers.A |= memory.Read(registers.HL);}},
+            {0xB6, (n) =>
+            {
+              registers.A |= memory.Read(registers.HL);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // OR A: Logical OR A against A
-            {0xB7, (n)=>{registers.A |= registers.A;}},
+            {0xB7, (n) =>
+            {
+              registers.A |= registers.A;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.H = (byte)0;
+            }},
 
             // CP B: Compare B against A
-            {0xB8, (n)=>{throw new NotImplementedException();}},
+            {0xB8, (n)=>{
+              byte operand = registers.B;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP C: Compare C against A
-            {0xB9, (n)=>{throw new NotImplementedException();}},
+            {0xB9, (n)=>{
+              byte operand = registers.C;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP D: Compare D against A
-            {0xBA, (n)=>{throw new NotImplementedException();}},
+            {0xBA, (n)=>{
+              byte operand = registers.D;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP E: Compare E against A
-            {0xBB, (n)=>{throw new NotImplementedException();}},
+            {0xBB, (n)=>{
+              byte operand = registers.E;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP H: Compare H against A
-            {0xBC, (n)=>{throw new NotImplementedException();}},
+            {0xBC, (n)=>{
+              byte operand = registers.H;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP L: Compare L against A
-            {0xBD, (n)=>{throw new NotImplementedException();}},
+            {0xBD, (n)=>{
+              byte operand = registers.L;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP (HL): Compare value pointed by HL against A
-            {0xBE, (n)=>{throw new NotImplementedException();}},
+            {0xBE, (n)=>{
+              byte operand = memory.Read(registers.HL);
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // CP A: Compare A against A
-            {0xBF, (n)=>{throw new NotImplementedException();}},
+            {0xBF, (n)=>{
+              byte operand = registers.A;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // RET NZ: Return if last result was not zero
-            {0xC0, (n)=>{throw new NotImplementedException();}},
+            {0xC0, (n)=>{
+              if (registers.FZ != 0) { return; }
+              // We load the program counter (high byte is in higher address)
+              this.nextPC = memory.Read(registers.SP++);
+              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
+            }},
 
             // POP BC: Pop 16-bit value from stack into BC
-            {0xC1, (n)=>{throw new NotImplementedException();}},
+            {0xC1, (n)=>{
+              ushort res = memory.Read(registers.SP++);
+              res += (ushort)(memory.Read(registers.SP++) << 8);
+              registers.BC = res;
+            }},
 
             // JP NZ,nn: Absolute jump to 16-bit location if last result was not zero
-            {0xC2, (n)=>{throw new NotImplementedException();}},
+            {0xC2, (n)=>{
+              if (registers.FZ != 0) { return; }
+              this.nextPC = n;
+            }},
 
             // JP nn: Absolute jump to 16-bit location
-            {0xC3, (n)=>{throw new NotImplementedException();}},
+            {0xC3, (n)=>{
+              this.nextPC = n;
+            }},
 
             // CALL NZ,nn: Call routine at 16-bit location if last result was not zero
-            {0xC4, (n)=>{throw new NotImplementedException();}},
+            {0xC4, (n)=>{
+              if (registers.FZ != 0) { return; }
+              // We decrease the SP by 2
+              registers.SP -= 2;
+              // We but the nextPC in the stack (high byte first get the higher address)
+              memory.Write(registers.SP, this.nextPC);
+              // We jump
+              this.nextPC = n;
+            }},
 
             // PUSH BC: Push 16-bit BC onto stack
-            {0xC5, (n)=>{throw new NotImplementedException();}},
+            {0xC5, (n)=>{
+              registers.SP -= 2;
+              // We push the value in the stack (high byte gets the higher address)
+              memory.Write(registers.SP, registers.BC);
+            }},
 
             // ADD A,n: Add 8-bit immediate to A
             {0xC6, (n)=>{registers.A += (byte)n;}},
 
             // RST 0: Call routine at address 0000h
-            {0xC7, (n)=>{throw new NotImplementedException();}},
+            {0xC7, (n)=>{instructionLambdas[0xCD](0);}},
 
             // RET Z: Return if last result was zero
-            {0xC8, (n)=>{throw new NotImplementedException();}},
+            {0xC8, (n)=>{
+              if (registers.FZ == 0) { return; }
+              // We load the program counter (high byte is in higher address)
+              this.nextPC = memory.Read(registers.SP++);
+              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
+            }},
 
             // RET: Return to calling routine
-            {0xC9, (n)=>{throw new NotImplementedException();}},
+            {0xC9, (n)=>{
+              // We load the program counter (high byte is in higher address)
+              this.nextPC = memory.Read(registers.SP++);
+              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
+            }},
 
             // JP Z,nn: Absolute jump to 16-bit location if last result was zero
-            {0xCA, (n)=>{throw new NotImplementedException();}},
+            {0xCA, (n)=>{
+              if (registers.FZ == 0) { return; }
+              this.nextPC = n;
+            }},
 
             // Ext ops: Extended operations (two-byte instruction code)
-            {0xCB, (n)=>{throw new NotImplementedException();}},
+            {0xCB, (n)=>{throw new NotImplementedException("Ext ops (0xCB)");}},
 
             // CALL Z,nn: Call routine at 16-bit location if last result was zero
-            {0xCC, (n)=>{throw new NotImplementedException();}},
+            {0xCC, (n)=>{
+              if (registers.FZ == 0) { return; }
+              // We decrease the SP by 2
+              registers.SP -= 2;
+              // We but the nextPC in the stack (high byte first get the higher address)
+              memory.Write(registers.SP, this.nextPC);
+              // We jump
+              this.nextPC = n;
+            }},
 
             // CALL nn: Call routine at 16-bit location
-            {0xCD, (n)=>{throw new NotImplementedException();}},
+            {0xCD, (n)=>{
+              // We decrease the SP by 2
+              registers.SP -= 2;
+              // We but the nextPC in the stack (high byte first get the higher address)
+              memory.Write(registers.SP, this.nextPC);
+              // We jump
+              this.nextPC = n;
+            }},
 
             // ADC A,n: Add 8-bit immediate and carry to A
             {0xCE, (n)=>{
@@ -1791,130 +1410,195 @@ namespace GBSharp.CPU
             }},
 
             // RST 8: Call routine at address 0008h
-            {0xCF, (n)=>{throw new NotImplementedException();}},
+            {0xCF, (n)=>{instructionLambdas[0xCD](0x08);}},
 
             // RET NC: Return if last result caused no carry
-            {0xD0, (n)=>{throw new NotImplementedException();}},
+            {0xD0, (n)=>{
+              if (registers.FC != 0) { return; }
+              // We load the program counter (high byte is in higher address)
+              this.nextPC = memory.Read(registers.SP++);
+              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
+            }},
 
             // POP DE: Pop 16-bit value from stack into DE
-            {0xD1, (n)=>{throw new NotImplementedException();}},
+            {0xD1, (n)=>{
+              ushort res = memory.Read(registers.SP++);
+              res += (ushort)(memory.Read(registers.SP++) << 8);
+              registers.DE = res;
+            }},
 
             // JP NC,nn: Absolute jump to 16-bit location if last result caused no carry
-            {0xD2, (n)=>{throw new NotImplementedException();}},
+            {0xD2, (n)=>{
+              if (registers.FC != 0) { return; }
+              this.nextPC = n;
+            }},
 
             // XX: Operation removed in this CPU
-            {0xD3, (n)=>{throw new NotImplementedException();}},
+            {0xD3, (n)=>{throw new NotImplementedException("XX (0xD3)");}},
 
             // CALL NC,nn: Call routine at 16-bit location if last result caused no carry
-            {0xD4, (n)=>{throw new NotImplementedException();}},
+            {0xD4, (n)=>{
+              if (registers.FC != 0) { return; }
+              // We decrease the SP by 2
+              registers.SP -= 2;
+              // We but the nextPC in the stack (high byte first get the higher address)
+              memory.Write(registers.SP, this.nextPC);
+              // We jump
+              this.nextPC = n;
+            }},
 
             // PUSH DE: Push 16-bit DE onto stack
-            {0xD5, (n)=>{throw new NotImplementedException();}},
+            {0xD5, (n)=>{
+              registers.SP -= 2;
+              // We push the value in the stack (high byte gets the higher address)
+              memory.Write(registers.SP, registers.DE);
+            }},
 
             // SUB A,n: Subtract 8-bit immediate from A
             {0xD6, (n)=>{registers.A -= (byte)n;}},
 
             // RST 10: Call routine at address 0010h
-            {0xD7, (n)=>{throw new NotImplementedException();}},
+            {0xD7, (n)=>{instructionLambdas[0xCD](0x10);}},
 
             // RET C: Return if last result caused carry
-            {0xD8, (n)=>{throw new NotImplementedException();}},
+            {0xD8, (n)=>{
+              if (registers.FC == 0) { return; }
+              // We load the program counter (high byte is in higher address)
+              this.nextPC = memory.Read(registers.SP++);
+              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
+            }},
 
             // RETI: Enable interrupts and return to calling routine
-            {0xD9, (n)=>{throw new NotImplementedException();}},
+            {0xD9, (n)=>{throw new NotImplementedException("RETI (0xD9)");}},
 
             // JP C,nn: Absolute jump to 16-bit location if last result caused carry
-            {0xDA, (n)=>{throw new NotImplementedException();}},
+            {0xDA, (n)=>{
+              if (registers.FC == 0) { return; }
+              this.nextPC = n;
+            }},
 
             // XX: Operation removed in this CPU
-            {0xDB, (n)=>{throw new NotImplementedException();}},
+            {0xDB, (n)=>{throw new NotImplementedException("XX (0xDB)");}},
 
             // CALL C,nn: Call routine at 16-bit location if last result caused carry
-            {0xDC, (n)=>{throw new NotImplementedException();}},
+            {0xDC, (n)=>{
+              if (registers.FC == 0) { return; }
+              // We decrease the SP by 2
+              registers.SP -= 2;
+              // We but the nextPC in the stack (high byte first get the higher address)
+              memory.Write(registers.SP, this.nextPC);
+              // We jump
+              this.nextPC = n;
+            }},
 
             // XX: Operation removed in this CPU
-            {0xDD, (n)=>{throw new NotImplementedException();}},
+            {0xDD, (n)=>{throw new NotImplementedException("XX (0xDD)");}},
 
             // SBC A,n: Subtract 8-bit immediate and carry from A
-            {0xDE, (n)=>{throw new NotImplementedException();}},
+            {0xDE, (n)=>{
+              byte substractor = 0;
+              unchecked { substractor = (byte)n; }
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            substractor,
+                            0);
+            }},
 
             // RST 18: Call routine at address 0018h
-            {0xDF, (n)=>{throw new NotImplementedException();}},
+            {0xDF, (n)=>{instructionLambdas[0xCD](0x18);}},
 
             // LDH (n),A: Save A at address pointed to by (FF00h + 8-bit immediate)
             {0xE0, (n)=>{memory.Write((ushort)(0xFF00 & n), registers.A);}},
 
             // POP HL: Pop 16-bit value from stack into HL
-            {0xE1, (n)=>{throw new NotImplementedException();}},
+            {0xE1, (n)=>{
+              ushort res = memory.Read(registers.SP++);
+              res += (ushort)(memory.Read(registers.SP++) << 8);
+              registers.HL = res;
+            }},
 
             // LDH (C),A: Save A at address pointed to by (FF00h + C)
             {0xE2, (n)=>{memory.Write((ushort)(0xFF00 & registers.C), registers.A);}},
 
             // XX: Operation removed in this CPU
-            {0xE3, (n)=>{throw new NotImplementedException();}},
+            {0xE3, (n)=>{throw new NotImplementedException("XX (0xE3)");}},
 
             // XX: Operation removed in this CPU
-            {0xE4, (n)=>{throw new NotImplementedException();}},
+            {0xE4, (n)=>{throw new NotImplementedException("XX (0xE4)");}},
 
             // PUSH HL: Push 16-bit HL onto stack
-            {0xE5, (n)=>{throw new NotImplementedException();}},
+            {0xE5, (n)=>{
+              registers.SP -= 2;
+              // We push the value in the stack (high byte gets the higher address)
+              memory.Write(registers.SP, registers.HL);
+            }},
 
             // AND n: Logical AND 8-bit immediate against A
             {0xE6, (n)=>{registers.A &= (byte)n;}},
 
             // RST 20: Call routine at address 0020h
-            {0xE7, (n)=>{throw new NotImplementedException();}},
+            {0xE7, (n)=>{instructionLambdas[0xCD](0x20);}},
 
             // ADD SP,d: Add signed 8-bit immediate to SP
-            {0xE8, (n)=>{throw new NotImplementedException();}},
+            {0xE8, (n)=>{throw new NotImplementedException("ADD SP,d (0xE8)");}},
 
             // JP (HL): Jump to 16-bit value pointed by HL
-            {0xE9, (n)=>{throw new NotImplementedException();}},
+            {0xE9, (n)=>{
+              this.nextPC = memory.Read(n);
+            }},
 
             // LD (nn),A: Save A at given 16-bit address
             {0xEA, (n)=>{memory.Write(n, registers.A);}},
 
             // XX: Operation removed in this CPU
-            {0xEB, (n)=>{throw new NotImplementedException();}},
+            {0xEB, (n)=>{throw new NotImplementedException("XX (0xEB)");}},
 
             // XX: Operation removed in this CPU
-            {0xEC, (n)=>{throw new NotImplementedException();}},
+            {0xEC, (n)=>{throw new NotImplementedException("XX (0xEC)");}},
 
             // XX: Operation removed in this CPU
-            {0xED, (n)=>{throw new NotImplementedException();}},
+            {0xED, (n)=>{throw new NotImplementedException("XX (0xED)");}},
 
             // XOR n: Logical XOR 8-bit immediate against A
             {0xEE, (n)=>{registers.A ^= (byte)n;}},
 
             // RST 28: Call routine at address 0028h
-            {0xEF, (n)=>{throw new NotImplementedException();}},
+            {0xEF, (n)=>{instructionLambdas[0xCD](0x28);}},
 
             // LDH A,(n): Load A from address pointed to by (FF00h + 8-bit immediate)
             {0xF0, (n)=>{registers.A = memory.Read((ushort)(0xFF00 & n));}},
 
             // POP AF: Pop 16-bit value from stack into AF
-            {0xF1, (n)=>{throw new NotImplementedException();}},
+            {0xF1, (n)=>{
+              ushort res = memory.Read(registers.SP++);
+              res += (ushort)(memory.Read(registers.SP++) << 8);
+              registers.AF = res;
+            }},
 
             // LDH A, (C): Operation removed in this CPU? (Or Load into A memory from FF00 + C?)
             {0xF2, (n)=>{registers.A = memory.Read((ushort)(0xFF00 & registers.C));}},
 
             // DI: DIsable interrupts
-            {0xF3, (n)=>{throw new NotImplementedException();}},
+            {0xF3, (n)=>{Console.WriteLine("NOT IMP DI (0xF3)");}},
 
             // XX: Operation removed in this CPU
-            {0xF4, (n)=>{throw new NotImplementedException();}},
+            {0xF4, (n)=>{throw new NotImplementedException("XX (0xF4)");}},
 
             // PUSH AF: Push 16-bit AF onto stack
-            {0xF5, (n)=>{throw new NotImplementedException();}},
+            {0xF5, (n)=>{
+              registers.SP -= 2;
+              // We push the value in the stack (high byte gets the higher address)
+              memory.Write(registers.SP, registers.AF);
+            }},
 
             // OR n: Logical OR 8-bit immediate against A
             {0xF6, (n)=>{registers.A |= (byte)n;}},
 
             // RST 30: Call routine at address 0030h
-            {0xF7, (n)=>{throw new NotImplementedException();}},
+            {0xF7, (n)=>{instructionLambdas[0xCD](0x30);}},
 
             // LDHL SP,d: Add signed 8-bit immediate to SP and save result in HL
-            {0xF8, (n)=>{throw new NotImplementedException();}},
+            {0xF8, (n)=>{throw new NotImplementedException("LDHL SP,d (0xF8)");}},
 
             // LD SP,HL: Copy HL to SP
             {0xF9, (n)=>{registers.SP = registers.HL;}},
@@ -1923,19 +1607,35 @@ namespace GBSharp.CPU
             {0xFA, (n)=>{registers.A = memory.Read(n);}},
 
             // EI: Enable interrupts
-            {0xFB, (n)=>{throw new NotImplementedException();}},
+            {0xFB, (n)=>{throw new NotImplementedException("EI (0xFB)");}},
 
             // XX: Operation removed in this CPU
-            {0xFC, (n)=>{throw new NotImplementedException();}},
+            {0xFC, (n)=>{throw new NotImplementedException("XX (0xFC)");}},
 
             // XX: Operation removed in this CPU
-            {0xFD, (n)=>{throw new NotImplementedException();}},
+            {0xFD, (n)=>{throw new NotImplementedException("XX (0xFD)");}},
 
             // CP n: Compare 8-bit immediate against A
-            {0xFE, (n)=>{throw new NotImplementedException();}},
+            {0xFE, (n)=>{
+              byte operand = (byte)n;
+              registers.FN = 1;
+              registers.FC = 0; // This flag might get changed
+              registers.FH = (byte)
+                (((registers.A & 0x0F) < (operand & 0x0F)) ? 1 : 0);
+
+              if(registers.A == operand) {
+                registers.FZ = 1;
+              }
+              else {
+                registers.FZ = 0;
+                if(registers.A < operand) {
+                  registers.FC = 1;
+                }
+              }
+            }},
 
             // RST 38: Call routine at address 0038h
-            {0xFF, (n)=>{throw new NotImplementedException();}}
+            {0xFF, (n)=>{instructionLambdas[0xCD](0x38);}}
         };
     }
 
@@ -2308,196 +2008,388 @@ namespace GBSharp.CPU
         }},
 
         // BIT 0,B: Test bit 0 of B
-        {0x40, (n) => { throw new NotImplementedException(); }},
+        {0x40, (n) => { registers.FZ = UtilFuncs.TestBit(registers.B, 0);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 0,C: Test bit 0 of C
-        {0x41, (n) => { throw new NotImplementedException(); }},
+        {0x41, (n) => { registers.FZ = UtilFuncs.TestBit(registers.C, 0);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 0,D: Test bit 0 of D
-        {0x42, (n) => { throw new NotImplementedException(); }},
+        {0x42, (n) => { registers.FZ = UtilFuncs.TestBit(registers.D, 0);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 0,E: Test bit 0 of E
-        {0x43, (n) => { throw new NotImplementedException(); }},
+        {0x43, (n) => { registers.FZ = UtilFuncs.TestBit(registers.E, 0);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 0,H: Test bit 0 of H
-        {0x44, (n) => { throw new NotImplementedException(); }},
+        {0x44, (n) => { registers.FZ = UtilFuncs.TestBit(registers.H, 0);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 0,L: Test bit 0 of L
-        {0x45, (n) => { throw new NotImplementedException(); }},
+        {0x45, (n) => { registers.FZ = UtilFuncs.TestBit(registers.L, 0);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 0,(HL): Test bit 0 of value pointed by HL
-        {0x46, (n) => { throw new NotImplementedException(); }},
+        {0x46, (n) => { registers.FZ = UtilFuncs.TestBit(memory.Read(registers.HL), 0);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 0,A: Test bit 0 of A
-        {0x47, (n) => { throw new NotImplementedException(); }},
+        {0x47, (n) => { registers.FZ = UtilFuncs.TestBit(registers.A, 0);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 1,B: Test bit 1 of B
-        {0x48, (n) => { throw new NotImplementedException(); }},
+        {0x48, (n) => { registers.FZ = UtilFuncs.TestBit(registers.B, 1);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 1,C: Test bit 1 of C
-        {0x49, (n) => { throw new NotImplementedException(); }},
+        {0x49, (n) => { registers.FZ = UtilFuncs.TestBit(registers.C, 1);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 1,D: Test bit 1 of D
-        {0x4A, (n) => { throw new NotImplementedException(); }},
+        {0x4A, (n) => { registers.FZ = UtilFuncs.TestBit(registers.D, 1);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 1,E: Test bit 1 of E
-        {0x4B, (n) => { throw new NotImplementedException(); }},
+        {0x4B, (n) => { registers.FZ = UtilFuncs.TestBit(registers.E, 1);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 1,H: Test bit 1 of H
-        {0x4C, (n) => { throw new NotImplementedException(); }},
+        {0x4C, (n) => { registers.FZ = UtilFuncs.TestBit(registers.H, 1);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 1,L: Test bit 1 of L
-        {0x4D, (n) => { throw new NotImplementedException(); }},
+        {0x4D, (n) => { registers.FZ = UtilFuncs.TestBit(registers.L, 1);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 1,(HL): Test bit 1 of value pointed by HL
-        {0x4E, (n) => { throw new NotImplementedException(); }},
+        {0x4E, (n) => { registers.FZ = UtilFuncs.TestBit(memory.Read(registers.HL), 1);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 1,A: Test bit 1 of A
-        {0x4F, (n) => { throw new NotImplementedException(); }},
+        {0x4F, (n) => { registers.FZ = UtilFuncs.TestBit(registers.A, 1);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 2,B: Test bit 2 of B
-        {0x50, (n) => { throw new NotImplementedException(); }},
+        {0x50, (n) => { registers.FZ = UtilFuncs.TestBit(registers.B, 2);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 2,C: Test bit 2 of C
-        {0x51, (n) => { throw new NotImplementedException(); }},
+        {0x51, (n) => { registers.FZ = UtilFuncs.TestBit(registers.C, 2);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 2,D: Test bit 2 of D
-        {0x52, (n) => { throw new NotImplementedException(); }},
+        {0x52, (n) => { registers.FZ = UtilFuncs.TestBit(registers.D, 2);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 2,E: Test bit 2 of E
-        {0x53, (n) => { throw new NotImplementedException(); }},
+        {0x53, (n) => { registers.FZ = UtilFuncs.TestBit(registers.E, 2);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 2,H: Test bit 2 of H
-        {0x54, (n) => { throw new NotImplementedException(); }},
+        {0x54, (n) => { registers.FZ = UtilFuncs.TestBit(registers.H, 2);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 2,L: Test bit 2 of L
-        {0x55, (n) => { throw new NotImplementedException(); }},
+        {0x55, (n) => { registers.FZ = UtilFuncs.TestBit(registers.L, 2);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 2,(HL): Test bit 2 of value pointed by HL
-        {0x56, (n) => { throw new NotImplementedException(); }},
+        {0x56, (n) => { registers.FZ = UtilFuncs.TestBit(memory.Read(registers.HL), 2);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 2,A: Test bit 2 of A
-        {0x57, (n) => { throw new NotImplementedException(); }},
+        {0x57, (n) => { registers.FZ = UtilFuncs.TestBit(registers.A, 2);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 3,B: Test bit 3 of B
-        {0x58, (n) => { throw new NotImplementedException(); }},
+        {0x58, (n) => { registers.FZ = UtilFuncs.TestBit(registers.B, 3);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 3,C: Test bit 3 of C
-        {0x59, (n) => { throw new NotImplementedException(); }},
+        {0x59, (n) => { registers.FZ = UtilFuncs.TestBit(registers.C, 3);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 3,D: Test bit 3 of D
-        {0x5A, (n) => { throw new NotImplementedException(); }},
+        {0x5A, (n) => { registers.FZ = UtilFuncs.TestBit(registers.D, 3);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 3,E: Test bit 3 of E
-        {0x5B, (n) => { throw new NotImplementedException(); }},
+        {0x5B, (n) => { registers.FZ = UtilFuncs.TestBit(registers.E, 3);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 3,H: Test bit 3 of H
-        {0x5C, (n) => { throw new NotImplementedException(); }},
+        {0x5C, (n) => { registers.FZ = UtilFuncs.TestBit(registers.H, 3);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 3,L: Test bit 3 of L
-        {0x5D, (n) => { throw new NotImplementedException(); }},
+        {0x5D, (n) => { registers.FZ = UtilFuncs.TestBit(registers.L, 3);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 3,(HL): Test bit 3 of value pointed by HL
-        {0x5E, (n) => { throw new NotImplementedException(); }},
+        {0x5E, (n) => { registers.FZ = UtilFuncs.TestBit(memory.Read(registers.HL), 3);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 3,A: Test bit 3 of A
-        {0x5F, (n) => { throw new NotImplementedException(); }},
+        {0x5F, (n) => { registers.FZ = UtilFuncs.TestBit(registers.A, 3);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 4,B: Test bit 4 of B
-        {0x60, (n) => { throw new NotImplementedException(); }},
+        {0x60, (n) => { registers.FZ = UtilFuncs.TestBit(registers.B, 4);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 4,C: Test bit 4 of C
-        {0x61, (n) => { throw new NotImplementedException(); }},
+        {0x61, (n) => { registers.FZ = UtilFuncs.TestBit(registers.C, 4);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 4,D: Test bit 4 of D
-        {0x62, (n) => { throw new NotImplementedException(); }},
+        {0x62, (n) => { registers.FZ = UtilFuncs.TestBit(registers.D, 4);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 4,E: Test bit 4 of E
-        {0x63, (n) => { throw new NotImplementedException(); }},
+        {0x63, (n) => { registers.FZ = UtilFuncs.TestBit(registers.E, 4);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 4,H: Test bit 4 of H
-        {0x64, (n) => { throw new NotImplementedException(); }},
+        {0x64, (n) => { registers.FZ = UtilFuncs.TestBit(registers.H, 4);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 4,L: Test bit 4 of L
-        {0x65, (n) => { throw new NotImplementedException(); }},
+        {0x65, (n) => { registers.FZ = UtilFuncs.TestBit(registers.L, 4);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 4,(HL): Test bit 4 of value pointed by HL
-        {0x66, (n) => { throw new NotImplementedException(); }},
+        {0x66, (n) => { registers.FZ = UtilFuncs.TestBit(memory.Read(registers.HL), 4);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 4,A: Test bit 4 of A
-        {0x67, (n) => { throw new NotImplementedException(); }},
+        {0x67, (n) => { registers.FZ = UtilFuncs.TestBit(registers.A, 4);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 5,B: Test bit 5 of B
-        {0x68, (n) => { throw new NotImplementedException(); }},
+        {0x68, (n) => { registers.FZ = UtilFuncs.TestBit(registers.B, 5);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 5,C: Test bit 5 of C
-        {0x69, (n) => { throw new NotImplementedException(); }},
+        {0x69, (n) => { registers.FZ = UtilFuncs.TestBit(registers.C, 5);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 5,D: Test bit 5 of D
-        {0x6A, (n) => { throw new NotImplementedException(); }},
+        {0x6A, (n) => { registers.FZ = UtilFuncs.TestBit(registers.D, 5);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 5,E: Test bit 5 of E
-        {0x6B, (n) => { throw new NotImplementedException(); }},
+        {0x6B, (n) => { registers.FZ = UtilFuncs.TestBit(registers.E, 5);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 5,H: Test bit 5 of H
-        {0x6C, (n) => { throw new NotImplementedException(); }},
+        {0x6C, (n) => { registers.FZ = UtilFuncs.TestBit(registers.H, 5);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 5,L: Test bit 5 of L
-        {0x6D, (n) => { throw new NotImplementedException(); }},
+        {0x6D, (n) => { registers.FZ = UtilFuncs.TestBit(registers.L, 5);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 5,(HL): Test bit 5 of value pointed by HL
-        {0x6E, (n) => { throw new NotImplementedException(); }},
+        {0x6E, (n) => { registers.FZ = UtilFuncs.TestBit(memory.Read(registers.HL), 5);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 5,A: Test bit 5 of A
-        {0x6F, (n) => { throw new NotImplementedException(); }},
+        {0x6F, (n) => { registers.FZ = UtilFuncs.TestBit(registers.A, 5);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 6,B: Test bit 6 of B
-        {0x70, (n) => { throw new NotImplementedException(); }},
+        {0x70, (n) => { registers.FZ = UtilFuncs.TestBit(registers.B, 6);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 6,C: Test bit 6 of C
-        {0x71, (n) => { throw new NotImplementedException(); }},
+        {0x71, (n) => { registers.FZ = UtilFuncs.TestBit(registers.C, 6);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 6,D: Test bit 6 of D
-        {0x72, (n) => { throw new NotImplementedException(); }},
+        {0x72, (n) => { registers.FZ = UtilFuncs.TestBit(registers.D, 6);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 6,E: Test bit 6 of E
-        {0x73, (n) => { throw new NotImplementedException(); }},
+        {0x73, (n) => { registers.FZ = UtilFuncs.TestBit(registers.E, 6);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 6,H: Test bit 6 of H
-        {0x74, (n) => { throw new NotImplementedException(); }},
+        {0x74, (n) => { registers.FZ = UtilFuncs.TestBit(registers.H, 6);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 6,L: Test bit 6 of L
-        {0x75, (n) => { throw new NotImplementedException(); }},
+        {0x75, (n) => { registers.FZ = UtilFuncs.TestBit(registers.L, 6);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 6,(HL): Test bit 6 of value pointed by HL
-        {0x76, (n) => { throw new NotImplementedException(); }},
+        {0x76, (n) => { registers.FZ = UtilFuncs.TestBit(memory.Read(registers.HL), 6);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 6,A: Test bit 6 of A
-        {0x77, (n) => { throw new NotImplementedException(); }},
+        {0x77, (n) => { registers.FZ = UtilFuncs.TestBit(registers.A, 6);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 7,B: Test bit 7 of B
-        {0x78, (n) => { throw new NotImplementedException(); }},
+        {0x78, (n) => { registers.FZ = UtilFuncs.TestBit(registers.B, 7);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 7,C: Test bit 7 of C
-        {0x79, (n) => { throw new NotImplementedException(); }},
+        {0x79, (n) => { registers.FZ = UtilFuncs.TestBit(registers.C, 7);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 7,D: Test bit 7 of D
-        {0x7A, (n) => { throw new NotImplementedException(); }},
+        {0x7A, (n) => { registers.FZ = UtilFuncs.TestBit(registers.D, 7);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 7,E: Test bit 7 of E
-        {0x7B, (n) => { throw new NotImplementedException(); }},
+        {0x7B, (n) => { registers.FZ = UtilFuncs.TestBit(registers.E, 7);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 7,H: Test bit 7 of H
-        {0x7C, (n) => { throw new NotImplementedException(); }},
+        {0x7C, (n) => { registers.FZ = UtilFuncs.TestBit(registers.H, 7);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 7,L: Test bit 7 of L
-        {0x7D, (n) => { throw new NotImplementedException(); }},
+        {0x7D, (n) => { registers.FZ = UtilFuncs.TestBit(registers.L, 7);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 7,(HL): Test bit 7 of value pointed by HL
-        {0x7E, (n) => { throw new NotImplementedException(); }},
+        {0x7E, (n) => { registers.FZ = UtilFuncs.TestBit(memory.Read(registers.HL), 7);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // BIT 7,A: Test bit 7 of A
-        {0x7F, (n) => { throw new NotImplementedException(); }},
+        {0x7F, (n) => { registers.FZ = UtilFuncs.TestBit(registers.A, 7);
+                        registers.FN = 0;
+                        registers.FH = 1;
+        }},
 
         // RES 0,B: Clear (reset) bit 0 of B
         {0x80, (n) => { registers.B = UtilFuncs.ClearBit(registers.B, 0); }},
@@ -2887,11 +2779,31 @@ namespace GBSharp.CPU
 
     #endregion
 
-    public CPU(Memory.Memory memory)
+    public CPU(MemorySpace.Memory memory)
     {
       //Create Instruction Lambdas
       CreateInstructionLambdas();
       CreateCBInstructionLambdas();
+      instructionNames = CPUOpcodeNames.Setup();
+      CBinstructionNames = CPUCBOpcodeNames.Setup();
+
+      this.memory = memory;
+
+
+      this.Initialize();
+
+    }
+
+    /// <summary>
+    /// Sets the initial values for the cpu registers and memory mapped registers.
+    /// </summary>
+    private void Initialize()
+    {
+      // Reset the clock state
+      this.clock = 0;
+
+      this.halted = false;
+      this.stopped = false;
 
       // Magic CPU initial values (after bios execution).
       this.registers.BC = 0x0013;
@@ -2900,8 +2812,7 @@ namespace GBSharp.CPU
       this.registers.PC = 0x0100;
       this.registers.SP = 0xFFFE;
 
-      // Initialize the memory
-      this.memory = memory;
+      // Initialize memory mapped registers
       this.memory.Write(0xFF05, 0x00); // TIMA
       this.memory.Write(0xFF06, 0x00); // TMA
       this.memory.Write(0xFF07, 0x00); // TAC
@@ -2933,7 +2844,72 @@ namespace GBSharp.CPU
       this.memory.Write(0xFF4A, 0x00); // WY
       this.memory.Write(0xFF4B, 0x00); // WX
       this.memory.Write(0xFFFF, 0x00); // IE
+    }
 
+    /// <summary>
+    /// Executes one instruction, requiring arbitrary machine and clock cycles.
+    /// </summary>
+    public void Step()
+    {
+      // Instruction fetch and decode
+      string instructionName;
+      byte instructionLength;
+      byte clocks;
+      Action<ushort> instruction;
+      ushort initialClock = this.clock;
+      ushort literal = 0;
+      ushort opcode = this.memory.Read(this.registers.PC);
+      if (opcode != 0xCB)
+      {
+        // Normal instructions
+        instructionLength = this.instructionLengths[(byte)opcode];
+
+        // Extract literal
+        if (instructionLength == 2)
+        {
+          // 8 bit literal
+          literal = this.memory.Read((ushort)(this.registers.PC + 1));
+        }
+        else if (instructionLength == 3)
+        {
+          // 16 bit literal, little endian
+          literal = this.memory.Read((ushort)(this.registers.PC + 1));
+          literal += (ushort)(this.memory.Read((ushort)(this.registers.PC + 2)) << 8);
+        }
+
+        instruction = this.instructionLambdas[(byte)opcode];
+        clocks = this.instructionClocks[(byte)opcode];
+        instructionName = instructionNames[(byte)opcode];
+
+      }
+      else
+      {
+        // CB instructions block
+        opcode <<= 8;
+        opcode += this.memory.Read((ushort)(this.registers.PC + 1));
+        instructionLength = this.CBInstructionLengths[(byte)opcode];
+        // There is no literal in CB instructions!
+
+        instruction = this.CBInstructionLambdas[(byte)opcode];
+        clocks = this.CBInstructionClocks[(byte)opcode];
+        instructionName = CBinstructionNames[(byte)opcode];
+      }
+
+      // Prepare for program counter movement, but wait for instruction execution.
+      // Overwrite nextPC in the instruction lambdas if you want to implement jumps.
+      this.nextPC = (ushort)(this.registers.PC + instructionLength);
+
+
+      Console.WriteLine("Instruction:" + instructionName + " , OpCode: " + opcode.ToString("x") + " , Literal: " + literal.ToString("x"));
+      Console.WriteLine(registers.ToString());
+      // Execute instruction
+      instruction(literal);
+
+      // Push the next program counter value into the real program counter!
+      this.registers.PC = this.nextPC;
+
+      // Update clock
+      this.clock += clocks;
     }
 
 

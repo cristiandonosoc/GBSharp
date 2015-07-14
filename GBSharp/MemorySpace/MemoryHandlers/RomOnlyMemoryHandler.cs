@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GBSharp.Memory.MemoryHandlers
+namespace GBSharp.MemorySpace.MemoryHandlers
 {
   /// <summary>
   /// The ROM Only Catdridge is (shock!) a ROM only catdridge.
@@ -16,7 +16,7 @@ namespace GBSharp.Memory.MemoryHandlers
     private ushort romOnlyStart = 0x0000;
     private ushort romOnlyEnd = 0x7FFF;
 
-    internal RomOnlyMemoryHandler(GBSharp.Catridge.Cartridge cartridge)
+    internal RomOnlyMemoryHandler(GBSharp.Cartridge.Cartridge cartridge)
       : base(cartridge)
     {
     }

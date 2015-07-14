@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using GBSharp.Catridge;
-using GBSharp.Memory.MemoryHandlers;
+using GBSharp.Cartridge;
+using GBSharp.MemorySpace.MemoryHandlers;
 
-namespace GBSharpTest.Memory.MemoryHandlers
+namespace GBSharpTest.MemorySpace.MemoryHandlers
 {
   [TestClass]
   public class RomOnlyMemoryHandlerTests

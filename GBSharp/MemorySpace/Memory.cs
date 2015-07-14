@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using GBSharp.Catridge;
-using GBSharp.Memory.MemoryHandlers;
+using GBSharp.Cartridge;
+using GBSharp.MemorySpace.MemoryHandlers;
 
-namespace GBSharp.Memory
+namespace GBSharp.MemorySpace
 {
   class Memory : IMemory
   {

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using GBSharp.Catridge;
+using GBSharp.Cartridge;
 
-namespace GBSharp.Memory.MemoryHandlers
+namespace GBSharp.MemorySpace.MemoryHandlers
 {
     /// <summary>
     /// A memory handler contains the logic for the management
@@ -18,13 +18,13 @@ namespace GBSharp.Memory.MemoryHandlers
         #region ATTRIBUTES
 
         protected byte[] internalMemory;
-        protected Cartridge cartridge;
+        protected Cartridge.Cartridge cartridge;
 
         #endregion
 
         #region CONSTRUCTORS
 
-        internal MemoryHandler(Cartridge cartridge)
+        internal MemoryHandler(Cartridge.Cartridge cartridge)
         {
             this.cartridge = cartridge;
         }
