@@ -8,10 +8,11 @@ namespace GBSharp.CPUSpace
 {
   class InterruptController
   {
-    internal bool IME; // Interrupt Master Enable
-    ushort IFAddress = 0xFF0F; // Interrupt Request
-    ushort IEAddress = 0xFFFF; // Interrupt Enable
-    // Interrupt starting address
+    private bool IME; // Interrupt Master Enable
+    private const ushort IFAddress = 0xFF0F; // Interrupt Request Address, see Interrupts.cs
+    private const ushort IEAddress = 0xFFFF; // Interrupt Enable Address, see Interrupts.cs
+    
+    // Interrupt starting addresses
     Dictionary<Interrupts, ushort> InterruptHandlers = new Dictionary<Interrupts, ushort>()
     {
       {Interrupts.VerticalBlanking, 0x0040},
@@ -21,5 +22,30 @@ namespace GBSharp.CPUSpace
       {Interrupts.P10to13TerminalNegativeEdge, 0x0060}
     };
 
+    /// <summary>
+    /// Class constructor.
+    /// </summary>
+    /// <param name="memory">The memory referenced by the CPU core.</param>
+    internal InterruptController(MemorySpace.Memory memory)
+    {
+
+    }
+
+    /// <summary>
+    /// If set to false, prohibits all interrupts.
+    /// This should be set to false by DI instruction and true by EI instruction.
+    /// </summary>
+    internal bool InterruptMasterEnable
+    {
+      get
+      {
+        return this.IME;
+      }
+
+      set
+      {
+        this.IME = value;
+      }
+    }
   }
 }

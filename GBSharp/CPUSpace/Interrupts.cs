@@ -6,6 +6,12 @@ using System.Threading.Tasks;
 
 namespace GBSharp.CPUSpace
 {
+  /// <summary>
+  /// The bit masks used by the Interrupt Request (IF, 0xFF0F) and Interrupt Enable (IE, 0xFFFF) registers.
+  /// The upper 3 bits of each register are not used (0x20, 0x40, 0x80).
+  /// Lower masks have the highest priority. When multiple interrupts occur simultaneously and the IE flag
+  /// of each is set, only that with the highest priority is started.
+  /// </summary>
   [Flags]
   public enum Interrupts : byte
   {
