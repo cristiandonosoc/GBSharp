@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GBSharp.MemorySpace;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,7 @@ namespace GBSharp.CPUSpace
 {
   class InterruptController
   {
+    MemorySpace.Memory memory;
     private bool IME; // Interrupt Master Enable
     private const ushort IFAddress = 0xFF0F; // Interrupt Request Address, see Interrupts.cs
     private const ushort IEAddress = 0xFFFF; // Interrupt Enable Address, see Interrupts.cs
@@ -28,7 +30,7 @@ namespace GBSharp.CPUSpace
     /// <param name="memory">The memory referenced by the CPU core.</param>
     internal InterruptController(MemorySpace.Memory memory)
     {
-
+      this.memory = memory;
     }
 
     /// <summary>
@@ -46,6 +48,26 @@ namespace GBSharp.CPUSpace
       {
         this.IME = value;
       }
+    }
+
+    /// <summary>
+    /// Set the interrupt flags for a given kind interrupt.
+    /// </summary>
+    /// <param name="kind">An interrupt (or a combination of).</param>
+    internal void SetInterrupt(Interrupts kind)
+    {
+      byte IF = this.memory.Read((ushort)MemoryMappedRegisters.IF);
+      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.IF, (byte)(IF | (byte)kind));
+    }
+
+    /// <summary>
+    /// Resets the interrupt flags for a given kind of interrupt.
+    /// </summary>
+    /// <param name="kind">An interrupt (or a combination of).</param>
+    internal void ResetInterrupt(Interrupts kind)
+    {
+      byte IF = this.memory.Read((ushort)MemoryMappedRegisters.IF);
+      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.IF, (byte)(IF & ~(byte)kind));
     }
   }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using GBSharp.Utils;
 using GBSharp.CPUSpace.Dictionaries;
+using GBSharp.MemorySpace;
 
 namespace GBSharp.CPUSpace
 {
@@ -11,7 +12,7 @@ namespace GBSharp.CPUSpace
     internal MemorySpace.Memory memory;
     internal InterruptController interruptController;
     internal ushort nextPC;
-    internal ushort clock; // 16 bit oscillation counter at 4.1943 MHz
+    internal ushort clock; // 16 bit oscillation counter at 4194304 Hz (2^22).
     internal bool halted;
     internal bool stopped;
 
@@ -2879,7 +2880,7 @@ namespace GBSharp.CPUSpace
     /// <summary>
     /// Executes one instruction, requiring arbitrary machine and clock cycles.
     /// </summary>
-    /// <returns>The number of ticks that were required at the base clock frequency (~4Mhz).
+    /// <returns>The number of ticks that were required at the base clock frequency (2^22hz, ~4Mhz).
     /// This can be 0 in STOP mode or even 24 for CALL Z, nn and other long CALL instructions.</returns>
     public byte Step()
     {
@@ -2940,6 +2941,26 @@ namespace GBSharp.CPUSpace
       // Push the next program counter value into the real program counter!
       this.registers.PC = this.nextPC;
 
+      // Perform timing operations and adjust the real number of ellapsed ticks
+      ticks = UpdateClockAndTimers(initialClock, ticks);
+
+      return ticks;
+    }
+
+    /// <summary>
+    /// Adjusts the this.clock counter to the right value after an instruction execution and updates the status of
+    /// the code-controlled timer system TIMA/TMA/TAC, setting the right flags if an overflow interrupt is required.
+    /// Updates the interrupt controller and the memory mapped registers related to timing.
+    /// </summary>
+    /// <param name="initialClock">The clock value before the instructions where executed.</param>
+    /// <param name="ticks">Base number of clock cycles required by the executed instruction.
+    /// This number is obtained from the instruction clocks dictionaries and does not include additional time
+    /// required for conditional CALL or JUMP instructions that is directly added into this.clock counter.</param>
+    /// <returns>The total real number of clock oscillations at 4194304 Hz that occurred during a Step execution.
+    /// This value includes the changes in the clock made directly by some instructions (conditionals) and the base
+    /// execution times obtained from CPUInstructionClocks and CPUCBInstructionClocks dictionaries.</returns>
+    private byte UpdateClockAndTimers(ushort initialClock, byte ticks)
+    {
       // Update clock adding only base ticks. Conditional instructions times are already added at this point.
       this.clock += ticks;
 
@@ -2961,6 +2982,64 @@ namespace GBSharp.CPUSpace
         ticks = (byte)(this.clock - initialClock);
       }
 
+      // Upper 8 bits of the clock should be accessible through DIV register.
+      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.DIV, (byte)(this.clock >> 8));
+
+      // Configurable timer TIMA/TMA/TAC system:
+      byte TAC = this.memory.Read((ushort)MemoryMappedRegisters.TAC);
+
+      byte clockSelect = (byte)(TAC & 0x03); // Clock select is the bits 0 and 1 of the TAC register
+      bool runTimer = (TAC & 0x04) == 0x04; // Run timer is the bit 2 of the TAC register
+
+      ushort timerMask;
+      switch (clockSelect)
+      {
+        case 1:
+          timerMask = 0x000F; // f/2^4 0000 0000 0000 1111, (262144 Hz)
+          break;
+        case 2:
+          timerMask = 0x003F; // f/2^6 0000 0000 0011 1111, (65536 Hz)
+          break;
+        case 3:
+          timerMask = 0x00FF; // f/2^8 0000 0000 1111 1111, (16384 Hz)
+          break;
+        default:
+          timerMask = 0x03FF; // f/2^10 0000 0011 1111 1111, (4096 Hz)
+          break;
+      }
+
+      if (runTimer)
+      {
+        // Simulate every tick that occurred during the execution of the instruction
+        for (int i = 1; i <= ticks; ++i)
+        {
+          // Maybe there is a faster way to do this without checking every clock value (??)
+          if (((initialClock + i) & timerMask) == 0x0000)
+          {
+            // We have a perfect match! The number of oscilations is now a multiple of clock selected by TAC
+
+            // Fetch current TIMA value
+            byte TIMA = this.memory.Read((ushort)MemoryMappedRegisters.TIMA);
+
+            // TIMA-tick
+            TIMA += 1;
+
+            if (TIMA == 0x0000)
+            {
+              // TIMA overflow, load TMA into TIMA
+              TIMA = this.memory.Read((ushort)MemoryMappedRegisters.TMA);
+
+              // Set the interrupt request flag
+              this.interruptController.SetInterrupt(Interrupts.TimerOverflow);
+            }
+
+            // Update memory mapped timer
+            this.memory.LowLevelWrite((ushort)MemorySpace.MemoryMappedRegisters.TIMA, TIMA);
+          }
+        }
+      }
+
+      // Return the real total number of ellapsed ticks (base instruction ticks + direct instruction addition to this.clock)
       return ticks;
     }
 
