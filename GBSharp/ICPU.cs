@@ -5,6 +5,6 @@ namespace GBSharp
   public interface ICPU
   {
     CPURegisters Registers { get; }
-    void Step();
+    byte Step();
   }
 }

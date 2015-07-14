@@ -34,6 +34,7 @@ namespace GBSharp.CPUSpace
 
     private void CreateInstructionLambdas()
     {
+      #warning TODO: Conditional JUMP and CALL instructions should increment the clock if the condition is met.
       instructionLambdas = new Dictionary<byte, Action<ushort>>() {
             // NOP: No Operation
             {0x00, (n)=>{ }},
@@ -415,7 +416,11 @@ namespace GBSharp.CPUSpace
             }},
 
             // LD B,B: Copy B to B
-            {0x40, (n)=>{registers.B = registers.B;}}, //love this instruction
+            {0x40, (n)=>{
+              #pragma warning disable
+              registers.B = registers.B;
+              #pragma warning restore
+            }}, //love this instruction
 
             // LD B,C: Copy C to B
             {0x41, (n)=>{registers.B = registers.C;}},
@@ -442,7 +447,11 @@ namespace GBSharp.CPUSpace
             {0x48, (n)=>{registers.C = registers.B;}},
 
             // LD C,C: Copy C to C
-            {0x49, (n)=>{registers.C = registers.C;}},
+            {0x49, (n)=>{
+              #pragma warning disable
+              registers.C = registers.C;
+              #pragma warning restore
+            }},
 
             // LD C,D: Copy D to C
             {0x4A, (n)=>{registers.C = registers.D;}},
@@ -469,7 +478,11 @@ namespace GBSharp.CPUSpace
             {0x51, (n)=>{registers.D = registers.C;}},
 
             // LD D,D: Copy D to D
-            {0x52, (n)=>{registers.D = registers.D;}},
+            {0x52, (n)=>{
+              #pragma warning disable
+              registers.D = registers.D;
+              #pragma warning restore
+            }},
 
             // LD D,E: Copy E to D
             {0x53, (n)=>{registers.D = registers.E;}},
@@ -496,7 +509,11 @@ namespace GBSharp.CPUSpace
             {0x5A, (n)=>{registers.E = registers.D;}},
 
             // LD E,E: Copy E to E
-            {0x5B, (n)=>{registers.E = registers.E;}},
+            {0x5B, (n)=>{
+              #pragma warning disable
+              registers.E = registers.E;
+              #pragma warning restore
+            }},
 
             // LD E,H: Copy H to E
             {0x5C, (n)=>{registers.E = registers.H;}},
@@ -523,7 +540,11 @@ namespace GBSharp.CPUSpace
             {0x63, (n)=>{registers.H = registers.E;}},
 
             // LD H,H: Copy H to H
-            {0x64, (n)=>{registers.H = registers.H;}},
+            {0x64, (n)=>{
+              #pragma warning disable
+              registers.H = registers.H;
+              #pragma warning restore
+            }},
 
             // LD H,L: Copy L to H
             {0x65, (n)=>{registers.H = registers.L;}},
@@ -550,7 +571,11 @@ namespace GBSharp.CPUSpace
             {0x6C, (n)=>{registers.L = registers.H;}},
 
             // LD L,L: Copy L to L
-            {0x6D, (n)=>{registers.L = registers.L;}},
+            {0x6D, (n)=>{
+              #pragma warning disable
+              registers.L = registers.L;
+              #pragma warning restore
+            }},
 
             // LD L,(HL): Copy value pointed by HL to L
             {0x6E, (n)=>{registers.L = memory.Read(registers.HL);}},
@@ -604,7 +629,11 @@ namespace GBSharp.CPUSpace
             {0x7E, (n)=>{registers.A = memory.Read(registers.HL);}},
 
             // LD A,A: Copy A to A
-            {0x7F, (n)=>{registers.A = registers.A;}},
+            {0x7F, (n)=>{
+              #pragma warning disable
+              registers.A = registers.A;
+              #pragma warning restore
+            }},
 
             // ADD A,B: Add B to A
             {0x80, (n) =>
@@ -2798,14 +2827,15 @@ namespace GBSharp.CPUSpace
       CBinstructionNames = CPUCBOpcodeNames.Setup();
 
       this.memory = memory;
+      this.interruptController = new InterruptController(this.memory);
 
-
+      // Initialize registers 
       this.Initialize();
-
     }
 
     /// <summary>
     /// Sets the initial values for the cpu registers and memory mapped registers.
+    /// This is the equivalent to run the BIOS rom.
     /// </summary>
     private void Initialize()
     {
@@ -2859,12 +2889,14 @@ namespace GBSharp.CPUSpace
     /// <summary>
     /// Executes one instruction, requiring arbitrary machine and clock cycles.
     /// </summary>
-    public void Step()
+    /// <returns>The number of ticks that were required at the base clock frequency (~4Mhz).
+    /// This can be 0 in STOP mode or even 24 for CALL Z, nn and other long CALL instructions.</returns>
+    public byte Step()
     {
       // Instruction fetch and decode
       string instructionName;
       byte instructionLength;
-      byte clocks;
+      byte ticks;
       Action<ushort> instruction;
       ushort initialClock = this.clock;
       ushort literal = 0;
@@ -2888,7 +2920,7 @@ namespace GBSharp.CPUSpace
         }
 
         instruction = this.instructionLambdas[(byte)opcode];
-        clocks = this.instructionClocks[(byte)opcode];
+        ticks = this.instructionClocks[(byte)opcode];
         instructionName = instructionNames[(byte)opcode];
 
       }
@@ -2901,7 +2933,7 @@ namespace GBSharp.CPUSpace
         // There is no literal in CB instructions!
 
         instruction = this.CBInstructionLambdas[(byte)opcode];
-        clocks = this.CBInstructionClocks[(byte)opcode];
+        ticks = this.CBInstructionClocks[(byte)opcode];
         instructionName = CBinstructionNames[(byte)opcode];
       }
 
@@ -2910,16 +2942,36 @@ namespace GBSharp.CPUSpace
       this.nextPC = (ushort)(this.registers.PC + instructionLength);
 
 
-      Console.WriteLine("Instruction:" + instructionName + " , OpCode: " + opcode.ToString("x") + " , Literal: " + literal.ToString("x"));
-      Console.WriteLine(registers.ToString());
+      //Console.WriteLine("Instruction:" + instructionName + " , OpCode: " + opcode.ToString("x") + " , Literal: " + literal.ToString("x"));
+      //Console.WriteLine(registers.ToString());
       // Execute instruction
       instruction(literal);
 
       // Push the next program counter value into the real program counter!
       this.registers.PC = this.nextPC;
 
-      // Update clock
-      this.clock += clocks;
+      // Update clock adding only base ticks. Conditional instructions times are already added at this point.
+      this.clock += ticks;
+
+      // Timing functions
+
+      /* We need to update the value in ticks variable since conditional CALL or JUMP instruction may
+       * add additional time to the base clock if their conditions are met.
+       * Since this.clock overflows every 65536 ticks, a substraction is not enough and an overflow
+       * condition must be checked first.
+       */
+      if (this.clock < initialClock)
+      {
+        // Clock overflow condition!
+        ticks = (byte)(0x10000 + this.clock - initialClock);
+      }
+      else
+      {
+        // Normal scenario
+        ticks = (byte)(this.clock - initialClock);
+      }
+
+      return ticks;
     }
 
 
@@ -2929,6 +2981,11 @@ namespace GBSharp.CPUSpace
       {
         return this.registers;
       }
+    }
+
+    public override string ToString()
+    {
+      return registers.ToString();
     }
   }
 }

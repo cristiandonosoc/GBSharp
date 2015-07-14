@@ -8,5 +8,8 @@ namespace GBSharp
     IMemory Memory { get; }
     ICartridge Cartridge { get; }
     void LoadCartridge(byte[] cartridgeData);
+    void Run();
+    void Pause();
+    void Stop();
   }
 }

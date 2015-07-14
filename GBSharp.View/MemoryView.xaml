@@ -15,11 +15,11 @@
           <ColumnDefinition Width="Auto"></ColumnDefinition>
           <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <TextBlock Text="{Binding Address}"></TextBlock>
-        <TextBlock Grid.Column="1" Text="-> "></TextBlock>
-        <TextBlock Grid.Column="2" Text="{Binding Value}"></TextBlock>
+        <TextBlock Text="{Binding Address}" Style="{StaticResource NumericText}"></TextBlock>
+        <TextBlock Grid.Column="1" Text="-> " Style="{StaticResource NumericText}"></TextBlock>
+        <TextBlock Grid.Column="2" Text="{Binding Value}" Style="{StaticResource NumericText}"></TextBlock>
       </Grid>
-     
+
     </DataTemplate>
     <DataTemplate DataType="{x:Type viewModel:MemoryFormatViewModel}">
       <Grid>
@@ -32,7 +32,7 @@
       <RowDefinition Height="Auto"></RowDefinition>
       <RowDefinition Height="*"></RowDefinition>
     </Grid.RowDefinitions>
-    <Grid >
+    <Grid Style="{StaticResource SpacingGrid}">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
@@ -44,6 +44,9 @@
       <TextBlock Grid.Column="2" Text="Value Format:"></TextBlock>
       <ComboBox Grid.Column="3" ItemsSource="{Binding ValueFormats}" SelectedItem="{Binding SelectedValueFormat}"></ComboBox>
     </Grid>
-    <ListView Grid.Row="1" ItemsSource ="{Binding MemoryWords}"></ListView>
+    <Grid Grid.Row="1" Style="{StaticResource SpacingGrid}">
+      <ListView  ItemsSource ="{Binding MemoryWords}"></ListView>
+    </Grid>
+
   </Grid>
 </UserControl>
