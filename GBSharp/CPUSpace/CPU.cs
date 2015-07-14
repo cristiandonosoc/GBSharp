@@ -1520,7 +1520,22 @@ namespace GBSharp.CPUSpace
             {0xE7, (n)=>{instructionLambdas[0xCD](0x20);}},
 
             // ADD SP,d: Add signed 8-bit immediate to SP
-            {0xE8, (n)=>{throw new NotImplementedException("ADD SP,d (0xE8)");}},
+            {0xE8, (n)=>{
+              // We determine the short offset
+              short sn = 0;
+              unchecked { sn = (short)n; }
+
+              // We set the registers
+              registers.FZ = 0;
+              registers.FN = 0;
+              registers.FH = (byte)
+                (((registers.SP & 0x0F) + (sn & 0x0F) > 0x0F) ? 1 : 0);
+              registers.FC = (byte)
+                (((registers.SP & 0xFF) + (sn & 0xFF) > 0xFF) ? 1 : 0);
+
+              // We make the sum
+              registers.SP = (ushort)(registers.SP + sn);
+            }},
 
             // JP (HL): Jump to 16-bit value pointed by HL
             {0xE9, (n)=>{
