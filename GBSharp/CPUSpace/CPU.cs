@@ -181,13 +181,9 @@ namespace GBSharp.CPUSpace
             // JR n: Relative jump by signed immediate
             {0x18, (n)=>{
               // We cast down the input, ignoring the overflows
-              sbyte sn = 0;
-              unchecked{
-                sn = (sbyte)n;
-              }
-              // We prepare the nextPC variable
-              this.nextPC = registers.PC;
-              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
+              short sn = 0;
+              unchecked{sn = (sbyte)n; }
+              this.nextPC = (ushort)(registers.PC + sn);
             }},
 
             // ADD HL,DE: Add 16-bit DE to HL
@@ -242,13 +238,9 @@ namespace GBSharp.CPUSpace
             {0x20, (n)=>{
               if (registers.FZ != 0) { return; }
               // We cast down the input, ignoring the overflows
-              sbyte sn = 0;
-              unchecked{
-                sn = (sbyte)n;
-              }
-              // We prepare the nextPC variable
-              this.nextPC = registers.PC;
-              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
+              short sn = 0;
+              unchecked{sn = (sbyte)n; }
+              this.nextPC = (ushort)(registers.PC + sn);
             }},
 
             // LD HL,nn: Load 16-bit immediate into HL
@@ -320,13 +312,9 @@ namespace GBSharp.CPUSpace
             {0x28, (n)=>{
               if (registers.FZ == 0) { return; }
               // We cast down the input, ignoring the overflows
-              sbyte sn = 0;
-              unchecked{
-                sn = (sbyte)n;
-              }
-              // We prepare the nextPC variable
-              this.nextPC = registers.PC;
-              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
+              short sn = 0;
+              unchecked{sn = (sbyte)n; }
+              this.nextPC = (ushort)(registers.PC + sn);
             }},
 
             // ADD HL,HL: Add 16-bit HL to HL
@@ -361,13 +349,9 @@ namespace GBSharp.CPUSpace
             {0x30, (n)=>{
               if (registers.FC != 0) { return; }
               // We cast down the input, ignoring the overflows
-              sbyte sn = 0;
-              unchecked{
-                sn = (sbyte)n;
-              }
-              // We prepare the nextPC variable
-              this.nextPC = registers.PC;
-              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
+              short sn = 0;
+              unchecked{sn = (sbyte)n; }
+              this.nextPC = (ushort)(registers.PC + sn);
             }},
 
             // LD SP,nn: Load 16-bit immediate into SP
@@ -395,13 +379,9 @@ namespace GBSharp.CPUSpace
             {0x38, (n)=>{
               if (registers.FC == 0) { return; }
               // We cast down the input, ignoring the overflows
-              sbyte sn = 0;
-              unchecked{
-                sn = (sbyte)n;
-              }
-              // We prepare the nextPC variable
-              this.nextPC = registers.PC;
-              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
+              short sn = 0;
+              unchecked{sn = (sbyte)n; }
+              this.nextPC = (ushort)(registers.PC + sn);
             }},
 
             // ADD HL,SP: Add 16-bit SP to HL
@@ -1402,7 +1382,7 @@ namespace GBSharp.CPUSpace
             }},
 
             // Ext ops: Extended operations (two-byte instruction code)
-            {0xCB, (n)=>{throw new NotImplementedException("Ext ops (0xCB)");}},
+            {0xCB, (n)=>{throw new InvalidInstructionException("Ext ops (0xCB)");}},
 
             // CALL Z,nn: Call routine at 16-bit location if last result was zero
             {0xCC, (n)=>{
@@ -1464,7 +1444,7 @@ namespace GBSharp.CPUSpace
             }},
 
             // XX: Operation removed in this CPU
-            {0xD3, (n)=>{throw new NotImplementedException("XX (0xD3)");}},
+            {0xD3, (n)=>{throw new InvalidInstructionException("XX (0xD3)");}},
 
             // CALL NC,nn: Call routine at 16-bit location if last result caused no carry
             {0xD4, (n)=>{
@@ -1508,7 +1488,7 @@ namespace GBSharp.CPUSpace
             }},
 
             // XX: Operation removed in this CPU
-            {0xDB, (n)=>{throw new NotImplementedException("XX (0xDB)");}},
+            {0xDB, (n)=>{throw new InvalidInstructionException("XX (0xDB)");}},
 
             // CALL C,nn: Call routine at 16-bit location if last result caused carry
             {0xDC, (n)=>{
@@ -1522,7 +1502,7 @@ namespace GBSharp.CPUSpace
             }},
 
             // XX: Operation removed in this CPU
-            {0xDD, (n)=>{throw new NotImplementedException("XX (0xDD)");}},
+            {0xDD, (n)=>{throw new InvalidInstructionException("XX (0xDD)");}},
 
             // SBC A,n: Subtract 8-bit immediate and carry from A
             {0xDE, (n)=>{
@@ -1551,10 +1531,10 @@ namespace GBSharp.CPUSpace
             {0xE2, (n)=>{memory.Write((ushort)(0xFF00 & registers.C), registers.A);}},
 
             // XX: Operation removed in this CPU
-            {0xE3, (n)=>{throw new NotImplementedException("XX (0xE3)");}},
+            {0xE3, (n)=>{throw new InvalidInstructionException("XX (0xE3)");}},
 
             // XX: Operation removed in this CPU
-            {0xE4, (n)=>{throw new NotImplementedException("XX (0xE4)");}},
+            {0xE4, (n)=>{throw new InvalidInstructionException("XX (0xE4)");}},
 
             // PUSH HL: Push 16-bit HL onto stack
             {0xE5, (n)=>{
@@ -1570,7 +1550,22 @@ namespace GBSharp.CPUSpace
             {0xE7, (n)=>{instructionLambdas[0xCD](0x20);}},
 
             // ADD SP,d: Add signed 8-bit immediate to SP
-            {0xE8, (n)=>{throw new NotImplementedException("ADD SP,d (0xE8)");}},
+            {0xE8, (n)=>{
+              // We determine the short offset
+              short sn = 0;
+              unchecked { sn = (short)n; }
+
+              // We set the registers
+              registers.FZ = 0;
+              registers.FN = 0;
+              registers.FH = (byte)
+                (((registers.SP & 0x0F) + (sn & 0x0F) > 0x0F) ? 1 : 0);
+              registers.FC = (byte)
+                (((registers.SP & 0xFF) + (sn & 0xFF) > 0xFF) ? 1 : 0);
+
+              // We make the sum
+              registers.SP = (ushort)(registers.SP + sn);
+            }},
 
             // JP (HL): Jump to 16-bit value pointed by HL
             {0xE9, (n)=>{
@@ -1581,13 +1576,13 @@ namespace GBSharp.CPUSpace
             {0xEA, (n)=>{memory.Write(n, registers.A);}},
 
             // XX: Operation removed in this CPU
-            {0xEB, (n)=>{throw new NotImplementedException("XX (0xEB)");}},
+            {0xEB, (n)=>{throw new InvalidInstructionException("XX (0xEB)");}},
 
             // XX: Operation removed in this CPU
-            {0xEC, (n)=>{throw new NotImplementedException("XX (0xEC)");}},
+            {0xEC, (n)=>{throw new InvalidInstructionException("XX (0xEC)");}},
 
             // XX: Operation removed in this CPU
-            {0xED, (n)=>{throw new NotImplementedException("XX (0xED)");}},
+            {0xED, (n)=>{throw new InvalidInstructionException("XX (0xED)");}},
 
             // XOR n: Logical XOR 8-bit immediate against A
             {0xEE, (n)=>{registers.A ^= (byte)n;}},
@@ -1612,7 +1607,7 @@ namespace GBSharp.CPUSpace
             {0xF3, (n)=>{Console.WriteLine("NOT IMP DI (0xF3)");}},
 
             // XX: Operation removed in this CPU
-            {0xF4, (n)=>{throw new NotImplementedException("XX (0xF4)");}},
+            {0xF4, (n)=>{throw new InvalidInstructionException("XX (0xF4)");}},
 
             // PUSH AF: Push 16-bit AF onto stack
             {0xF5, (n)=>{
@@ -1628,7 +1623,22 @@ namespace GBSharp.CPUSpace
             {0xF7, (n)=>{instructionLambdas[0xCD](0x30);}},
 
             // LDHL SP,d: Add signed 8-bit immediate to SP and save result in HL
-            {0xF8, (n)=>{throw new NotImplementedException("LDHL SP,d (0xF8)");}},
+            {0xF8, (n)=>{
+              // We determine the short offset
+              short sn = 0;
+              unchecked { sn = (short)n; }
+
+              // We set the registers
+              registers.FZ = 0;
+              registers.FN = 0;
+              registers.FH = (byte)
+                (((registers.SP & 0x0F) + (sn & 0x0F) > 0x0F) ? 1 : 0);
+              registers.FC = (byte)
+                (((registers.SP & 0xFF) + (sn & 0xFF) > 0xFF) ? 1 : 0);
+
+              // We make the sum
+              registers.HL = (ushort)(registers.SP + sn);
+            }},
 
             // LD SP,HL: Copy HL to SP
             {0xF9, (n)=>{registers.SP = registers.HL;}},
@@ -1640,10 +1650,10 @@ namespace GBSharp.CPUSpace
             {0xFB, (n)=>{throw new NotImplementedException("EI (0xFB)");}},
 
             // XX: Operation removed in this CPU
-            {0xFC, (n)=>{throw new NotImplementedException("XX (0xFC)");}},
+            {0xFC, (n)=>{throw new InvalidInstructionException("XX (0xFC)");}},
 
             // XX: Operation removed in this CPU
-            {0xFD, (n)=>{throw new NotImplementedException("XX (0xFD)");}},
+            {0xFD, (n)=>{throw new InvalidInstructionException("XX (0xFD)");}},
 
             // CP n: Compare 8-bit immediate against A
             {0xFE, (n)=>{
