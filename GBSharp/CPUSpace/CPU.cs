@@ -2932,8 +2932,8 @@ namespace GBSharp.CPUSpace
       this.nextPC = (ushort)(this.registers.PC + instructionLength);
 
 
-      Console.WriteLine("Instruction:" + instructionName + " , OpCode: " + opcode.ToString("x") + " , Literal: " + literal.ToString("x"));
-      Console.WriteLine(registers.ToString());
+      //Console.WriteLine("Instruction:" + instructionName + " , OpCode: " + opcode.ToString("x") + " , Literal: " + literal.ToString("x"));
+      //Console.WriteLine(registers.ToString());
       // Execute instruction
       instruction(literal);
 
@@ -2971,6 +2971,11 @@ namespace GBSharp.CPUSpace
       {
         return this.registers;
       }
+    }
+
+    public override string ToString()
+    {
+      return registers.ToString();
     }
   }
 }
