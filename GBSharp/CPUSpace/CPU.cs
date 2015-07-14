@@ -179,13 +179,9 @@ namespace GBSharp.CPUSpace
             // JR n: Relative jump by signed immediate
             {0x18, (n)=>{
               // We cast down the input, ignoring the overflows
-              sbyte sn = 0;
-              unchecked{
-                sn = (sbyte)n;
-              }
-              // We prepare the nextPC variable
-              this.nextPC = registers.PC;
-              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
+              short sn = 0;
+              unchecked{sn = (sbyte)n; }
+              this.nextPC = (ushort)(registers.PC + sn);
             }},
 
             // ADD HL,DE: Add 16-bit DE to HL
@@ -240,13 +236,9 @@ namespace GBSharp.CPUSpace
             {0x20, (n)=>{
               if (registers.FZ != 0) { return; }
               // We cast down the input, ignoring the overflows
-              sbyte sn = 0;
-              unchecked{
-                sn = (sbyte)n;
-              }
-              // We prepare the nextPC variable
-              this.nextPC = registers.PC;
-              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
+              short sn = 0;
+              unchecked{sn = (sbyte)n; }
+              this.nextPC = (ushort)(registers.PC + sn);
             }},
 
             // LD HL,nn: Load 16-bit immediate into HL
@@ -318,13 +310,9 @@ namespace GBSharp.CPUSpace
             {0x28, (n)=>{
               if (registers.FZ == 0) { return; }
               // We cast down the input, ignoring the overflows
-              sbyte sn = 0;
-              unchecked{
-                sn = (sbyte)n;
-              }
-              // We prepare the nextPC variable
-              this.nextPC = registers.PC;
-              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
+              short sn = 0;
+              unchecked{sn = (sbyte)n; }
+              this.nextPC = (ushort)(registers.PC + sn);
             }},
 
             // ADD HL,HL: Add 16-bit HL to HL
@@ -359,13 +347,9 @@ namespace GBSharp.CPUSpace
             {0x30, (n)=>{
               if (registers.FC != 0) { return; }
               // We cast down the input, ignoring the overflows
-              sbyte sn = 0;
-              unchecked{
-                sn = (sbyte)n;
-              }
-              // We prepare the nextPC variable
-              this.nextPC = registers.PC;
-              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
+              short sn = 0;
+              unchecked{sn = (sbyte)n; }
+              this.nextPC = (ushort)(registers.PC + sn);
             }},
 
             // LD SP,nn: Load 16-bit immediate into SP
@@ -393,13 +377,9 @@ namespace GBSharp.CPUSpace
             {0x38, (n)=>{
               if (registers.FC == 0) { return; }
               // We cast down the input, ignoring the overflows
-              sbyte sn = 0;
-              unchecked{
-                sn = (sbyte)n;
-              }
-              // We prepare the nextPC variable
-              this.nextPC = registers.PC;
-              Utils.UtilFuncs.SignedAdd(ref this.nextPC, sn);
+              short sn = 0;
+              unchecked{sn = (sbyte)n; }
+              this.nextPC = (ushort)(registers.PC + sn);
             }},
 
             // ADD HL,SP: Add 16-bit SP to HL
