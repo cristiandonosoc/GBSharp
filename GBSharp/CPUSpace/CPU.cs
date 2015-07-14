@@ -1593,7 +1593,22 @@ namespace GBSharp.CPUSpace
             {0xF7, (n)=>{instructionLambdas[0xCD](0x30);}},
 
             // LDHL SP,d: Add signed 8-bit immediate to SP and save result in HL
-            {0xF8, (n)=>{throw new NotImplementedException("LDHL SP,d (0xF8)");}},
+            {0xF8, (n)=>{
+              // We determine the short offset
+              short sn = 0;
+              unchecked { sn = (short)n; }
+
+              // We set the registers
+              registers.FZ = 0;
+              registers.FN = 0;
+              registers.FH = (byte)
+                (((registers.SP & 0x0F) + (sn & 0x0F) > 0x0F) ? 1 : 0);
+              registers.FC = (byte)
+                (((registers.SP & 0xFF) + (sn & 0xFF) > 0xFF) ? 1 : 0);
+
+              // We make the sum
+              registers.HL = (ushort)(registers.SP + sn);
+            }},
 
             // LD SP,HL: Copy HL to SP
             {0xF9, (n)=>{registers.SP = registers.HL;}},
