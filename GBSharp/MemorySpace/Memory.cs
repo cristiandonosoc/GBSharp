@@ -69,7 +69,7 @@ namespace GBSharp.MemorySpace
     /// <summary>
     /// Writes 8 bits value to memory without performing a call to the memory manager.
     /// Use this method to simulate changes in the underlying hardware that is being mapped to an address.
-    /// For example, an input port is not writeable by the cpu core instructions, but an external hardware
+    /// For example, an input port is not writable by the cpu core instructions, but an external hardware
     /// change like a button press may change this value.
     /// </summary>
     /// <param name="address">16 bits address.</param>

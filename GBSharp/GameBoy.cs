@@ -9,11 +9,16 @@ namespace GBSharp
   public class GameBoy : IGameBoy
   {
     private CPUSpace.CPU cpu;
+    private CPUSpace.InterruptController interruptController;
     private MemorySpace.Memory memory;
     private Cartridge.Cartridge cartridge;
     private bool run;
     private Thread clockThread;
     private ManualResetEventSlim manualResetEvent;
+    #region Keypad attributes
+    private Keypad buttons;
+    
+    #endregion
 
     /// <summary>
     /// Class constructor.
@@ -24,7 +29,9 @@ namespace GBSharp
       this.run = false;
       this.memory = new MemorySpace.Memory();
       this.cpu = new CPUSpace.CPU(this.memory);
+      this.interruptController = this.cpu.interruptController;
       this.cartridge = new Cartridge.Cartridge();
+      this.buttons = Keypad.None;
       this.manualResetEvent = new ManualResetEventSlim(false);
       this.clockThread = new Thread(new ThreadStart(this.ThreadedRun));
     }
@@ -113,6 +120,18 @@ namespace GBSharp
 
         // TODO: Check here timing issues
       }
+    }
+
+    public void PressButton(Keypad button)
+    {
+      this.buttons |= button;
+      this.interruptController.UpdateKeypadState(this.buttons);
+    }
+
+    public void ReleaseButton(Keypad button)
+    {
+      this.buttons &= ~button;
+      this.interruptController.UpdateKeypadState(this.buttons);
     }
   }
 }

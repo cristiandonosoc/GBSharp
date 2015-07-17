@@ -56,6 +56,7 @@
     <Compile Include="ICPU.cs" />
     <Compile Include="IGameBoy.cs" />
     <Compile Include="IMemory.cs" />
+    <Compile Include="Keypad.cs" />
     <Compile Include="MemorySpace\Memory.cs" />
     <Compile Include="MemorySpace\MemoryHandlers\InitialMemoryHandler.cs" />
     <Compile Include="MemorySpace\MemoryHandlers\MemoryHandler.cs" />

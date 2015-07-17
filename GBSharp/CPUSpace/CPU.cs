@@ -3053,7 +3053,6 @@ namespace GBSharp.CPUSpace
       return ticks;
     }
 
-
     CPURegisters ICPU.Registers
     {
       get
