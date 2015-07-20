@@ -135,43 +135,43 @@ namespace GBSharp.ViewModel
 
     private void ButtonA()
     {
-      Console.WriteLine("A");
+      _gameBoy.PressButton(Keypad.A);
     }
 
     private void ButtonB()
     {
-      Console.WriteLine("B");
+      _gameBoy.PressButton(Keypad.B);
     }
 
     private void ButtonLeft()
     {
-      Console.WriteLine("Left");
+      _gameBoy.PressButton(Keypad.Left);
     }
 
     private void ButtonUp()
     {
-      Console.WriteLine("Up");
+      _gameBoy.PressButton(Keypad.Up);
     }
 
     private void ButtonRight()
     {
-      Console.WriteLine("Right");
+      _gameBoy.PressButton(Keypad.Right);
     }
 
     private void ButtonDown()
     {
-      Console.WriteLine("Down");
+      _gameBoy.PressButton(Keypad.Down);
     }
 
     private void ButtonStart()
     {
-      Console.WriteLine("Start");
+      _gameBoy.PressButton(Keypad.Start);
     }
 
 
     private void ButtonSelect()
     {
-      Console.WriteLine("Select");
+      _gameBoy.PressButton(Keypad.Select);
     }
   }
 }

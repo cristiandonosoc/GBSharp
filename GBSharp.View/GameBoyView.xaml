@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:view="clr-namespace:GBSharp.View"
         xmlns:viewModel="clr-namespace:GBSharp.ViewModel;assembly=GBSharp.ViewModel"
+        xmlns:vsm ="clr-namespace:System.Windows;assembly=PresentationFramework"
         Title="GBSharp" Height="600" Width="800" >
   <Window.Resources>
     <DataTemplate DataType="{x:Type viewModel:CartridgeViewModel}">
@@ -51,6 +52,28 @@
         <Button.Template>
           <ControlTemplate TargetType="Button">
             <Grid>
+              <vsm:VisualStateManager.VisualStateGroups>
+                <vsm:VisualStateGroup x:Name="CommonStates">
+                  <vsm:VisualState x:Name="Normal"/>
+                  <vsm:VisualState x:Name="MouseOver">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
+                    </Storyboard>
+                  </vsm:VisualState>
+                  <vsm:VisualState x:Name="Pressed">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                    </Storyboard>
+                  </vsm:VisualState>
+                  <vsm:VisualState x:Name="Disabled">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                    </Storyboard>
+                  </vsm:VisualState>
+                </vsm:VisualStateGroup>
+              </vsm:VisualStateManager.VisualStateGroups>
+              <Ellipse Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
+              <Ellipse Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
               <Ellipse Stroke="Black" Fill="Transparent">
               </Ellipse>
               <ContentPresenter HorizontalAlignment="Center"
@@ -63,6 +86,28 @@
         <Button.Template>
           <ControlTemplate TargetType="{x:Type Button}">
             <Grid>
+              <vsm:VisualStateManager.VisualStateGroups>
+                <vsm:VisualStateGroup x:Name="CommonStates">
+                  <vsm:VisualState x:Name="Normal"/>
+                  <vsm:VisualState x:Name="MouseOver">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
+                    </Storyboard>
+                  </vsm:VisualState>
+                  <vsm:VisualState x:Name="Pressed">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                    </Storyboard>
+                  </vsm:VisualState>
+                  <vsm:VisualState x:Name="Disabled">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                    </Storyboard>
+                  </vsm:VisualState>
+                </vsm:VisualStateGroup>
+              </vsm:VisualStateManager.VisualStateGroups>
+              <Ellipse Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
+              <Ellipse Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
               <Ellipse Stroke="Black" Fill="Transparent"/>
               <ContentPresenter HorizontalAlignment="Center"
       					VerticalAlignment="Center"/>
@@ -74,7 +119,29 @@
         <Button.Template>
           <ControlTemplate TargetType="{x:Type Button}">
             <Grid>
-              <Rectangle Stroke="White" Fill="Transparent"/>
+              <vsm:VisualStateManager.VisualStateGroups>
+                <vsm:VisualStateGroup x:Name="CommonStates">
+                  <vsm:VisualState x:Name="Normal"/>
+                  <vsm:VisualState x:Name="MouseOver">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
+                    </Storyboard>
+                  </vsm:VisualState>
+                  <vsm:VisualState x:Name="Pressed">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                    </Storyboard>
+                  </vsm:VisualState>
+                  <vsm:VisualState x:Name="Disabled">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                    </Storyboard>
+                  </vsm:VisualState>
+                </vsm:VisualStateGroup>
+              </vsm:VisualStateManager.VisualStateGroups>
+              <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
+              <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
+              <Rectangle Stroke="Black" Fill="Transparent"/>
               <ContentPresenter HorizontalAlignment="Center"
       					VerticalAlignment="Center"/>
             </Grid>
@@ -85,7 +152,29 @@
         <Button.Template>
           <ControlTemplate TargetType="{x:Type Button}">
             <Grid>
-              <Rectangle Stroke="White" Fill="Transparent"/>
+              <vsm:VisualStateManager.VisualStateGroups>
+                <vsm:VisualStateGroup x:Name="CommonStates">
+                  <vsm:VisualState x:Name="Normal"/>
+                  <vsm:VisualState x:Name="MouseOver">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
+                    </Storyboard>
+                  </vsm:VisualState>
+                  <vsm:VisualState x:Name="Pressed">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                    </Storyboard>
+                  </vsm:VisualState>
+                  <vsm:VisualState x:Name="Disabled">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                    </Storyboard>
+                  </vsm:VisualState>
+                </vsm:VisualStateGroup>
+              </vsm:VisualStateManager.VisualStateGroups>
+              <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
+              <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
+              <Rectangle Stroke="Black" Fill="Transparent"/>
               <ContentPresenter HorizontalAlignment="Center"
       					VerticalAlignment="Center"/>
             </Grid>
@@ -96,7 +185,29 @@
         <Button.Template>
           <ControlTemplate TargetType="{x:Type Button}">
             <Grid>
-              <Rectangle Stroke="White" Fill="Transparent"/>
+              <vsm:VisualStateManager.VisualStateGroups>
+                <vsm:VisualStateGroup x:Name="CommonStates">
+                  <vsm:VisualState x:Name="Normal"/>
+                  <vsm:VisualState x:Name="MouseOver">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
+                    </Storyboard>
+                  </vsm:VisualState>
+                  <vsm:VisualState x:Name="Pressed">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                    </Storyboard>
+                  </vsm:VisualState>
+                  <vsm:VisualState x:Name="Disabled">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                    </Storyboard>
+                  </vsm:VisualState>
+                </vsm:VisualStateGroup>
+              </vsm:VisualStateManager.VisualStateGroups>
+              <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
+              <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
+              <Rectangle Stroke="Black" Fill="Transparent"/>
               <ContentPresenter HorizontalAlignment="Center"
       					VerticalAlignment="Center"/>
             </Grid>
@@ -107,7 +218,29 @@
         <Button.Template>
           <ControlTemplate TargetType="{x:Type Button}">
             <Grid>
-              <Rectangle Stroke="White" Fill="Transparent"/>
+              <vsm:VisualStateManager.VisualStateGroups>
+                <vsm:VisualStateGroup x:Name="CommonStates">
+                  <vsm:VisualState x:Name="Normal"/>
+                  <vsm:VisualState x:Name="MouseOver">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
+                    </Storyboard>
+                  </vsm:VisualState>
+                  <vsm:VisualState x:Name="Pressed">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                    </Storyboard>
+                  </vsm:VisualState>
+                  <vsm:VisualState x:Name="Disabled">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                    </Storyboard>
+                  </vsm:VisualState>
+                </vsm:VisualStateGroup>
+              </vsm:VisualStateManager.VisualStateGroups>
+              <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
+              <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
+              <Rectangle Stroke="Black" Fill="Transparent"/>
               <ContentPresenter HorizontalAlignment="Center"
       					VerticalAlignment="Center"/>
             </Grid>
@@ -126,7 +259,29 @@
         <Button.Template>
           <ControlTemplate TargetType="{x:Type Button}">
             <Grid>
-              <Rectangle Stroke="White" Fill="Transparent"/>
+              <vsm:VisualStateManager.VisualStateGroups>
+                <vsm:VisualStateGroup x:Name="CommonStates">
+                  <vsm:VisualState x:Name="Normal"/>
+                  <vsm:VisualState x:Name="MouseOver">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
+                    </Storyboard>
+                  </vsm:VisualState>
+                  <vsm:VisualState x:Name="Pressed">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                    </Storyboard>
+                  </vsm:VisualState>
+                  <vsm:VisualState x:Name="Disabled">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                    </Storyboard>
+                  </vsm:VisualState>
+                </vsm:VisualStateGroup>
+              </vsm:VisualStateManager.VisualStateGroups>
+              <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
+              <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
+              <Rectangle Stroke="#AEAEAE" Fill="Transparent" />
               <ContentPresenter HorizontalAlignment="Center"
       					VerticalAlignment="Center"/>
             </Grid>
@@ -145,7 +300,29 @@
         <Button.Template>
           <ControlTemplate TargetType="{x:Type Button}">
             <Grid>
-              <Rectangle Stroke="White" Fill="Transparent"/>
+              <vsm:VisualStateManager.VisualStateGroups>
+                <vsm:VisualStateGroup x:Name="CommonStates">
+                  <vsm:VisualState x:Name="Normal"/>
+                  <vsm:VisualState x:Name="MouseOver">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
+                    </Storyboard>
+                  </vsm:VisualState>
+                  <vsm:VisualState x:Name="Pressed">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                    </Storyboard>
+                  </vsm:VisualState>
+                  <vsm:VisualState x:Name="Disabled">
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                    </Storyboard>
+                  </vsm:VisualState>
+                </vsm:VisualStateGroup>
+              </vsm:VisualStateManager.VisualStateGroups>
+              <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
+              <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
+              <Rectangle Stroke="#AEAEAE" Fill="Transparent" />
               <ContentPresenter HorizontalAlignment="Center"
       					VerticalAlignment="Center"/>
             </Grid>
