@@ -20,6 +20,12 @@ namespace GBSharp.ViewModel
       get { return new DelegateCommand(Run); }
     }
 
+    public ICommand StepCommand
+    {
+      get { return new DelegateCommand(Step); }
+    }
+
+   
     public ICommand PauseCommand
     {
       get { return new DelegateCommand(Pause); }
@@ -115,6 +121,12 @@ namespace GBSharp.ViewModel
     private void Run()
     {
       _gameBoy.Run();
+    }
+
+    private void Step()
+    {
+      _gameBoy.Step();
+      Print();
     }
 
     private void Pause()

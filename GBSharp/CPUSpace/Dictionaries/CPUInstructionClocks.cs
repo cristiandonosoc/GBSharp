@@ -265,7 +265,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             {0xFB, 4}, // EI
             // {0xFC, }, // XX
             // {0xFD, }, // XX
-            // {0xFE, 8}, // CP n
+            {0xFE, 8}, // CP n
             {0xFF, 16} // RST 38
         };
     }
