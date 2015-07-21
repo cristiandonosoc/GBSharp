@@ -33,6 +33,8 @@ namespace GBSharp.CPUSpace
     private Dictionary<byte, string> instructionNames;
     private Dictionary<byte, string> CBinstructionNames;
 
+    private string _instructionName = "";
+
     private void CreateInstructionLambdas()
     {
       #warning TODO: Conditional JUMP and CALL instructions should increment the clock if the condition is met.
@@ -2895,7 +2897,6 @@ namespace GBSharp.CPUSpace
     public byte Step()
     {
       // Instruction fetch and decode
-      string instructionName;
       byte instructionLength;
       byte ticks;
       Action<ushort> instruction;
@@ -2922,7 +2923,7 @@ namespace GBSharp.CPUSpace
 
         instruction = this.instructionLambdas[(byte)opcode];
         ticks = this.instructionClocks[(byte)opcode];
-        instructionName = instructionNames[(byte)opcode];
+        _instructionName = instructionNames[(byte)opcode];
 
       }
       else
@@ -2935,7 +2936,7 @@ namespace GBSharp.CPUSpace
 
         instruction = this.CBInstructionLambdas[(byte)opcode];
         ticks = this.CBInstructionClocks[(byte)opcode];
-        instructionName = CBinstructionNames[(byte)opcode];
+        _instructionName = CBinstructionNames[(byte)opcode];
       }
 
       // Prepare for program counter movement, but wait for instruction execution.
@@ -2955,6 +2956,11 @@ namespace GBSharp.CPUSpace
       ticks = UpdateClockAndTimers(initialClock, ticks);
 
       return ticks;
+    }
+
+    public string GetCurrentInstructionName()
+    {
+      return _instructionName;
     }
 
     /// <summary>

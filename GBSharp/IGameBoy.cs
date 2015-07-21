@@ -14,5 +14,6 @@ namespace GBSharp
     void Step();
     void PressButton(Keypad button);
     void ReleaseButton(Keypad button);
+    
   }
 }

@@ -9,6 +9,11 @@
     <DataTemplate DataType="{x:Type viewModel:CartridgeViewModel}">
       <view:CartridgeView></view:CartridgeView>
     </DataTemplate>
+    <DataTemplate DataType="{x:Type viewModel:MemoryViewModel}">
+      <Grid Style="{StaticResource SubContentGrid}">
+        <view:MemoryView></view:MemoryView>
+      </Grid>
+    </DataTemplate>
   </Window.Resources>
 
   <Grid Style="{DynamicResource MainContentGrid}">
@@ -19,10 +24,12 @@
     <Grid>
       <Grid.RowDefinitions>
         <RowDefinition Height="*"></RowDefinition>
+        <RowDefinition Height="*"></RowDefinition>
         <RowDefinition Height="Auto"></RowDefinition>
       </Grid.RowDefinitions>
       <ContentPresenter Content="{Binding Cartridge}"/>
-      <Grid Grid.Row="1" >
+      <ContentPresenter Grid.Row="1" Content="{Binding Memory}"/>
+      <Grid Grid.Row="2" >
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto"></ColumnDefinition>
           <ColumnDefinition Width="Auto"></ColumnDefinition>
@@ -30,12 +37,14 @@
           <ColumnDefinition Width="Auto"></ColumnDefinition>
           <ColumnDefinition Width="*"></ColumnDefinition>
           <ColumnDefinition Width="Auto"></ColumnDefinition>
+          <ColumnDefinition Width="Auto"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <Button Content="Run" Command="{Binding PlayCommand}"></Button>
+        <Button Content="Run" Command="{Binding RunCommand}"></Button>
         <Button Grid.Column="1" Content="Step" Command="{Binding StepCommand}"></Button>
         <Button Grid.Column="2" Content="Pause" Command="{Binding PauseCommand}"></Button>
         <Button Grid.Column="3" Content="Stop" Command="{Binding StopCommand}"></Button>
-        <Button Grid.Column="5" Content="Print State" Command="{Binding PrintCommand}"></Button>
+        <Button Grid.Column="5" Content="Print Memory" Command="{Binding PrintMemoryCommand}"></Button>
+        <Button Grid.Column="6" Content="Print CPU" Command="{Binding PrintCPUCommand}"></Button>
       </Grid>
     </Grid>
 
@@ -331,7 +340,7 @@
           </ControlTemplate>
         </Button.Template>
       </Button>
-      <TextBlock Canvas.Left="87" Margin="0" Text="{Binding CPUState}" Canvas.Top="80" Height="160" Width="174" Foreground="White"/>
+      <TextBlock Canvas.Left="87" Margin="0" Text="{Binding CPUState}" Canvas.Top="80" Height="160" Width="174" Foreground="White" FontSize="9"/>
     </Canvas>
   </Grid>
 </Window>

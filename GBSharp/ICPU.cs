@@ -6,5 +6,6 @@ namespace GBSharp
   {
     CPURegisters Registers { get; }
     byte Step();
+    string GetCurrentInstructionName();
   }
 }

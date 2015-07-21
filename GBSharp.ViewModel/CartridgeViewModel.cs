@@ -56,7 +56,7 @@ namespace GBSharp.ViewModel
     public CartridgeViewModel(ICartridge cartridge)
     {
       _cartridge = cartridge;
-      _memory = new MemoryViewModel(_cartridge);
+      _memory = new MemoryViewModel(_cartridge, "ROM");
 
     }
 

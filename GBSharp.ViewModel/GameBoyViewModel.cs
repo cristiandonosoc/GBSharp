@@ -7,12 +7,18 @@ namespace GBSharp.ViewModel
   {
     private readonly IGameBoy _gameBoy;
     private readonly CartridgeViewModel _cartridge;
+    private readonly MemoryViewModel _memory;
 
     private string _cpuState = "";
 
     public CartridgeViewModel Cartridge
     {
       get { return _cartridge; }
+    }
+
+    public MemoryViewModel Memory
+    {
+      get { return _memory; }
     }
 
     public ICommand RunCommand
@@ -36,9 +42,14 @@ namespace GBSharp.ViewModel
       get { return new DelegateCommand(Stop); }
     }
 
-    public ICommand PrintCommand
+    public ICommand PrintCPUCommand
     {
-      get { return new DelegateCommand(Print); }
+      get { return new DelegateCommand(PrintCPU); }
+    }
+
+    public ICommand PrintMemoryCommand
+    {
+      get { return new DelegateCommand(PrintMemory); }
     }
 
     public ICommand ButtonACommand
@@ -107,6 +118,7 @@ namespace GBSharp.ViewModel
     public GameBoyViewModel(IGameBoy gameBoy)
     {
       _gameBoy = gameBoy;
+      _memory = new MemoryViewModel(_gameBoy.Memory, "RAM");
       _cartridge = new CartridgeViewModel(_gameBoy.Cartridge);
       _cartridge.CartridgeFileLoaded += OnCartridgeFileLoaded;
     }
@@ -115,7 +127,7 @@ namespace GBSharp.ViewModel
     {
       _gameBoy.LoadCartridge(data);
       _cartridge.Update();
-      _gameBoy.Run();
+      //_gameBoy.Run();
     }
 
     private void Run()
@@ -126,7 +138,7 @@ namespace GBSharp.ViewModel
     private void Step()
     {
       _gameBoy.Step();
-      Print();
+      PrintCPU();
     }
 
     private void Pause()
@@ -139,51 +151,68 @@ namespace GBSharp.ViewModel
       _gameBoy.Stop();
     }
 
-    private void Print()
+    private void PrintCPU()
     {
-      CPUState = _gameBoy.CPU.ToString();
+      var instructionName = _gameBoy.CPU.GetCurrentInstructionName();
+      var registersStateString = _gameBoy.CPU.ToString();
+      CPUState = "Instruction: " + instructionName + "\n" + "Registers:" + "\n" + registersStateString;
+      //_memory.Update();
+      //_cartridge.Memory.SelectedAddress = (int)_gameBoy.CPU.Registers.PC;
+    }
+
+    private void PrintMemory()
+    {
+      _memory.Update();
     }
 
 
     private void ButtonA()
     {
       _gameBoy.PressButton(Keypad.A);
+      PrintCPU();
     }
 
     private void ButtonB()
     {
       _gameBoy.PressButton(Keypad.B);
+      PrintCPU();
     }
 
     private void ButtonLeft()
     {
       _gameBoy.PressButton(Keypad.Left);
+      PrintCPU();
     }
 
     private void ButtonUp()
     {
       _gameBoy.PressButton(Keypad.Up);
+      PrintCPU();
     }
 
     private void ButtonRight()
     {
       _gameBoy.PressButton(Keypad.Right);
+      PrintCPU();
     }
 
     private void ButtonDown()
     {
       _gameBoy.PressButton(Keypad.Down);
+      PrintCPU();
     }
 
     private void ButtonStart()
     {
       _gameBoy.PressButton(Keypad.Start);
+      PrintCPU();
     }
 
 
     private void ButtonSelect()
     {
       _gameBoy.PressButton(Keypad.Select);
+      PrintCPU();
     }
   }
 }

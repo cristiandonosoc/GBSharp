@@ -21,8 +21,11 @@ namespace GBSharp.ViewModel
     private MemoryFormatViewModel _selectedAddressFormat;
     private readonly ObservableCollection<MemoryFormatViewModel> _valueFormats = new ObservableCollection<MemoryFormatViewModel>();
     private MemoryFormatViewModel _selectedValueFormat;
-    private readonly ObservableCollection<MemoryWordViewModel> _memoryWords = new ObservableCollection<MemoryWordViewModel>(); 
-    
+    private readonly ObservableCollection<MemoryWordViewModel> _memoryWords = new ObservableCollection<MemoryWordViewModel>();
+
+    private int _selectedAddress;
+    private string _name;
+
     public MemoryWordFormat MemoryWordValueFormat
     {
       get { return _memoryWordValueFormat; }
@@ -78,10 +81,29 @@ namespace GBSharp.ViewModel
       }
     }
 
-    public MemoryViewModel(IMemory memory)
+    public int SelectedAddress
+    {
+      get { return _selectedAddress; }
+      set
+      {
+        if (_selectedAddress != value)
+        {
+          _selectedAddress = value;
+          OnPropertyChanged(() => SelectedAddress);
+        }
+      }
+    }
+
+    public string Name
+    {
+      get { return _name; }
+    }
+
+    public MemoryViewModel(IMemory memory, string name)
     {
       if (memory == null) throw new ArgumentNullException("memory");
       _memory = memory;
+      _name = name;
       InitMemoryFormats();
     }
 
