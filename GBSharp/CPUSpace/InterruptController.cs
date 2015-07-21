@@ -14,16 +14,6 @@ namespace GBSharp.CPUSpace
     private const ushort IFAddress = 0xFF0F; // Interrupt Request Address, see Interrupts.cs
     private const ushort IEAddress = 0xFFFF; // Interrupt Enable Address, see Interrupts.cs
     private byte pressedButtons = 0x00; // 8 bits: Start, Select, B, A, Down, Up, Left, Right
-    
-    // Interrupt starting addresses
-    Dictionary<Interrupts, ushort> InterruptHandlers = new Dictionary<Interrupts, ushort>()
-    {
-      {Interrupts.VerticalBlanking, 0x0040},
-      {Interrupts.LCDCStatus, 0x0048},
-      {Interrupts.TimerOverflow, 0x0050},
-      {Interrupts.SerialIOTransferCompleted, 0x0058},
-      {Interrupts.P10to13TerminalNegativeEdge, 0x0060}
-    };
 
     /// <summary>
     /// Class constructor.
@@ -32,6 +22,8 @@ namespace GBSharp.CPUSpace
     internal InterruptController(MemorySpace.Memory memory)
     {
       this.memory = memory;
+      #warning TODO: Find a source with the initial value for this.
+      this.IME = true;
     }
 
     /// <summary>

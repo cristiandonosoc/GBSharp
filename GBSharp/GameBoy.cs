@@ -15,10 +15,7 @@ namespace GBSharp
     private bool run;
     private Thread clockThread;
     private ManualResetEventSlim manualResetEvent;
-    #region Keypad attributes
     private Keypad buttons;
-    
-    #endregion
 
     /// <summary>
     /// Class constructor.
@@ -122,12 +119,20 @@ namespace GBSharp
       }
     }
 
+    /// <summary>
+    /// Call this method when a button is pressed in the user interface.
+    /// </summary>
+    /// <param name="button">The button that was pressed. It can be a combination of buttons too.</param>
     public void PressButton(Keypad button)
     {
       this.buttons |= button;
       this.interruptController.UpdateKeypadState(this.buttons);
     }
 
+    /// <summary>
+    /// Call this method when a button is released in the user interface.
+    /// </summary>
+    /// <param name="button">The button that was released. It can be a combination of buttons too.</param>
     public void ReleaseButton(Keypad button)
     {
       this.buttons &= ~button;

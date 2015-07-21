@@ -16,6 +16,16 @@ namespace GBSharp.CPUSpace
     internal bool halted;
     internal bool stopped;
 
+    // Interrupt starting addresses
+    Dictionary<Interrupts, ushort> interruptHandlers = new Dictionary<Interrupts, ushort>()
+    {
+      {Interrupts.VerticalBlanking, 0x0040},
+      {Interrupts.LCDCStatus, 0x0048},
+      {Interrupts.TimerOverflow, 0x0050},
+      {Interrupts.SerialIOTransferCompleted, 0x0058},
+      {Interrupts.P10to13TerminalNegativeEdge, 0x0060}
+    };
+
     #region Lengths and clocks
 
     Dictionary<byte, byte> instructionLengths = CPUInstructionLengths.Setup();
@@ -2903,41 +2913,66 @@ namespace GBSharp.CPUSpace
       Action<ushort> instruction;
       ushort initialClock = this.clock;
       ushort literal = 0;
-      ushort opcode = this.memory.Read(this.registers.PC);
-      if (opcode != 0xCB)
+      ushort opcode = 0x00; // NOP
+
+      Interrupts? interrupt = InterruptRequired();
+      if (interrupt != null)
       {
-        // Normal instructions
+        // Handle interrupt with a CALL instruction to the interrupt handler
+        opcode = 0xCD; // CALL!
         instructionLength = this.instructionLengths[(byte)opcode];
-
-        // Extract literal
-        if (instructionLength == 2)
-        {
-          // 8 bit literal
-          literal = this.memory.Read((ushort)(this.registers.PC + 1));
-        }
-        else if (instructionLength == 3)
-        {
-          // 16 bit literal, little endian
-          literal = this.memory.Read((ushort)(this.registers.PC + 1));
-          literal += (ushort)(this.memory.Read((ushort)(this.registers.PC + 2)) << 8);
-        }
-
+        literal = this.interruptHandlers[(Interrupts)interrupt];
         instruction = this.instructionLambdas[(byte)opcode];
         ticks = this.instructionClocks[(byte)opcode];
         _instructionName = instructionNames[(byte)opcode];
 
+        // Disable interrupts during interrupt handling and clear the current one
+        this.interruptController.InterruptMasterEnable = false;
+        byte IF = this.memory.Read((ushort)MemoryMappedRegisters.IF);
+        IF &= (byte)~(byte)interrupt;
+        this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.IF, IF);
+
       }
       else
       {
-        // CB instructions block
-        opcode <<= 8;
-        opcode += this.memory.Read((ushort)(this.registers.PC + 1));
-        instructionLength = this.CBInstructionLengths[(byte)opcode];
-        // There is no literal in CB instructions!
+        // No interrupts, keep going!
+        opcode = this.memory.Read(this.registers.PC);
 
-        instruction = this.CBInstructionLambdas[(byte)opcode];
-        ticks = this.CBInstructionClocks[(byte)opcode];
-        _instructionName = CBinstructionNames[(byte)opcode];
+        if (opcode != 0xCB)
+        {
+          // Normal instructions
+          instructionLength = this.instructionLengths[(byte)opcode];
+
+          // Extract literal
+          if (instructionLength == 2)
+          {
+            // 8 bit literal
+            literal = this.memory.Read((ushort)(this.registers.PC + 1));
+          }
+          else if (instructionLength == 3)
+          {
+            // 16 bit literal, little endian
+            literal = this.memory.Read((ushort)(this.registers.PC + 1));
+            literal += (ushort)(this.memory.Read((ushort)(this.registers.PC + 2)) << 8);
+          }
+
+          instruction = this.instructionLambdas[(byte)opcode];
+          ticks = this.instructionClocks[(byte)opcode];
+          _instructionName = instructionNames[(byte)opcode];
+
+        }
+        else
+        {
+          // CB instructions block
+          opcode <<= 8;
+          opcode += this.memory.Read((ushort)(this.registers.PC + 1));
+          instructionLength = this.CBInstructionLengths[(byte)opcode];
+          // There is no literal in CB instructions!
+
+          instruction = this.CBInstructionLambdas[(byte)opcode];
+          ticks = this.CBInstructionClocks[(byte)opcode];
+          _instructionName = CBinstructionNames[(byte)opcode];
+        }
       }
 
       // Prepare for program counter movement, but wait for instruction execution.
@@ -2962,6 +2997,35 @@ namespace GBSharp.CPUSpace
     public string GetCurrentInstructionName()
     {
       return _instructionName;
+    }
+
+    /// <summary>
+    /// Returns the address of the interrupt handler 
+    /// </summary>
+    /// <returns></returns>
+    private Interrupts? InterruptRequired()
+    {
+      if (this.interruptController.InterruptMasterEnable)
+      {
+        // Read interrupt flags
+        int interrupt = this.memory.Read((ushort)MemoryMappedRegisters.IF);
+        // Mask enabled interrupts
+        interrupt &= this.memory.Read((ushort)MemoryMappedRegisters.IE);
+
+        if ((interrupt & 0x1F) == 0x00) // 0x1F masks the useful bits of IE and IF, there is only 5 interrupts.
+        {
+          // Nothing, or disabled, who cares
+          return null;
+        }
+
+        // Ok, find the interrupt with the highest priority, check the first bit set
+        interrupt &= -interrupt; // Magics ;)
+        
+        // Return the first interrupt
+        return (Interrupts)(interrupt & 0x1F);
+      }else{
+        return null;
+      }
     }
 
     /// <summary>
