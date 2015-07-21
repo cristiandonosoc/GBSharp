@@ -25,6 +25,8 @@ namespace GBSharp.ViewModel
 
     private int _selectedAddress;
     private string _name;
+    private readonly int _initialAddress;
+    private int _finalAddress;
 
     public MemoryWordFormat MemoryWordValueFormat
     {
@@ -99,11 +101,14 @@ namespace GBSharp.ViewModel
       get { return _name; }
     }
 
-    public MemoryViewModel(IMemory memory, string name)
+    public MemoryViewModel(IMemory memory, string name, int initialAddress=0, int finalAddress=-1)
     {
       if (memory == null) throw new ArgumentNullException("memory");
       _memory = memory;
       _name = name;
+      _initialAddress = initialAddress;
+      _finalAddress = finalAddress;
+      
       InitMemoryFormats();
     }
 
@@ -139,7 +144,9 @@ namespace GBSharp.ViewModel
     private void CopyFromDomain()
     {
       _memoryWords.Clear();
-      for (int address = 0; address < _memory.Data.Length; address++)
+      if (_finalAddress == -1)
+        _finalAddress = _memory.Data.Length;
+      for (int address = _initialAddress; address < _finalAddress; address++)
       {
         _memoryWords.Add(new MemoryWordViewModel(address, _memory.Data[address]));
       }

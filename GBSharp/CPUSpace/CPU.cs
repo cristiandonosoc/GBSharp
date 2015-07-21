@@ -2849,6 +2849,7 @@ namespace GBSharp.CPUSpace
       this.stopped = false;
 
       // Magic CPU initial values (after bios execution).
+      this.registers.A = 1;
       this.registers.BC = 0x0013;
       this.registers.DE = 0x00D8;
       this.registers.HL = 0x014D;

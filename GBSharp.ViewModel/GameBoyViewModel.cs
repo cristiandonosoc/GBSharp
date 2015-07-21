@@ -118,7 +118,7 @@ namespace GBSharp.ViewModel
     public GameBoyViewModel(IGameBoy gameBoy)
     {
       _gameBoy = gameBoy;
-      _memory = new MemoryViewModel(_gameBoy.Memory, "RAM");
+      _memory = new MemoryViewModel(_gameBoy.Memory, "RAM");//, 0xC000, 0xE000);
       _cartridge = new CartridgeViewModel(_gameBoy.Cartridge);
       _cartridge.CartridgeFileLoaded += OnCartridgeFileLoaded;
     }
