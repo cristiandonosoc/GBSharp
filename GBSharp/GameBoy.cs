@@ -3,6 +3,7 @@ using GBSharp.Cartridge;
 using GBSharp.CPUSpace;
 using GBSharp.MemorySpace;
 using System;
+using GBSharp.VideoSpace;
 
 namespace GBSharp
 {
@@ -12,6 +13,7 @@ namespace GBSharp
     private CPUSpace.InterruptController interruptController;
     private MemorySpace.Memory memory;
     private Cartridge.Cartridge cartridge;
+    private Display display;
     private bool run;
     private Thread clockThread;
     private ManualResetEventSlim manualResetEvent;
@@ -27,6 +29,8 @@ namespace GBSharp
       this.memory = new MemorySpace.Memory();
       this.cpu = new CPUSpace.CPU(this.memory);
       this.interruptController = this.cpu.interruptController;
+      this.display = new Display(this.interruptController);
+
       this.cartridge = new Cartridge.Cartridge();
       this.buttons = Keypad.None;
       this.manualResetEvent = new ManualResetEventSlim(false);
@@ -71,7 +75,8 @@ namespace GBSharp
     /// </summary>
     public void Step()
     {
-      this.cpu.Step();
+      byte ticks = this.cpu.Step();
+      this.display.Step(ticks);
     }
 
     /// <summary>
