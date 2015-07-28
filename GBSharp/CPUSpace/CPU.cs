@@ -47,7 +47,7 @@ namespace GBSharp.CPUSpace
 
     private void CreateInstructionLambdas()
     {
-      #warning TODO: Conditional JUMP and CALL instructions should increment the clock if the condition is met.
+#warning TODO: Conditional JUMP and CALL instructions should increment the clock if the condition is met.
       instructionLambdas = new Dictionary<byte, Action<ushort>>() {
             // NOP: No Operation
             {0x00, (n)=>{ }},
@@ -1616,7 +1616,7 @@ namespace GBSharp.CPUSpace
             {0xF2, (n)=>{registers.A = memory.Read((ushort)(0xFF00 & registers.C));}},
 
             // DI: DIsable interrupts
-            {0xF3, (n)=>{Console.WriteLine("NOT IMP DI (0xF3)");}},
+            {0xF3, (n)=>{this.interruptController.InterruptMasterEnable=false;}},
 
             // XX: Operation removed in this CPU
             {0xF4, (n)=>{throw new InvalidInstructionException("XX (0xF4)");}},
@@ -1659,7 +1659,7 @@ namespace GBSharp.CPUSpace
             {0xFA, (n)=>{registers.A = memory.Read(n);}},
 
             // EI: Enable interrupts
-            {0xFB, (n)=>{throw new NotImplementedException("EI (0xFB)");}},
+            {0xFB, (n)=>{this.interruptController.InterruptMasterEnable = true;}},
 
             // XX: Operation removed in this CPU
             {0xFC, (n)=>{throw new InvalidInstructionException("XX (0xFC)");}},
@@ -3020,10 +3020,12 @@ namespace GBSharp.CPUSpace
 
         // Ok, find the interrupt with the highest priority, check the first bit set
         interrupt &= -interrupt; // Magics ;)
-        
+
         // Return the first interrupt
         return (Interrupts)(interrupt & 0x1F);
-      }else{
+      }
+      else
+      {
         return null;
       }
     }
