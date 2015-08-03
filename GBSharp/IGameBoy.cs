@@ -7,6 +7,7 @@ namespace GBSharp
     ICPU CPU { get; }
     IMemory Memory { get; }
     ICartridge Cartridge { get; }
+    IDisplay Display { get; }
     void LoadCartridge(byte[] cartridgeData);
     void Run();
     void Pause();

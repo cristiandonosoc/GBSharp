@@ -4,18 +4,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Drawing;
 
 namespace GBSharp.VideoSpace
 {
-  class Display
+  class Display : IDisplay
   {
+    private int screenWidth = 160;
+    private int screenHeight = 144;
+    private Bitmap screen;
+
+    public Bitmap Screen
+    {
+      get { return screen; }
+    }
+
     /// <summary>
     /// Display constructor.
     /// </summary>
     /// <param name="interruptController">A reference to the interrupt controller.</param>
     public Display(InterruptController interruptController)
     {
-
+      screen = new Bitmap(screenWidth, screenHeight, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
     }
 
     /// <summary>

@@ -52,6 +52,11 @@ namespace GBSharp
       get { return cartridge; }
     }
 
+    public IDisplay Display
+    {
+      get { return display; }
+    }
+
     /// <summary>
     /// Loads 
     /// </summary>
