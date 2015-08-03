@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Drawing;
+using System.IO;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 
 namespace GBSharp.ViewModel
 {
@@ -8,6 +11,14 @@ namespace GBSharp.ViewModel
     private readonly IGameBoy _gameBoy;
     private readonly CartridgeViewModel _cartridge;
     private readonly MemoryViewModel _memory;
+
+    private string _registerA;
+    private string _registerB;
+    private string _registerC;
+    private string _registerD;
+    private string _registerE;
+    private string _registerH;
+    private string _registerL;
 
     private string _cpuState = "";
 
@@ -19,6 +30,11 @@ namespace GBSharp.ViewModel
     public MemoryViewModel Memory
     {
       get { return _memory; }
+    }
+
+    public BitmapImage Screen
+    {
+      get { return null; }
     }
 
     public ICommand RunCommand
@@ -102,15 +118,93 @@ namespace GBSharp.ViewModel
       get { return new DelegateCommand(ButtonSelect); }
     }
 
-    public string CPUState
+    public string RegisterA
     {
-      get { return _cpuState; }
+      get { return _registerA; }
       set
       {
-        if (_cpuState != value)
+        if (_registerA != value)
         {
-          _cpuState = value;
-          OnPropertyChanged(() => CPUState);
+          _registerA = value;
+          OnPropertyChanged(() => RegisterA);
+        }
+      }
+    }
+
+    public string RegisterB
+    {
+      get { return _registerB; }
+      set
+      {
+        if (_registerB != value)
+        {
+          _registerB = value;
+          OnPropertyChanged(() => RegisterB);
+        }
+      }
+    }
+
+    public string RegisterC
+    {
+      get { return _registerC; }
+      set
+      {
+        if (_registerC != value)
+        {
+          _registerC = value;
+          OnPropertyChanged(() => RegisterC);
+        }
+      }
+    }
+
+    public string RegisterD
+    {
+      get { return _registerD; }
+      set
+      {
+        if (_registerD != value)
+        {
+          _registerD = value;
+          OnPropertyChanged(() => RegisterD);
+        }
+      }
+    }
+
+    public string RegisterE
+    {
+      get { return _registerE; }
+      set
+      {
+        if (_registerE != value)
+        {
+          _registerE = value;
+          OnPropertyChanged(() => RegisterE);
+        }
+      }
+    }
+
+    public string RegisterH
+    {
+      get { return _registerH; }
+      set
+      {
+        if (_registerH != value)
+        {
+          _registerH = value;
+          OnPropertyChanged(() => RegisterH);
+        }
+      }
+    }
+
+    public string RegisterL
+    {
+      get { return _registerL; }
+      set
+      {
+        if (_registerL != value)
+        {
+          _registerL = value;
+          OnPropertyChanged(() => RegisterL);
         }
       }
     }
@@ -154,10 +248,13 @@ namespace GBSharp.ViewModel
     private void PrintCPU()
     {
       var instructionName = _gameBoy.CPU.GetCurrentInstructionName();
-      var registersStateString = _gameBoy.CPU.ToString();
-      CPUState = "Instruction: " + instructionName + "\n" + "Registers:" + "\n" + registersStateString;
-      //_memory.Update();
-      //_cartridge.Memory.SelectedAddress = (int)_gameBoy.CPU.Registers.PC;
+      RegisterA = "0x" + _gameBoy.CPU.Registers.A.ToString("x2");
+      RegisterB = "0x" + _gameBoy.CPU.Registers.B.ToString("x2");
+      RegisterC = "0x" + _gameBoy.CPU.Registers.C.ToString("x2");
+      RegisterD = "0x" + _gameBoy.CPU.Registers.D.ToString("x2");
+      RegisterE = "0x" + _gameBoy.CPU.Registers.E.ToString("x2");
+      RegisterH = "0x" + _gameBoy.CPU.Registers.H.ToString("x2");
+      RegisterL = "0x" + _gameBoy.CPU.Registers.L.ToString("x2");
     }
 
     private void PrintMemory()
@@ -213,6 +310,22 @@ namespace GBSharp.ViewModel
     {
       _gameBoy.PressButton(Keypad.Select);
       PrintCPU();
+    }
+
+    private BitmapImage BitmapToImageSource(Bitmap bitmap)
+    {
+      using (MemoryStream memory = new MemoryStream())
+      {
+        bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);
+        memory.Position = 0;
+        BitmapImage bitmapimage = new BitmapImage();
+        bitmapimage.BeginInit();
+        bitmapimage.StreamSource = memory;
+        bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
+        bitmapimage.EndInit();
+
+        return bitmapimage;
+      }
     }
   }
 }
