@@ -32,6 +32,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -54,6 +55,7 @@
     <Compile Include="CPURegisters.cs" />
     <Compile Include="GameBoy.cs" />
     <Compile Include="ICPU.cs" />
+    <Compile Include="IDisplay.cs" />
     <Compile Include="IGameBoy.cs" />
     <Compile Include="IMemory.cs" />
     <Compile Include="Keypad.cs" />
