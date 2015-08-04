@@ -29,7 +29,7 @@ namespace GBSharp
       this.memory = new MemorySpace.Memory();
       this.cpu = new CPUSpace.CPU(this.memory);
       this.interruptController = this.cpu.interruptController;
-      this.display = new Display(this.interruptController);
+      this.display = new Display(this.interruptController, this.memory);
 
       this.cartridge = new Cartridge.Cartridge();
       this.buttons = Keypad.None;

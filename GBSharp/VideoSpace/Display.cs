@@ -1,4 +1,5 @@
 ﻿using GBSharp.CPUSpace;
+using GBSharp.MemorySpace;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace GBSharp.VideoSpace
     private int screenWidth = 160;
     private int screenHeight = 144;
     private Bitmap screen;
+    private Memory memory;
 
     public Bitmap Screen
     {
@@ -23,9 +25,13 @@ namespace GBSharp.VideoSpace
     /// Display constructor.
     /// </summary>
     /// <param name="interruptController">A reference to the interrupt controller.</param>
-    public Display(InterruptController interruptController)
+    /// <param name="Memory">A reference to the memory.</param>
+    public Display(InterruptController interruptController, Memory memory)
     {
-      screen = new Bitmap(screenWidth, screenHeight, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+      this.memory = memory;
+      this.screen = new Bitmap(screenWidth, screenHeight, 
+                               System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+      //UpdateScreen();
     }
 
     /// <summary>
