@@ -15,7 +15,7 @@ namespace GBSharp.View
     {
       InitializeComponent();
       _gameBoy = new GameBoy();
-      _mainWindowViewModel = new GameBoyViewModel(_gameBoy);
+      _mainWindowViewModel = new GameBoyViewModel(_gameBoy, new DispatcherAdapter(this));
       this.DataContext = _mainWindowViewModel;
     }
   }

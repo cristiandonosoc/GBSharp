@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GBSharp.MemorySpace
 {
-  enum MemoryMappedRegisters : ushort
+  public enum MemoryMappedRegisters : ushort
   {
     // Keypad IO port register:
     P1 = 0xFF00,   // P1 Port: P10 ~ P15 bit mapped

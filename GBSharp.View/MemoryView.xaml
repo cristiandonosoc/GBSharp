@@ -41,9 +41,9 @@
         <ColumnDefinition Width="Auto"></ColumnDefinition>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
       </Grid.ColumnDefinitions>
-      <TextBlock Text="Address Format:"></TextBlock>
+      <TextBlock Text="Address:"></TextBlock>
       <ComboBox Grid.Column="1" ItemsSource="{Binding AddressFormats}" SelectedItem="{Binding SelectedAddressFormat}"></ComboBox>
-      <TextBlock Grid.Column="2" Text="Value Format:"></TextBlock>
+      <TextBlock Grid.Column="2" Text="Value:"></TextBlock>
       <ComboBox Grid.Column="3" ItemsSource="{Binding ValueFormats}" SelectedItem="{Binding SelectedValueFormat}"></ComboBox>
     </Grid>
     <Grid Grid.Row="2" Style="{StaticResource SpacingGrid}">

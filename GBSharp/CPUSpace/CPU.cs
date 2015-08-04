@@ -8,6 +8,8 @@ namespace GBSharp.CPUSpace
 {
   class CPU : ICPU
   {
+    public event Action StepFinished;
+
     internal CPURegisters registers;
     internal MemorySpace.Memory memory;
     internal InterruptController interruptController;
@@ -25,6 +27,11 @@ namespace GBSharp.CPUSpace
       {Interrupts.SerialIOTransferCompleted, 0x0058},
       {Interrupts.P10to13TerminalNegativeEdge, 0x0060}
     };
+
+    public bool InterruptMasterEnable
+    {
+      get { return interruptController.InterruptMasterEnable; }
+    }
 
     #region Lengths and clocks
 
@@ -2991,6 +2998,8 @@ namespace GBSharp.CPUSpace
       // Perform timing operations and adjust the real number of ellapsed ticks
       ticks = UpdateClockAndTimers(initialClock, ticks);
 
+      NotifyStepFinished();
+
       return ticks;
     }
 
@@ -3137,6 +3146,12 @@ namespace GBSharp.CPUSpace
     public override string ToString()
     {
       return registers.ToString();
+    }
+
+    private void NotifyStepFinished()
+    {
+      if (StepFinished != null)
+        StepFinished();
     }
   }
 }
