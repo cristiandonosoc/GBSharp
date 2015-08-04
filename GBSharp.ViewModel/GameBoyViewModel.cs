@@ -20,8 +20,9 @@ namespace GBSharp.ViewModel
     private string _registerH;
     private string _registerL;
 
-    private string _cpuState = "";
+    private BitmapImage _screen;
 
+    
     public CartridgeViewModel Cartridge
     {
       get { return _cartridge; }
@@ -34,7 +35,12 @@ namespace GBSharp.ViewModel
 
     public BitmapImage Screen
     {
-      get { return null; }
+      get { return _screen; }
+      set
+      {
+        _screen = value;
+        OnPropertyChanged(() => Screen);
+      }
     }
 
     public ICommand RunCommand
@@ -255,6 +261,8 @@ namespace GBSharp.ViewModel
       RegisterE = "0x" + _gameBoy.CPU.Registers.E.ToString("x2");
       RegisterH = "0x" + _gameBoy.CPU.Registers.H.ToString("x2");
       RegisterL = "0x" + _gameBoy.CPU.Registers.L.ToString("x2");
+
+      Screen = BitmapToImageSource(_gameBoy.Display.Screen);
     }
 
     private void PrintMemory()
