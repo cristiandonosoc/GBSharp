@@ -4,6 +4,7 @@ using GBSharp.CPUSpace;
 using GBSharp.MemorySpace;
 using System;
 using GBSharp.VideoSpace;
+using System.Diagnostics;
 
 namespace GBSharp
 {
@@ -18,6 +19,14 @@ namespace GBSharp
     private Thread clockThread;
     private ManualResetEventSlim manualResetEvent;
     private Keypad buttons;
+    
+    private Stopwatch stopwatch;
+    private long tickCounter;
+    private long stepCounter;
+    private const int stepCheck = 5000; // ~ 5ms. Steps ellapsed between timer checks.
+    private const double targetSecondsPerTick = 0.0000002384185791015625; // It is know that this is 2^-22.
+    private const int minimumSleep = 5; // Used to avoid sleeping intervals that are too short.
+
 
     /// <summary>
     /// Class constructor.
@@ -26,6 +35,7 @@ namespace GBSharp
     public GameBoy()
     {
       this.run = false;
+      this.stopwatch = new Stopwatch();
       this.memory = new MemorySpace.Memory();
       this.cpu = new CPUSpace.CPU(this.memory);
       this.interruptController = this.cpu.interruptController;
@@ -82,6 +92,9 @@ namespace GBSharp
     {
       byte ticks = this.cpu.Step();
       this.display.Step(ticks);
+
+      this.tickCounter += ticks;
+      this.stepCounter++;
     }
 
     /// <summary>
@@ -90,6 +103,9 @@ namespace GBSharp
     public void Run()
     {
       this.run = true;
+      this.stepCounter = 0;
+      this.tickCounter = 0;
+      this.stopwatch.Restart();
       this.manualResetEvent.Set();
       this.clockThread.Start();
     }
@@ -99,6 +115,7 @@ namespace GBSharp
     /// </summary>
     public void Pause()
     {
+      this.stopwatch.Stop();
       // Do not change this.run to false or simulation will be stopped!
       this.manualResetEvent.Reset();
     }
@@ -108,6 +125,7 @@ namespace GBSharp
     /// </summary>
     public void Stop()
     {
+      this.stopwatch.Stop();
       this.run = false; // Allow the thread to exit.
       this.manualResetEvent.Set(); // Unlock the thread to make that happen.
       
@@ -122,10 +140,27 @@ namespace GBSharp
     {
       while (this.run)
       {
-        this.manualResetEvent.Wait();
+        this.manualResetEvent.Wait(); // Wait for pauses.
         this.Step();
 
-        // TODO: Check here timing issues
+        // Check timing issues
+        if (this.stepCounter % stepCheck == 0)
+        {
+          long ellapsedms = this.stopwatch.ElapsedMilliseconds;
+          long expectedms = (long)(1000 * targetSecondsPerTick * this.tickCounter);
+
+          // Should we sleep?
+          if (expectedms - ellapsedms >= minimumSleep)
+          {
+            this.manualResetEvent.Reset();
+            this.manualResetEvent.Wait((int)(expectedms - ellapsedms));
+            this.manualResetEvent.Set();
+
+            this.stopwatch.Restart();
+            this.tickCounter = 0;
+            this.stepCounter = 0;
+          }
+        }
       }
     }
 

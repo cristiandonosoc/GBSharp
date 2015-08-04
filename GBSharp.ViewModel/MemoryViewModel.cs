@@ -119,14 +119,14 @@ namespace GBSharp.ViewModel
 
     private void InitMemoryFormats()
     {
-      _addressFormats.Add(new MemoryFormatViewModel("Decimal", MemoryWordFormat.Decimal));
-      _addressFormats.Add(new MemoryFormatViewModel("Binary", MemoryWordFormat.Binary));
       _addressFormats.Add(new MemoryFormatViewModel("Hexadecimal", MemoryWordFormat.Hexa));
+      _addressFormats.Add(new MemoryFormatViewModel("Decimal", MemoryWordFormat.Decimal));
+      //_addressFormats.Add(new MemoryFormatViewModel("Binary", MemoryWordFormat.Binary));
       SelectedAddressFormat = _addressFormats.First();
 
-      _valueFormats.Add(new MemoryFormatViewModel("Decimal", MemoryWordFormat.Decimal));
-      _valueFormats.Add(new MemoryFormatViewModel("Binary", MemoryWordFormat.Binary));
       _valueFormats.Add(new MemoryFormatViewModel("Hexadecimal", MemoryWordFormat.Hexa));
+      _valueFormats.Add(new MemoryFormatViewModel("Decimal", MemoryWordFormat.Decimal));
+      //_valueFormats.Add(new MemoryFormatViewModel("Binary", MemoryWordFormat.Binary));
       SelectedValueFormat = _valueFormats.First();
     }
 
@@ -150,6 +150,7 @@ namespace GBSharp.ViewModel
       {
         _memoryWords.Add(new MemoryWordViewModel(address, _memory.Data[address]));
       }
+      UpdateMemoryWords();
     }
 
 

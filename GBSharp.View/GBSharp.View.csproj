@@ -72,6 +72,7 @@
     <Compile Include="CartridgeView.xaml.cs">
       <DependentUpon>CartridgeView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DispatcherAdapter.cs" />
     <Compile Include="GameBoyView.xaml.cs">
       <DependentUpon>GameBoyView.xaml</DependentUpon>
       <SubType>Code</SubType>

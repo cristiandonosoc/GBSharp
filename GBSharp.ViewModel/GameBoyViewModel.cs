@@ -1,17 +1,21 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 using System.IO;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using GBSharp.CPUSpace;
+using GBSharp.MemorySpace;
 
 namespace GBSharp.ViewModel
 {
   public class GameBoyViewModel : ViewModelBase
   {
+    private IDispatcher _dispatcher;
     private readonly IGameBoy _gameBoy;
     private readonly CartridgeViewModel _cartridge;
     private readonly MemoryViewModel _memory;
 
+    private string _registerPC;
+    private string _registerSP;
     private string _registerA;
     private string _registerB;
     private string _registerC;
@@ -19,6 +23,23 @@ namespace GBSharp.ViewModel
     private string _registerE;
     private string _registerH;
     private string _registerL;
+
+    private bool _flagZero;
+    private bool _flagCarry;
+    private bool _flagHalfCarry;
+    private bool _flagNegative;
+
+    private bool _interruptMasterEnabled;
+    private bool _verticalBlankInterruptEnabled;
+    private bool _verticalBlankInterruptRequested;
+    private bool _lcdStatusInterruptEnabled;
+    private bool _lcdStatusInterruptRequested;
+    private bool _timerOverflowInterruptEnabled;
+    private bool _timerOverflowInterruptRequested;
+    private bool _serialTransferCompletedInterruptEnabled;
+    private bool _serialTransferCompletedInterruptRequested;
+    private bool _keyPadPressedInterruptEnabled;
+    private bool _keyPadPressedInterruptRequested;
 
     private BitmapImage _screen;
 
@@ -215,12 +236,241 @@ namespace GBSharp.ViewModel
       }
     }
 
-    public GameBoyViewModel(IGameBoy gameBoy)
+    public string RegisterPC
+    {
+      get { return _registerPC; }
+      set
+      {
+        if (_registerPC != value)
+        {
+          _registerPC = value;
+          OnPropertyChanged(() => RegisterPC);
+        }
+      }
+    }
+
+    public string RegisterSP
+    {
+      get { return _registerSP; }
+      set
+      {
+        if (_registerSP != value)
+        {
+          _registerSP = value;
+          OnPropertyChanged(() => RegisterSP);
+        }
+      }
+    }
+
+    public bool FlagZero
+    {
+      get { return _flagZero; }
+      set
+      {
+        if (_flagZero != value)
+        {
+          _flagZero = value;
+          OnPropertyChanged(() => FlagZero);
+        }
+      }
+    }
+
+    public bool FlagCarry
+    {
+      get { return _flagCarry; }
+      set
+      {
+        if (_flagCarry != value)
+        {
+          _flagCarry = value;
+          OnPropertyChanged(() => FlagCarry);
+        }
+      }
+    }
+
+    public bool FlagHalfCarry
+    {
+      get { return _flagHalfCarry; }
+      set
+      {
+        if (_flagHalfCarry != value)
+        {
+          _flagHalfCarry = value;
+          OnPropertyChanged(() => FlagHalfCarry);
+        }
+      }
+    }
+
+    public bool FlagNegative
+    {
+      get { return _flagNegative; }
+      set
+      {
+        if (_flagNegative != value)
+        {
+          _flagNegative = value;
+          OnPropertyChanged(() => FlagNegative);
+        }
+      }
+    }
+
+    public bool InterruptMasterEnabled
+    {
+      get { return _interruptMasterEnabled; }
+      set
+      {
+        if (_interruptMasterEnabled != value)
+        {
+          _interruptMasterEnabled = value;
+          OnPropertyChanged(() => InterruptMasterEnabled);
+        }
+      }
+    }
+
+    public bool VerticalBlankInterruptEnabled
+    {
+      get { return _verticalBlankInterruptEnabled; }
+      set
+      {
+        if (_verticalBlankInterruptEnabled != value)
+        {
+          _verticalBlankInterruptEnabled = value;
+          OnPropertyChanged(() => VerticalBlankInterruptEnabled);
+        }
+      }
+    }
+
+    public bool VerticalBlankInterruptRequested
+    {
+      get { return _verticalBlankInterruptRequested; }
+      set
+      {
+        if (_verticalBlankInterruptRequested != value)
+        {
+          _verticalBlankInterruptRequested = value;
+          OnPropertyChanged(() => VerticalBlankInterruptRequested);
+        }
+      }
+    }
+
+    public bool LcdStatusInterruptEnabled
+    {
+      get { return _lcdStatusInterruptEnabled; }
+      set
+      {
+        if (_lcdStatusInterruptEnabled != value)
+        {
+          _lcdStatusInterruptEnabled = value;
+          OnPropertyChanged(() => LcdStatusInterruptEnabled);
+        }
+      }
+    }
+
+    public bool LcdStatusInterruptRequested
+    {
+      get { return _lcdStatusInterruptRequested; }
+      set
+      {
+        if (_lcdStatusInterruptRequested != value)
+        {
+          _lcdStatusInterruptRequested = value;
+          OnPropertyChanged(() => LcdStatusInterruptRequested);
+        }
+      }
+    }
+
+    public bool TimerOverflowInterruptEnabled
+    {
+      get { return _timerOverflowInterruptEnabled; }
+      set
+      {
+        if (_timerOverflowInterruptEnabled != value)
+        {
+          _timerOverflowInterruptEnabled = value;
+          OnPropertyChanged(() => TimerOverflowInterruptEnabled);
+        }
+      }
+    }
+
+    public bool TimerOverflowInterruptRequested
+    {
+      get { return _timerOverflowInterruptRequested; }
+      set
+      {
+        if (_timerOverflowInterruptRequested != value)
+        {
+          _timerOverflowInterruptRequested = value;
+          OnPropertyChanged(() => TimerOverflowInterruptRequested);
+        }
+      }
+    }
+
+    public bool SerialTransferCompletedInterruptEnabled
+    {
+      get { return _serialTransferCompletedInterruptEnabled; }
+      set
+      {
+        if (_serialTransferCompletedInterruptEnabled != value)
+        {
+          _serialTransferCompletedInterruptEnabled = value;
+          OnPropertyChanged(() => SerialTransferCompletedInterruptEnabled);
+        }
+      }
+    }
+
+    public bool SerialTransferCompletedInterruptRequested
+    {
+      get { return _serialTransferCompletedInterruptRequested; }
+      set
+      {
+        if (_serialTransferCompletedInterruptRequested != value)
+        {
+          _serialTransferCompletedInterruptRequested = value;
+          OnPropertyChanged(() => SerialTransferCompletedInterruptRequested);
+        }
+      }
+    }
+
+    public bool KeyPadPressedInterruptEnabled
+    {
+      get { return _keyPadPressedInterruptEnabled; }
+      set
+      {
+        if (_keyPadPressedInterruptEnabled != value)
+        {
+          _keyPadPressedInterruptEnabled = value;
+          OnPropertyChanged(() => KeyPadPressedInterruptEnabled);
+        }
+      }
+    }
+
+    public bool KeyPadPressedInterruptRequested
+    {
+      get { return _keyPadPressedInterruptRequested; }
+      set
+      {
+        if (_keyPadPressedInterruptRequested != value)
+        {
+          _keyPadPressedInterruptRequested = value;
+          OnPropertyChanged(() => KeyPadPressedInterruptRequested);
+        }
+      }
+    }
+
+    public GameBoyViewModel(IGameBoy gameBoy, IDispatcher dispatcher)
     {
       _gameBoy = gameBoy;
+      _dispatcher = dispatcher;
       _memory = new MemoryViewModel(_gameBoy.Memory, "RAM");//, 0xC000, 0xE000);
       _cartridge = new CartridgeViewModel(_gameBoy.Cartridge);
       _cartridge.CartridgeFileLoaded += OnCartridgeFileLoaded;
+
+      _gameBoy.CPU.StepFinished += OnStepFinished;
+    }
+
+    private void OnStepFinished()
+    {
+      //_dispatcher.Invoke(PrintCPU);
     }
 
     private void OnCartridgeFileLoaded(byte[] data)
@@ -254,6 +504,9 @@ namespace GBSharp.ViewModel
     private void PrintCPU()
     {
       var instructionName = _gameBoy.CPU.GetCurrentInstructionName();
+      RegisterPC = "0x" + _gameBoy.CPU.Registers.PC.ToString("x2");
+      RegisterSP = "0x" + _gameBoy.CPU.Registers.SP.ToString("x2");
+
       RegisterA = "0x" + _gameBoy.CPU.Registers.A.ToString("x2");
       RegisterB = "0x" + _gameBoy.CPU.Registers.B.ToString("x2");
       RegisterC = "0x" + _gameBoy.CPU.Registers.C.ToString("x2");
@@ -261,6 +514,27 @@ namespace GBSharp.ViewModel
       RegisterE = "0x" + _gameBoy.CPU.Registers.E.ToString("x2");
       RegisterH = "0x" + _gameBoy.CPU.Registers.H.ToString("x2");
       RegisterL = "0x" + _gameBoy.CPU.Registers.L.ToString("x2");
+
+      FlagZero = _gameBoy.CPU.Registers.FZ == 1;
+      FlagCarry = _gameBoy.CPU.Registers.FC == 1;
+      FlagHalfCarry = _gameBoy.CPU.Registers.FH == 1;
+      FlagNegative = _gameBoy.CPU.Registers.FN == 1;
+
+      InterruptMasterEnabled = _gameBoy.CPU.InterruptMasterEnable;
+
+      var interruptEnabledWord = _gameBoy.Memory.Data[(int) MemoryMappedRegisters.IE];
+      var interruptRequestedWord = _gameBoy.Memory.Data[(int)MemoryMappedRegisters.IF];
+
+      VerticalBlankInterruptEnabled = (interruptEnabledWord & (byte)Interrupts.VerticalBlanking) > 0;
+      VerticalBlankInterruptRequested = (interruptRequestedWord & (byte)Interrupts.VerticalBlanking) > 0;
+      LcdStatusInterruptEnabled = (interruptEnabledWord & (byte)Interrupts.LCDCStatus) > 0;
+      LcdStatusInterruptRequested = (interruptRequestedWord & (byte)Interrupts.LCDCStatus) > 0;
+      TimerOverflowInterruptEnabled = (interruptEnabledWord & (byte)Interrupts.TimerOverflow) > 0;
+      TimerOverflowInterruptRequested = (interruptRequestedWord & (byte)Interrupts.TimerOverflow) > 0;
+      SerialTransferCompletedInterruptEnabled = (interruptEnabledWord & (byte)Interrupts.SerialIOTransferCompleted) > 0;
+      SerialTransferCompletedInterruptRequested = (interruptRequestedWord & (byte)Interrupts.SerialIOTransferCompleted) > 0;
+      KeyPadPressedInterruptEnabled = (interruptEnabledWord & (byte)Interrupts.P10to13TerminalNegativeEdge) > 0;
+      KeyPadPressedInterruptRequested = (interruptRequestedWord & (byte)Interrupts.P10to13TerminalNegativeEdge) > 0;
 
       Screen = BitmapToImageSource(_gameBoy.Display.Screen);
     }
