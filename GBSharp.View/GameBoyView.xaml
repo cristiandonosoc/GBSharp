@@ -4,11 +4,8 @@
         xmlns:view="clr-namespace:GBSharp.View"
         xmlns:viewModel="clr-namespace:GBSharp.ViewModel;assembly=GBSharp.ViewModel"
         xmlns:vsm ="clr-namespace:System.Windows;assembly=PresentationFramework"
-        Title="GBSharp" Height="640" Width="1024" >
+        Title="GBSharp" Height="720" Width="1024" >
   <Window.Resources>
-    <DataTemplate DataType="{x:Type viewModel:CartridgeViewModel}">
-      <view:CartridgeView></view:CartridgeView>
-    </DataTemplate>
     <DataTemplate DataType="{x:Type viewModel:MemoryViewModel}">
       <Grid Style="{StaticResource SubContentGrid}">
         <view:MemoryView></view:MemoryView>
@@ -27,17 +24,32 @@
         <RowDefinition Height="*"></RowDefinition>
         <RowDefinition Height="*"></RowDefinition>
       </Grid.RowDefinitions>
-      <ContentPresenter Content="{Binding Cartridge}"/>
-      <ContentPresenter Grid.Row="1" Content="{Binding Memory}"/>
-
+      <ContentPresenter Grid.Row="0" Content="{Binding Memory}"/>
+      <Image Grid.Row="1" Height="256" Width="256" Source="{Binding Background}"/>
     </Grid>
 
     <Grid Grid.Column="1">
       <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"></RowDefinition>
         <RowDefinition Height="*"></RowDefinition>
         <RowDefinition Height="Auto"></RowDefinition>
       </Grid.RowDefinitions>
-      <Canvas >
+      <Grid Style="{DynamicResource SubContentGrid}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"></ColumnDefinition>
+          <ColumnDefinition Width="Auto"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"></RowDefinition>
+          <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Border BorderBrush="{StaticResource TextBrush}" BorderThickness="1">
+          <TextBlock Name="FileText" Text="{Binding FilePath, Mode=TwoWay}" FontSize="9"></TextBlock>
+        </Border>
+        <Button Grid.Row="0" Grid.Column="1" Click="ButtonBase_OnClick" Content="Load Game"></Button>
+        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding CartridgeTitle}" ></TextBlock>
+      </Grid>
+      <Canvas Grid.Row="1">
         <Image Canvas.Top="0" Canvas.Left="0" Source="Images/Nintendo_Gameboy720.jpg" RenderTransformOrigin="0.5,0.5" Height="568" Width="345">
           <Image.RenderTransform>
             <TransformGroup>
@@ -332,7 +344,7 @@
         <Image Height="144" Canvas.Left="91" Canvas.Top="86" Width="160" Source="{Binding Screen}"/>
 
       </Canvas>
-      <Grid Grid.Row="1" Margin="5">
+      <Grid Grid.Row="2" Margin="5">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto"></ColumnDefinition>
           <ColumnDefinition Width="Auto"></ColumnDefinition>
@@ -340,14 +352,12 @@
           <ColumnDefinition Width="Auto"></ColumnDefinition>
           <ColumnDefinition Width="*"></ColumnDefinition>
           <ColumnDefinition Width="Auto"></ColumnDefinition>
-          <ColumnDefinition Width="Auto"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Button Content="Run" Command="{Binding RunCommand}"></Button>
         <Button Grid.Column="1" Content="Step" Command="{Binding StepCommand}"></Button>
         <Button Grid.Column="2" Content="Pause" Command="{Binding PauseCommand}"></Button>
         <Button Grid.Column="3" Content="Stop" Command="{Binding StopCommand}"></Button>
-        <Button Grid.Column="5" Content="Print Memory" Command="{Binding PrintMemoryCommand}"></Button>
-        <Button Grid.Column="6" Content="Print CPU" Command="{Binding PrintCPUCommand}"></Button>
+        <Button Grid.Column="5" Content="Update Display" Command="{Binding UpdateDisplayCommand}"></Button>
       </Grid>
     </Grid>
     <Grid Grid.Column="2" Style="{StaticResource SubContentGrid}">
@@ -356,6 +366,7 @@
         <RowDefinition Height="Auto"/>
         <RowDefinition Height="Auto"/>
         <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
         <RowDefinition Height="Auto"/>
       </Grid.RowDefinitions>
       <Grid Margin="5">
@@ -479,6 +490,7 @@
 
         </Grid>
       </Grid>
+      <Button Grid.Row="5" Content="Update CPU" Command="{Binding PrintCPUCommand}"></Button>
     </Grid>
   </Grid>
 </Window>

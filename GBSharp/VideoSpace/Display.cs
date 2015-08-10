@@ -14,9 +14,18 @@ namespace GBSharp.VideoSpace
     private int screenHeight = 144;
     private Bitmap screen;
 
+    private int backgroundWidth = 256;
+    private int backgroundHeight = 256;
+    private Bitmap background;
+
     public Bitmap Screen
     {
       get { return screen; }
+    }
+
+    public Bitmap Background
+    {
+      get { return background; }
     }
 
     /// <summary>
@@ -26,6 +35,7 @@ namespace GBSharp.VideoSpace
     public Display(InterruptController interruptController)
     {
       screen = new Bitmap(screenWidth, screenHeight, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+      background = new Bitmap(backgroundWidth, backgroundHeight, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
     }
 
     /// <summary>

@@ -1,6 +1,8 @@
 ﻿using System.Drawing;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using GBSharp.CPUSpace;
 using GBSharp.MemorySpace;
@@ -41,14 +43,13 @@ namespace GBSharp.ViewModel
     private bool _keyPadPressedInterruptEnabled;
     private bool _keyPadPressedInterruptRequested;
 
+    private string _filePath;
+    private string _cartridgeTitle;
+
     private BitmapImage _screen;
+    private BitmapImage _background;
 
-    
-    public CartridgeViewModel Cartridge
-    {
-      get { return _cartridge; }
-    }
-
+ 
     public MemoryViewModel Memory
     {
       get { return _memory; }
@@ -61,6 +62,16 @@ namespace GBSharp.ViewModel
       {
         _screen = value;
         OnPropertyChanged(() => Screen);
+      }
+    }
+
+    public BitmapImage Background
+    {
+      get { return _background; }
+      set
+      {
+        _background = value;
+        OnPropertyChanged(() => Background);
       }
     }
 
@@ -95,6 +106,12 @@ namespace GBSharp.ViewModel
       get { return new DelegateCommand(PrintMemory); }
     }
 
+    public ICommand UpdateDisplayCommand
+    {
+      get { return new DelegateCommand(UpdateDisplay); }
+    }
+
+ 
     public ICommand ButtonACommand
     {
       get { return new DelegateCommand(ButtonA); }
@@ -457,14 +474,38 @@ namespace GBSharp.ViewModel
       }
     }
 
+    public string FilePath
+    {
+      get { return _filePath; }
+      set
+      {
+        if (_filePath != value)
+        {
+          _filePath = value;
+          NotifyCartridgeFileLoaded();
+        }
+      }
+    }
+
+    public string CartridgeTitle
+    {
+      get { return _cartridgeTitle; }
+      set
+      {
+        if (_cartridgeTitle != value)
+        {
+          _cartridgeTitle = value;
+          OnPropertyChanged(() => CartridgeTitle);
+        }
+      }
+    }
+
+
     public GameBoyViewModel(IGameBoy gameBoy, IDispatcher dispatcher)
     {
       _gameBoy = gameBoy;
       _dispatcher = dispatcher;
-      _memory = new MemoryViewModel(_gameBoy.Memory, "RAM");//, 0xC000, 0xE000);
-      _cartridge = new CartridgeViewModel(_gameBoy.Cartridge);
-      _cartridge.CartridgeFileLoaded += OnCartridgeFileLoaded;
-
+      _memory = new MemoryViewModel(_gameBoy.Cartridge, "Memory View");//, 0xC000, 0xE000);
       _gameBoy.CPU.StepFinished += OnStepFinished;
     }
 
@@ -476,7 +517,8 @@ namespace GBSharp.ViewModel
     private void OnCartridgeFileLoaded(byte[] data)
     {
       _gameBoy.LoadCartridge(data);
-      _cartridge.Update();
+      CartridgeTitle = _gameBoy.Cartridge.Title;
+      _memory.Update();
       //_gameBoy.Run();
     }
 
@@ -536,8 +578,15 @@ namespace GBSharp.ViewModel
       KeyPadPressedInterruptEnabled = (interruptEnabledWord & (byte)Interrupts.P10to13TerminalNegativeEdge) > 0;
       KeyPadPressedInterruptRequested = (interruptRequestedWord & (byte)Interrupts.P10to13TerminalNegativeEdge) > 0;
 
-      Screen = BitmapToImageSource(_gameBoy.Display.Screen);
+     
     }
+
+    private void UpdateDisplay()
+    {
+      Screen = BitmapToImageSource(_gameBoy.Display.Screen);
+      Background = BitmapToImageSource(_gameBoy.Display.Screen);
+    }
+
 
     private void PrintMemory()
     {
@@ -608,6 +657,13 @@ namespace GBSharp.ViewModel
 
         return bitmapimage;
       }
+    }
+
+   
+    private void NotifyCartridgeFileLoaded()
+    {
+      if (File.Exists(_filePath))
+        OnCartridgeFileLoaded(File.ReadAllBytes(_filePath));
     }
   }
 }

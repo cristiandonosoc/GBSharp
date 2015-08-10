@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using GBSharp.ViewModel;
+using Microsoft.Win32;
 
 namespace GBSharp.View
 {
@@ -17,6 +18,14 @@ namespace GBSharp.View
       _gameBoy = new GameBoy();
       _mainWindowViewModel = new GameBoyViewModel(_gameBoy, new DispatcherAdapter(this));
       this.DataContext = _mainWindowViewModel;
+    }
+
+    private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+    {
+      var openFileDialog = new OpenFileDialog();
+      openFileDialog.ShowDialog();
+
+      FileText.Text = openFileDialog.FileName;
     }
   }
 }
