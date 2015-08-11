@@ -24,7 +24,8 @@ namespace GBSharp.MemorySpace
     {
       this.memoryHandler = new InitialMemoryHandler();
       this.memoryHandler.LoadInternalMemory(this.data);
-      ResetMemory();
+      // TODO(Cristian): Is this reset necessary?
+      //ResetMemory();
     }
 
     /// <summary>

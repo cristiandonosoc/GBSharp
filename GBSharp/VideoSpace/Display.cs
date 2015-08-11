@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace GBSharp.VideoSpace
 {
@@ -37,8 +38,10 @@ namespace GBSharp.VideoSpace
     /// <param name="Memory">A reference to the memory.</param>
     public Display(InterruptController interruptController, Memory memory)
     {
-      screen = new Bitmap(screenWidth, screenHeight, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
-      background = new Bitmap(backgroundWidth, backgroundHeight, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+      this.memory = memory;
+      screen = new Bitmap(screenWidth, screenHeight, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
+      background = new Bitmap(backgroundWidth, backgroundHeight, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
+      UpdateScreen();
     }
 
     internal void UpdateScreen()
@@ -65,6 +68,53 @@ namespace GBSharp.VideoSpace
         tileDataBaseAddress = 0x8000;
       }
 
+      // We update the whole screen
+      BitmapData bmpData = background.LockBits(new Rectangle(0, 0, background.Width, background.Height), 
+                                               ImageLockMode.WriteOnly, 
+                                               PixelFormat.Format32bppRgb);
+      unsafe
+      {
+        int pixelSize = 4;
+        for (int tileY = 0; tileY < 32; tileY++)
+        {
+          for (int tileX = 0; tileX < 32; tileX++)
+          {
+            int t = 256 * tileY + tileX;
+            sbyte tileIndex = (sbyte)memory.Read((ushort)(0x9800 + t));
+
+            byte[] tile = new byte[16];
+            for (uint i = 0; i < 16; i++)
+            {
+              tile[i] = memory.Read((ushort)(0x8800 + tileIndex));
+            }
+
+            int a = 2;
+            // We iterate for the actual bytes
+            for (int j = 0; j < 16; j += 2)
+            {
+              byte* row = (byte*)bmpData.Scan0 + ((8*tileY + (j / 2)) * bmpData.Stride);
+              for (int i = 0; i < 8; i++)
+              {
+                int up = (tile[j] >> i) & 1;
+                int down = (tile[j + 1] >> i) & 1;
+
+                int index = 2 * up + down;
+                byte color = (byte)(84 * index);
+
+                row[(8 * tileX + i) * pixelSize] = color ;
+                row[(8 * tileX + i) * pixelSize + 1] = color;
+                row[(8 * tileX + i) * pixelSize + 2] = color;
+                row[(8 * tileX + i) * pixelSize + 3] = 0;
+              }
+            }
+          }
+        }
+      }
+
+      background.UnlockBits(bmpData);
+      background.Save("test.bmp");
+
+
       // We interpret the pixels
       // NOTE(Cristian): We use uint for the value, when byte would have
       // sufficed (and even make the code a little slimmer). But this permits
@@ -72,30 +122,40 @@ namespace GBSharp.VideoSpace
 
       // TODO(Cristian): initialX and initialY should be defined by the
       // SCX and SCY registers respectively
-      uint initialX = 30;
-      uint initialY = 30;
-      uint screenWidth = 32;
-      uint screenHeight = 32;
-      uint displayWidth = 20;
-      uint displayHeight = 18;
-      uint currentX = initialX;   // Helper X variable to track overflow
-      uint currentY = initialY;   // Helper Y variable to track overflow
+      ushort initialX = 30;
+      ushort initialY = 30;
+      ushort screenWidth = 32;
+      ushort screenHeight = 32;
+      ushort displayWidth = 20;
+      ushort displayHeight = 18;
+      ushort currentX = initialX;   // Helper X variable to track overflow
+      ushort currentY = initialY;   // Helper Y variable to track overflow
 
-      uint displayIndex = 0;      // The "pointer" to the actual pixel
-      uint firstOfRow = 0;        // To help the pointer go back to the start at overflow
-      for (int y = 0; y < displayHeight; y++)
+      ushort displayIndex = 0;      // The "pointer" to the actual pixel
+      ushort firstOfRow = 0;        // To help the pointer go back to the start at overflow
+      for (ushort y = 0; y < displayHeight; y++)
       {
         // We move the index to the start of the display row
-        firstOfRow = currentY * screenHeight;
+        firstOfRow = (ushort)(currentY * screenHeight);
         currentX = initialX;
-        displayIndex = (currentY * screenHeight) + currentX;
+        displayIndex = (ushort)((currentY * screenHeight) + currentX);
 
-        for (int x = 0; x < displayWidth; x++)
+        for (ushort x = 0; x < displayWidth; x++)
         {
           // We read the memory
           // TODO(Cristian): Actually read the memory
-          Console.Out.WriteLine("{0}: Accessed: {1} (X: {2}, Y: {3})",
-            displayIndex, currentX, currentY);
+          //Console.Out.WriteLine("{0}: Accessed: {1} (X: {2}, Y: {3})",
+          //  displayIndex, currentX, currentY);
+
+          // We load the memory
+          byte tileIndex = memory.Read(displayIndex);
+          for (uint i = 0; i < 8; i++)
+          {
+            for(uint j = 0; j < 8; j++)
+            {
+
+            }
+          }
 
           displayIndex++;
           currentX++;
@@ -106,7 +166,7 @@ namespace GBSharp.VideoSpace
           }
         }
 
-        Console.Out.WriteLine("ROW");
+        //Console.Out.WriteLine("ROW");
 
         // We update the Y variable
         currentY++;
@@ -115,6 +175,8 @@ namespace GBSharp.VideoSpace
           currentY = 0;
         }
       }
+
+      
     }
 
 
