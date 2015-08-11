@@ -19,6 +19,10 @@ namespace GBSharp.VideoSpace
 
     private int backgroundWidth = 256;
     private int backgroundHeight = 256;
+    private int tileCountX = 32;
+    private int tileCounty = 32;
+    private int bytesPerTile = 16;
+    private int pixelSize = 4;
     private Bitmap background;
 
     public Bitmap Screen
@@ -42,6 +46,51 @@ namespace GBSharp.VideoSpace
       screen = new Bitmap(screenWidth, screenHeight, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
       background = new Bitmap(backgroundWidth, backgroundHeight, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
       UpdateScreen();
+    }
+
+    internal byte[] GetTileData(int tileX, int tileY)
+    {
+      // TODO(Cristian): use the correct base address according to LCDC register
+      ushort tileMapBaseAddress = 0x9800;
+      ushort tileBaseAddress = 0x8000;
+
+      // We obtain the correct tile index
+      // TODO(Cristian): create the correct tile index according to LCDC register
+      int tileIndex = (byte)memory.Read((ushort)(tileMapBaseAddress + tileCountX * tileY + tileX));
+      
+      // We obtain the tile memory
+      byte[] result = new byte[bytesPerTile];
+      for(int i = 0; i < bytesPerTile; i++)
+      {
+        result[i] = memory.Read((ushort)(tileBaseAddress + bytesPerTile * tileIndex + i));
+      }
+
+      return result;
+    }
+
+    internal void RenderTile(BitmapData bmd, byte[] tileData, int tileX, int tileY)
+    {
+      unsafe
+      {
+        // We iterate for the actual bytes
+        for (int j = 0; j < 16; j += 2)
+        {
+          byte* row = (byte*)bmd.Scan0 + ((8 * tileY + (j / 2)) * bmd.Stride);
+          for (int i = 0; i < 8; i++)
+          {
+            int up = (tileData[j] >> i) & 1;
+            int down = (tileData[j + 1] >> i) & 1;
+
+            int index = 2 * up + down;
+            byte color = (byte)(84 * index);
+
+            row[(8 * tileX + i) * pixelSize] = color;
+            row[(8 * tileX + i) * pixelSize + 1] = color;
+            row[(8 * tileX + i) * pixelSize + 2] = color;
+            row[(8 * tileX + i) * pixelSize + 3] = 0;
+          }
+        }
+      }
     }
 
     internal void UpdateScreen()
@@ -72,41 +121,14 @@ namespace GBSharp.VideoSpace
       BitmapData bmpData = background.LockBits(new Rectangle(0, 0, background.Width, background.Height), 
                                                ImageLockMode.WriteOnly, 
                                                PixelFormat.Format32bppRgb);
-      unsafe
+
+      // We render the complete tile map
+      for (int tileY = 0; tileY < 32; tileY++)
       {
-        int pixelSize = 4;
-        for (int tileY = 0; tileY < 32; tileY++)
+        for (int tileX = 0; tileX < 32; tileX++)
         {
-          for (int tileX = 0; tileX < 32; tileX++)
-          {
-            int t = 32 * tileY + tileX;
-            byte tileIndex = (byte)memory.Read((ushort)(0x9800 + t));
-
-            byte[] tile = new byte[16];
-            for (uint i = 0; i < 16; i++)
-            {
-              tile[i] = memory.Read((ushort)(0x8000 + 16*tileIndex + i));
-            }
-
-            // We iterate for the actual bytes
-            for (int j = 0; j < 16; j += 2)
-            {
-              byte* row = (byte*)bmpData.Scan0 + ((8*tileY + (j / 2)) * bmpData.Stride);
-              for (int i = 0; i < 8; i++)
-              {
-                int up = (tile[j] >> i) & 1;
-                int down = (tile[j + 1] >> i) & 1;
-
-                int index = 2 * up + down;
-                byte color = (byte)(84 * index);
-
-                row[(8 * tileX + i) * pixelSize] = color ;
-                row[(8 * tileX + i) * pixelSize + 1] = color;
-                row[(8 * tileX + i) * pixelSize + 2] = color;
-                row[(8 * tileX + i) * pixelSize + 3] = 0;
-              }
-            }
-          }
+          byte[] tileData = GetTileData(tileX, tileY);
+          RenderTile(bmpData, tileData, tileX, tileY);
         }
       }
 
