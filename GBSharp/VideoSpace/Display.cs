@@ -79,16 +79,15 @@ namespace GBSharp.VideoSpace
         {
           for (int tileX = 0; tileX < 32; tileX++)
           {
-            int t = 256 * tileY + tileX;
-            sbyte tileIndex = (sbyte)memory.Read((ushort)(0x9800 + t));
+            int t = 32 * tileY + tileX;
+            byte tileIndex = (byte)memory.Read((ushort)(0x9800 + t));
 
             byte[] tile = new byte[16];
             for (uint i = 0; i < 16; i++)
             {
-              tile[i] = memory.Read((ushort)(0x8800 + tileIndex));
+              tile[i] = memory.Read((ushort)(0x8000 + 16*tileIndex + i));
             }
 
-            int a = 2;
             // We iterate for the actual bytes
             for (int j = 0; j < 16; j += 2)
             {
@@ -112,8 +111,8 @@ namespace GBSharp.VideoSpace
       }
 
       background.UnlockBits(bmpData);
+      // TODO(cristian): Use the screen to display the data
       background.Save("test.bmp");
-
 
       // We interpret the pixels
       // NOTE(Cristian): We use uint for the value, when byte would have
