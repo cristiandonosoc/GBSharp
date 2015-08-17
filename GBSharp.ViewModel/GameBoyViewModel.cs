@@ -584,7 +584,7 @@ namespace GBSharp.ViewModel
     private void UpdateDisplay()
     {
       Screen = BitmapToImageSource(_gameBoy.Display.Screen);
-      Background = BitmapToImageSource(_gameBoy.Display.Screen);
+      Background = BitmapToImageSource(_gameBoy.Display.Background);
     }
 
 
