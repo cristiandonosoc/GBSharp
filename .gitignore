@@ -14,3 +14,6 @@
 # Vim
 *.swp
 *.un~
+
+# Emulator Ignore
+VBoy/*
