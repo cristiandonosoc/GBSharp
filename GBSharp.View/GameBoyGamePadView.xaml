@@ -6,7 +6,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
   <Grid >
-    <Canvas >
+    <Canvas>
       <Image Canvas.Top="0" Canvas.Left="0" Source="Images/Nintendo_Gameboy720.jpg" RenderTransformOrigin="0.5,0.5" Height="568" Width="345">
         <Image.RenderTransform>
           <TransformGroup>
