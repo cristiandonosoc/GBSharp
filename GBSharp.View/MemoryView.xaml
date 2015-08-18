@@ -29,12 +29,12 @@
   </UserControl.Resources>
   <Grid>
     <Grid.RowDefinitions>
-      <RowDefinition Height="Auto"></RowDefinition>
+      <!--<RowDefinition Height="Auto"></RowDefinition>-->
       <RowDefinition Height="Auto"></RowDefinition>
       <RowDefinition Height="*"></RowDefinition>
     </Grid.RowDefinitions>
-    <TextBlock Text="{Binding Name}"></TextBlock>
-    <Grid Grid.Row="1" Style="{StaticResource SpacingGrid}">
+    <!--<TextBlock Text="{Binding Name}"></TextBlock>-->
+    <Grid Grid.Row="0" Style="{StaticResource SpacingGrid}">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
@@ -46,7 +46,7 @@
       <TextBlock Grid.Column="2" Text="Value:"></TextBlock>
       <ComboBox Grid.Column="3" ItemsSource="{Binding ValueFormats}" SelectedItem="{Binding SelectedValueFormat}"></ComboBox>
     </Grid>
-    <Grid Grid.Row="2" Style="{StaticResource SpacingGrid}">
+    <Grid Grid.Row="1" Style="{StaticResource SpacingGrid}">
       <ListView  ItemsSource ="{Binding MemoryWords}" SelectedIndex="{Binding SelectedAddress, Mode=TwoWay}"></ListView>
     </Grid>
 

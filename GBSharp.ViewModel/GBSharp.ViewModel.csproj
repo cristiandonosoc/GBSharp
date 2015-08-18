@@ -45,13 +45,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CartridgeViewModel.cs" />
+    <Compile Include="CPUViewModel.cs" />
     <Compile Include="DelegateCommand.cs" />
+    <Compile Include="GameBoyContollerViewModel.cs" />
+    <Compile Include="GameBoyGamePadViewModel.cs" />
     <Compile Include="GameBoyViewModel.cs" />
     <Compile Include="IDispatcher.cs" />
+    <Compile Include="InterruptViewModel.cs" />
     <Compile Include="MemoryViewModel.cs" />
     <Compile Include="MemoryWordViewModel.cs" />
     <Compile Include="MemoryFormatViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="DisplayViewModel.cs" />
+    <Compile Include="Utils.cs" />
     <Compile Include="ViewModelBase.cs" />
   </ItemGroup>
   <ItemGroup>
