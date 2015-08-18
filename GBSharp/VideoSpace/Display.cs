@@ -20,7 +20,9 @@ namespace GBSharp.VideoSpace
     private int backgroundWidth = 256;
     private int backgroundHeight = 256;
     private int tileCountX = 32;
-    private int tileCounty = 32;
+    private int tileCountY = 32;
+    private int bgTileCountX = 20;
+    private int bgTileCountY = 18;
     private int bytesPerTile = 16;
     private int pixelSize = 4;
     private Bitmap background;
@@ -68,7 +70,7 @@ namespace GBSharp.VideoSpace
       return result;
     }
 
-    internal void RenderTile(BitmapData bmd, byte[] tileData, int tileX, int tileY)
+    internal void DrawTile(BitmapData bmd, byte[] tileData, int tileX, int tileY)
     {
       unsafe
       {
@@ -88,6 +90,67 @@ namespace GBSharp.VideoSpace
             row[(8 * tileX + i) * pixelSize + 1] = color;
             row[(8 * tileX + i) * pixelSize + 2] = color;
             row[(8 * tileX + i) * pixelSize + 3] = 0;
+          }
+        }
+      }
+    }
+    
+    internal void DrawRectangle(BitmapData bmd, int initialTileX, int initialTileY, int tileWidth, int tileHeight, uint color)
+    {
+      int pixelsPerTileX = 8;
+      int pixelsPerTileY = 8;
+
+      unsafe
+      {
+        for(int iterTileY = 0; iterTileY < tileHeight; iterTileY++)
+        {
+          int tileY = (iterTileY + initialTileY) % tileCountY;
+          for(int iterTileX = 0; iterTileX < tileWidth; iterTileX++)
+          {
+            int tileX = (iterTileX + initialTileX) % tileCountX;
+
+            byte* begin = (byte*)bmd.Scan0 +
+                            tileY * pixelsPerTileY * bmd.Stride +
+                            tileX * pixelsPerTileX * pixelSize;
+
+            // We render the square
+            if(iterTileX == 0)
+            {
+              byte* cursor = begin;
+              for(int y = 0; y < pixelsPerTileY; y++)
+              {
+                ((uint*)cursor)[0] = color;
+                cursor += bmd.Stride;
+              }
+            }
+            else if(iterTileX == bgTileCountX - 1)
+            {
+              byte* cursor = begin + pixelsPerTileX * pixelSize;
+              for (int y = 0; y < pixelsPerTileY; y++)
+              {
+                ((uint*)cursor)[0] = color;
+                cursor += bmd.Stride;
+              }
+            }
+
+            if(iterTileY == 0)
+            {
+              byte* cursor = begin;
+              for(int x = 0; x < pixelsPerTileX; x++)
+              {
+                ((uint*)cursor)[0] = color;
+                cursor += pixelSize;
+              }
+            }
+            else if(iterTileY == bgTileCountY - 1)
+            {
+              byte* cursor = begin + pixelsPerTileY * bmd.Stride;
+              for(int x = 0; x < pixelsPerTileX; x++)
+              {
+                ((uint*)cursor)[0] = color;
+                cursor += pixelSize;
+              }
+            }
           }
         }
       }
@@ -120,7 +183,7 @@ namespace GBSharp.VideoSpace
       // We update the whole screen
       BitmapData bmpData = background.LockBits(new Rectangle(0, 0, background.Width, background.Height), 
                                                ImageLockMode.WriteOnly, 
-                                               PixelFormat.Format32bppRgb);
+                                              PixelFormat.Format32bppRgb);
 
       // We render the complete tile map
       for (int tileY = 0; tileY < 32; tileY++)
@@ -128,9 +191,11 @@ namespace GBSharp.VideoSpace
         for (int tileX = 0; tileX < 32; tileX++)
         {
           byte[] tileData = GetTileData(tileX, tileY);
-          RenderTile(bmpData, tileData, tileX, tileY);
+          DrawTile(bmpData, tileData, tileX, tileY);
         }
       }
+
+      DrawRectangle(bmpData, 1, 1, bgTileCountX, bgTileCountY, 0x00FF00FF);
 
       background.UnlockBits(bmpData);
       // TODO(cristian): Use the screen to display the data
