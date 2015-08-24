@@ -52,21 +52,56 @@ namespace GBSharp.VideoSpace
       UpdateScreen();
     }
 
-    internal byte[] GetTileData(int tileX, int tileY, bool wrap)
+    /// <summary>
+    /// Retreives a the contents on a tile depending on the coordinates and the accessing methods.
+    /// </summary>
+    /// <param name="tileX">The x coord for the tile</param>
+    /// <param name="tileY">The y coord for the tile</param>
+    /// <param name="LCDBit3">
+    /// Whether the LCDC Register (0xFF40) Bit 3 is enabled.
+    /// Determines what tilemap (where the tile indexes are) is used:
+    /// 0: 0x9800 - 0x9BFF
+    /// 1: 0x9C00 - 0x9FFF
+    /// </param>
+    /// <param name="LCDBit4">
+    /// Whether the LCDC Register (0xFF40) Bit 3 is enabled.
+    /// Determines the base address for the actual tiles and the
+    /// accessing method (interpretation of the byte tile index retreived from the tilemap).
+    /// 0: 0x8800 - 0x97FF | signed access
+    /// 1: 0x8000 - 0x8FFF | unsigned access
+    /// </param>
+    /// <param name="wrap">Whether the x, y tile coordinates should wrap or be clipped</param>
+    /// <returns>A byte[] with the 16 bytes that create a tile</returns>
+    internal byte[] GetTileData(int tileX, int tileY, bool LCDBit3, bool LCDBit4, bool wrap)
     {
-      // TODO(Cristian): use the correct base address according to LCDC register
-      ushort tileMapBaseAddress = 0x9800;
-      ushort tileBaseAddress = 0x8000;
+      ushort tileBaseAddress = (ushort)(LCDBit4 ? 0x8000 : 0x8800);
+      ushort tileMapBaseAddress = (ushort)(LCDBit3 ? 0x9C00 : 0x9800);
 
       if(wrap)
       {
         tileX %= totalTileCountX;
         tileY %= totalTileCountY;
       }
+      else
+      {
+        // TODO(Cristian): See if clipping is what we want
+        if(tileX >= totalTileCountX) { tileX = totalTileCountX - 1; }
+        if(tileY >= totalTileCountY) { tileY = totalTileCountY - 1; }
+      }
 
       // We obtain the correct tile index
-      // TODO(Cristian): create the correct tile index according to LCDC register
-      int tileIndex = (byte)memory.Read((ushort)(tileMapBaseAddress + totalTileCountX * tileY + tileX));
+      int tileIndex;
+      if(LCDBit4)
+      {
+        tileIndex = memory.Read((ushort)(tileMapBaseAddress + totalTileCountX * tileY + tileX));
+      }
+      else
+      {
+        unchecked
+        {
+          tileIndex = (sbyte)memory.Read((ushort)(tileMapBaseAddress + totalTileCountX * tileY + tileX));
+        }
+      }
       
       // We obtain the tile memory
       byte[] result = new byte[bytesPerTile];
@@ -203,7 +238,7 @@ namespace GBSharp.VideoSpace
       {
         for (int tileX = 0; tileX < 32; tileX++)
         {
-          byte[] tileData = GetTileData(tileX, tileY, false);
+          byte[] tileData = GetTileData(tileX, tileY, false, true, false);
           DrawTile(backgroundBmpData, tileData, tileX, tileY);
         }
       }
@@ -220,7 +255,7 @@ namespace GBSharp.VideoSpace
       {
         for (int tileX = 0; tileX < 20; tileX++)
         {
-          byte[] tileData = GetTileData(tileX + OX, tileY + OY, true);
+          byte[] tileData = GetTileData(tileX + OX, tileY + OY, false, true, true);
           DrawTile(bmpData, tileData, tileX, tileY);
         }
       }

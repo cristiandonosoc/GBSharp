@@ -46,7 +46,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
            i < 1024;
            i++)
       {
-        internalMemory[i+0x9800] = (byte)(i);
+        internalMemory[i+0x9800] = (byte)(1023 - i);
       }
     }
 
