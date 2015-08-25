@@ -12,6 +12,8 @@ namespace GBSharp.VideoSpace
 {
   class Display : IDisplay
   {
+    public event Action RefreshScreen;
+
     private int screenWidth = 160;
     private int screenHeight = 144;
     private Bitmap screen;
@@ -264,6 +266,10 @@ namespace GBSharp.VideoSpace
       {
         screenSum %= screenStep;
         UpdateScreen();
+        if (RefreshScreen != null)
+        {
+          RefreshScreen();
+        }
       } 
     }
   }
