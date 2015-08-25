@@ -173,7 +173,7 @@ namespace GBSharp.VideoSpace
             }
             else if(iterTileX == screenTileCountX - 1)
             {
-              byte* cursor = begin + pixelsPerTileX * bytesPerPixel;
+              byte* cursor = begin + (pixelsPerTileX - 1) * bytesPerPixel;
               for (int y = 0; y < pixelsPerTileY; y++)
               {
                 ((uint*)cursor)[0] = color;
@@ -192,7 +192,7 @@ namespace GBSharp.VideoSpace
             }
             else if(iterTileY == screenTileCountY - 1)
             {
-              byte* cursor = begin + pixelsPerTileY * bmd.Stride;
+              byte* cursor = begin + (pixelsPerTileY - 1) * bmd.Stride;
               for(int x = 0; x < pixelsPerTileX; x++)
               {
                 ((uint*)cursor)[0] = color;
