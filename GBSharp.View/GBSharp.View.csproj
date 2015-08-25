@@ -61,6 +61,22 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="CPUView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DisplayView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GameBoyControllerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GameBoyGamePadView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="GameBoyView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -72,11 +88,27 @@
     <Compile Include="CartridgeView.xaml.cs">
       <DependentUpon>CartridgeView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CPUView.xaml.cs">
+      <DependentUpon>CPUView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DispatcherAdapter.cs" />
+    <Compile Include="DisplayView.xaml.cs">
+      <DependentUpon>DisplayView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GameBoyControllerView.xaml.cs">
+      <DependentUpon>GameBoyControllerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GameBoyGamePadView.xaml.cs">
+      <DependentUpon>GameBoyGamePadView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="GameBoyView.xaml.cs">
       <DependentUpon>GameBoyView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="InterruptView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MemoryView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -87,6 +119,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="InterruptView.xaml.cs">
+      <DependentUpon>InterruptView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MemoryView.xaml.cs">
       <DependentUpon>MemoryView.xaml</DependentUpon>
     </Compile>
