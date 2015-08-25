@@ -29,11 +29,11 @@ namespace GBSharp.MemorySpace.MemoryHandlers
       {
         if (i < 0x8800)
         {
-          internalMemory[i] = (byte)0x00;
+          internalMemory[i] = (byte)((i % 2 == 0) ? 0xFF : 0x00);
         }
         else if (i < 0x9000)
         {
-          internalMemory[i] = (byte)0xFF;
+          internalMemory[i] = (byte)((i % 2 == 0) ? 0x00 : 0xFF);
         }
         else
         {
@@ -46,7 +46,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
            i < 1024;
            i++)
       {
-        internalMemory[i+0x9800] = (byte)0xFF;
+        internalMemory[i+0x9800] = (byte)(1023 - i);
       }
     }
 
