@@ -50,12 +50,12 @@
       <TextBlock Text="Section:"></TextBlock>
       <ComboBox Grid.Column="1" ItemsSource="{Binding MemorySections}" SelectedItem="{Binding SelectedSection}"></ComboBox>
       <TextBlock Grid.Column="2" Text="Address:"></TextBlock>
-      <ComboBox Grid.Column="3" ItemsSource="{Binding AddressFormats}" SelectedItem="{Binding SelectedValueFormat}"></ComboBox>
+      <ComboBox Grid.Column="3" ItemsSource="{Binding AddressFormats}" SelectedItem="{Binding SelectedAddressFormat}"></ComboBox>
       <TextBlock Grid.Column="4" Text="Value:"></TextBlock>
       <ComboBox Grid.Column="5" ItemsSource="{Binding ValueFormats}" SelectedItem="{Binding SelectedValueFormat}"></ComboBox>
     </Grid>
     <Grid Grid.Row="1" Style="{StaticResource SpacingGrid}">
-      <ListView  ItemsSource ="{Binding MemoryWords}" SelectedIndex="{Binding SelectedAddress, Mode=TwoWay}"></ListView>
+      <ListView  ItemsSource ="{Binding MemoryWords}" ></ListView>
     </Grid>
     <Grid Margin="5" Grid.Row="2">
       <Grid.ColumnDefinitions>

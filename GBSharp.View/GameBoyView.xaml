@@ -45,8 +45,8 @@
     </Grid.ColumnDefinitions>
     <Grid>
       <Grid.RowDefinitions>
-        <RowDefinition Height="Auto"></RowDefinition>
-        <RowDefinition Height="Auto"></RowDefinition>
+        <RowDefinition Height="3*"></RowDefinition>
+        <RowDefinition Height="5*"></RowDefinition>
       </Grid.RowDefinitions>
       <ContentPresenter Content="{Binding Memory}"/>
       <ContentPresenter Grid.Row="1" Content="{Binding Display}"/>

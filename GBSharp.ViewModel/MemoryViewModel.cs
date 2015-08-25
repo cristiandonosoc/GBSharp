@@ -130,7 +130,7 @@ namespace GBSharp.ViewModel
       _memorySections.Add(new MemorySectionViewModel("Switchable RAM", 0xA000, 0xC000));
       _memorySections.Add(new MemorySectionViewModel("VRAM", 0x8000, 0xC000));
       _memorySections.Add(new MemorySectionViewModel("ROM", 0x0000, 0x8000));
-      SelectedSection = _memorySections.Last();
+      SelectedSection = _memorySections.First();
     }
 
     private void UpdateMemoryWords()
@@ -151,7 +151,7 @@ namespace GBSharp.ViewModel
     private void CopyFromDomain()
     {
       _memoryWords.Clear();
-      for (int address = _selectedSection.InitialAddress; address < _selectedSection.FinalAddress; address++)
+      for (uint address = _selectedSection.InitialAddress; address < _selectedSection.FinalAddress; address++)
       {
         _memoryWords.Add(new MemoryWordViewModel(address, _memory.Data[address]));
       }

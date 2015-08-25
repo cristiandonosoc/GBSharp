@@ -4,8 +4,8 @@ namespace GBSharp.ViewModel
 {
   public class MemoryWordViewModel : ViewModelBase
   {
-    private readonly int _address;
-    private readonly int _value;
+    private readonly uint _address;
+    private readonly uint _value;
 
     private string _addressFormatString;
     private string _valueFormatString;
@@ -20,7 +20,7 @@ namespace GBSharp.ViewModel
       get { return _valueFormatString; }
     }
 
-    public MemoryWordViewModel(int address, int value)
+    public MemoryWordViewModel(uint address, uint value)
     {
       _address = address;
       _addressFormatString = address.ToString();
@@ -40,7 +40,7 @@ namespace GBSharp.ViewModel
       OnPropertyChanged(() => Value);
     }
 
-    private string GetFormat(MemoryWordFormat format, int value)
+    private string GetFormat(MemoryWordFormat format, uint value)
     {
       switch (format)
       {

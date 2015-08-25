@@ -4,10 +4,10 @@
   public class MemorySectionViewModel : ViewModelBase
   {
     private readonly string _name;
-    private readonly int _initialAddress;
-    private readonly int _finalAddress;
+    private readonly uint _initialAddress;
+    private readonly uint _finalAddress;
 
-    public MemorySectionViewModel(string name, int initialAddress, int finalAddress)
+    public MemorySectionViewModel(string name, uint initialAddress, uint finalAddress)
     {
       _name = name;
       _initialAddress = initialAddress;
@@ -20,12 +20,12 @@
     }
 
     
-    public int InitialAddress
+    public uint InitialAddress
     {
       get { return _initialAddress; }
     }
 
-    public int FinalAddress
+    public uint FinalAddress
     {
       get { return _finalAddress; }
     }
