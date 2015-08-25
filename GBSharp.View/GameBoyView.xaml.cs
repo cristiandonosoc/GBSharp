@@ -20,12 +20,6 @@ namespace GBSharp.View
       this.DataContext = _mainWindowViewModel;
     }
 
-    private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
-    {
-      var openFileDialog = new OpenFileDialog();
-      openFileDialog.ShowDialog();
-
-      FileText.Text = openFileDialog.FileName;
-    }
+    
   }
 }

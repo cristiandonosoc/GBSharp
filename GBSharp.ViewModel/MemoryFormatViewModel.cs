@@ -1,5 +1,12 @@
 ﻿namespace GBSharp.ViewModel
 {
+  public enum MemoryWordFormat
+  {
+    Decimal,
+    Binary,
+    Hexa
+  }
+
   public class MemoryFormatViewModel : ViewModelBase
   {
     private MemoryWordFormat _memoryWordFormat;
