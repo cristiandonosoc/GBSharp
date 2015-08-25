@@ -3,6 +3,7 @@
   public class GameBoyViewModel : ViewModelBase
   {
     private IDispatcher _dispatcher;
+    private readonly IWindow _window;
     private readonly IGameBoy _gameBoy;
 
     private readonly MemoryViewModel _memory;
@@ -43,10 +44,12 @@
     }
 
 
-    public GameBoyViewModel(IGameBoy gameBoy, IDispatcher dispatcher)
+    public GameBoyViewModel(IGameBoy gameBoy, IDispatcher dispatcher, IWindow window)
     {
       _gameBoy = gameBoy;
       _dispatcher = dispatcher;
+      _window = window;
+      _window.OnClosing += HandleClosing;
       _gameBoyController = new GameBoyContollerViewModel(_gameBoy);
       _memory = new MemoryViewModel(_gameBoy.Memory, "Memory View");//, 0xC000, 0xE000);
       _cpu = new CPUViewModel(_gameBoy.CPU, _gameBoy.Display, _dispatcher);
@@ -55,7 +58,9 @@
       _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher);
     }
 
-   
-    
+    private void HandleClosing()
+    {
+      _gameBoy.Stop();
+    }
   }
 }

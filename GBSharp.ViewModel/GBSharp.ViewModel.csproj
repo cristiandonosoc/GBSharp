@@ -52,6 +52,7 @@
     <Compile Include="GameBoyViewModel.cs" />
     <Compile Include="IDispatcher.cs" />
     <Compile Include="InterruptViewModel.cs" />
+    <Compile Include="IWindow.cs" />
     <Compile Include="MemorySectionViewModel.cs" />
     <Compile Include="MemoryViewModel.cs" />
     <Compile Include="MemoryWordViewModel.cs" />
