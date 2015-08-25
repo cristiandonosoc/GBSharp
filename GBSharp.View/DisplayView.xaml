@@ -1,0 +1,43 @@
+﻿<UserControl x:Class="GBSharp.View.DisplayView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+  <Grid Style="{StaticResource SubContentGrid}">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Grid Margin="5">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <CheckBox Content="8x8 Blocks" IsChecked="{Binding BlockSelectionFlag}" Margin="2" />
+        <CheckBox Grid.Row="1" Content="Code Area 0" IsChecked="{Binding CodeAreaSelectionFlag}" Margin="2" />
+        <CheckBox Grid.Row="2" Content="Signed Mode" IsChecked="{Binding CharacterDataSelectionFlag}" Margin="2" />
+        <DockPanel Grid.Row="3">
+          <Button DockPanel.Dock="Left" Content="&lt;" Command="{Binding ScrollXDecreaseCommand}"></Button>
+          <Button DockPanel.Dock="Right" Content="&gt;" Command="{Binding ScrollXIncreaseCommand}"></Button>
+          <Button DockPanel.Dock="Top" Content="^" Command="{Binding ScrollYIncreaseCommand}"></Button>
+          <Button DockPanel.Dock="Bottom" Content="v" Command="{Binding ScrollYDecreaseCommand}"></Button>
+          <Image Height="256" Width="256" Source="{Binding Background}"/>
+        </DockPanel>
+      </Grid>
+    </Grid>
+    <Grid Margin="5" Grid.Row="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"></ColumnDefinition>
+        <ColumnDefinition Width="Auto"></ColumnDefinition>
+        <ColumnDefinition Width="Auto"></ColumnDefinition>
+      </Grid.ColumnDefinitions>
+      <Button Grid.Column="1" Content="Read" Command="{Binding ReadCommand}"></Button>
+      <Button Grid.Column="2" Content="Write" Command="{Binding WriteCommand}"></Button>
+    </Grid>
+  </Grid>
+</UserControl>

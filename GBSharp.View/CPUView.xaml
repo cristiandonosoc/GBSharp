@@ -1,0 +1,106 @@
+﻿<UserControl x:Class="GBSharp.View.CPUView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+  <Grid Style="{StaticResource SubContentGrid}">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <Grid Margin="5">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"></RowDefinition>
+        <RowDefinition Height="*"></RowDefinition>
+      </Grid.RowDefinitions>
+      <TextBlock Text="Address Registers" Margin="2"/>
+      <Grid  Grid.Row="1">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto"></ColumnDefinition>
+          <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Text="Register PC:" Margin="2"/>
+        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding RegisterPC}" Margin="2"/>
+        <TextBlock Grid.Row="1" Grid.Column="0" Text="Register SP:" Margin="2"/>
+        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding RegisterSP}" Margin="2"/>
+      </Grid>
+    </Grid>
+    <Grid Margin="5" Grid.Row="1">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"></RowDefinition>
+        <RowDefinition Height="*"></RowDefinition>
+      </Grid.RowDefinitions>
+      <TextBlock Text="Data Registers" Margin="2"/>
+      <Grid  Grid.Row="1">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto"></ColumnDefinition>
+          <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Text="Register A:" Margin="2"/>
+        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding RegisterA}" Margin="2"/>
+        <TextBlock Grid.Row="1" Grid.Column="0" Text="Register B:" Margin="2"/>
+        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding RegisterB}" Margin="2"/>
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="Register C:" Margin="2"/>
+        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding RegisterC}" Margin="2"/>
+        <TextBlock Grid.Row="3" Grid.Column="0" Text="Register D:" Margin="2"/>
+        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding RegisterD}" Margin="2"/>
+        <TextBlock Grid.Row="4" Grid.Column="0" Text="Register E:" Margin="2"/>
+        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding RegisterE}" Margin="2"/>
+        <TextBlock Grid.Row="5" Grid.Column="0" Text="Register H:" Margin="2"/>
+        <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding RegisterH}" Margin="2"/>
+        <TextBlock Grid.Row="6" Grid.Column="0" Text="Register L:" Margin="2"/>
+        <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding RegisterL}" Margin="2"/>
+      </Grid>
+    </Grid>
+    <Grid Margin="5" Grid.Row="2">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"></RowDefinition>
+        <RowDefinition Height="*"></RowDefinition>
+      </Grid.RowDefinitions>
+      <TextBlock Text="CPU Flags:" Margin="2"/>
+      <Grid  Grid.Row="1">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto"></ColumnDefinition>
+          <ColumnDefinition Width="Auto"></ColumnDefinition>
+          <ColumnDefinition Width="Auto"></ColumnDefinition>
+          <ColumnDefinition Width="Auto"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+        <CheckBox Content="Zero" IsChecked="{Binding FlagZero}" Margin="2"/>
+        <CheckBox Content="Carry" IsChecked="{Binding FlagCarry}" Margin="2" Grid.Column="1"/>
+        <CheckBox Content="Half Carry" IsChecked="{Binding FlagHalfCarry}" Margin="2" Grid.Column="2"/>
+        <CheckBox Content="Negative" IsChecked="{Binding FlagNegative}" Margin="2" Grid.Column="3"/>
+
+      </Grid>
+    </Grid>
+    <Grid Margin="5" Grid.Row="4">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"></ColumnDefinition>
+        <ColumnDefinition Width="Auto"></ColumnDefinition>
+        <ColumnDefinition Width="Auto"></ColumnDefinition>
+      </Grid.ColumnDefinitions>
+      <Button Grid.Column="1" Content="Read" Command="{Binding ReadCommand}"></Button>
+      <Button Grid.Column="2" Content="Write" Command="{Binding WriteCommand}"></Button>
+    </Grid>
+  </Grid>
+</UserControl>

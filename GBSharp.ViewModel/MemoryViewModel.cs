@@ -1,45 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows.Input;
 
 namespace GBSharp.ViewModel
 {
-  public enum MemoryWordFormat
-  {
-    Decimal,
-    Binary,
-    Hexa
-  }
-
+ 
   public class MemoryViewModel : ViewModelBase
   {
     private readonly IMemory _memory;
-    private MemoryWordFormat _memoryWordValueFormat = MemoryWordFormat.Decimal;
-    private MemoryWordFormat _memoryWordAddressFormat = MemoryWordFormat.Decimal;
     private readonly ObservableCollection<MemoryFormatViewModel> _addressFormats = new ObservableCollection<MemoryFormatViewModel>();
     private MemoryFormatViewModel _selectedAddressFormat;
     private readonly ObservableCollection<MemoryFormatViewModel> _valueFormats = new ObservableCollection<MemoryFormatViewModel>();
     private MemoryFormatViewModel _selectedValueFormat;
     private readonly ObservableCollection<MemoryWordViewModel> _memoryWords = new ObservableCollection<MemoryWordViewModel>();
+    private MemorySectionViewModel _selectedSection;
+    private readonly ObservableCollection<MemorySectionViewModel> _memorySections = new ObservableCollection<MemorySectionViewModel>();
 
-    private int _selectedAddress;
     private string _name;
-    private readonly int _initialAddress;
-    private int _finalAddress;
-
-    public MemoryWordFormat MemoryWordValueFormat
-    {
-      get { return _memoryWordValueFormat; }
-      set { _memoryWordValueFormat = value; }
-    }
-
-    public MemoryWordFormat MemoryWordAddressFormat
-    {
-      get { return _memoryWordAddressFormat; }
-      set { _memoryWordAddressFormat = value; }
-    }
-
+    
     public ObservableCollection<MemoryWordViewModel> MemoryWords
     {
       get { return _memoryWords; }
@@ -53,6 +32,11 @@ namespace GBSharp.ViewModel
     public ObservableCollection<MemoryFormatViewModel> ValueFormats
     {
       get { return _valueFormats; }
+    }
+
+    public ObservableCollection<MemorySectionViewModel> MemorySections
+    {
+      get { return _memorySections; }
     }
 
     public MemoryFormatViewModel SelectedAddressFormat
@@ -83,33 +67,45 @@ namespace GBSharp.ViewModel
       }
     }
 
-    public int SelectedAddress
+    public MemorySectionViewModel SelectedSection
     {
-      get { return _selectedAddress; }
+      get { return _selectedSection; }
       set
       {
-        if (_selectedAddress != value)
+        if (_selectedSection != value)
         {
-          _selectedAddress = value;
-          OnPropertyChanged(() => SelectedAddress);
+          _selectedSection = value;
+          OnPropertyChanged(() => SelectedSection);
+          OnSelectedSectionUpdated();
         }
       }
     }
+
+  
 
     public string Name
     {
       get { return _name; }
     }
 
+    public ICommand ReadCommand
+    {
+      get { return new DelegateCommand(CopyFromDomain); }
+    }
+
+    public ICommand WriteCommand
+    {
+      get { return new DelegateCommand(CopyToDomain); }
+    }
+
+    
     public MemoryViewModel(IMemory memory, string name, int initialAddress=0, int finalAddress=-1)
     {
       if (memory == null) throw new ArgumentNullException("memory");
       _memory = memory;
       _name = name;
-      _initialAddress = initialAddress;
-      _finalAddress = finalAddress;
       
-      InitMemoryFormats();
+      Init();
     }
 
     public void Update()
@@ -117,17 +113,24 @@ namespace GBSharp.ViewModel
       CopyFromDomain();
     }
 
-    private void InitMemoryFormats()
+    private void Init()
     {
       _addressFormats.Add(new MemoryFormatViewModel("Hexadecimal", MemoryWordFormat.Hexa));
       _addressFormats.Add(new MemoryFormatViewModel("Decimal", MemoryWordFormat.Decimal));
-      //_addressFormats.Add(new MemoryFormatViewModel("Binary", MemoryWordFormat.Binary));
       SelectedAddressFormat = _addressFormats.First();
 
       _valueFormats.Add(new MemoryFormatViewModel("Hexadecimal", MemoryWordFormat.Hexa));
       _valueFormats.Add(new MemoryFormatViewModel("Decimal", MemoryWordFormat.Decimal));
-      //_valueFormats.Add(new MemoryFormatViewModel("Binary", MemoryWordFormat.Binary));
       SelectedValueFormat = _valueFormats.First();
+
+      _memorySections.Add(new MemorySectionViewModel("Lil Internal RAM", 0xFF80, 0xFFFF));
+      _memorySections.Add(new MemorySectionViewModel("IO Ports", 0xFF00, 0xFF4C));
+      _memorySections.Add(new MemorySectionViewModel("OAM", 0xFE00, 0xFEA0));
+      _memorySections.Add(new MemorySectionViewModel("Internal RAM", 0xC000, 0xE000));
+      _memorySections.Add(new MemorySectionViewModel("Switchable RAM", 0xA000, 0xC000));
+      _memorySections.Add(new MemorySectionViewModel("VRAM", 0x8000, 0xC000));
+      _memorySections.Add(new MemorySectionViewModel("ROM", 0x0000, 0x8000));
+      SelectedSection = _memorySections.First();
     }
 
     private void UpdateMemoryWords()
@@ -139,20 +142,26 @@ namespace GBSharp.ViewModel
       }
     }
 
-   
+    private void OnSelectedSectionUpdated()
+    {
+      CopyFromDomain();
+    }
+
   
     private void CopyFromDomain()
     {
       _memoryWords.Clear();
-      if (_finalAddress == -1)
-        _finalAddress = _memory.Data.Length;
-      for (int address = _initialAddress; address < _finalAddress; address++)
+      for (uint address = _selectedSection.InitialAddress; address < _selectedSection.FinalAddress; address++)
       {
         _memoryWords.Add(new MemoryWordViewModel(address, _memory.Data[address]));
       }
       UpdateMemoryWords();
     }
 
+    private void CopyToDomain()
+    {
+      throw new NotImplementedException();
+    }
 
   
   

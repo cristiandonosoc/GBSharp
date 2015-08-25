@@ -3,12 +3,36 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:view="clr-namespace:GBSharp.View"
         xmlns:viewModel="clr-namespace:GBSharp.ViewModel;assembly=GBSharp.ViewModel"
-        xmlns:vsm ="clr-namespace:System.Windows;assembly=PresentationFramework"
-        Title="GBSharp" Height="720" Width="1024" >
+        Title="GBSharp" Height="720" Width="1024" WindowState="Maximized">
   <Window.Resources>
     <DataTemplate DataType="{x:Type viewModel:MemoryViewModel}">
       <Grid Style="{StaticResource SubContentGrid}">
         <view:MemoryView></view:MemoryView>
+      </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type viewModel:CPUViewModel}">
+      <Grid Style="{StaticResource SubContentGrid}">
+        <view:CPUView></view:CPUView>
+      </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type viewModel:InterruptViewModel}">
+      <Grid Style="{StaticResource SubContentGrid}">
+        <view:InterruptView></view:InterruptView>
+      </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type viewModel:DisplayViewModel}">
+      <Grid Style="{StaticResource SubContentGrid}">
+        <view:DisplayView></view:DisplayView>
+      </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type viewModel:GameBoyContollerViewModel}">
+      <Grid Style="{StaticResource SubContentGrid}">
+        <view:GameBoyControllerView></view:GameBoyControllerView>
+      </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type viewModel:GameBoyGamePadViewModel}">
+      <Grid Style="{StaticResource SubContentGrid}">
+        <view:GameBoyGamePadView></view:GameBoyGamePadView>
       </Grid>
     </DataTemplate>
   </Window.Resources>
@@ -21,476 +45,28 @@
     </Grid.ColumnDefinitions>
     <Grid>
       <Grid.RowDefinitions>
-        <RowDefinition Height="*"></RowDefinition>
-        <RowDefinition Height="*"></RowDefinition>
+        <RowDefinition Height="3*"></RowDefinition>
+        <RowDefinition Height="5*"></RowDefinition>
       </Grid.RowDefinitions>
-      <ContentPresenter Grid.Row="0" Content="{Binding Memory}"/>
-      <Image Grid.Row="1" Height="256" Width="256" Source="{Binding Background}"/>
+      <ContentPresenter Content="{Binding Memory}"/>
+      <ContentPresenter Grid.Row="1" Content="{Binding Display}"/>
     </Grid>
-
     <Grid Grid.Column="1">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto"></RowDefinition>
-        <RowDefinition Height="*"></RowDefinition>
         <RowDefinition Height="Auto"></RowDefinition>
       </Grid.RowDefinitions>
-      <Grid Style="{DynamicResource SubContentGrid}">
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="*"></ColumnDefinition>
-          <ColumnDefinition Width="Auto"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"></RowDefinition>
-          <RowDefinition Height="Auto"></RowDefinition>
-        </Grid.RowDefinitions>
-        <Border BorderBrush="{StaticResource TextBrush}" BorderThickness="1">
-          <TextBlock Name="FileText" Text="{Binding FilePath, Mode=TwoWay}" FontSize="9"></TextBlock>
-        </Border>
-        <Button Grid.Row="0" Grid.Column="1" Click="ButtonBase_OnClick" Content="Load Game"></Button>
-        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding CartridgeTitle}" ></TextBlock>
-      </Grid>
-      <Canvas Grid.Row="1">
-        <Image Canvas.Top="0" Canvas.Left="0" Source="Images/Nintendo_Gameboy720.jpg" RenderTransformOrigin="0.5,0.5" Height="568" Width="345">
-          <Image.RenderTransform>
-            <TransformGroup>
-              <ScaleTransform/>
-              <SkewTransform/>
-              <RotateTransform Angle="0.152"/>
-              <TranslateTransform/>
-            </TransformGroup>
-          </Image.RenderTransform>
-        </Image>
-        <Button x:Name="A" Command="{Binding ButtonACommand}" Canvas.Top="345" Canvas.Left="274" HorizontalAlignment="Left" VerticalAlignment="Top" Width="40" Height="40">
-          <Button.Template>
-            <ControlTemplate TargetType="Button">
-              <Grid>
-                <vsm:VisualStateManager.VisualStateGroups>
-                  <vsm:VisualStateGroup x:Name="CommonStates">
-                    <vsm:VisualState x:Name="Normal"/>
-                    <vsm:VisualState x:Name="MouseOver">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
-                      </Storyboard>
-                    </vsm:VisualState>
-                    <vsm:VisualState x:Name="Pressed">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </vsm:VisualState>
-                    <vsm:VisualState x:Name="Disabled">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </vsm:VisualState>
-                  </vsm:VisualStateGroup>
-                </vsm:VisualStateManager.VisualStateGroups>
-                <Ellipse Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
-                <Ellipse Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
-                <Ellipse Stroke="Black" Fill="Transparent">
-                </Ellipse>
-                <ContentPresenter HorizontalAlignment="Center"
-                                  VerticalAlignment="Center"/>
-              </Grid>
-            </ControlTemplate>
-          </Button.Template>
-        </Button>
-        <Button x:Name="B" Command="{Binding ButtonBCommand}" Canvas.Top="370" Canvas.Left="219" HorizontalAlignment="Left" VerticalAlignment="Top" Width="42" Height="42">
-          <Button.Template>
-            <ControlTemplate TargetType="{x:Type Button}">
-              <Grid>
-                <vsm:VisualStateManager.VisualStateGroups>
-                  <vsm:VisualStateGroup x:Name="CommonStates">
-                    <vsm:VisualState x:Name="Normal"/>
-                    <vsm:VisualState x:Name="MouseOver">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
-                      </Storyboard>
-                    </vsm:VisualState>
-                    <vsm:VisualState x:Name="Pressed">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </vsm:VisualState>
-                    <vsm:VisualState x:Name="Disabled">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </vsm:VisualState>
-                  </vsm:VisualStateGroup>
-                </vsm:VisualStateManager.VisualStateGroups>
-                <Ellipse Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
-                <Ellipse Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
-                <Ellipse Stroke="Black" Fill="Transparent"/>
-                <ContentPresenter HorizontalAlignment="Center"
-      					VerticalAlignment="Center"/>
-              </Grid>
-            </ControlTemplate>
-          </Button.Template>
-        </Button>
-        <Button x:Name="L" Command="{Binding ButtonLeftCommand}" Canvas.Top="371" Canvas.Left="32" HorizontalAlignment="Left" VerticalAlignment="Top" Width="25" Height="25">
-          <Button.Template>
-            <ControlTemplate TargetType="{x:Type Button}">
-              <Grid>
-                <vsm:VisualStateManager.VisualStateGroups>
-                  <vsm:VisualStateGroup x:Name="CommonStates">
-                    <vsm:VisualState x:Name="Normal"/>
-                    <vsm:VisualState x:Name="MouseOver">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
-                      </Storyboard>
-                    </vsm:VisualState>
-                    <vsm:VisualState x:Name="Pressed">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </vsm:VisualState>
-                    <vsm:VisualState x:Name="Disabled">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </vsm:VisualState>
-                  </vsm:VisualStateGroup>
-                </vsm:VisualStateManager.VisualStateGroups>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
-                <Rectangle Stroke="Black" Fill="Transparent"/>
-                <ContentPresenter HorizontalAlignment="Center"
-      					VerticalAlignment="Center"/>
-              </Grid>
-            </ControlTemplate>
-          </Button.Template>
-        </Button>
-        <Button x:Name="R" Command="{Binding ButtonRightCommand}" Canvas.Top="370" Canvas.Left="87" HorizontalAlignment="Left" VerticalAlignment="Top" Width="25" Height="25">
-          <Button.Template>
-            <ControlTemplate TargetType="{x:Type Button}">
-              <Grid>
-                <vsm:VisualStateManager.VisualStateGroups>
-                  <vsm:VisualStateGroup x:Name="CommonStates">
-                    <vsm:VisualState x:Name="Normal"/>
-                    <vsm:VisualState x:Name="MouseOver">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
-                      </Storyboard>
-                    </vsm:VisualState>
-                    <vsm:VisualState x:Name="Pressed">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </vsm:VisualState>
-                    <vsm:VisualState x:Name="Disabled">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </vsm:VisualState>
-                  </vsm:VisualStateGroup>
-                </vsm:VisualStateManager.VisualStateGroups>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
-                <Rectangle Stroke="Black" Fill="Transparent"/>
-                <ContentPresenter HorizontalAlignment="Center"
-      					VerticalAlignment="Center"/>
-              </Grid>
-            </ControlTemplate>
-          </Button.Template>
-        </Button>
-        <Button x:Name="U" Command="{Binding ButtonUpCommand}" Canvas.Top="345" Canvas.Left="59" HorizontalAlignment="Left" VerticalAlignment="Top" Width="25" Height="25">
-          <Button.Template>
-            <ControlTemplate TargetType="{x:Type Button}">
-              <Grid>
-                <vsm:VisualStateManager.VisualStateGroups>
-                  <vsm:VisualStateGroup x:Name="CommonStates">
-                    <vsm:VisualState x:Name="Normal"/>
-                    <vsm:VisualState x:Name="MouseOver">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
-                      </Storyboard>
-                    </vsm:VisualState>
-                    <vsm:VisualState x:Name="Pressed">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </vsm:VisualState>
-                    <vsm:VisualState x:Name="Disabled">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </vsm:VisualState>
-                  </vsm:VisualStateGroup>
-                </vsm:VisualStateManager.VisualStateGroups>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
-                <Rectangle Stroke="Black" Fill="Transparent"/>
-                <ContentPresenter HorizontalAlignment="Center"
-      					VerticalAlignment="Center"/>
-              </Grid>
-            </ControlTemplate>
-          </Button.Template>
-        </Button>
-        <Button x:Name="D" Command="{Binding ButtonDownCommand}" Canvas.Top="395" Canvas.Left="59" HorizontalAlignment="Left" VerticalAlignment="Top" Width="25" Height="25">
-          <Button.Template>
-            <ControlTemplate TargetType="{x:Type Button}">
-              <Grid>
-                <vsm:VisualStateManager.VisualStateGroups>
-                  <vsm:VisualStateGroup x:Name="CommonStates">
-                    <vsm:VisualState x:Name="Normal"/>
-                    <vsm:VisualState x:Name="MouseOver">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
-                      </Storyboard>
-                    </vsm:VisualState>
-                    <vsm:VisualState x:Name="Pressed">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </vsm:VisualState>
-                    <vsm:VisualState x:Name="Disabled">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </vsm:VisualState>
-                  </vsm:VisualStateGroup>
-                </vsm:VisualStateManager.VisualStateGroups>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
-                <Rectangle Stroke="Black" Fill="Transparent"/>
-                <ContentPresenter HorizontalAlignment="Center"
-      					VerticalAlignment="Center"/>
-              </Grid>
-            </ControlTemplate>
-          </Button.Template>
-        </Button>
-        <Button x:Name="Start" Command="{Binding ButtonStartCommand}" Canvas.Top="456" Canvas.Left="159" HorizontalAlignment="Left" VerticalAlignment="Top" Width="48" Height="16" RenderTransformOrigin="0.559,-0.172">
-          <Button.RenderTransform>
-            <TransformGroup>
-              <ScaleTransform/>
-              <SkewTransform/>
-              <RotateTransform Angle="-26.076"/>
-              <TranslateTransform X="-5.58" Y="0.089"/>
-            </TransformGroup>
-          </Button.RenderTransform>
-          <Button.Template>
-            <ControlTemplate TargetType="{x:Type Button}">
-              <Grid>
-                <vsm:VisualStateManager.VisualStateGroups>
-                  <vsm:VisualStateGroup x:Name="CommonStates">
-                    <vsm:VisualState x:Name="Normal"/>
-                    <vsm:VisualState x:Name="MouseOver">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
-                      </Storyboard>
-                    </vsm:VisualState>
-                    <vsm:VisualState x:Name="Pressed">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </vsm:VisualState>
-                    <vsm:VisualState x:Name="Disabled">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </vsm:VisualState>
-                  </vsm:VisualStateGroup>
-                </vsm:VisualStateManager.VisualStateGroups>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
-                <Rectangle Stroke="#AEAEAE" Fill="Transparent" />
-                <ContentPresenter HorizontalAlignment="Center"
-      					VerticalAlignment="Center"/>
-              </Grid>
-            </ControlTemplate>
-          </Button.Template>
-        </Button>
-        <Button x:Name="Select" Command="{Binding ButtonSelectCommand}" Canvas.Top="459" Canvas.Left="99" HorizontalAlignment="Left" VerticalAlignment="Top" Width="53" Height="17" RenderTransformOrigin="0.314,0.569">
-          <Button.RenderTransform>
-            <TransformGroup>
-              <ScaleTransform/>
-              <SkewTransform/>
-              <RotateTransform Angle="-26.549"/>
-              <TranslateTransform/>
-            </TransformGroup>
-          </Button.RenderTransform>
-          <Button.Template>
-            <ControlTemplate TargetType="{x:Type Button}">
-              <Grid>
-                <vsm:VisualStateManager.VisualStateGroups>
-                  <vsm:VisualStateGroup x:Name="CommonStates">
-                    <vsm:VisualState x:Name="Normal"/>
-                    <vsm:VisualState x:Name="MouseOver">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
-                      </Storyboard>
-                    </vsm:VisualState>
-                    <vsm:VisualState x:Name="Pressed">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </vsm:VisualState>
-                    <vsm:VisualState x:Name="Disabled">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </vsm:VisualState>
-                  </vsm:VisualStateGroup>
-                </vsm:VisualStateManager.VisualStateGroups>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
-                <Rectangle Stroke="#AEAEAE" Fill="Transparent" />
-                <ContentPresenter HorizontalAlignment="Center"
-      					VerticalAlignment="Center"/>
-              </Grid>
-            </ControlTemplate>
-          </Button.Template>
-        </Button>
-        <Image Height="144" Canvas.Left="91" Canvas.Top="86" Width="160" Source="{Binding Screen}"/>
-
-      </Canvas>
-      <Grid Grid.Row="2" Margin="5">
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="Auto"></ColumnDefinition>
-          <ColumnDefinition Width="Auto"></ColumnDefinition>
-          <ColumnDefinition Width="Auto"></ColumnDefinition>
-          <ColumnDefinition Width="Auto"></ColumnDefinition>
-          <ColumnDefinition Width="*"></ColumnDefinition>
-          <ColumnDefinition Width="Auto"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <Button Content="Run" Command="{Binding RunCommand}"></Button>
-        <Button Grid.Column="1" Content="Step" Command="{Binding StepCommand}"></Button>
-        <Button Grid.Column="2" Content="Pause" Command="{Binding PauseCommand}"></Button>
-        <Button Grid.Column="3" Content="Stop" Command="{Binding StopCommand}"></Button>
-        <Button Grid.Column="5" Content="Update Display" Command="{Binding UpdateDisplayCommand}"></Button>
-      </Grid>
+      <ContentPresenter Content="{Binding GameBoyController}"/>
+      <ContentPresenter Grid.Row="1" Content="{Binding GameBoyGamePad}"/>
+      
     </Grid>
-    <Grid Grid.Column="2" Style="{StaticResource SubContentGrid}">
+    <Grid Grid.Column="2" >
       <Grid.RowDefinitions>
-        <RowDefinition Height="Auto"/>
-        <RowDefinition Height="Auto"/>
-        <RowDefinition Height="Auto"/>
-        <RowDefinition Height="Auto"/>
-        <RowDefinition Height="*"/>
-        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"></RowDefinition>
+        <RowDefinition Height="Auto"></RowDefinition>
       </Grid.RowDefinitions>
-      <Grid Margin="5">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"></RowDefinition>
-          <RowDefinition Height="*"></RowDefinition>
-        </Grid.RowDefinitions>
-        <TextBlock Text="Address Registers" Margin="2"/>
-        <Grid  Grid.Row="1">
-          <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-          </Grid.RowDefinitions>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
-            <ColumnDefinition Width="*"></ColumnDefinition>
-          </Grid.ColumnDefinitions>
-
-          <TextBlock Text="Register PC:" Margin="2"/>
-          <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding RegisterPC}" Margin="2"/>
-          <TextBlock Grid.Row="1" Grid.Column="0" Text="Register SP:" Margin="2"/>
-          <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding RegisterSP}" Margin="2"/>
-        </Grid>
-      </Grid>
-      <Grid Margin="5" Grid.Row="1">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"></RowDefinition>
-          <RowDefinition Height="*"></RowDefinition>
-        </Grid.RowDefinitions>
-        <TextBlock Text="Data Registers" Margin="2"/>
-        <Grid  Grid.Row="1">
-          <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-          </Grid.RowDefinitions>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
-            <ColumnDefinition Width="*"></ColumnDefinition>
-          </Grid.ColumnDefinitions>
-
-          <TextBlock Text="Register A:" Margin="2"/>
-          <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding RegisterA}" Margin="2"/>
-          <TextBlock Grid.Row="1" Grid.Column="0" Text="Register B:" Margin="2"/>
-          <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding RegisterB}" Margin="2"/>
-          <TextBlock Grid.Row="2" Grid.Column="0" Text="Register C:" Margin="2"/>
-          <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding RegisterC}" Margin="2"/>
-          <TextBlock Grid.Row="3" Grid.Column="0" Text="Register D:" Margin="2"/>
-          <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding RegisterD}" Margin="2"/>
-          <TextBlock Grid.Row="4" Grid.Column="0" Text="Register E:" Margin="2"/>
-          <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding RegisterE}" Margin="2"/>
-          <TextBlock Grid.Row="5" Grid.Column="0" Text="Register H:" Margin="2"/>
-          <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding RegisterH}" Margin="2"/>
-          <TextBlock Grid.Row="6" Grid.Column="0" Text="Register L:" Margin="2"/>
-          <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding RegisterL}" Margin="2"/>
-        </Grid>
-      </Grid>
-      <Grid Margin="5" Grid.Row="2">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"></RowDefinition>
-          <RowDefinition Height="*"></RowDefinition>
-        </Grid.RowDefinitions>
-        <TextBlock Text="CPU Flags:" Margin="2"/>
-        <Grid  Grid.Row="1">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
-          </Grid.ColumnDefinitions>
-
-          <CheckBox Content="Zero" IsChecked="{Binding FlagZero}" Margin="2"/>
-          <CheckBox Content="Carry" IsChecked="{Binding FlagCarry}" Margin="2" Grid.Column="1"/>
-          <CheckBox Content="Half Carry" IsChecked="{Binding FlagHalfCarry}" Margin="2" Grid.Column="2"/>
-          <CheckBox Content="Negative" IsChecked="{Binding FlagNegative}" Margin="2" Grid.Column="3"/>
-
-        </Grid>
-      </Grid>
-      <Grid Margin="5" Grid.Row="3">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"></RowDefinition>
-          <RowDefinition Height="*"></RowDefinition>
-        </Grid.RowDefinitions>
-        <TextBlock Text="Interrupt Flags:" Margin="2"/>
-        <Grid  Grid.Row="1">
-          <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-          </Grid.RowDefinitions>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
-          </Grid.ColumnDefinitions>
-
-          <TextBlock Text="Interrupt Master" Margin="2"/>            
-          <CheckBox Content="enabled" IsChecked="{Binding InterruptMasterEnabled}" Margin="2" Grid.Column="1"/>
-          <TextBlock Text="Vertical Blank" Margin="2" Grid.Row="1"/>
-          <CheckBox Content="enabled" IsChecked="{Binding VerticalBlankInterruptEnabled}" Margin="2" Grid.Row="1" Grid.Column="1"/>
-          <CheckBox Content="requested" IsChecked="{Binding VerticalBlankInterruptRequested}" Margin="2" Grid.Row="1" Grid.Column="2"/>
-          <TextBlock Text="LCD Status" Margin="2" Grid.Row="2"/>
-          <CheckBox Content="enabled" IsChecked="{Binding LcdStatusInterruptEnabled}" Margin="2" Grid.Row="2" Grid.Column="1"/>
-          <CheckBox Content="requested" IsChecked="{Binding LcdStatusInterruptRequested}" Margin="2" Grid.Row="2" Grid.Column="2"/>
-          <TextBlock Text="Timer Overflow" Margin="2" Grid.Row="3"/>
-          <CheckBox Content="enabled" IsChecked="{Binding TimerOverflowInterruptEnabled}" Margin="2" Grid.Row="3" Grid.Column="1"/>
-          <CheckBox Content="requested" IsChecked="{Binding TimerOverflowInterruptRequested}" Margin="2" Grid.Row="3" Grid.Column="2"/>
-          <TextBlock Text="Serial Transfer" Margin="2" Grid.Row="4"/>
-          <CheckBox Content="enabled" IsChecked="{Binding SerialTransferCompletedInterruptEnabled}" Margin="2" Grid.Row="4" Grid.Column="1"/>
-          <CheckBox Content="requested" IsChecked="{Binding SerialTransferCompletedInterruptRequested}" Margin="2" Grid.Row="4" Grid.Column="2"/>
-          <TextBlock Text="Keypad Pressed" Margin="2" Grid.Row="5"/>
-          <CheckBox Content="enabled" IsChecked="{Binding KeyPadPressedInterruptEnabled}" Margin="2" Grid.Row="5" Grid.Column="1"/>
-          <CheckBox Content="requested" IsChecked="{Binding KeyPadPressedInterruptRequested}" Margin="2" Grid.Row="5" Grid.Column="2"/>
-
-        </Grid>
-      </Grid>
-      <Button Grid.Row="5" Content="Update CPU" Command="{Binding PrintCPUCommand}"></Button>
+      <ContentPresenter Content="{Binding CPU}"/>
+      <ContentPresenter Grid.Row="1" Content="{Binding Interrupt}"/>
     </Grid>
   </Grid>
 </Window>

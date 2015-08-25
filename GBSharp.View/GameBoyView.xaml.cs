@@ -16,16 +16,10 @@ namespace GBSharp.View
     {
       InitializeComponent();
       _gameBoy = new GameBoy();
-      _mainWindowViewModel = new GameBoyViewModel(_gameBoy, new DispatcherAdapter(this));
+      _mainWindowViewModel = new GameBoyViewModel(_gameBoy, new DispatcherAdapter(this), new WindowAdapter(this));
       this.DataContext = _mainWindowViewModel;
     }
 
-    private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
-    {
-      var openFileDialog = new OpenFileDialog();
-      openFileDialog.ShowDialog();
-
-      FileText.Text = openFileDialog.FileName;
-    }
+    
   }
 }

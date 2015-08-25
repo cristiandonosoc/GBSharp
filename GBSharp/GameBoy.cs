@@ -163,7 +163,7 @@ namespace GBSharp
       this.manualResetEvent.Set(); // Unlock the thread to make that happen.
       
       // Dispose CPU and memory, create a new one and load rom again?
-      throw new NotImplementedException();
+      //throw new NotImplementedException();
     }
 
     /// <summary>
