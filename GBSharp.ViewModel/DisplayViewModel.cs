@@ -120,22 +120,30 @@ namespace GBSharp.ViewModel
 
     private void ScrollXDecrease()
     {
-      
+      ushort access = (ushort)MemoryMappedRegisters.SCX;
+      byte[] mem = _memory.Data;
+      mem[access] = --mem[access];
     }
 
     private void ScrollXIncrease()
     {
-      
+      ushort access = (ushort)MemoryMappedRegisters.SCX;
+      byte[] mem = _memory.Data;
+      mem[access] = ++mem[access];
     }
 
     private void ScrollYDecrease()
     {
-      
+      ushort access = (ushort)MemoryMappedRegisters.SCY;
+      byte[] mem = _memory.Data;
+      mem[access] = --mem[access];
     }
 
     private void ScrollYIncrease()
     {
-      
+      ushort access = (ushort)MemoryMappedRegisters.SCY;
+      byte[] mem = _memory.Data;
+      mem[access] = ++mem[access];
     }
   }
 }
