@@ -244,6 +244,8 @@ namespace GBSharp.VideoSpace
     }
 
 
+    private const int screenStep = 96905; // Aprox. ~16.6687 ms
+    private int screenSum = 0;
     /// <summary>
     /// Simulates the update of the display for a period of time of a given number of ticks.
     /// </summary>
@@ -256,6 +258,13 @@ namespace GBSharp.VideoSpace
       // Do Line Magics?
       // H-Blank?
       // V-Blank?
+
+      screenSum += ticks;
+      if(screenSum > screenStep)
+      {
+        screenSum %= screenStep;
+        UpdateScreen();
+      } 
     }
   }
 }
