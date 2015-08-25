@@ -13,36 +13,40 @@ namespace GBSharp.MemorySpace
     /// <summary>
     /// This is what can be addressed.
     /// </summary>
-    byte[] data = new byte[65536];
+    private byte[] data;
 
+    /// <summary>
+    /// The class that is going to handle the memory writes depending on the cartridge type.
+    /// </summary>
     private MemoryHandler memoryHandler;
 
     /// <summary>
-    /// Class constructor, initializes everything to 0.
+    /// Class constructor, does nothing.
     /// </summary>
     internal Memory()
     {
-      this.memoryHandler = new InitialMemoryHandler();
-      this.memoryHandler.LoadInternalMemory(this.data);
-      // TODO(Cristian): Is this reset necessary?
-      //ResetMemory();
+      data = new byte[65536];
     }
 
     /// <summary>
-    /// Clears the internal memory
+    /// Clears the internal memory.
     /// </summary>
-    private void ResetMemory()
+    private void ClearMemory()
     {
       for (int i = 0; i < this.data.Length; ++i)
       {
-        this.memoryHandler.Write((ushort)i, 0);
+        data[i] = 0;
       }
     }
 
+    /// <summary>
+    /// Sets the memory handler that is going to be used by this memory.
+    /// </summary>
+    /// <param name="memoryHandler">A reference to an initialized memory handler.</param>
     internal void SetMemoryHandler(MemoryHandler memoryHandler)
     {
       this.memoryHandler = memoryHandler;
-      this.memoryHandler.LoadInternalMemory(this.data);
+      this.memoryHandler.UpdateMemoryReference(this.data);
     }
 
     /// <summary>
@@ -52,8 +56,6 @@ namespace GBSharp.MemorySpace
     /// <param name="value">8 bits value.</param>
     internal void Write(ushort address, byte value)
     {
-      // TODO: Perform I/O and block magics?
-      // TODO: Notify writes, maybe this is the same.
       this.memoryHandler.Write(address, value);
     }
 

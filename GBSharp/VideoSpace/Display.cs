@@ -47,7 +47,8 @@ namespace GBSharp.VideoSpace
       this.memory = memory;
       screen = new Bitmap(screenWidth, screenHeight, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
       background = new Bitmap(backgroundWidth, backgroundHeight, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
-      UpdateScreen();
+      // Sorry, there is no cartridge yet, you can't do this:
+      // UpdateScreen();
     }
 
     internal byte[] GetTileData(int tileX, int tileY)

@@ -13,49 +13,17 @@ namespace GBSharp.MemorySpace.MemoryHandlers
   /// </summary>
   class RomOnlyMemoryHandler : MemoryHandler
   {
-    private ushort romOnlyStart = 0x0000;
-    private ushort romOnlyEnd = 0x7FFF;
+    private const ushort romOnlyStart = 0x0000;
+    private const ushort romOnlyLength = 0x8000;
 
-    internal RomOnlyMemoryHandler(GBSharp.Cartridge.Cartridge cartridge)
-      : base(cartridge)
+    /// <summary>
+    /// Class constructor. Performs the loading of the current cartridge into memory.
+    /// </summary>
+    /// <param name="gameboy"></param>
+    internal RomOnlyMemoryHandler(GameBoy gameboy)
+      : base(gameboy)
     {
-    }
-
-    internal override void LoadInternalMemory(byte[] data)
-    {
-      base.LoadInternalMemory(data);
-
-      // We copy the ROM areas to the internal memory of the GB
-      // TODO(Cristián): Perform fast memory copy
-      for (ushort i = romOnlyStart;
-          i < romOnlyEnd;
-          i++)
-      {
-          internalMemory[i] = this.cartridge.Data[i];
-      }
-    }
-
-    internal override void Write(ushort address, byte value)
-    {
-      // If the address is within the rom only address space,
-      // we do nothing at all.
-      if (romOnlyStart <= address && address <= romOnlyEnd)
-      {
-        return;
-      }
-
-      internalMemory[address] = value; 
-    }
-
-    internal override void Write(ushort address, ushort value)
-    {
-      internalMemory[address] = (byte)(value & 0x00FF);
-      internalMemory[address + 1] = (byte)(value >> 8);
-    }
-
-    internal override byte Read(ushort address)
-    {
-      return internalMemory[address];
+      Buffer.BlockCopy(this.cartridge.Data, romOnlyStart, this.memory, romOnlyStart, romOnlyLength);
     }
   }
 }
