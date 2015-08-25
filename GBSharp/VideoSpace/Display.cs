@@ -12,6 +12,8 @@ namespace GBSharp.VideoSpace
 {
   class Display : IDisplay
   {
+    public event Action RefreshScreen;
+
     private int screenWidth = 160;
     private int screenHeight = 144;
     private Bitmap screen;
@@ -206,32 +208,13 @@ namespace GBSharp.VideoSpace
     {
       byte lcdRegister = this.memory.Read((ushort)MemoryMappedRegisters.LCDC);
 
-      // Tile memory address comes defined in LCD Control Register bit 3
-      // 0: 0x9800 - 0x9BFF
-      // 1: 0x9C00 - 0x9FFF
-      ushort displayBaseAddress = 0x9800;
-      if ((Utils.UtilFuncs.TestBit(lcdRegister, 3)) == 1)
-      {
-        displayBaseAddress = 0x9C00;
-      }
-
-      // Tile data base address is defined in LCD Control Register bit 4
-      // 0: 0x8800 - 0x97FF (signed access)
-      // 1: 0x8000 - 0x8FFF (unsigned access)
-      bool signedAccess = true;
-      ushort tileDataBaseAddress = 0x8800;
-      if ((Utils.UtilFuncs.TestBit(lcdRegister, 4)) == 1)
-      {
-        signedAccess = false;
-        tileDataBaseAddress = 0x8000;
-      }
-
-      int OX = 22; int OY = 23;
-
+      int SCX = this.memory.Read((ushort)MemoryMappedRegisters.SCX);
+      int SCY = this.memory.Read((ushort)MemoryMappedRegisters.SCY);
       // We update the whole screen
-      BitmapData backgroundBmpData = background.LockBits(new Rectangle(0, 0, background.Width, background.Height), 
-                                                ImageLockMode.WriteOnly, 
-                                                PixelFormat.Format32bppRgb);
+      BitmapData backgroundBmpData = background.LockBits(
+        new Rectangle(0, 0, background.Width, background.Height), 
+        ImageLockMode.WriteOnly, 
+        PixelFormat.Format32bppRgb);
 
       // We render the complete tile map
       for (int tileY = 0; tileY < 32; tileY++)
@@ -242,7 +225,7 @@ namespace GBSharp.VideoSpace
           DrawTile(backgroundBmpData, tileData, tileX, tileY);
         }
       }
-      DrawRectangle(backgroundBmpData, OX, OY, screenTileCountX, screenTileCountY, 0x00FF00FF);
+      DrawRectangle(backgroundBmpData, SCX, SCY, screenTileCountX, screenTileCountY, 0x00FF00FF);
       background.UnlockBits(backgroundBmpData);
 
 
@@ -255,7 +238,7 @@ namespace GBSharp.VideoSpace
       {
         for (int tileX = 0; tileX < 20; tileX++)
         {
-          byte[] tileData = GetTileData(tileX + OX, tileY + OY, false, true, true);
+          byte[] tileData = GetTileData(tileX + SCX, tileY + SCY, false, true, true);
           DrawTile(bmpData, tileData, tileX, tileY);
         }
       }
@@ -263,6 +246,8 @@ namespace GBSharp.VideoSpace
     }
 
 
+    private const int screenStep = 96905; // Aprox. ~16.6687 ms
+    private int screenSum = 0;
     /// <summary>
     /// Simulates the update of the display for a period of time of a given number of ticks.
     /// </summary>
@@ -275,6 +260,17 @@ namespace GBSharp.VideoSpace
       // Do Line Magics?
       // H-Blank?
       // V-Blank?
+
+      screenSum += ticks;
+      if(screenSum > screenStep)
+      {
+        screenSum %= screenStep;
+        UpdateScreen();
+        if (RefreshScreen != null)
+        {
+          RefreshScreen();
+        }
+      } 
     }
   }
 }
