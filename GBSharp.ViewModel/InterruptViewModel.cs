@@ -7,6 +7,8 @@ namespace GBSharp.ViewModel
   public class InterruptViewModel : ViewModelBase
   {
     private readonly IGameBoy _gameBoy;
+    private readonly IDisplay _display;
+    private readonly IDispatcher _dispatcher;
 
     private bool _interruptMasterEnabled;
     private bool _verticalBlankInterruptEnabled;
@@ -173,9 +175,17 @@ namespace GBSharp.ViewModel
       get { return new DelegateCommand(CopyToDomain); }
     }
 
-    public InterruptViewModel(IGameBoy gameBoy)
+    public InterruptViewModel(IGameBoy gameBoy, IDispatcher dispatcher)
     {
+      _dispatcher = dispatcher;
       _gameBoy = gameBoy;
+      _display = gameBoy.Display;
+      _display.RefreshScreen += OnRefreshScrreen;
+    }
+
+    private void OnRefreshScrreen()
+    {
+      _dispatcher.Invoke(CopyFromDomain);
     }
 
     private void CopyFromDomain()

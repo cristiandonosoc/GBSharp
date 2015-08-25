@@ -6,6 +6,8 @@ namespace GBSharp.ViewModel
   public class GameBoyGamePadViewModel : ViewModelBase
   {
     private readonly IGameBoy _gameBoy;
+    private readonly IDisplay _display;
+    private readonly IDispatcher _dispatcher;
 
     private BitmapImage _screen;
 
@@ -68,9 +70,12 @@ namespace GBSharp.ViewModel
       get { return new DelegateCommand(ButtonSelect); }
     }
 
-    public GameBoyGamePadViewModel(IGameBoy gameBoy)
+    public GameBoyGamePadViewModel(IGameBoy gameBoy, IDispatcher dispatcher)
     {
+      _dispatcher = dispatcher;
       _gameBoy = gameBoy;
+      _display = _gameBoy.Display;
+      _display.RefreshScreen += OnRefreshScreen;
     }
 
     private void ButtonA()
@@ -113,7 +118,17 @@ namespace GBSharp.ViewModel
     {
       _gameBoy.PressButton(Keypad.Select);
     }
-    
+
+    private void CopyFromDomain()
+    {
+      Screen = Utils.BitmapToImageSource(_display.Screen);
+    }
+
+    private void OnRefreshScreen()
+    {
+      _dispatcher.Invoke(CopyFromDomain);
+    }
+
 
   }
 }

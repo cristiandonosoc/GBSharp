@@ -7,6 +7,8 @@ namespace GBSharp.ViewModel
 {
   public class DisplayViewModel : ViewModelBase
   {
+    private IDispatcher _dispatcher;
+
     private readonly IDisplay _display;
     private readonly IMemory _memory;
 
@@ -97,10 +99,12 @@ namespace GBSharp.ViewModel
       get { return new DelegateCommand(ScrollYIncrease); }
     }
     
-    public DisplayViewModel(IDisplay display, IMemory memory)
+    public DisplayViewModel(IDisplay display, IMemory memory, IDispatcher dispatcher)
     {
       _display = display;
+      _display.RefreshScreen += OnRefreshScreen;
       _memory = memory;
+      _dispatcher = dispatcher;
     }
 
     public void CopyFromDomain()
@@ -136,14 +140,19 @@ namespace GBSharp.ViewModel
     {
       ushort access = (ushort)MemoryMappedRegisters.SCY;
       byte[] mem = _memory.Data;
-      mem[access] = --mem[access];
+      mem[access] = ++mem[access];
     }
 
     private void ScrollYIncrease()
     {
       ushort access = (ushort)MemoryMappedRegisters.SCY;
       byte[] mem = _memory.Data;
-      mem[access] = ++mem[access];
+      mem[access] = --mem[access];
+    }
+
+    private void OnRefreshScreen()
+    {
+      _dispatcher.Invoke(CopyFromDomain);
     }
   }
 }

@@ -5,6 +5,8 @@ namespace GBSharp.ViewModel
   public class CPUViewModel : ViewModelBase
   {
     private ICPU _cpu;
+    private readonly IDisplay _display;
+    private readonly IDispatcher _dispatcher;
 
     private string _registerPC;
     private string _registerSP;
@@ -200,9 +202,17 @@ namespace GBSharp.ViewModel
       get { return new DelegateCommand(CopyToDomain); }
     }
 
-    public CPUViewModel(ICPU cpu)
+    public CPUViewModel(ICPU cpu, IDisplay display, IDispatcher dispatcher)
     {
       _cpu = cpu;
+      _display = display;
+      _dispatcher = dispatcher;
+      _display.RefreshScreen += OnRefreshScreen;
+    }
+
+    private void OnRefreshScreen()
+    {
+      _dispatcher.Invoke(CopyFromDomain);
     }
 
     private void CopyFromDomain()
