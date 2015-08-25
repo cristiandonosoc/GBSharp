@@ -80,8 +80,41 @@ namespace GBSharp
       // are done throught the MemoryHandler
       this.memory.SetMemoryHandler(
         GBSharp.MemorySpace.MemoryHandlers.
-        MemoryHandlerFactory.CreateMemoryHandler(this.cartridge));
+        MemoryHandlerFactory.CreateMemoryHandler(this));
 
+// DEBUG ONLY, COLOR BARS:
+#if DEBUG
+
+      byte[] internalMemory = (memory as IMemory).Data;
+
+      // We write the sample tiles
+      for (uint i = 0x8000;
+          i < 0x9800;
+          i++)
+      {
+        if (i < 0x8800)
+        {
+          internalMemory[i] = (byte)((i % 2 == 0) ? 0xFF : 0x00);
+        }
+        else if (i < 0x9000)
+        {
+          internalMemory[i] = (byte)((i % 2 == 0) ? 0x00 : 0xFF);
+        }
+        else
+        {
+          internalMemory[i] = (byte)0xCC;
+        }
+      }
+
+      // We write the sample display memory
+      for (uint i = 0;
+           i < 1024;
+           i++)
+      {
+        internalMemory[i + 0x9800] = (byte)(1023 - i);
+      }
+
+#endif
     }
 
     /// <summary>
@@ -130,7 +163,7 @@ namespace GBSharp
       this.manualResetEvent.Set(); // Unlock the thread to make that happen.
       
       // Dispose CPU and memory, create a new one and load rom again?
-      throw new NotImplementedException();
+      //throw new NotImplementedException();
     }
 
     /// <summary>
