@@ -26,29 +26,45 @@
         <TextBlock Text="{Binding Name}"></TextBlock>
       </Grid>
     </DataTemplate>
+    <DataTemplate DataType="{x:Type viewModel:MemorySectionViewModel}">
+      <Grid>
+        <TextBlock Text="{Binding Name}"></TextBlock>
+      </Grid>
+    </DataTemplate>
   </UserControl.Resources>
   <Grid>
     <Grid.RowDefinitions>
-      <!--<RowDefinition Height="Auto"></RowDefinition>-->
       <RowDefinition Height="Auto"></RowDefinition>
       <RowDefinition Height="*"></RowDefinition>
+      <RowDefinition Height="Auto"></RowDefinition>
     </Grid.RowDefinitions>
-    <!--<TextBlock Text="{Binding Name}"></TextBlock>-->
     <Grid Grid.Row="0" Style="{StaticResource SpacingGrid}">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
+        <ColumnDefinition Width="Auto"></ColumnDefinition>
+        <ColumnDefinition Width="Auto"></ColumnDefinition>
       </Grid.ColumnDefinitions>
-      <TextBlock Text="Address:"></TextBlock>
-      <ComboBox Grid.Column="1" ItemsSource="{Binding AddressFormats}" SelectedItem="{Binding SelectedAddressFormat}"></ComboBox>
-      <TextBlock Grid.Column="2" Text="Value:"></TextBlock>
-      <ComboBox Grid.Column="3" ItemsSource="{Binding ValueFormats}" SelectedItem="{Binding SelectedValueFormat}"></ComboBox>
+      <TextBlock Text="Section:"></TextBlock>
+      <ComboBox Grid.Column="1" ItemsSource="{Binding MemorySections}" SelectedItem="{Binding SelectedSection}"></ComboBox>
+      <TextBlock Grid.Column="2" Text="Address:"></TextBlock>
+      <ComboBox Grid.Column="3" ItemsSource="{Binding AddressFormats}" SelectedItem="{Binding SelectedValueFormat}"></ComboBox>
+      <TextBlock Grid.Column="4" Text="Value:"></TextBlock>
+      <ComboBox Grid.Column="5" ItemsSource="{Binding ValueFormats}" SelectedItem="{Binding SelectedValueFormat}"></ComboBox>
     </Grid>
     <Grid Grid.Row="1" Style="{StaticResource SpacingGrid}">
       <ListView  ItemsSource ="{Binding MemoryWords}" SelectedIndex="{Binding SelectedAddress, Mode=TwoWay}"></ListView>
     </Grid>
-
+    <Grid Margin="5" Grid.Row="2">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"></ColumnDefinition>
+        <ColumnDefinition Width="Auto"></ColumnDefinition>
+        <ColumnDefinition Width="Auto"></ColumnDefinition>
+      </Grid.ColumnDefinitions>
+      <Button Grid.Column="1" Content="Read" Command="{Binding ReadCommand}"></Button>
+      <Button Grid.Column="2" Content="Write" Command="{Binding WriteCommand}"></Button>
+    </Grid>
   </Grid>
 </UserControl>
