@@ -80,8 +80,8 @@ namespace GBSharp.VideoSpace
     /// <returns>A byte[] with the 16 bytes that create a tile</returns>
     internal byte[] GetTileData(int tileX, int tileY, bool LCDBit3, bool LCDBit4, bool wrap)
     {
-      ushort tileBaseAddress = (ushort)(LCDBit4 ? 0x8000 : 0x8800);
-      ushort tileMapBaseAddress = (ushort)(LCDBit3 ? 0x9C00 : 0x9800);
+      ushort tileBaseAddress = (ushort)(LCDBit4 ? 0x8000 : 0x9000);
+      ushort tileMapBaseAddress = (ushort)(!LCDBit3 ? 0x9C00 : 0x9800);
 
       if(wrap)
       {
@@ -105,7 +105,9 @@ namespace GBSharp.VideoSpace
       {
         unchecked
         {
-          tileIndex = (sbyte)memory.LowLevelRead((ushort)(tileMapBaseAddress + totalTileCountX * tileY + tileX));
+          byte t = memory.LowLevelRead((ushort)(tileMapBaseAddress + totalTileCountX * tileY + tileX));
+          sbyte tR = (sbyte)t;
+          tileIndex = tR;
         }
       }
       
@@ -134,14 +136,15 @@ namespace GBSharp.VideoSpace
             int down = (tileData[j + 1] >> i) & 1;
 
             int index = 2 * up + down;
-            byte color = (byte)(84 * index);
+
+            uint color = 0x00FFFFFF;
+            if(index == 1) { color = 0x00BBBBBB; }
+            if(index == 2) { color = 0x00666666; }
+            if(index == 3) { color = 0x00000000; }
 
             byte* offset = row + (pixelPerTileX * tileX + i) * bytesPerPixel;
-
-            offset[0] = color;
-            offset[1] = color;
-            offset[2] = color;
-            offset[3] = 0;
+            uint* cPtr = (uint*)offset;
+            cPtr[0] = color;
           }
         }
       }
@@ -212,6 +215,9 @@ namespace GBSharp.VideoSpace
     {
       byte lcdRegister = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
 
+      bool LCDBit3 = false;
+      bool LCDBit4 = false;
+
       int SCX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX);
       int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
       // We update the whole screen
@@ -225,7 +231,7 @@ namespace GBSharp.VideoSpace
       {
         for (int tileX = 0; tileX < 32; tileX++)
         {
-          byte[] tileData = GetTileData(tileX, tileY, false, true, false);
+          byte[] tileData = GetTileData(tileX, tileY, LCDBit3, LCDBit4, true);
           DrawTile(backgroundBmpData, tileData, tileX, tileY);
         }
       }
@@ -242,7 +248,7 @@ namespace GBSharp.VideoSpace
       {
         for (int tileX = 0; tileX < 20; tileX++)
         {
-          byte[] tileData = GetTileData(tileX + SCX, tileY + SCY, false, true, true);
+          byte[] tileData = GetTileData(tileX + SCX, tileY + SCY, LCDBit3, LCDBit4, true);
           DrawTile(bmpData, tileData, tileX, tileY);
         }
       }
