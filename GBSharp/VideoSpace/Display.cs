@@ -51,8 +51,11 @@ namespace GBSharp.VideoSpace
       this.memory = memory;
       screen = new Bitmap(screenWidth, screenHeight, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
       background = new Bitmap(backgroundWidth, backgroundHeight, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
-      // Sorry, there is no cartridge yet, you can't do this:
-      // UpdateScreen();
+
+      // TODO(Cristian): Remove this call eventually, when testing is not needed!
+#if DEBUG
+      UpdateScreen();
+#endif
     }
 
     /// <summary>
@@ -96,13 +99,13 @@ namespace GBSharp.VideoSpace
       int tileIndex;
       if(LCDBit4)
       {
-        tileIndex = memory.Read((ushort)(tileMapBaseAddress + totalTileCountX * tileY + tileX));
+        tileIndex = memory.LowLevelRead((ushort)(tileMapBaseAddress + totalTileCountX * tileY + tileX));
       }
       else
       {
         unchecked
         {
-          tileIndex = (sbyte)memory.Read((ushort)(tileMapBaseAddress + totalTileCountX * tileY + tileX));
+          tileIndex = (sbyte)memory.LowLevelRead((ushort)(tileMapBaseAddress + totalTileCountX * tileY + tileX));
         }
       }
       
@@ -110,7 +113,7 @@ namespace GBSharp.VideoSpace
       byte[] result = new byte[bytesPerTile];
       for(int i = 0; i < bytesPerTile; i++)
       {
-        result[i] = memory.Read((ushort)(tileBaseAddress + bytesPerTile * tileIndex + i));
+        result[i] = memory.LowLevelRead((ushort)(tileBaseAddress + bytesPerTile * tileIndex + i));
       }
 
       return result;
@@ -207,10 +210,10 @@ namespace GBSharp.VideoSpace
 
     internal void UpdateScreen()
     {
-      byte lcdRegister = this.memory.Read((ushort)MemoryMappedRegisters.LCDC);
+      byte lcdRegister = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
 
-      int SCX = this.memory.Read((ushort)MemoryMappedRegisters.SCX);
-      int SCY = this.memory.Read((ushort)MemoryMappedRegisters.SCY);
+      int SCX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX);
+      int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
       // We update the whole screen
       BitmapData backgroundBmpData = background.LockBits(
         new Rectangle(0, 0, background.Width, background.Height), 

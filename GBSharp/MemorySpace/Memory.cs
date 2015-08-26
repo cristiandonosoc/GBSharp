@@ -92,6 +92,12 @@ namespace GBSharp.MemorySpace
       return this.memoryHandler.Read(address);
     }
 
+    internal byte LowLevelRead(ushort address)
+    {
+      byte result = this.data[address];
+      return result;
+    }
+
     #region External memory interface
 
     byte[] IMemory.Data
