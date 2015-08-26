@@ -232,7 +232,7 @@ namespace GBSharp.VideoSpace
         for (int tileX = 0; tileX < 32; tileX++)
         {
           byte[] tileData = GetTileData(tileX, tileY, LCDBit3, LCDBit4, true);
-          DrawTile(backgroundBmpData, tileData, tileX, tileY);
+          DrawTile(backgroundBmpData, tileData, 31 - tileX, tileY);
         }
       }
       DrawRectangle(backgroundBmpData, SCX, SCY, screenTileCountX, screenTileCountY, 0x00FF00FF);
