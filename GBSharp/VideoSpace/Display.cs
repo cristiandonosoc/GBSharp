@@ -182,8 +182,8 @@ namespace GBSharp.VideoSpace
       int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
       // We update the whole screen
       BitmapData backgroundBmpData = background.LockBits(
-        new Rectangle(0, 0, background.Width, background.Height), 
-        ImageLockMode.WriteOnly, 
+        new Rectangle(0, 0, background.Width, background.Height),
+        ImageLockMode.WriteOnly,
         PixelFormat.Format32bppRgb);
 
       // We render the complete tile map
@@ -195,23 +195,33 @@ namespace GBSharp.VideoSpace
           DrawTile(backgroundBmpData, tileData, 31 - tileX, tileY);
         }
       }
-      DrawRectangle(backgroundBmpData, SCX, SCY, screenTileCountX, screenTileCountY, 0x00FF00FF);
-      background.UnlockBits(backgroundBmpData);
+      DrawRectangle(backgroundBmpData, SCX, SCY, 160, 144, 0x00FF00FF);
 
 
-      BitmapData bmpData = screen.LockBits(new Rectangle(0, 0, screen.Width, screen.Height), 
-                                           ImageLockMode.WriteOnly, 
+      BitmapData bmpData = screen.LockBits(new Rectangle(0, 0, screen.Width, screen.Height),
+                                           ImageLockMode.WriteOnly,
                                            PixelFormat.Format32bppRgb);
 
-      // We render the complete tile map
-      for (int tileY = 0; tileY < 18; tileY++)
+      // We copy the information from the background tile to the effective screen
+      // NOTE(Cristian): The screen is 160x144
+      int screenCountX = 160;
+      int screenCountY = 144;
+      for (int y = 0; y < screenCountY; y++)
       {
-        for (int tileX = 0; tileX < 20; tileX++)
+        for (int x = 0; x < screenCountX; x++)
         {
-          byte[] tileData = GetTileData(tileX + SCX, tileY + SCY, LCDBit3, LCDBit4, true);
-          DrawTile(bmpData, tileData, tileX, tileY);
+          int pX = (x + SCX) % backgroundWidth;
+          int pY = (y + SCY) % backgroundHeight;
+
+          unsafe
+          {
+            byte* bP = (byte*)backgroundBmpData.Scan0 + pY * backgroundBmpData.Stride + pX;
+            byte* sP = (byte*)bmpData.Scan0 + y * bmpData.Stride + x;
+            sP[0] = bP[0];
+          }
         }
       }
+      background.UnlockBits(backgroundBmpData);
       screen.UnlockBits(bmpData);
     }
 
