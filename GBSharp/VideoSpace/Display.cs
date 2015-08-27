@@ -150,61 +150,21 @@ namespace GBSharp.VideoSpace
       }
     }
     
-    internal void DrawRectangle(BitmapData bmd, int initialTileX, int initialTileY, int tileWidth, int tileHeight, uint color)
+    internal void DrawRectangle(BitmapData bmd, int rX, int rY, int rWidth, int rHeight, uint color)
     {
-      int pixelsPerTileX = 8;
-      int pixelsPerTileY = 8;
-
       unsafe
       {
-        for(int iterTileY = 0; iterTileY < tileHeight; iterTileY++)
+        for(int y = 0; y < rHeight; y++)
         {
-          int tileY = (iterTileY + initialTileY) % totalTileCountY;
-          for(int iterTileX = 0; iterTileX < tileWidth; iterTileX++)
+          for (int x = 0; x < rWidth; x++)
           {
-            int tileX = (iterTileX + initialTileX) % totalTileCountX;
-
-            byte* begin = (byte*)bmd.Scan0 +
-                            tileY * pixelsPerTileY * bmd.Stride +
-                            tileX * pixelsPerTileX * bytesPerPixel;
-
-            // We render the square
-            if(iterTileX == 0)
+            int pX = (rX + x) % 256;
+            int pY = (rY + y) % 256;
+            if(x == 0 || x == (rWidth - 1) ||
+               y == 0 || y == (rHeight - 1))
             {
-              byte* cursor = begin;
-              for(int y = 0; y < pixelsPerTileY; y++)
-              {
-                ((uint*)cursor)[0] = color;
-                cursor += bmd.Stride;
-              }
-            }
-            else if(iterTileX == screenTileCountX - 1)
-            {
-              byte* cursor = begin + (pixelsPerTileX - 1) * bytesPerPixel;
-              for (int y = 0; y < pixelsPerTileY; y++)
-              {
-                ((uint*)cursor)[0] = color;
-                cursor += bmd.Stride;
-              }
-            }
-
-            if(iterTileY == 0)
-            {
-              byte* cursor = begin;
-              for(int x = 0; x < pixelsPerTileX; x++)
-              {
-                ((uint*)cursor)[0] = color;
-                cursor += bytesPerPixel;
-              }
-            }
-            else if(iterTileY == screenTileCountY - 1)
-            {
-              byte* cursor = begin + (pixelsPerTileY - 1) * bmd.Stride;
-              for(int x = 0; x < pixelsPerTileX; x++)
-              {
-                ((uint*)cursor)[0] = color;
-                cursor += bytesPerPixel;
-              }
+              byte* p = (byte*)bmd.Scan0 + pY * bmd.Stride + 4*pX;
+              ((uint*)p)[0] = color;
             }
           }
         }
