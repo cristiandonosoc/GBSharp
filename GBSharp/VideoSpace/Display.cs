@@ -215,8 +215,8 @@ namespace GBSharp.VideoSpace
     {
       byte lcdRegister = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
 
-      bool LCDBit3 = false;
-      bool LCDBit4 = false;
+      bool LCDBit3 = Utils.UtilFuncs.TestBit(lcdRegister, 3) != 0;
+      bool LCDBit4 = Utils.UtilFuncs.TestBit(lcdRegister, 4) != 0;
 
       int SCX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX);
       int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
