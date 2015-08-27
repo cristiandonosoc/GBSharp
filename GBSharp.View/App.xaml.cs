@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 
+
 namespace GBSharp.View
 {
   /// <summary>
