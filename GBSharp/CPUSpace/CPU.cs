@@ -377,7 +377,7 @@ namespace GBSharp.CPUSpace
             {0x31, (n)=>{registers.SP = n;}},
 
             // LDD (HL),A: Save A to address pointed by HL, and decrement HL
-            {0x32, (n)=>{memory.Write(registers.HL, registers.A);}},
+            {0x32, (n)=>{memory.Write(registers.HL--, registers.A);}},
 
             // INC SP: Increment 16-bit HL
             {0x33, (n)=>{registers.SP++;}},
