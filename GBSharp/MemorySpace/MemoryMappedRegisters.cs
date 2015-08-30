@@ -22,8 +22,8 @@ namespace GBSharp.MemorySpace
     TAC = 0xFF07,  // Timer controller
 
     // Interrupt flags:
-    IF = 0xFF0F,
-    IE = 0xFFFF,
+    IF = 0xFF0F, // Interrupt request
+    IE = 0xFFFF, // Interrupt enabled mask
 
     // LCD registers:
     LCDC = 0xFF40,

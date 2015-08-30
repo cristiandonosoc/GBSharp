@@ -202,7 +202,7 @@ namespace GBSharp.CPUSpace
               // We cast down the input, ignoring the overflows
               short sn = 0;
               unchecked{sn = (sbyte)n; }
-              this.nextPC = (ushort)(registers.PC + sn);
+              this.nextPC = (ushort)(this.nextPC + sn);
             }},
 
             // ADD HL,DE: Add 16-bit DE to HL
@@ -259,7 +259,7 @@ namespace GBSharp.CPUSpace
               // We cast down the input, ignoring the overflows
               short sn = 0;
               unchecked{sn = (sbyte)n; }
-              this.nextPC = (ushort)(registers.PC + sn);
+              this.nextPC = (ushort)(this.nextPC + sn);
             }},
 
             // LD HL,nn: Load 16-bit immediate into HL
@@ -333,7 +333,7 @@ namespace GBSharp.CPUSpace
               // We cast down the input, ignoring the overflows
               short sn = 0;
               unchecked{sn = (sbyte)n; }
-              this.nextPC = (ushort)(registers.PC + sn);
+              this.nextPC = (ushort)(this.nextPC + sn);
             }},
 
             // ADD HL,HL: Add 16-bit HL to HL
@@ -370,7 +370,7 @@ namespace GBSharp.CPUSpace
               // We cast down the input, ignoring the overflows
               short sn = 0;
               unchecked{sn = (sbyte)n; }
-              this.nextPC = (ushort)(registers.PC + sn);
+              this.nextPC = (ushort)(this.nextPC + sn);
             }},
 
             // LD SP,nn: Load 16-bit immediate into SP
@@ -400,7 +400,7 @@ namespace GBSharp.CPUSpace
               // We cast down the input, ignoring the overflows
               short sn = 0;
               unchecked{sn = (sbyte)n; }
-              this.nextPC = (ushort)(registers.PC + sn);
+              this.nextPC = (ushort)(this.nextPC + sn);
             }},
 
             // ADD HL,SP: Add 16-bit SP to HL
