@@ -60,7 +60,7 @@ namespace GBSharp.ViewModel
     public GameBoyContollerViewModel(IGameBoy gameBoy)
     {
       _gameBoy = gameBoy;
-      _gameBoy.CPU.StepFinished += OnStepFinished;
+      _gameBoy.StepFinished += OnStepFinished;
     }
 
     private void NotifyCartridgeFileLoaded()

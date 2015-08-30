@@ -23,7 +23,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     internal RomOnlyMemoryHandler(GameBoy gameboy)
       : base(gameboy)
     {
-      Buffer.BlockCopy(this.cartridge.Data, romOnlyStart, this.memory, romOnlyStart, romOnlyLength);
+      Buffer.BlockCopy(this.cartridge.Data, romOnlyStart, this.memory, romOnlyStart, Math.Min(this.cartridge.Data.Length, romOnlyLength));
     }
   }
 }

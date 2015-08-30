@@ -10,6 +10,8 @@ namespace GBSharp
 {
   public class GameBoy : IGameBoy
   {
+    public event Action StepFinished;
+
     private CPUSpace.CPU cpu;
     private CPUSpace.InterruptController interruptController;
     private MemorySpace.Memory memory;
@@ -128,6 +130,8 @@ namespace GBSharp
 
       this.tickCounter += ticks;
       this.stepCounter++;
+
+      NotifyStepFinished();
     }
 
     /// <summary>
@@ -215,6 +219,17 @@ namespace GBSharp
     {
       this.buttons &= ~button;
       this.interruptController.UpdateKeypadState(this.buttons);
+    }
+
+    /// <summary>
+    /// Notifies subscribers that a step is completed.
+    /// </summary>
+    private void NotifyStepFinished()
+    {
+      if (StepFinished != null)
+      {
+        StepFinished();
+      }
     }
   }
 }

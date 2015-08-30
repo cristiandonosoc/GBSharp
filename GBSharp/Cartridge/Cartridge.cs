@@ -28,33 +28,42 @@ namespace GBSharp.Cartridge
             this.rom = rom;
             this.romSize = this.rom.Length;
             this.ramSize = 0;
-            switch (this.rom[ramSizeAddress])
+
+            if (this.rom.Length > ramSizeAddress)
             {
+              switch (this.rom[ramSizeAddress])
+              {
                 case 0:
-                    ramSize = 0;
-                    break;
+                  ramSize = 0;
+                  break;
                 case 1:
-                    ramSize = 1 * 1024;
-                    break;
+                  ramSize = 1 * 1024;
+                  break;
                 case 2:
-                    ramSize = 8 * 1024;
-                    break;
+                  ramSize = 8 * 1024;
+                  break;
                 case 3:
-                    ramSize = 32 * 1024;
-                    break;
+                  ramSize = 32 * 1024;
+                  break;
                 case 4:
-                    ramSize = 128 * 1024;
-                    break;
+                  ramSize = 128 * 1024;
+                  break;
+              }
             }
-            this.type = (CartridgeType)this.rom[catridgeTypeAddress];
+
+            this.type = this.rom.Length > catridgeTypeAddress ? (CartridgeType)this.rom[catridgeTypeAddress] : CartridgeType.ROM_ONLY;
             this.title = "";
-            for (var i = 0; i < 16; ++i)
+
+            if (rom.Length > titleAddress + 16)
             {
+              for (var i = 0; i < 16; ++i)
+              {
                 if (this.rom[titleAddress + i] == 0)
                 {
-                    break;
+                  break;
                 }
                 this.title += (char)this.rom[titleAddress + i];
+              }
             }
         }
 

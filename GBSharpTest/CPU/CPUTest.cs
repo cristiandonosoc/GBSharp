@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Data;
 using GBSharp.MemorySpace;
 using GBSharp.CPUSpace;
+using GBSharp;
 
 namespace GBSharpTest.CPUSpace
 {
@@ -43,10 +44,12 @@ namespace GBSharpTest.CPUSpace
     public void TestInstructionsViaExcel()
     {
       // Arrange
-      Memory memory = new Memory();
-      CPU cpu = new CPU(memory);
+      var gameboy = new GameBoy();
+      var memory = (Memory)gameboy.Memory;
+      var cpu = (CPU)gameboy.CPU;
+
       var row = TestContext.DataRow;
-      LoadRow(row, cpu);
+      LoadRow(row, cpu, memory, gameboy);
 
       // Act
       var steps = (int)row["Steps"];
@@ -61,7 +64,7 @@ namespace GBSharpTest.CPUSpace
       TestFlagsAndMemory(row, cpu);
     }
 
-    internal void LoadRow(DataRow row, CPU cpu)
+    internal void LoadRow(DataRow row, CPU cpu, Memory memory, GameBoy gameboy)
     {
       // We load the registers
       cpu.registers.A = GetByte(row["Ai"]);
@@ -79,6 +82,10 @@ namespace GBSharpTest.CPUSpace
       ushort memoryAddress = 0x0000;
       int columnCount = row.Table.Columns.Count;
       int romColumnIndex = row.Table.Columns["ROM"].Ordinal;
+      
+      // Create a dummy cartridge
+      var cartridgeData = new byte[columnCount - romColumnIndex];
+      
       for (int columnIndex = romColumnIndex;
           columnIndex < columnCount;
           columnIndex++, memoryAddress++)
@@ -86,8 +93,10 @@ namespace GBSharpTest.CPUSpace
         var element = row[columnIndex];
         if (element is System.DBNull) { break; }
         var value = Convert.ToByte((String)element, 16);
-        cpu.memory.Write(memoryAddress, value);
+        cartridgeData[memoryAddress] = value;
       }
+
+      gameboy.LoadCartridge(cartridgeData);
     }
 
     internal void TestFlagsAndMemory(DataRow row, CPU cpu)

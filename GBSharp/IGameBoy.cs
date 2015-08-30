@@ -1,9 +1,11 @@
 ﻿using GBSharp.Cartridge;
+using System;
 
 namespace GBSharp
 {
   public interface IGameBoy
   {
+    event Action StepFinished;
     ICPU CPU { get; }
     IMemory Memory { get; }
     ICartridge Cartridge { get; }
