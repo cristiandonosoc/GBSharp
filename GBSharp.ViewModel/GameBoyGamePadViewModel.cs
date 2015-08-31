@@ -1,13 +1,15 @@
-﻿using System.Windows.Input;
+﻿using System;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
 
 namespace GBSharp.ViewModel
 {
-  public class GameBoyGamePadViewModel : ViewModelBase
+  public class GameBoyGamePadViewModel : ViewModelBase, IDisposable
   {
     private readonly IGameBoy _gameBoy;
     private readonly IDisplay _display;
     private readonly IDispatcher _dispatcher;
+    private readonly DisplayViewModel _displayVm;
 
     private BitmapImage _screen;
 
@@ -70,14 +72,16 @@ namespace GBSharp.ViewModel
       get { return new DelegateCommand(ButtonSelect); }
     }
 
-    public GameBoyGamePadViewModel(IGameBoy gameBoy, IDispatcher dispatcher)
+    public GameBoyGamePadViewModel(IGameBoy gameBoy, IDispatcher dispatcher, DisplayViewModel displayVM)
     {
       _dispatcher = dispatcher;
+      _displayVm = displayVM;
       _gameBoy = gameBoy;
       _display = _gameBoy.Display;
+      _displayVm.UpdateDisplay += OnUpdateDisplay;
       _display.RefreshScreen += OnRefreshScreen;
     }
-
+    
     private void ButtonA()
     {
       _gameBoy.PressButton(Keypad.A);
@@ -129,6 +133,16 @@ namespace GBSharp.ViewModel
       _dispatcher.Invoke(CopyFromDomain);
     }
 
+    private void OnUpdateDisplay()
+    {
+      OnRefreshScreen();
+    }
+
+    public void Dispose()
+    {
+      _display.RefreshScreen -= OnRefreshScreen;
+      _displayVm.UpdateDisplay -= OnUpdateDisplay;
+    }
 
   }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows.Controls;
 using GBSharp.ViewModel;
 
@@ -15,7 +16,16 @@ namespace GBSharp.View
 
     public void Invoke(Action functionToInvoke)
     {
-      _dipatchingControl.Dispatcher.Invoke(functionToInvoke);
+      try
+      {
+        _dipatchingControl.Dispatcher.Invoke(functionToInvoke);
+      }
+      catch (TaskCanceledException)
+      {
+        
+        Console.WriteLine("Task canceled");
+      }
+      
     }
   }
 }

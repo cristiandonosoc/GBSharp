@@ -55,11 +55,15 @@
       _cpu = new CPUViewModel(_gameBoy.CPU, _gameBoy.Display, _dispatcher);
       _interrupt = new InterruptViewModel(_gameBoy, _dispatcher);
       _display = new DisplayViewModel(_gameBoy.Display, _gameBoy.Memory, _dispatcher);
-      _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher);
+      _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher, _display);
     }
 
     private void HandleClosing()
     {
+      _display.Dispose();
+      _interrupt.Dispose();
+      _gameBoyGamePad.Dispose();
+      _cpu.Dispose();
       _gameBoy.Stop();
     }
   }
