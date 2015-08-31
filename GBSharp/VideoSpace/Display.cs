@@ -132,8 +132,8 @@ namespace GBSharp.VideoSpace
           row += ((pixelPerTileY * tileY + (j / 2)) * bmd.Stride);
           for (int i = 0; i < 8; i++)
           {
-            int up = (tileData[j] >> i) & 1;
-            int down = (tileData[j + 1] >> i) & 1;
+            int up = (tileData[j] >> (7 - i)) & 1;
+            int down = (tileData[j + 1] >> (7 - i)) & 1;
 
             int index = 2 * up + down;
 
@@ -192,7 +192,7 @@ namespace GBSharp.VideoSpace
         for (int tileX = 0; tileX < 32; tileX++)
         {
           byte[] tileData = GetTileData(tileX, tileY, LCDBit3, LCDBit4, true);
-          DrawTile(backgroundBmpData, tileData, 31 - tileX, tileY);
+          DrawTile(backgroundBmpData, tileData, tileX, tileY);
         }
       }
       DrawRectangle(backgroundBmpData, SCX, SCY, 160, 144, 0x00FF00FF);
