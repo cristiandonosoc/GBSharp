@@ -1,8 +1,9 @@
-﻿using System.Windows.Input;
+﻿using System;
+using System.Windows.Input;
 
 namespace GBSharp.ViewModel
 {
-  public class CPUViewModel : ViewModelBase
+  public class CPUViewModel : ViewModelBase, IDisposable
   {
     private ICPU _cpu;
     private readonly IDisplay _display;
@@ -237,6 +238,11 @@ namespace GBSharp.ViewModel
     private void CopyToDomain()
     {
       
+    }
+
+    public void Dispose()
+    {
+      _display.RefreshScreen -= OnRefreshScreen;
     }
   }
 }

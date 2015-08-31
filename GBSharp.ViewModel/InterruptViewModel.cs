@@ -1,10 +1,11 @@
-﻿using System.Windows.Input;
+﻿using System;
+using System.Windows.Input;
 using GBSharp.CPUSpace;
 using GBSharp.MemorySpace;
 
 namespace GBSharp.ViewModel
 {
-  public class InterruptViewModel : ViewModelBase
+  public class InterruptViewModel : ViewModelBase, IDisposable
   {
     private readonly IGameBoy _gameBoy;
     private readonly IDisplay _display;
@@ -180,10 +181,10 @@ namespace GBSharp.ViewModel
       _dispatcher = dispatcher;
       _gameBoy = gameBoy;
       _display = gameBoy.Display;
-      _display.RefreshScreen += OnRefreshScrreen;
+      _display.RefreshScreen += OnRefreshScreen;
     }
 
-    private void OnRefreshScrreen()
+    private void OnRefreshScreen()
     {
       _dispatcher.Invoke(CopyFromDomain);
     }
@@ -210,6 +211,11 @@ namespace GBSharp.ViewModel
     private void CopyToDomain()
     {
       
+    }
+
+    public void Dispose()
+    {
+      _display.RefreshScreen -= OnRefreshScreen;
     }
   }
 }

@@ -1,12 +1,15 @@
-﻿using System.Windows.Input;
+﻿using System;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using GBSharp.MemorySpace;
 using GBSharp.VideoSpace;
 
 namespace GBSharp.ViewModel
 {
-  public class DisplayViewModel : ViewModelBase
+  public class DisplayViewModel : ViewModelBase, IDisposable
   {
+    public event Action UpdateDisplay;
+
     private IDispatcher _dispatcher;
 
     private readonly IDisplay _display;
@@ -115,6 +118,14 @@ namespace GBSharp.ViewModel
       BlockSelectionFlag = (lcdControl & (byte)LCDControlFlags.OBJBlockCompositionSelection) > 0;
       CodeAreaSelectionFlag = (lcdControl & (byte)LCDControlFlags.BGCodeAreaSelection) > 0;
       CharacterDataSelectionFlag = (lcdControl & (byte)LCDControlFlags.BGCharacterDataSelection) > 0;
+
+      NotifyUpdateDisplay();
+    }
+
+    private void NotifyUpdateDisplay()
+    {
+      if (UpdateDisplay != null)
+        UpdateDisplay();
     }
 
     private void CopyToDomain()
@@ -153,6 +164,11 @@ namespace GBSharp.ViewModel
     private void OnRefreshScreen()
     {
       _dispatcher.Invoke(CopyFromDomain);
+    }
+
+    public void Dispose()
+    {
+      _display.RefreshScreen -= OnRefreshScreen;
     }
   }
 }
