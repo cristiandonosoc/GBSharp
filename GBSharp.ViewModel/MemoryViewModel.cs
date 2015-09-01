@@ -163,7 +163,7 @@ namespace GBSharp.ViewModel
       _numberOfWordsOptions.Add(256);
       _numberOfWordsOptions.Add(512);
       _numberOfWordsOptions.Add(1024);
-      NumberOfWordsPerLine = _numberOfWordsOptions.First();
+      NumberOfWordsPerLine = 16;
     }
 
     private void UpdateMemoryWords()

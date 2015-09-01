@@ -11,6 +11,9 @@ namespace GBSharp.ViewModel
     private string _addressFormatString;
     private string _valueFormatString;
 
+    private Color _color1 = Color.FromRgb(159, 159, 255);
+    private Color _color2 = Colors.White;
+
     public string Address
     {
       get { return _addressFormatString; }
@@ -25,9 +28,32 @@ namespace GBSharp.ViewModel
     {
       get
       {
-        var byteValue = (byte) _value;
-        return new SolidColorBrush(Color.FromRgb(255, (byte)(127 + byteValue/2), byteValue));
+        var color = GetWordColor();
+        return new SolidColorBrush(color);
       }
+    }
+
+    private Color GetWordColor()
+    {
+      var floatValue = (float) (_value/255.0f);
+      var color = _color1 * floatValue + _color2 * (1 - floatValue);
+      return color;
+    }
+
+    public SolidColorBrush InverseWordColor
+    {
+      get
+      {
+        var color = GetInverseWordColor();
+        return new SolidColorBrush(color);
+      }
+    }
+
+    private Color GetInverseWordColor()
+    {
+      var floatValue = 1.0f - (float)(_value / 255.0f);
+      var color = _color1 * floatValue + _color2 * (1 - floatValue);
+      return color;
     }
 
     public MemoryWordViewModel(uint address, uint value)
