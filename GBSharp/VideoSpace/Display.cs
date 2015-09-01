@@ -19,8 +19,10 @@ namespace GBSharp.VideoSpace
     private Bitmap screen;
     private Memory memory;
 
-    private int backgroundWidth = 256;
-    private int backgroundHeight = 256;
+    private int backgroundPixelCountX = 256;
+    private int backgroundPixelCountY = 256;
+    private int screenPixelCountX = 160;
+    private int screenPixelCountY = 144;
     private int totalTileCountX = 32;
     private int totalTileCountY = 32;
     private int screenTileCountX = 20;
@@ -50,7 +52,7 @@ namespace GBSharp.VideoSpace
     {
       this.memory = memory;
       screen = new Bitmap(screenWidth, screenHeight, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
-      background = new Bitmap(backgroundWidth, backgroundHeight, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
+      background = new Bitmap(backgroundPixelCountX, backgroundPixelCountY, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
 
       // TODO(Cristian): Remove this call eventually, when testing is not needed!
 #if DEBUG
@@ -132,8 +134,8 @@ namespace GBSharp.VideoSpace
           row += ((pixelPerTileY * tileY + (j / 2)) * bmd.Stride);
           for (int i = 0; i < 8; i++)
           {
-            int up = (tileData[j] >> i) & 1;
-            int down = (tileData[j + 1] >> i) & 1;
+            int up = (tileData[j] >> (7 - i)) & 1;
+            int down = (tileData[j + 1] >> (7 - i)) & 1;
 
             int index = 2 * up + down;
 
@@ -154,6 +156,7 @@ namespace GBSharp.VideoSpace
     {
       unsafe
       {
+        int uintStride = bmd.Stride / bytesPerPixel;
         for(int y = 0; y < rHeight; y++)
         {
           for (int x = 0; x < rWidth; x++)
@@ -163,8 +166,8 @@ namespace GBSharp.VideoSpace
             if(x == 0 || x == (rWidth - 1) ||
                y == 0 || y == (rHeight - 1))
             {
-              byte* p = (byte*)bmd.Scan0 + pY * bmd.Stride + 4*pX;
-              ((uint*)p)[0] = color;
+              uint* p = (uint*)bmd.Scan0 + pY * uintStride + pX;
+              p[0] = color;
             }
           }
         }
@@ -192,7 +195,7 @@ namespace GBSharp.VideoSpace
         for (int tileX = 0; tileX < 32; tileX++)
         {
           byte[] tileData = GetTileData(tileX, tileY, LCDBit3, LCDBit4, true);
-          DrawTile(backgroundBmpData, tileData, 31 - tileX, tileY);
+          DrawTile(backgroundBmpData, tileData, tileX, tileY);
         }
       }
       DrawRectangle(backgroundBmpData, SCX, SCY, 160, 144, 0x00FF00FF);
@@ -204,19 +207,21 @@ namespace GBSharp.VideoSpace
 
       // We copy the information from the background tile to the effective screen
       // NOTE(Cristian): The screen is 160x144
-      int screenCountX = 160;
-      int screenCountY = 144;
-      for (int y = 0; y < screenCountY; y++)
+      // NOTE(Cristian): We precalculate the stride into the uint boundary to make easier
+      //                 copying the pixels.
+      int backgroundUintStride = backgroundBmpData.Stride / bytesPerPixel;
+      int bmpUintStride = bmpData.Stride / bytesPerPixel;
+      for (int y = 0; y < screenPixelCountY; y++)
       {
-        for (int x = 0; x < screenCountX; x++)
+        for (int x = 0; x < screenPixelCountX; x++)
         {
-          int pX = (x + SCX) % backgroundWidth;
-          int pY = (y + SCY) % backgroundHeight;
+          int pX = (x + SCX) % backgroundPixelCountX;
+          int pY = (y + SCY) % backgroundPixelCountY;
 
           unsafe
           {
-            byte* bP = (byte*)backgroundBmpData.Scan0 + pY * backgroundBmpData.Stride + pX;
-            byte* sP = (byte*)bmpData.Scan0 + y * bmpData.Stride + x;
+            uint* bP = (uint*)backgroundBmpData.Scan0 + (pY * backgroundUintStride) + pX;
+            uint* sP = (uint*)bmpData.Scan0 + (y * bmpUintStride) + x;
             sP[0] = bP[0];
           }
         }
