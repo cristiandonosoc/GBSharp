@@ -70,11 +70,23 @@ namespace GBSharp
     }
 
     /// <summary>
-    /// Loads 
+    /// Provides access to the interrupt controller to every component connected to the gameboy, so interrupts
+    /// can be requested from memory handlers, the display controller, serial ports, etc.
+    /// If an interrupt can be notified from the memory handler (on write), then direct access from another component
+    /// to the interrupt controller is not recommended and the memory.Write() call should be used instead.
+    /// </summary>
+    internal CPUSpace.InterruptController InterruptController
+    {
+      get { return interruptController; }
+    }
+
+    /// <summary>
+    /// Connects to the gameboy a new cartridge with the given contents.
     /// </summary>
     /// <param name="cartridgeData"></param>
     public void LoadCartridge(byte[] cartridgeData)
     {
+      this.cartridge = new Cartridge.Cartridge();
       this.cartridge.Load(cartridgeData);
       // We create the MemoryHandler according to the data
       // from the cartridge and set it to the memory.

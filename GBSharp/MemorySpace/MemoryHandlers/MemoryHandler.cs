@@ -91,7 +91,21 @@ namespace GBSharp.MemorySpace.MemoryHandlers
         /* [0xFF00 - 0xFF4B]: I/O Ports */
         else if (address < 0xFF4C)
         {
-          this.memory[address] = value;
+          if (address == (ushort)MemoryMappedRegisters.P1)
+          {
+            byte p1 = this.memory[address];
+            // Only the bits 4 and 5 are writable in P1
+            p1 &= 0xCF; // &= 11001111;
+            p1 |= (byte)(value & 0x30); // |= (value & 00110000); writable mask
+            this.memory[address] = p1;
+
+            // Request an interrupt if necessary
+            this.gameboy.InterruptController.UpdateKeypadState();
+          }
+          else
+          {
+            this.memory[address] = value;
+          }
         }
 
         /* [0xFF4C - 0xFF7F]: Empty but unusable for I/O */

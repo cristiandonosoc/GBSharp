@@ -44,12 +44,24 @@ namespace GBSharp.CPUSpace
     }
 
     /// <summary>
-    /// 
+    /// This method is intended to be used when a button is pressed or released in the user interface.
+    /// Updates the internal state of the buttons in the interrupt controller and determines if an interrupt is necessary.
     /// </summary>
-    /// <param name="buttons"></param>
+    /// <param name="buttons">The new state of the buttons</param>
     public void UpdateKeypadState(Keypad buttons)
     {
       this.pressedButtons = (byte)buttons; // This only works because the magic values we chose for the Keypad enum
+      this.UpdateKeypadState();
+    }
+
+    /// <summary>
+    /// This method is intended to be used when a change occurs in the keypad matrix, that means, when the writable bits of
+    /// P1 (P14 or P15) are written or after the state of the buttons is updated from the user interface.
+    /// Updates the memory where the keypad is mapped, using the currently pressed buttons and the values of P14 and P15.
+    /// This method is going to request an interrupt if necessary.
+    /// </summary>
+    internal void UpdateKeypadState()
+    {
       byte currentP1 = this.memory.Read((ushort)MemoryMappedRegisters.P1);
       byte newP1 = SolveP1(currentP1);
 
@@ -59,8 +71,9 @@ namespace GBSharp.CPUSpace
       // hack to read (like burst-writing and reading at the exact time the propagation occurs), then is going to die *here*.
       this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.P1, newP1);
 
-      // If in current and not in new, NEGATIVE EDGE INTERRUPT!
-      if(((0x0F & currentP1) & (0x0F & ~newP1)) != 0x00){
+      // If bit is set in current and not in the new state, it's a NEGATIVE EDGE INTERRUPT!
+      if (((0x0F & currentP1) & (0x0F & ~newP1)) != 0x00)
+      {
         this.SetInterrupt(Interrupts.P10to13TerminalNegativeEdge);
       }
     }
