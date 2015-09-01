@@ -11,6 +11,7 @@
       <RowDefinition Height="Auto"/>
     </Grid.RowDefinitions>
     <Grid Margin="5">
+      
       <Grid>
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto"/>
@@ -22,6 +23,12 @@
         <CheckBox Grid.Row="1" Content="Code Area 0" IsChecked="{Binding CodeAreaSelectionFlag}" Margin="2" />
         <CheckBox Grid.Row="2" Content="Signed Mode" IsChecked="{Binding CharacterDataSelectionFlag}" Margin="2" />
         <DockPanel Grid.Row="3">
+          <DockPanel.LayoutTransform>
+            <ScaleTransform 
+            CenterX="0" CenterY="0"
+            ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
+            ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
+          </DockPanel.LayoutTransform>
           <Button DockPanel.Dock="Left" Content="&lt;" Command="{Binding ScrollXDecreaseCommand}"></Button>
           <Button DockPanel.Dock="Right" Content="&gt;" Command="{Binding ScrollXIncreaseCommand}"></Button>
           <Button DockPanel.Dock="Top" Content="^" Command="{Binding ScrollYIncreaseCommand}"></Button>
@@ -33,11 +40,13 @@
     <Grid Margin="5" Grid.Row="1">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*"></ColumnDefinition>
+        <ColumnDefinition Width="20"></ColumnDefinition>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
       </Grid.ColumnDefinitions>
-      <Button Grid.Column="1" Content="Read" Command="{Binding ReadCommand}"></Button>
-      <Button Grid.Column="2" Content="Write" Command="{Binding WriteCommand}"></Button>
+      <Slider x:Name="uiScaleSlider" Value="1" Minimum="0.01" Maximum="1"/>
+      <Button Grid.Column="2" Content="Read" Command="{Binding ReadCommand}"></Button>
+      <Button Grid.Column="3" Content="Write" Command="{Binding WriteCommand}"></Button>
     </Grid>
   </Grid>
 </UserControl>
