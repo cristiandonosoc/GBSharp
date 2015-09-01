@@ -9,15 +9,25 @@
              d:DesignHeight="300" d:DesignWidth="300">
   <UserControl.Resources>
     <DataTemplate DataType="{x:Type viewModel:MemoryWordViewModel}">
+      <Grid Width="15" Background="{Binding WordColor}">
+        <TextBlock Text="{Binding Value}" Style="{StaticResource NumericText}"></TextBlock>
+      </Grid>
+
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type viewModel:MemoryWordGroupViewModel}">
       <Grid>
         <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="60"></ColumnDefinition>
-          <ColumnDefinition Width="Auto"></ColumnDefinition>
+          <ColumnDefinition Width="80"></ColumnDefinition>
           <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <TextBlock Text="{Binding Address}" Style="{StaticResource NumericText}"></TextBlock>
-        <TextBlock Grid.Column="1" Text=": " Style="{StaticResource NumericText}"></TextBlock>
-        <TextBlock Grid.Column="2" Text="{Binding Value}" Style="{StaticResource NumericText}"></TextBlock>
+        <TextBlock Text="{Binding AddressRange}" Style="{StaticResource NumericText}"></TextBlock>
+        <ListView Grid.Column="1"  ItemsSource ="{Binding MemoryWords}" >
+          <ListView.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal"></StackPanel>
+            </ItemsPanelTemplate>
+          </ListView.ItemsPanel>
+        </ListView>
       </Grid>
 
     </DataTemplate>
@@ -44,18 +54,22 @@
         <ColumnDefinition Width="Auto"></ColumnDefinition>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
-        <ColumnDefinition Width="Auto"></ColumnDefinition>
-        <ColumnDefinition Width="Auto"></ColumnDefinition>
       </Grid.ColumnDefinitions>
-      <TextBlock Text="Section:"></TextBlock>
-      <ComboBox Grid.Column="1" ItemsSource="{Binding MemorySections}" SelectedItem="{Binding SelectedSection}"></ComboBox>
-      <TextBlock Grid.Column="2" Text="Address:"></TextBlock>
-      <ComboBox Grid.Column="3" ItemsSource="{Binding AddressFormats}" SelectedItem="{Binding SelectedAddressFormat}"></ComboBox>
-      <TextBlock Grid.Column="4" Text="Value:"></TextBlock>
-      <ComboBox Grid.Column="5" ItemsSource="{Binding ValueFormats}" SelectedItem="{Binding SelectedValueFormat}"></ComboBox>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"></RowDefinition>
+        <RowDefinition Height="Auto"></RowDefinition>
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Row="0" Text="Section:"></TextBlock>
+      <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding MemorySections}" SelectedItem="{Binding SelectedSection}"></ComboBox>
+      <TextBlock Grid.Row="0" Grid.Column="2" Text="Words Per Line:"></TextBlock>
+      <ComboBox Grid.Row="0" Grid.Column="3" ItemsSource="{Binding NumberOfWordsOptions}" SelectedItem="{Binding NumberOfWordsPerLine}"></ComboBox>
+      <TextBlock Grid.Row="1" Grid.Column="0" Text="Address:"></TextBlock>
+      <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding AddressFormats}" SelectedItem="{Binding SelectedAddressFormat}"></ComboBox>
+      <TextBlock Grid.Row="1" Grid.Column="2" Text="Value:"></TextBlock>
+      <ComboBox Grid.Row="1" Grid.Column="3" ItemsSource="{Binding ValueFormats}" SelectedItem="{Binding SelectedValueFormat}"></ComboBox>
     </Grid>
     <Grid Grid.Row="1" Style="{StaticResource SpacingGrid}">
-      <ListView  ItemsSource ="{Binding MemoryWords}" ></ListView>
+      <ListView  ItemsSource ="{Binding MemoryWordGroups}" ></ListView>
     </Grid>
     <Grid Margin="5" Grid.Row="2">
       <Grid.ColumnDefinitions>

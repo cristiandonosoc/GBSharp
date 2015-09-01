@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
@@ -13,15 +14,17 @@ namespace GBSharp.ViewModel
     private MemoryFormatViewModel _selectedAddressFormat;
     private readonly ObservableCollection<MemoryFormatViewModel> _valueFormats = new ObservableCollection<MemoryFormatViewModel>();
     private MemoryFormatViewModel _selectedValueFormat;
-    private readonly ObservableCollection<MemoryWordViewModel> _memoryWords = new ObservableCollection<MemoryWordViewModel>();
+    private readonly ObservableCollection<MemoryWordGroupViewModel> _memoryWordGroups = new ObservableCollection<MemoryWordGroupViewModel>();
     private MemorySectionViewModel _selectedSection;
     private readonly ObservableCollection<MemorySectionViewModel> _memorySections = new ObservableCollection<MemorySectionViewModel>();
 
     private string _name;
-    
-    public ObservableCollection<MemoryWordViewModel> MemoryWords
+    private uint _numberOfWordsPerLine = 16;
+    private readonly List<uint> _numberOfWordsOptions = new List<uint>(); 
+
+    public ObservableCollection<MemoryWordGroupViewModel> MemoryWordGroups
     {
-      get { return _memoryWords; }
+      get { return _memoryWordGroups; }
     }
     
     public ObservableCollection<MemoryFormatViewModel> AddressFormats
@@ -80,9 +83,7 @@ namespace GBSharp.ViewModel
         }
       }
     }
-
-  
-
+    
     public string Name
     {
       get { return _name; }
@@ -98,7 +99,26 @@ namespace GBSharp.ViewModel
       get { return new DelegateCommand(CopyToDomain); }
     }
 
-    
+    public uint NumberOfWordsPerLine
+    {
+      get { return _numberOfWordsPerLine; }
+      set
+      {
+        if (_numberOfWordsPerLine != value)
+        {
+          _numberOfWordsPerLine = value;
+          OnNumerOfWordsPerLineChanged();
+          OnPropertyChanged(() => NumberOfWordsPerLine);
+        }
+      }
+    }
+
+    public List<uint> NumberOfWordsOptions
+    {
+      get { return _numberOfWordsOptions; }
+    }
+
+
     public MemoryViewModel(IMemory memory, string name, int initialAddress=0, int finalAddress=-1)
     {
       if (memory == null) throw new ArgumentNullException("memory");
@@ -131,14 +151,26 @@ namespace GBSharp.ViewModel
       _memorySections.Add(new MemorySectionViewModel("VRAM", 0x8000, 0xC000));
       _memorySections.Add(new MemorySectionViewModel("ROM", 0x0000, 0x8000));
       SelectedSection = _memorySections.First();
+
+      _numberOfWordsOptions.Add(1);
+      _numberOfWordsOptions.Add(2);
+      _numberOfWordsOptions.Add(4);
+      _numberOfWordsOptions.Add(8);
+      _numberOfWordsOptions.Add(16);
+      _numberOfWordsOptions.Add(32);
+      _numberOfWordsOptions.Add(64);
+      _numberOfWordsOptions.Add(128);
+      _numberOfWordsOptions.Add(256);
+      _numberOfWordsOptions.Add(512);
+      _numberOfWordsOptions.Add(1024);
+      NumberOfWordsPerLine = _numberOfWordsOptions.First();
     }
 
     private void UpdateMemoryWords()
     {
-      foreach (var memoryWord in _memoryWords)
+      foreach (var memoryWordGroup in _memoryWordGroups)
       {
-        memoryWord.UpdateAddressFormat(_selectedAddressFormat.WordFormat);
-        memoryWord.UpdateValueFormat(_selectedValueFormat.WordFormat);
+        memoryWordGroup.UpdateMemoryWords(_selectedAddressFormat.WordFormat, _selectedValueFormat.WordFormat);
       }
     }
 
@@ -147,13 +179,18 @@ namespace GBSharp.ViewModel
       CopyFromDomain();
     }
 
+    private void OnNumerOfWordsPerLineChanged()
+    {
+      CopyFromDomain();
+    }
   
     private void CopyFromDomain()
     {
-      _memoryWords.Clear();
-      for (uint address = _selectedSection.InitialAddress; address < _selectedSection.FinalAddress; address++)
+      _memoryWordGroups.Clear();
+      for (uint address = _selectedSection.InitialAddress; address < _selectedSection.FinalAddress; address+= _numberOfWordsPerLine)
       {
-        _memoryWords.Add(new MemoryWordViewModel(address, _memory.Data[address]));
+        _memoryWordGroups.Add(new MemoryWordGroupViewModel(address, address + _numberOfWordsPerLine - 1, _memory));
+        
       }
       UpdateMemoryWords();
     }

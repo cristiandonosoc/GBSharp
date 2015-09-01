@@ -55,6 +55,7 @@
     <Compile Include="IWindow.cs" />
     <Compile Include="MemorySectionViewModel.cs" />
     <Compile Include="MemoryViewModel.cs" />
+    <Compile Include="MemoryWordGroupViewModel.cs" />
     <Compile Include="MemoryWordViewModel.cs" />
     <Compile Include="MemoryFormatViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
