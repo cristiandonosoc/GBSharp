@@ -123,15 +123,32 @@ namespace GBSharp.VideoSpace
       return result;
     }
 
-    internal void DrawTile(BitmapData bmd, byte[] tileData, int tileX, int tileY)
+    /// <summary>
+    /// Draw a tile into a bitmap. 
+    /// IMPORTANT: presently it requires that the bitmap be the whole background (256x256 pixels)
+    /// </summary>
+    /// <param name="bmd">The bitmap data where to output the pixels</param>
+    /// <param name="tileData">The 16 bytes that conform the 8x8 pixels</param>
+    /// <param name="pX">x coord of the pixel where to start drawing the tile</param>
+    /// <param name="pY">y coord of the pixel where to start drawing the tile</param>
+    internal void DrawTile(BitmapData bmd, byte[] tileData, int pX, int pY)
     {
+      if ((pY + 7) >= 256)
+      {
+        throw new ArgumentOutOfRangeException("Y pixel too high");
+      }
+      else if ((pX + 7) >= 256)
+      {
+        throw new ArgumentOutOfRangeException("X pixel too high in last line");
+      }
       unsafe
       {
+        int uintStride = bmd.Stride / bytesPerPixel;
+        uint* start = (uint*)bmd.Scan0 + pY * uintStride + pX;
         // We iterate for the actual bytes
         for (int j = 0; j < 16; j += 2)
         {
-          byte* row = (byte*)bmd.Scan0;
-          row += ((pixelPerTileY * tileY + (j / 2)) * bmd.Stride);
+          uint* row = start + (j / 2) * uintStride; // Only add every 2 bytes
           for (int i = 0; i < 8; i++)
           {
             int up = (tileData[j] >> (7 - i)) & 1;
@@ -144,8 +161,7 @@ namespace GBSharp.VideoSpace
             if(index == 2) { color = 0x00666666; }
             if(index == 3) { color = 0x00000000; }
 
-            byte* offset = row + (pixelPerTileX * tileX + i) * bytesPerPixel;
-            uint* cPtr = (uint*)offset;
+            uint* cPtr = row + i;
             cPtr[0] = color;
           }
         }
@@ -189,18 +205,17 @@ namespace GBSharp.VideoSpace
         ImageLockMode.WriteOnly,
         PixelFormat.Format32bppRgb);
 
-      // We render the complete tile map
+      // We draw the BACKGROUND
       for (int tileY = 0; tileY < 32; tileY++)
       {
         for (int tileX = 0; tileX < 32; tileX++)
         {
-          byte[] tileData = GetTileData(tileX, tileY, LCDBit3, LCDBit4, true);
-          DrawTile(backgroundBmpData, tileData, tileX, tileY);
+          byte[] tileData = GetTileData(tileX, tileY, LCDBit3, !LCDBit4, true);
+          DrawTile(backgroundBmpData, tileData, tileX * pixelPerTileX, tileY * pixelPerTileY);
         }
       }
-      DrawRectangle(backgroundBmpData, SCX, SCY, 160, 144, 0x00FF00FF);
 
-
+      // We draw the SCREEN
       BitmapData bmpData = screen.LockBits(new Rectangle(0, 0, screen.Width, screen.Height),
                                            ImageLockMode.WriteOnly,
                                            PixelFormat.Format32bppRgb);
@@ -226,8 +241,12 @@ namespace GBSharp.VideoSpace
           }
         }
       }
-      background.UnlockBits(backgroundBmpData);
+
       screen.UnlockBits(bmpData);
+
+      // We draw the screen boundaries
+      DrawRectangle(backgroundBmpData, SCX, SCY, 160, 144, 0x00FF00FF);
+      background.UnlockBits(backgroundBmpData);
     }
 
 
