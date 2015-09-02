@@ -14,8 +14,6 @@ namespace GBSharp.VideoSpace
   {
     public event Action RefreshScreen;
 
-    private int screenWidth = 160;
-    private int screenHeight = 144;
     private Bitmap screen;
     private Memory memory;
 
@@ -51,8 +49,10 @@ namespace GBSharp.VideoSpace
     public Display(InterruptController interruptController, Memory memory)
     {
       this.memory = memory;
-      screen = new Bitmap(screenWidth, screenHeight, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
-      background = new Bitmap(backgroundPixelCountX, backgroundPixelCountY, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
+      screen = new Bitmap(screenPixelCountX, screenPixelCountY, 
+                          System.Drawing.Imaging.PixelFormat.Format32bppRgb);
+      background = new Bitmap(backgroundPixelCountX, backgroundPixelCountY, 
+                              System.Drawing.Imaging.PixelFormat.Format32bppRgb);
 
       // TODO(Cristian): Remove this call eventually, when testing is not needed!
 #if DEBUG
