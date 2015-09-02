@@ -131,26 +131,37 @@ namespace GBSharp.VideoSpace
     /// <param name="tileData">The 16 bytes that conform the 8x8 pixels</param>
     /// <param name="pX">x coord of the pixel where to start drawing the tile</param>
     /// <param name="pY">y coord of the pixel where to start drawing the tile</param>
-    internal void DrawTile(BitmapData bmd, byte[] tileData, int pX, int pY)
+    internal void DrawTile(BitmapData bmd, byte[] tileData, int pX, int pY,
+      int maxX = 256, int maxY = 256)
     {
+      // TODO(Cristian): Remove this assertions
       if ((pY + 7) >= 256)
       {
         throw new ArgumentOutOfRangeException("Y pixel too high");
       }
-      else if ((pX + 7) >= 256)
+      else if ((pY == 255) && ((pX + 7) >= 256))
       {
         throw new ArgumentOutOfRangeException("X pixel too high in last line");
       }
       unsafe
       {
         int uintStride = bmd.Stride / bytesPerPixel;
-        uint* start = (uint*)bmd.Scan0 + pY * uintStride + pX;
+        uint* start = (uint*)bmd.Scan0;
+
         // We iterate for the actual bytes
         for (int j = 0; j < 16; j += 2)
         {
-          uint* row = start + (j / 2) * uintStride; // Only add every 2 bytes
+          int pixelY = pY + (j / 2);
+          if(pixelY >= maxY) { break; }
+
+          uint* row = start + pixelY * uintStride; // Only add every 2 bytes
           for (int i = 0; i < 8; i++)
           {
+
+            int pixelX = pX + i;
+            if(pixelX >= maxX) { break; }
+            uint* cPtr = row + pixelX;
+
             int up = (tileData[j] >> (7 - i)) & 1;
             int down = (tileData[j + 1] >> (7 - i)) & 1;
 
@@ -161,7 +172,6 @@ namespace GBSharp.VideoSpace
             if(index == 2) { color = 0x00666666; }
             if(index == 3) { color = 0x00000000; }
 
-            uint* cPtr = row + i;
             cPtr[0] = color;
           }
         }
