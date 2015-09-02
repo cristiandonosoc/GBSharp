@@ -202,6 +202,7 @@ namespace GBSharp.VideoSpace
 
     internal void UpdateScreen()
     {
+      // TODO(Cristian): Line-based drawing!!!
       byte lcdRegister = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
 
       bool LCDBit3 = Utils.UtilFuncs.TestBit(lcdRegister, 3) != 0;
@@ -209,6 +210,7 @@ namespace GBSharp.VideoSpace
 
       int SCX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX);
       int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
+
       // We update the whole screen
       BitmapData backgroundBmpData = background.LockBits(
         new Rectangle(0, 0, background.Width, background.Height),
@@ -224,6 +226,27 @@ namespace GBSharp.VideoSpace
           DrawTile(backgroundBmpData, tileData, tileX * pixelPerTileX, tileY * pixelPerTileY);
         }
       }
+
+      int WDX = 0;
+      int WDY = 0;
+      for (int tileY = 0; tileY < 32; tileY++)
+      {
+        if ((tileY * pixelPerTileY + WDY) > screenPixelCountY)
+        {
+          // This means that our window is being displayed off screen, so we stop
+          break;
+        }
+        for (int tileX = 0; tileX < 32; tileX++)
+        {
+          byte[] tileData = GetTileData(tileX, tileY, LCDBit3, !LCDBit4, true);
+          DrawTile(backgroundBmpData, tileData,
+                   WDX + (tileX * pixelPerTileX),
+                   WDY + (tileY * pixelPerTileY),
+                   screenPixelCountX, screenPixelCountY);
+        }
+      }
+
+
 
       // We draw the SCREEN
       BitmapData bmpData = screen.LockBits(new Rectangle(0, 0, screen.Width, screen.Height),
