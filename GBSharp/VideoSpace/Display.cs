@@ -123,6 +123,70 @@ namespace GBSharp.VideoSpace
       return result;
     }
 
+    internal uint[] GetRowPixels(int row, bool LCDBit3, bool LCDBit4)
+    {
+      ushort tileBaseAddress = (ushort)(LCDBit4 ? 0x8000 : 0x9000);
+      ushort tileMapBaseAddress = (ushort)(!LCDBit3 ? 0x9C00 : 0x9800);
+
+      // We determine the y tile
+      int tileY = row / pixelPerTileY;
+      int tileRemainder = row % pixelPerTileY;
+
+      uint[] pixels = new uint[backgroundPixelCountX];
+      for(int tileX = 0; tileX < totalTileCountX; tileX++)
+      {
+        // We obtain the correct tile index
+        int tileIndex;
+        if (LCDBit4)
+        {
+          tileIndex = memory.LowLevelRead((ushort)(tileMapBaseAddress + totalTileCountX * tileY + tileX));
+        }
+        else
+        {
+          unchecked
+          {
+            byte t = memory.LowLevelRead((ushort)(tileMapBaseAddress + totalTileCountX * tileY + tileX));
+            sbyte tR = (sbyte)t;
+            tileIndex = tR;
+          }
+        }
+
+        // We obtain both pixels
+        int currentTileBaseAddress = tileBaseAddress + bytesPerTile * tileIndex;
+        byte top = memory.LowLevelRead((ushort)(currentTileBaseAddress + 2 * tileRemainder));
+        byte bottom = memory.LowLevelRead((ushort)(currentTileBaseAddress + 2 * tileRemainder + 1));
+
+        uint[] tilePixels = GetPixelsFromTileBytes(top, bottom);
+        int currentTileIndex = tileX * pixelPerTileX;
+        for (int i = 0; i < pixelPerTileX; i++)
+        {
+          pixels[currentTileIndex + i] = tilePixels[i];
+        }
+      }
+
+      return pixels;
+    }
+
+
+    internal uint[] GetPixelsFromTileBytes(byte top, byte bottom)
+    {
+      uint[] pixels = new uint[pixelPerTileX];
+      for(int i = 0; i < pixelPerTileX; i++)
+      {
+        int up = (top >> (7 - i)) & 1;
+        int down = (bottom >> (7 - i)) & 1;
+
+        int index = 2 * up + down;
+        uint color = 0x00FFFFFF;
+        if (index == 1) { color = 0x00BBBBBB; }
+        if (index == 2) { color = 0x00666666; }
+        if (index == 3) { color = 0x00000000; }
+        pixels[i] = color;
+      }
+
+      return pixels;
+    }
+
     /// <summary>
     /// Draw a tile into a bitmap. 
     /// IMPORTANT: presently it requires that the bitmap be the whole background (256x256 pixels)
@@ -200,6 +264,25 @@ namespace GBSharp.VideoSpace
       }
     }
 
+    internal void DrawLine(BitmapData bmd, bool LCDBit3, bool LCDBit4)
+    {
+      // We obtain the data 
+      unsafe
+      {
+        uint* start = (uint*)bmd.Scan0;
+        for (int rowIndex = 0; rowIndex < 64; rowIndex++)
+        {
+          uint[] pixels = GetRowPixels(rowIndex, LCDBit3, !LCDBit4);
+          uint* row = start + rowIndex * bmd.Stride / bytesPerPixel;
+          foreach (uint pixel in pixels)
+          {
+            row[0] = pixel;
+            row++;
+          }
+        }
+      }
+    }
+
     internal void UpdateScreen()
     {
       // TODO(Cristian): Line-based drawing!!!
@@ -227,6 +310,7 @@ namespace GBSharp.VideoSpace
         }
       }
 
+
       int WDX = 0;
       int WDY = 0;
       for (int tileY = 0; tileY < 32; tileY++)
@@ -245,8 +329,6 @@ namespace GBSharp.VideoSpace
                    screenPixelCountX, screenPixelCountY);
         }
       }
-
-
 
       // We draw the SCREEN
       BitmapData bmpData = screen.LockBits(new Rectangle(0, 0, screen.Width, screen.Height),
