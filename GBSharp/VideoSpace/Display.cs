@@ -264,21 +264,18 @@ namespace GBSharp.VideoSpace
       }
     }
 
-    internal void DrawLine(BitmapData bmd, bool LCDBit3, bool LCDBit4)
+    internal void DrawLine(BitmapData bmd, uint[] rowPixels,
+                           int targetX, int targetY,
+                           int rowStart, int rowSpan)
     {
       // We obtain the data 
       unsafe
       {
-        uint* start = (uint*)bmd.Scan0;
-        for (int rowIndex = 0; rowIndex < 64; rowIndex++)
+        uint* bmdPtr = (uint*)bmd.Scan0 + (targetY * bmd.Stride / bytesPerPixel) + targetX;
+        // NOTE(Cristian): rowMax is included
+        for(int i = 0; i < rowSpan; i++)
         {
-          uint[] pixels = GetRowPixels(rowIndex, LCDBit3, !LCDBit4);
-          uint* row = start + rowIndex * bmd.Stride / bytesPerPixel;
-          foreach (uint pixel in pixels)
-          {
-            row[0] = pixel;
-            row++;
-          }
+          bmdPtr[i] = rowPixels[rowStart + i];
         }
       }
     }
@@ -300,34 +297,23 @@ namespace GBSharp.VideoSpace
         ImageLockMode.WriteOnly,
         PixelFormat.Format32bppRgb);
 
-      // We draw the BACKGROUND
-      for (int tileY = 0; tileY < 32; tileY++)
+      for(int row = 0; row < backgroundPixelCountY; row++)
       {
-        for (int tileX = 0; tileX < 32; tileX++)
-        {
-          byte[] tileData = GetTileData(tileX, tileY, LCDBit3, !LCDBit4, true);
-          DrawTile(backgroundBmpData, tileData, tileX * pixelPerTileX, tileY * pixelPerTileY);
-        }
+
+        uint[] rowPixels = GetRowPixels(row, LCDBit3, LCDBit4);
+        DrawLine(backgroundBmpData, rowPixels, 0, row, 0, backgroundPixelCountX);
       }
 
-
+      // We draw the background
+      // TODO(Cristian): Probably join the loops
       int WDX = 0;
       int WDY = 0;
-      for (int tileY = 0; tileY < 32; tileY++)
+      for (int row = WDY; row < screenPixelCountY; row++)
       {
-        if ((tileY * pixelPerTileY + WDY) > screenPixelCountY)
-        {
-          // This means that our window is being displayed off screen, so we stop
-          break;
-        }
-        for (int tileX = 0; tileX < 32; tileX++)
-        {
-          byte[] tileData = GetTileData(tileX, tileY, LCDBit3, !LCDBit4, true);
-          DrawTile(backgroundBmpData, tileData,
-                   WDX + (tileX * pixelPerTileX),
-                   WDY + (tileY * pixelPerTileY),
-                   screenPixelCountX, screenPixelCountY);
-        }
+        // TODO(Cristian): Remove this negation to LCDBit4!!!!
+        //                 It's a bug I'm using for dev only!
+        uint[] rowPixels = GetRowPixels(row, LCDBit3, !LCDBit4);
+        DrawLine(backgroundBmpData, rowPixels, WDX, row, 0, screenPixelCountX - WDX);
       }
 
       // We draw the SCREEN
