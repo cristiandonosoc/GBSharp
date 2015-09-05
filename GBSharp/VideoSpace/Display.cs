@@ -126,7 +126,7 @@ namespace GBSharp.VideoSpace
     internal uint[] GetRowPixels(int row, bool LCDBit3, bool LCDBit4)
     {
       ushort tileBaseAddress = (ushort)(LCDBit4 ? 0x8000 : 0x9000);
-      ushort tileMapBaseAddress = (ushort)(!LCDBit3 ? 0x9C00 : 0x9800);
+      ushort tileMapBaseAddress = (ushort)(LCDBit3 ? 0x9C00 : 0x9800);
 
       // We determine the y tile
       int tileY = row / pixelPerTileY;
@@ -310,9 +310,7 @@ namespace GBSharp.VideoSpace
       int WDY = 0;
       for (int row = WDY; row < screenPixelCountY; row++)
       {
-        // TODO(Cristian): Remove this negation to LCDBit4!!!!
-        //                 It's a bug I'm using for dev only!
-        uint[] rowPixels = GetRowPixels(row, LCDBit3, !LCDBit4);
+        uint[] rowPixels = GetRowPixels(row, LCDBit3, LCDBit4);
         DrawLine(backgroundBmpData, rowPixels, WDX, row, 0, screenPixelCountX - WDX);
       }
 
