@@ -17,8 +17,8 @@ namespace GBSharp.VideoSpace
     /// With this it should be THEORETICALLY have displays
     /// of different sizes without too much hazzle.
     /// </summary>
-    private int windowPixelCountX = 256;
-    private int windowPixelCountY = 256;
+    private int framePixelCountX = 256;
+    private int framePixelCountY = 256;
     private int screenPixelCountX = 160;
     private int screenPixelCountY = 144;
     private int windowTileCountX = 32;
@@ -62,6 +62,14 @@ namespace GBSharp.VideoSpace
 #if DEBUG
       UpdateScreen();
 #endif
+    }
+
+    BitmapData LockBitmap(Bitmap bmp, ImageLockMode lockMode, PixelFormat pixelFormat)
+    {
+      BitmapData result = bmp.LockBits(
+        new Rectangle(0, 0, bmp.Width, bmp.Height),
+        lockMode, pixelFormat);
+      return result;
     }
 
     /// <summary>
@@ -127,6 +135,24 @@ namespace GBSharp.VideoSpace
       return result;
     }
 
+    /// <summary>
+    /// Gets a row of pixels from the tilemap
+    /// </summary>
+    /// <param name="row">The row number to retreive [0, frameHeight)</param>
+    /// <param name="LCDBit3">
+    /// Whether the LCDC Register (0xFF40) Bit 3 is enabled.
+    /// Determines what tilemap (where the tile indexes are) is used:
+    /// 0: 0x9800 - 0x9BFF
+    /// 1: 0x9C00 - 0x9FFF
+    /// </param>
+    /// <param name="LCDBit4">
+    /// Whether the LCDC Register (0xFF40) Bit 3 is enabled.
+    /// Determines the base address for the actual tiles and the
+    /// accessing method (interpretation of the byte tile index retreived from the tilemap).
+    /// 0: 0x8800 - 0x97FF | signed access
+    /// 1: 0x8000 - 0x8FFF | unsigned access
+    /// </param>
+    /// <returns>An array with the pixels to show for that row (color already calculated)</returns>
     internal uint[] GetRowPixels(int row, bool LCDBit3, bool LCDBit4)
     {
       ushort tileBaseAddress = (ushort)(LCDBit4 ? 0x8000 : 0x9000);
@@ -136,7 +162,7 @@ namespace GBSharp.VideoSpace
       int tileY = row / pixelPerTileY;
       int tileRemainder = row % pixelPerTileY;
 
-      uint[] pixels = new uint[windowPixelCountX];
+      uint[] pixels = new uint[framePixelCountX];
       for(int tileX = 0; tileX < windowTileCountX; tileX++)
       {
         // We obtain the correct tile index
@@ -181,6 +207,7 @@ namespace GBSharp.VideoSpace
         int down = (bottom >> (7 - i)) & 1;
 
         int index = 2 * up + down;
+        // TODO(Cristian): Obtain color from a palette!
         uint color = 0x00FFFFFF;
         if (index == 1) { color = 0x00BBBBBB; }
         if (index == 2) { color = 0x00666666; }
@@ -255,8 +282,8 @@ namespace GBSharp.VideoSpace
         {
           for (int x = 0; x < rWidth; x++)
           {
-            int pX = (rX + x) % 256;
-            int pY = (rY + y) % 256;
+            int pX = (rX + x) % framePixelCountX;
+            int pY = (rY + y) % framePixelCountY;
             if(x == 0 || x == (rWidth - 1) ||
                y == 0 || y == (rHeight - 1))
             {
