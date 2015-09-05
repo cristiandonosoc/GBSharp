@@ -7,6 +7,6 @@ namespace GBSharp
   {
     event Action RefreshScreen;
     Bitmap Screen { get; }
-    Bitmap Background { get; }
+    Bitmap Frame { get; }
   }
 }

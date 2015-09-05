@@ -112,7 +112,7 @@ namespace GBSharp.ViewModel
 
     public void CopyFromDomain()
     {
-      Background = Utils.BitmapToImageSource(_display.Background);
+      Background = Utils.BitmapToImageSource(_display.Frame);
 
       var lcdControl = _memory.Data[(int)MemoryMappedRegisters.LCDC];
       BlockSelectionFlag = (lcdControl & (byte)LCDControlFlags.OBJBlockCompositionSelection) > 0;

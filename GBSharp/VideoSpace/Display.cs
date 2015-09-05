@@ -1,10 +1,6 @@
 ﻿using GBSharp.CPUSpace;
 using GBSharp.MemorySpace;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 using System.Drawing.Imaging;
 
@@ -14,32 +10,40 @@ namespace GBSharp.VideoSpace
   {
     public event Action RefreshScreen;
 
-    private Bitmap screen;
     private Memory memory;
 
-    private int backgroundPixelCountX = 256;
-    private int backgroundPixelCountY = 256;
+    /// <summary>
+    /// Pixel numbers of the display.
+    /// With this it should be THEORETICALLY have displays
+    /// of different sizes without too much hazzle.
+    /// </summary>
+    private int windowPixelCountX = 256;
+    private int windowPixelCountY = 256;
     private int screenPixelCountX = 160;
     private int screenPixelCountY = 144;
-    private int totalTileCountX = 32;
-    private int totalTileCountY = 32;
+    private int windowTileCountX = 32;
+    private int windowTileCountY = 32;
     private int screenTileCountX = 20;
     private int screenTileCountY = 18;
     private int bytesPerTile = 16;
     private int pixelPerTileX = 8;
     private int pixelPerTileY = 8;
     private int bytesPerPixel = 4;
-    private Bitmap background;
 
-    public Bitmap Screen
-    {
-      get { return screen; }
-    }
+    /// <summary>
+    /// The final composed frame from with the screen is calculated.
+    /// It's the conbination of the background, window and sprites.
+    /// </summary>
+    private Bitmap frame;
+    public Bitmap Frame { get { return frame; } }
 
-    public Bitmap Background
-    {
-      get { return background; }
-    }
+    /// <summary>
+    /// The bitmap that represents the actual screen.
+    /// It's a portial of the frame specified by the SCX and SCY registers.
+    /// </summary>
+    private Bitmap screen;
+    public Bitmap Screen { get { return screen; } }
+
 
     /// <summary>
     /// Display constructor.
@@ -51,7 +55,7 @@ namespace GBSharp.VideoSpace
       this.memory = memory;
       screen = new Bitmap(screenPixelCountX, screenPixelCountY, 
                           System.Drawing.Imaging.PixelFormat.Format32bppRgb);
-      background = new Bitmap(backgroundPixelCountX, backgroundPixelCountY, 
+      frame = new Bitmap(windowPixelCountX, windowPixelCountY, 
                               System.Drawing.Imaging.PixelFormat.Format32bppRgb);
 
       // TODO(Cristian): Remove this call eventually, when testing is not needed!
@@ -87,27 +91,27 @@ namespace GBSharp.VideoSpace
 
       if(wrap)
       {
-        tileX %= totalTileCountX;
-        tileY %= totalTileCountY;
+        tileX %= windowTileCountX;
+        tileY %= windowTileCountY;
       }
       else
       {
         // TODO(Cristian): See if clipping is what we want
-        if(tileX >= totalTileCountX) { tileX = totalTileCountX - 1; }
-        if(tileY >= totalTileCountY) { tileY = totalTileCountY - 1; }
+        if(tileX >= windowTileCountX) { tileX = windowTileCountX - 1; }
+        if(tileY >= windowTileCountY) { tileY = windowTileCountY - 1; }
       }
 
       // We obtain the correct tile index
       int tileIndex;
       if(LCDBit4)
       {
-        tileIndex = memory.LowLevelRead((ushort)(tileMapBaseAddress + totalTileCountX * tileY + tileX));
+        tileIndex = memory.LowLevelRead((ushort)(tileMapBaseAddress + windowTileCountX * tileY + tileX));
       }
       else
       {
         unchecked
         {
-          byte t = memory.LowLevelRead((ushort)(tileMapBaseAddress + totalTileCountX * tileY + tileX));
+          byte t = memory.LowLevelRead((ushort)(tileMapBaseAddress + windowTileCountX * tileY + tileX));
           sbyte tR = (sbyte)t;
           tileIndex = tR;
         }
@@ -132,20 +136,20 @@ namespace GBSharp.VideoSpace
       int tileY = row / pixelPerTileY;
       int tileRemainder = row % pixelPerTileY;
 
-      uint[] pixels = new uint[backgroundPixelCountX];
-      for(int tileX = 0; tileX < totalTileCountX; tileX++)
+      uint[] pixels = new uint[windowPixelCountX];
+      for(int tileX = 0; tileX < windowTileCountX; tileX++)
       {
         // We obtain the correct tile index
         int tileIndex;
         if (LCDBit4)
         {
-          tileIndex = memory.LowLevelRead((ushort)(tileMapBaseAddress + totalTileCountX * tileY + tileX));
+          tileIndex = memory.LowLevelRead((ushort)(tileMapBaseAddress + windowTileCountX * tileY + tileX));
         }
         else
         {
           unchecked
           {
-            byte t = memory.LowLevelRead((ushort)(tileMapBaseAddress + totalTileCountX * tileY + tileX));
+            byte t = memory.LowLevelRead((ushort)(tileMapBaseAddress + windowTileCountX * tileY + tileX));
             sbyte tR = (sbyte)t;
             tileIndex = tR;
           }
@@ -292,16 +296,16 @@ namespace GBSharp.VideoSpace
       int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
 
       // We update the whole screen
-      BitmapData backgroundBmpData = background.LockBits(
-        new Rectangle(0, 0, background.Width, background.Height),
+      BitmapData backgroundBmpData = frame.LockBits(
+        new Rectangle(0, 0, frame.Width, frame.Height),
         ImageLockMode.WriteOnly,
         PixelFormat.Format32bppRgb);
 
-      for(int row = 0; row < backgroundPixelCountY; row++)
+      for(int row = 0; row < windowPixelCountY; row++)
       {
 
         uint[] rowPixels = GetRowPixels(row, LCDBit3, LCDBit4);
-        DrawLine(backgroundBmpData, rowPixels, 0, row, 0, backgroundPixelCountX);
+        DrawLine(backgroundBmpData, rowPixels, 0, row, 0, windowPixelCountX);
       }
 
       // We draw the background
@@ -329,8 +333,8 @@ namespace GBSharp.VideoSpace
       {
         for (int x = 0; x < screenPixelCountX; x++)
         {
-          int pX = (x + SCX) % backgroundPixelCountX;
-          int pY = (y + SCY) % backgroundPixelCountY;
+          int pX = (x + SCX) % windowPixelCountX;
+          int pY = (y + SCY) % windowPixelCountY;
 
           unsafe
           {
@@ -345,7 +349,7 @@ namespace GBSharp.VideoSpace
 
       // We draw the screen boundaries
       DrawRectangle(backgroundBmpData, SCX, SCY, 160, 144, 0x00FF00FF);
-      background.UnlockBits(backgroundBmpData);
+      frame.UnlockBits(backgroundBmpData);
     }
 
 
