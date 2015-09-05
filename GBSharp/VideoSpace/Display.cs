@@ -30,6 +30,14 @@ namespace GBSharp.VideoSpace
     private int pixelPerTileY = 8;
     private int bytesPerPixel = 4;
 
+    PixelFormat pixelFormat;
+
+    private Bitmap background;
+    public Bitmap Background { get { return background; } }
+
+    private Bitmap window;
+    public Bitmap Window { get { return window; } }
+
     /// <summary>
     /// The final composed frame from with the screen is calculated.
     /// It's the conbination of the background, window and sprites.
@@ -52,11 +60,13 @@ namespace GBSharp.VideoSpace
     /// <param name="Memory">A reference to the memory.</param>
     public Display(InterruptController interruptController, Memory memory)
     {
+
       this.memory = memory;
-      screen = new Bitmap(screenPixelCountX, screenPixelCountY, 
-                          System.Drawing.Imaging.PixelFormat.Format32bppRgb);
-      frame = new Bitmap(windowPixelCountX, windowPixelCountY, 
-                              System.Drawing.Imaging.PixelFormat.Format32bppRgb);
+      pixelFormat = PixelFormat.Format32bppArgb;
+      background = new Bitmap(framePixelCountX, framePixelCountY, pixelFormat);
+      window = new Bitmap(screenPixelCountX, screenPixelCountY, pixelFormat);
+      screen = new Bitmap(screenPixelCountX, screenPixelCountY, pixelFormat);
+      frame = new Bitmap(framePixelCountX, framePixelCountY, pixelFormat);
 
       // TODO(Cristian): Remove this call eventually, when testing is not needed!
 #if DEBUG
@@ -319,64 +329,74 @@ namespace GBSharp.VideoSpace
       bool LCDBit3 = Utils.UtilFuncs.TestBit(lcdRegister, 3) != 0;
       bool LCDBit4 = Utils.UtilFuncs.TestBit(lcdRegister, 4) != 0;
 
-      int SCX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX);
-      int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
 
-      // We update the whole screen
-      BitmapData backgroundBmpData = frame.LockBits(
-        new Rectangle(0, 0, frame.Width, frame.Height),
-        ImageLockMode.WriteOnly,
-        PixelFormat.Format32bppRgb);
-
-      for(int row = 0; row < windowPixelCountY; row++)
-      {
-
-        uint[] rowPixels = GetRowPixels(row, LCDBit3, LCDBit4);
-        DrawLine(backgroundBmpData, rowPixels, 0, row, 0, windowPixelCountX);
-      }
-
-      // We draw the background
-      // TODO(Cristian): Probably join the loops
-      int WDX = 0;
-      int WDY = 0;
-      for (int row = WDY; row < screenPixelCountY; row++)
+      // *** BACKGROUND ***
+      BitmapData backgroundBmpData = LockBitmap(background, ImageLockMode.ReadOnly, pixelFormat);
+      for (int row = 0; row < framePixelCountY; row++)
       {
         uint[] rowPixels = GetRowPixels(row, LCDBit3, LCDBit4);
-        DrawLine(backgroundBmpData, rowPixels, WDX, row, 0, screenPixelCountX - WDX);
+        DrawLine(backgroundBmpData, rowPixels, 0, row, 0, framePixelCountY);
       }
+      background.UnlockBits(backgroundBmpData);
+
+      // *** WINDOW ***
+      int WX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WX);
+      int WY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WY);
+      BitmapData windowBmpData = LockBitmap(window, ImageLockMode.WriteOnly, pixelFormat);
+      for (int row = WY; row < screenPixelCountY; row++)
+      {
+        uint[] rowPixels = GetRowPixels(row, LCDBit3, LCDBit4);
+        // NOTE(Cristian): The window is drawn completely, only that the pixels that
+        //                 shouldn't be there are drawn with alpha 0
+        // First, we clear the pixels that should be "transparent" (not drawn really)
+        for (int i = 0; i < WX; i++)
+        {
+          rowPixels[i] = 0;
+        }
+        DrawLine(windowBmpData, rowPixels, 0, row, 0, screenPixelCountX);
+      }
+      window.UnlockBits(windowBmpData);
+
+      // *** SPRITES ***
+      // TODO(Cristian): Sprites!
+
+
+      // *** SCREEN ***
 
       // We draw the SCREEN
-      BitmapData bmpData = screen.LockBits(new Rectangle(0, 0, screen.Width, screen.Height),
-                                           ImageLockMode.WriteOnly,
-                                           PixelFormat.Format32bppRgb);
-
-      // We copy the information from the background tile to the effective screen
-      // NOTE(Cristian): The screen is 160x144
-      // NOTE(Cristian): We precalculate the stride into the uint boundary to make easier
-      //                 copying the pixels.
-      int backgroundUintStride = backgroundBmpData.Stride / bytesPerPixel;
-      int bmpUintStride = bmpData.Stride / bytesPerPixel;
-      for (int y = 0; y < screenPixelCountY; y++)
+      int SCX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX);
+      int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
+      BitmapData screenBmpData = screen.LockBits(
+        new Rectangle(0, 0, screen.Width, screen.Height),
+        ImageLockMode.WriteOnly, pixelFormat);
+      bool drawScreen = true;
+      if(drawScreen)
       {
-        for (int x = 0; x < screenPixelCountX; x++)
-        {
-          int pX = (x + SCX) % windowPixelCountX;
-          int pY = (y + SCY) % windowPixelCountY;
+        backgroundBmpData = LockBitmap(background, ImageLockMode.ReadOnly, pixelFormat);
 
-          unsafe
+        // We copy the information from the background tile to the effective screen
+        int backgroundUintStride = backgroundBmpData.Stride / bytesPerPixel;
+        int screenUintStride = screenBmpData.Stride / bytesPerPixel;
+        for (int y = 0; y < screenPixelCountY; y++)
+        {
+          for (int x = 0; x < screenPixelCountX; x++)
           {
-            uint* bP = (uint*)backgroundBmpData.Scan0 + (pY * backgroundUintStride) + pX;
-            uint* sP = (uint*)bmpData.Scan0 + (y * bmpUintStride) + x;
-            sP[0] = bP[0];
+            int pX = (x + SCX) % framePixelCountX;
+            int pY = (y + SCY) % framePixelCountY;
+
+            unsafe
+            {
+              uint* bP = (uint*)backgroundBmpData.Scan0 + (pY * backgroundUintStride) + pX;
+              uint* sP = (uint*)screenBmpData.Scan0 + (y * screenUintStride) + x;
+              sP[0] = bP[0];
+            }
           }
         }
+
+        background.UnlockBits(backgroundBmpData);
       }
 
-      screen.UnlockBits(bmpData);
-
-      // We draw the screen boundaries
-      DrawRectangle(backgroundBmpData, SCX, SCY, 160, 144, 0x00FF00FF);
-      frame.UnlockBits(backgroundBmpData);
+      screen.UnlockBits(screenBmpData);
     }
 
 
