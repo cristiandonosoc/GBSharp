@@ -218,10 +218,10 @@ namespace GBSharp.VideoSpace
 
         int index = 2 * up + down;
         // TODO(Cristian): Obtain color from a palette!
-        uint color = 0x00FFFFFF;
-        if (index == 1) { color = 0x00BBBBBB; }
-        if (index == 2) { color = 0x00666666; }
-        if (index == 3) { color = 0x00000000; }
+        uint color = 0xFFFFFFFF;
+        if (index == 1) { color = 0xFFBBBBBB; }
+        if (index == 2) { color = 0xFF666666; }
+        if (index == 3) { color = 0xFF000000; }
         pixels[i] = color;
       }
 
@@ -260,24 +260,13 @@ namespace GBSharp.VideoSpace
           if(pixelY >= maxY) { break; }
 
           uint* row = start + pixelY * uintStride; // Only add every 2 bytes
+          uint[] pixels = GetPixelsFromTileBytes(tileData[j], tileData[j + 1]);
           for (int i = 0; i < 8; i++)
           {
-
             int pixelX = pX + i;
             if(pixelX >= maxX) { break; }
             uint* cPtr = row + pixelX;
-
-            int up = (tileData[j] >> (7 - i)) & 1;
-            int down = (tileData[j + 1] >> (7 - i)) & 1;
-
-            int index = 2 * up + down;
-
-            uint color = 0x00FFFFFF;
-            if(index == 1) { color = 0x00BBBBBB; }
-            if(index == 2) { color = 0x00666666; }
-            if(index == 3) { color = 0x00000000; }
-
-            cPtr[0] = color;
+            cPtr[i] = pixels[7 - i];
           }
         }
       }
@@ -341,19 +330,35 @@ namespace GBSharp.VideoSpace
 
       // *** WINDOW ***
       int WX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WX);
+      // The window pos is (WX - 7, WY)
+      int rWX = WX - 7;
       int WY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WY);
+      uint[] emptyRowPixels = new uint[screenPixelCountX];
       BitmapData windowBmpData = LockBitmap(window, ImageLockMode.WriteOnly, pixelFormat);
-      for (int row = WY; row < screenPixelCountY; row++)
+      for (int row = 0; row < screenPixelCountY; row++)
       {
-        uint[] rowPixels = GetRowPixels(row, LCDBit3, LCDBit4);
-        // NOTE(Cristian): The window is drawn completely, only that the pixels that
-        //                 shouldn't be there are drawn with alpha 0
-        // First, we clear the pixels that should be "transparent" (not drawn really)
-        for (int i = 0; i < WX; i++)
+        if (row < WY)
         {
-          rowPixels[i] = 0;
+          DrawLine(windowBmpData, emptyRowPixels, 0, row, 0, screenPixelCountX);
         }
-        DrawLine(windowBmpData, rowPixels, 0, row, 0, screenPixelCountX);
+        else
+        {
+          // The offset indexes represent that the window is drawn from it's beggining
+          // at (WX, WY)
+          uint[] rowPixels = GetRowPixels(row - WY, LCDBit3, LCDBit4);
+          // NOTE(Cristian): The window is drawn completely, only that the pixels that
+          //                 shouldn't be there are drawn with alpha 0
+          // First, we clear the pixels that should be "transparent" (not drawn really)
+          uint[] windowRowPixels = emptyRowPixels;
+          for (int i = 0; i < screenPixelCountX; i++)
+          {
+            if(i >= rWX )
+            {
+              windowRowPixels[i] = rowPixels[i - rWX];
+            }
+          }
+          DrawLine(windowBmpData, windowRowPixels, 0, row, 0, screenPixelCountX);
+        }
       }
       window.UnlockBits(windowBmpData);
 
@@ -369,8 +374,9 @@ namespace GBSharp.VideoSpace
       BitmapData screenBmpData = screen.LockBits(
         new Rectangle(0, 0, screen.Width, screen.Height),
         ImageLockMode.WriteOnly, pixelFormat);
-      bool drawScreen = true;
-      if(drawScreen)
+      // Background Pass
+      bool drawBackground = Utils.UtilFuncs.TestBit(lcdRegister, 0) != 0;
+      if(drawBackground)
       {
         backgroundBmpData = LockBitmap(background, ImageLockMode.ReadOnly, pixelFormat);
 
@@ -394,6 +400,33 @@ namespace GBSharp.VideoSpace
         }
 
         background.UnlockBits(backgroundBmpData);
+      }
+
+      bool drawWindow = Utils.UtilFuncs.TestBit(lcdRegister, 5) != 0;
+      if(drawWindow)
+      {
+        windowBmpData = LockBitmap(window, ImageLockMode.ReadOnly, pixelFormat);
+
+        int windowUintStrided = windowBmpData.Stride / bytesPerPixel;
+        int screenUintStride = screenBmpData.Stride / bytesPerPixel;
+
+        for (int y = 0; y < screenPixelCountY; y++)
+        {
+          for (int x = 0; x < screenPixelCountX; x++)
+          {
+            unsafe
+            {
+              uint* bP = (uint*)windowBmpData.Scan0 + (y * windowUintStrided) + x;
+              if (((*bP) & 0xFF000000)  != 0) // We check if the pixel wasn't disabled
+              {
+                uint* sP = (uint*)screenBmpData.Scan0 + (y * screenUintStride) + x;
+                sP[0] = bP[0];
+              }
+            }
+          }
+        }
+
+        window.UnlockBits(windowBmpData);
       }
 
       screen.UnlockBits(screenBmpData);
