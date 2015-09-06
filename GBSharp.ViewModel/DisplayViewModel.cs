@@ -16,6 +16,8 @@ namespace GBSharp.ViewModel
     private readonly IMemory _memory;
 
     private BitmapImage _background;
+    private BitmapImage _window;
+
     private bool _blockSelectionFlag;
     private bool _codeAreaSelectionFlag;
     private bool _characterDataSelectionFlag;
@@ -30,6 +32,16 @@ namespace GBSharp.ViewModel
       {
         _background = value;
         OnPropertyChanged(() => Background);
+      }
+    }
+
+    public BitmapImage Window
+    {
+      get { return _window; }
+      set
+      {
+        _window = value;
+        OnPropertyChanged(() => Window);
       }
     }
 
@@ -112,7 +124,8 @@ namespace GBSharp.ViewModel
 
     public void CopyFromDomain()
     {
-      Background = Utils.BitmapToImageSource(_display.Frame);
+      Background = Utils.BitmapToImageSource(_display.Background);
+      Window = Utils.BitmapToImageSource(_display.Window);
 
       var lcdControl = _memory.Data[(int)MemoryMappedRegisters.LCDC];
       BlockSelectionFlag = (lcdControl & (byte)LCDControlFlags.OBJBlockCompositionSelection) > 0;

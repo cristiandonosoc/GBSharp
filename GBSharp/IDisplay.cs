@@ -6,7 +6,13 @@ namespace GBSharp
   public interface IDisplay
   {
     event Action RefreshScreen;
-    Bitmap Screen { get; }
+    // Intermediate targets
+    Bitmap Background { get; }
+    Bitmap Window { get; }
+    
+    // Composed targets
     Bitmap Frame { get; }
+    Bitmap Screen { get; }
+
   }
 }
