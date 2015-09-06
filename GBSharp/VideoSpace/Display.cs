@@ -429,6 +429,16 @@ namespace GBSharp.VideoSpace
         window.UnlockBits(windowBmpData);
       }
 
+      // *** SCREEN RECTANGLE ***
+
+      bool drawRectangle = true;
+      if(drawRectangle)
+      {
+        backgroundBmpData = LockBitmap(background, ImageLockMode.WriteOnly, pixelFormat);
+        DrawRectangle(backgroundBmpData, SCX, SCY, screenPixelCountX, screenPixelCountY, 0xFFFF8822);
+        background.UnlockBits(backgroundBmpData);
+      }
+
       screen.UnlockBits(screenBmpData);
     }
 
