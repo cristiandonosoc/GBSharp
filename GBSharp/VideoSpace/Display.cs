@@ -271,6 +271,30 @@ namespace GBSharp.VideoSpace
         }
       }
     }
+
+    internal void DrawTransparency(BitmapData bmd, int minX, int minY, int maxX, int maxY)
+    {
+      uint[] colors = { 0xF0FCFCFC, 0xF0CDCDCD };
+      int squareSize = 7;
+      unsafe
+      {
+        int uintStride = bmd.Stride / bytesPerPixel;
+        uint* start = (uint*)bmd.Scan0;
+
+        for(int y = minY; y < maxY; y++)
+        {
+          uint* rowStart = start + y * uintStride;
+          for(int x = minX; x < maxX; x++)
+          {
+            int sX = x / squareSize;
+            int sY = y / squareSize;
+            int index = (sX + (sY % 2)) % 2;
+            uint* pixel = rowStart + x;
+            pixel[0] = colors[index];
+          }
+        }
+      }
+    }
     
     internal void DrawRectangle(BitmapData bmd, int rX, int rY, int rWidth, int rHeight, uint color)
     {
@@ -314,7 +338,6 @@ namespace GBSharp.VideoSpace
     {
       // TODO(Cristian): Line-based drawing!!!
       byte lcdRegister = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
-
       bool LCDBit3 = Utils.UtilFuncs.TestBit(lcdRegister, 3) != 0;
       bool LCDBit4 = Utils.UtilFuncs.TestBit(lcdRegister, 4) != 0;
 
@@ -329,35 +352,22 @@ namespace GBSharp.VideoSpace
       background.UnlockBits(backgroundBmpData);
 
       // *** WINDOW ***
-      int WX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WX);
-      // The window pos is (WX - 7, WY)
-      int rWX = WX - 7;
-      int WY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WY);
-      uint[] emptyRowPixels = new uint[screenPixelCountX];
+      int WX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WX) + 30;
+      int rWX = WX - 7; // The window pos is (WX - 7, WY)
+      int WY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WY) + 30;
+
       BitmapData windowBmpData = LockBitmap(window, ImageLockMode.WriteOnly, pixelFormat);
+      DrawTransparency(windowBmpData, 0, 0, screenPixelCountX, WY);
+      DrawTransparency(windowBmpData, 0, WY, rWX, screenPixelCountY);
+
       for (int row = 0; row < screenPixelCountY; row++)
       {
-        if (row < WY)
-        {
-          DrawLine(windowBmpData, emptyRowPixels, 0, row, 0, screenPixelCountX);
-        }
-        else
+        if(row >= WY)
         {
           // The offset indexes represent that the window is drawn from it's beggining
           // at (WX, WY)
           uint[] rowPixels = GetRowPixels(row - WY, LCDBit3, LCDBit4);
-          // NOTE(Cristian): The window is drawn completely, only that the pixels that
-          //                 shouldn't be there are drawn with alpha 0
-          // First, we clear the pixels that should be "transparent" (not drawn really)
-          uint[] windowRowPixels = emptyRowPixels;
-          for (int i = 0; i < screenPixelCountX; i++)
-          {
-            if(i >= rWX )
-            {
-              windowRowPixels[i] = rowPixels[i - rWX];
-            }
-          }
-          DrawLine(windowBmpData, windowRowPixels, 0, row, 0, screenPixelCountX);
+          DrawLine(windowBmpData, rowPixels, rWX, row, 0, screenPixelCountX - rWX);
         }
       }
       window.UnlockBits(windowBmpData);
