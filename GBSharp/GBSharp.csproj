@@ -70,6 +70,7 @@
     <Compile Include="Utils\InvalidInstructionException.cs" />
     <Compile Include="Utils\Utils.cs" />
     <Compile Include="VideoSpace\Display.cs" />
+    <Compile Include="VideoSpace\DisplayFunctions.cs" />
     <Compile Include="VideoSpace\LCDControlFlags.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
