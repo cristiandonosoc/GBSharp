@@ -15,9 +15,6 @@ namespace GBSharp.ViewModel
     private readonly IDisplay _display;
     private readonly IMemory _memory;
 
-    private BitmapImage _background;
-    private BitmapImage _window;
-    private BitmapImage _sprite;
 
     private bool _blockSelectionFlag;
     private bool _codeAreaSelectionFlag;
@@ -26,6 +23,7 @@ namespace GBSharp.ViewModel
     private byte _scrollX;
     private byte _scrollY;
 
+    private BitmapImage _background;
     public BitmapImage Background
     {
       get { return _background; }
@@ -36,6 +34,7 @@ namespace GBSharp.ViewModel
       }
     }
 
+    private BitmapImage _window;
     public BitmapImage Window
     {
       get { return _window; }
@@ -46,6 +45,7 @@ namespace GBSharp.ViewModel
       }
     }
 
+    private BitmapImage _sprite;
     public BitmapImage Sprite 
     {
       get { return _sprite; }
@@ -56,8 +56,17 @@ namespace GBSharp.ViewModel
       }
     }
 
-
-
+    private int _currentSprite;
+    public int CurrentSprite
+    {
+      get { return _currentSprite; }
+      set
+      {
+        _currentSprite = value;
+        // TODO(Cristian): Use the correct event bs
+        Sprite = Utils.BitmapToImageSource(_display.GetSprite(_currentSprite));
+      }
+    }
 
     public bool BlockSelectionFlag
     {
@@ -127,7 +136,7 @@ namespace GBSharp.ViewModel
     {
       get { return new DelegateCommand(ScrollYIncrease); }
     }
-    
+
     public DisplayViewModel(IDisplay display, IMemory memory, IDispatcher dispatcher)
     {
       _display = display;
@@ -140,7 +149,7 @@ namespace GBSharp.ViewModel
     {
       Background = Utils.BitmapToImageSource(_display.Background);
       Window = Utils.BitmapToImageSource(_display.Window);
-      Sprite = Utils.BitmapToImageSource(_display.GetSprite(50));
+      Sprite = Utils.BitmapToImageSource(_display.GetSprite(_currentSprite));
 
       var lcdControl = _memory.Data[(int)MemoryMappedRegisters.LCDC];
       BlockSelectionFlag = (lcdControl & (byte)LCDControlFlags.OBJBlockCompositionSelection) > 0;

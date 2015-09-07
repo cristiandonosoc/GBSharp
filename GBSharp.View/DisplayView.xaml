@@ -77,22 +77,22 @@
               <RowDefinition Height="Auto"/>
               <RowDefinition Height="Auto"/>
               <RowDefinition Height="Auto"/>
-              <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <DockPanel Grid.Row="3">
-              <DockPanel.LayoutTransform>
-                <ScaleTransform CenterX="0" CenterY="0"
-                  ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
-            			ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
-              </DockPanel.LayoutTransform>
-              <Image Height="128" Width="256" Source="{Binding Sprite}"/>
-            </DockPanel>
+            <Image Height="128" Width="256" Source="{Binding Sprite}"/>
+            <Slider Grid.Row="1" x:Name="spriteSlider" 
+                    Minimum="0" Maximum="39" Value="{Binding CurrentSprite}"
+                    IsSnapToTickEnabled="True" TickFrequency="1" />
+            <Grid Grid.Row="3">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <Label Grid.Column="0" Content="Sprite" />
+              <Label Grid.Column="1" Content="{Binding ElementName=spriteSlider, Path=Value}" />
+            </Grid>
           </Grid>
         </Grid>
       </TabItem>
-
-
-
     </TabControl>
 
     <Grid Margin="5" Grid.Row="1">
