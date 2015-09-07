@@ -98,6 +98,16 @@ namespace GBSharp.MemorySpace
       return result;
     }
 
+    internal byte[] LowLevelArrayRead(ushort address, int length)
+    {
+      byte[] result = new byte[length];
+      for (int i = 0; i < length; i++)
+      {
+        result[i] = this.data[address++];
+      }
+      return result;
+    }
+
     #region External memory interface
 
     byte[] IMemory.Data

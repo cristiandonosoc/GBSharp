@@ -6,8 +6,15 @@ using System.Drawing.Imaging;
 
 namespace GBSharp.VideoSpace
 {
+  internal struct OAM
+  {
+    internal byte y;
+    internal byte x;
+    internal byte spriteCode;
+    internal byte flags;
+  }
 
-  public struct DisplayDefinition
+  internal struct DisplayDefinition
   {
     internal int framePixelCountX;
     internal int framePixelCountY;
@@ -31,6 +38,9 @@ namespace GBSharp.VideoSpace
     private Memory memory;
 
     private DisplayDefinition disDef;
+
+    private OAM[] spriteOAMs;
+    private int spriteCount = 40;
 
     /// <summary>
     /// Pixel numbers of the display.
@@ -88,12 +98,46 @@ namespace GBSharp.VideoSpace
       screen = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, disDef.pixelFormat);
       frame = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, disDef.pixelFormat);
 
+      // We load the OAMs
+      ushort spriteOAMAddress = 0xFF00;
+      spriteOAMs = new OAM[spriteCount];
+      for (int i = 0; i < spriteCount; i++)
+      {
+        SetOAM(i, memory.LowLevelArrayRead(spriteOAMAddress, 4));
+        spriteOAMAddress += 4;
+      }
+
       // TODO(Cristian): Remove this call eventually, when testing is not needed!
 #if DEBUG
       UpdateScreen();
 #endif
     }
 
+
+    internal void SetOAM(int index, byte x, byte y, byte spriteCode, byte flags)
+    {
+        spriteOAMs[index].x           = memory.LowLevelRead(x);
+        spriteOAMs[index].y           = memory.LowLevelRead(y);
+        spriteOAMs[index].spriteCode  = memory.LowLevelRead(spriteCode);
+        spriteOAMs[index].flags       = memory.LowLevelRead(flags);
+    }
+
+    /// <summary>
+    /// Load an OAM from direct byte data. NOTE THE ARRAY FORMAT
+    /// </summary>
+    /// <param name="index"></param>
+    /// <param name="data">
+    /// Data layout assumes
+    /// data[0]: y 
+    /// data[0]: x
+    /// data[0]: spriteCode 
+    /// data[0]: flags 
+    /// This is because this is the way the OAM are in memory.
+    /// </param>
+    internal void SetOAM(int index, byte[] data)
+    {
+      SetOAM(index, data[1], data[0], data[2], data[3]);
+    }
 
 
     internal void UpdateScreen()
@@ -142,6 +186,7 @@ namespace GBSharp.VideoSpace
 
       // *** SPRITES ***
       // TODO(Cristian): Sprites!
+
 
 
       // *** SCREEN ***
