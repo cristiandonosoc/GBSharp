@@ -17,6 +17,7 @@ namespace GBSharp.ViewModel
 
     private BitmapImage _background;
     private BitmapImage _window;
+    private BitmapImage _sprite;
 
     private bool _blockSelectionFlag;
     private bool _codeAreaSelectionFlag;
@@ -44,6 +45,19 @@ namespace GBSharp.ViewModel
         OnPropertyChanged(() => Window);
       }
     }
+
+    public BitmapImage Sprite 
+    {
+      get { return _sprite; }
+      set
+      {
+        _sprite = value;
+        OnPropertyChanged(() => Sprite);
+      }
+    }
+
+
+
 
     public bool BlockSelectionFlag
     {
@@ -126,6 +140,7 @@ namespace GBSharp.ViewModel
     {
       Background = Utils.BitmapToImageSource(_display.Background);
       Window = Utils.BitmapToImageSource(_display.Window);
+      Sprite = Utils.BitmapToImageSource(_display.GetSprite(50));
 
       var lcdControl = _memory.Data[(int)MemoryMappedRegisters.LCDC];
       BlockSelectionFlag = (lcdControl & (byte)LCDControlFlags.OBJBlockCompositionSelection) > 0;

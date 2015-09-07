@@ -39,6 +39,8 @@
           </Grid>
         </Grid>
       </TabItem>
+
+      
       <TabItem Header="Window">
         <Grid Margin="5">
           <Grid>
@@ -67,6 +69,29 @@
           </Grid>
         </Grid>
       </TabItem>
+
+      <TabItem Header="Sprite">
+        <Grid Margin="5">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <DockPanel Grid.Row="3">
+              <DockPanel.LayoutTransform>
+                <ScaleTransform CenterX="0" CenterY="0"
+                  ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
+            			ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
+              </DockPanel.LayoutTransform>
+              <Image Height="128" Width="256" Source="{Binding Sprite}"/>
+            </DockPanel>
+          </Grid>
+        </Grid>
+      </TabItem>
+
+
 
     </TabControl>
 
