@@ -60,6 +60,7 @@ namespace GBSharp.VideoSpace
     private Bitmap frame;
     public Bitmap Frame { get { return frame; } }
 
+
     /// <summary>
     /// The bitmap that represents the actual screen.
     /// It's a portial of the frame specified by the SCX and SCY registers.
@@ -67,6 +68,7 @@ namespace GBSharp.VideoSpace
     private Bitmap screen;
     public Bitmap Screen { get { return screen; } }
 
+    private Bitmap sprite;
 
     /// <summary>
     /// Display constructor.
@@ -95,6 +97,9 @@ namespace GBSharp.VideoSpace
       // We create the target bitmaps
       background = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, disDef.pixelFormat);
       window = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, disDef.pixelFormat);
+      sprite = new Bitmap(8, 8, disDef.pixelFormat);
+
+
       screen = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, disDef.pixelFormat);
       frame = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, disDef.pixelFormat);
 
@@ -139,6 +144,21 @@ namespace GBSharp.VideoSpace
       SetOAM(index, data[1], data[0], data[2], data[3]);
     }
 
+    public Bitmap GetSprite(int index)
+    {
+      DrawSprite(index);
+      return sprite;
+    }
+
+    internal void DrawSprite(int index)
+    {
+      byte[] pixels = DisplayFunctions.GetTileData(disDef, memory, 0x8000, index);
+      BitmapData spriteBmd = DisplayFunctions.LockBitmap(sprite,
+                                                         ImageLockMode.WriteOnly,
+                                                         disDef.pixelFormat);
+      DisplayFunctions.DrawTile(disDef, spriteBmd, pixels, 0, 0);
+      sprite.UnlockBits(spriteBmd);
+    }
 
     internal void UpdateScreen()
     {
@@ -186,7 +206,6 @@ namespace GBSharp.VideoSpace
 
       // *** SPRITES ***
       // TODO(Cristian): Sprites!
-
 
 
       // *** SCREEN ***

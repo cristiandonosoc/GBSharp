@@ -57,10 +57,10 @@ namespace GBSharp.VideoSpace
       }
 
       // We obtain the correct tile index
-      int tileIndex;
+      int tileOffset;
       if(LCDBit4)
       {
-        tileIndex = memory.LowLevelRead((ushort)(tileMapBaseAddress + 
+        tileOffset = memory.LowLevelRead((ushort)(tileMapBaseAddress + 
                                                  (disDef.windowTileCountX * tileY) + 
                                                  tileX));
       }
@@ -72,19 +72,22 @@ namespace GBSharp.VideoSpace
                                                 (disDef.windowTileCountX * tileY) + 
                                                 tileX));
           sbyte tR = (sbyte)t;
-          tileIndex = tR;
+          tileOffset = tR;
         }
       }
-      
+
+      byte[] result = GetTileData(disDef, memory, tileBaseAddress, tileOffset);
+      return result;
+    }
+
+    internal static byte[]
+    GetTileData(DisplayDefinition disDef, Memory memory, int tileBaseAddress, int tileOffset)
+    {
       // We obtain the tile memory
       byte[] result = new byte[disDef.bytesPerTile];
-      for(int i = 0; i < disDef.bytesPerTile; i++)
-      {
-        result[i] = memory.LowLevelRead((ushort)(tileBaseAddress + 
-                                                 (disDef.bytesPerTile * tileIndex) + 
-                                                 i));
-      }
-
+      result = memory.LowLevelArrayRead(
+        (ushort)(tileBaseAddress + (disDef.bytesPerTile * tileOffset)),
+        disDef.bytesPerTile);
       return result;
     }
 
@@ -187,18 +190,8 @@ namespace GBSharp.VideoSpace
     /// <param name="pX">x coord of the pixel where to start drawing the tile</param>
     /// <param name="pY">y coord of the pixel where to start drawing the tile</param>
     internal static void 
-    DrawTile(DisplayDefinition disDef, BitmapData bmd, byte[] tileData, int pX, int pY,
-      int maxX = 256, int maxY = 256)
+    DrawTile(DisplayDefinition disDef, BitmapData bmd, byte[] tileData, int pX, int pY)
     {
-      // TODO(Cristian): Remove this assertions
-      if ((pY + 7) >= 256)
-      {
-        throw new ArgumentOutOfRangeException("Y pixel too high");
-      }
-      else if ((pY == 255) && ((pX + 7) >= 256))
-      {
-        throw new ArgumentOutOfRangeException("X pixel too high in last line");
-      }
       unsafe
       {
         int uintStride = bmd.Stride / disDef.bytesPerPixel;
@@ -208,16 +201,14 @@ namespace GBSharp.VideoSpace
         for (int j = 0; j < 16; j += 2)
         {
           int pixelY = pY + (j / 2);
-          if(pixelY >= maxY) { break; }
 
           uint* row = start + pixelY * uintStride; // Only add every 2 bytes
           uint[] pixels = GetPixelsFromTileBytes(disDef, tileData[j], tileData[j + 1]);
           for (int i = 0; i < 8; i++)
           {
             int pixelX = pX + i;
-            if(pixelX >= maxX) { break; }
             uint* cPtr = row + pixelX;
-            cPtr[i] = pixels[7 - i];
+            cPtr[0] = pixels[7 - i];
           }
         }
       }
