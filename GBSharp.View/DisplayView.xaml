@@ -34,7 +34,8 @@
               <Button DockPanel.Dock="Right" Content="&gt;" Command="{Binding ScrollXIncreaseCommand}"></Button>
               <Button DockPanel.Dock="Top" Content="^" Command="{Binding ScrollYIncreaseCommand}"></Button>
               <Button DockPanel.Dock="Bottom" Content="v" Command="{Binding ScrollYDecreaseCommand}"></Button>
-              <Image Height="256" Width="256" Source="{Binding Background}"/>
+              <Image Height="256" Width="256" Source="{Binding Background}"
+                     RenderOptions.BitmapScalingMode="NearestNeighbor"/>
             </DockPanel>
           </Grid>
         </Grid>
@@ -64,7 +65,8 @@
               <Button DockPanel.Dock="Right" Content="&gt;" Command="{Binding ScrollXIncreaseCommand}"></Button>
               <Button DockPanel.Dock="Top" Content="^" Command="{Binding ScrollYIncreaseCommand}"></Button>
               <Button DockPanel.Dock="Bottom" Content="v" Command="{Binding ScrollYDecreaseCommand}"></Button>
-              <Image Height="256" Width="256" Source="{Binding Window}"/>
+              <Image Height="256" Width="256" Source="{Binding Window}"
+                     RenderOptions.BitmapScalingMode="NearestNeighbor"/>
             </DockPanel>
           </Grid>
         </Grid>
@@ -78,7 +80,8 @@
               <RowDefinition Height="Auto"/>
               <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <Image Height="128" Width="256" Source="{Binding Sprite}"/>
+            <Image Height="128" Width="256" Source="{Binding Sprite}"
+                   RenderOptions.BitmapScalingMode="NearestNeighbor"/>
             <Slider Grid.Row="1" x:Name="spriteSlider" 
                     Minimum="0" Maximum="39" Value="{Binding CurrentSprite}"
                     IsSnapToTickEnabled="True" TickFrequency="1" />
