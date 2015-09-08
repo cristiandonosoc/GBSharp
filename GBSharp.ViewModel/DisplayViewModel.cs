@@ -56,17 +56,31 @@ namespace GBSharp.ViewModel
       }
     }
 
-    private int _currentSprite;
+    private int _currentSpriteIndex;
     public int CurrentSprite
     {
-      get { return _currentSprite; }
+      get { return _currentSpriteIndex; }
       set
       {
-        _currentSprite = value;
+        _currentSpriteIndex = value;
         // TODO(Cristian): Use the correct event bs
-        Sprite = Utils.BitmapToImageSource(_display.GetSprite(_currentSprite));
+        Sprite = Utils.BitmapToImageSource(_display.GetSprite(_currentSpriteIndex));
+        CurrentOAM = _display.GetOAM(_currentSpriteIndex);
       }
     }
+
+    private OAM _currentOAM;
+    public OAM CurrentOAM
+    {
+      get { return _currentOAM; }
+      set
+      {
+        _currentOAM = value;
+        OnPropertyChanged(() => CurrentOAM);
+      }
+    }
+
+
 
     public bool BlockSelectionFlag
     {
@@ -149,7 +163,7 @@ namespace GBSharp.ViewModel
     {
       Background = Utils.BitmapToImageSource(_display.Background);
       Window = Utils.BitmapToImageSource(_display.Window);
-      Sprite = Utils.BitmapToImageSource(_display.GetSprite(_currentSprite));
+      Sprite = Utils.BitmapToImageSource(_display.GetSprite(_currentSpriteIndex));
 
       var lcdControl = _memory.Data[(int)MemoryMappedRegisters.LCDC];
       BlockSelectionFlag = (lcdControl & (byte)LCDControlFlags.OBJBlockCompositionSelection) > 0;

@@ -6,12 +6,18 @@ using System.Drawing.Imaging;
 
 namespace GBSharp.VideoSpace
 {
-  internal struct OAM
+  public struct OAM
   {
     internal byte y;
     internal byte x;
     internal byte spriteCode;
     internal byte flags;
+
+    public byte X { get { return x; } }
+    public byte Y { get { return y; } }
+    public byte SpriteCode { get { return spriteCode; } }
+    public byte Flags { get { return flags; } }
+
   }
 
   internal struct DisplayDefinition
@@ -39,8 +45,12 @@ namespace GBSharp.VideoSpace
 
     private DisplayDefinition disDef;
 
-    private OAM[] spriteOAMs;
     private int spriteCount = 40;
+    private OAM[] spriteOAMs;
+    public OAM GetOAM(int index)
+    {
+      return spriteOAMs[index];
+    }
 
     /// <summary>
     /// Pixel numbers of the display.
@@ -121,10 +131,10 @@ namespace GBSharp.VideoSpace
 
     internal void SetOAM(int index, byte x, byte y, byte spriteCode, byte flags)
     {
-        spriteOAMs[index].x           = memory.LowLevelRead(x);
-        spriteOAMs[index].y           = memory.LowLevelRead(y);
-        spriteOAMs[index].spriteCode  = memory.LowLevelRead(spriteCode);
-        spriteOAMs[index].flags       = memory.LowLevelRead(flags);
+        spriteOAMs[index].x           = x;
+        spriteOAMs[index].y           = y;
+        spriteOAMs[index].spriteCode  = spriteCode;
+        spriteOAMs[index].flags       = flags;
     }
 
     /// <summary>

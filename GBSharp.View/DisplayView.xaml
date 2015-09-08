@@ -89,9 +89,38 @@
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
               <Label Grid.Column="0" Content="Sprite" />
               <Label Grid.Column="1" Content="{Binding ElementName=spriteSlider, Path=Value}" />
+              <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Label Grid.Row="0" Grid.Column="0" Content="X"/>
+                <Label Grid.Row="0" Grid.Column="1" Content=":"/>
+                <Label Grid.Row="0" Grid.Column="2" Content="{Binding CurrentOAM.X}" />
+
+                <Label Grid.Row="1" Grid.Column="0" Content="Y"/>
+                <Label Grid.Row="1" Grid.Column="1" Content=":"/>
+                <Label Grid.Row="1" Grid.Column="2" Content="{Binding CurrentOAM.Y}" />
+
+                <Label Grid.Row="2" Grid.Column="0" Content="Sprite Code"/>
+                <Label Grid.Row="2" Grid.Column="1" Content=":"/>
+                <Label Grid.Row="2" Grid.Column="2" Content="{Binding CurrentOAM.SpriteCode}" />
+
+                <Label Grid.Row="3" Grid.Column="0" Content="Flags"/>
+                <Label Grid.Row="3" Grid.Column="1" Content=":"/>
+                <Label Grid.Row="3" Grid.Column="2" Content="{Binding CurrentOAM.Flags}" />
+              </Grid>
             </Grid>
           </Grid>
         </Grid>
