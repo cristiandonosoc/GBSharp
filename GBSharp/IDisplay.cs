@@ -13,6 +13,7 @@ namespace GBSharp
     // Intermediate targets
     Bitmap Background { get; }
     Bitmap Window { get; }
+    Bitmap SpriteLayer { get; }
     
     // Composed targets
     Bitmap Frame { get; }

@@ -56,6 +56,17 @@ namespace GBSharp.ViewModel
       }
     }
 
+    private BitmapImage _spriteLayer;
+    public BitmapImage SpriteLayer
+    {
+      get { return _spriteLayer; }
+      set
+      {
+        _spriteLayer = value;
+        OnPropertyChanged(() => SpriteLayer);
+      }
+    }
+
     private int _currentSpriteIndex;
     public int CurrentSprite
     {
@@ -164,6 +175,7 @@ namespace GBSharp.ViewModel
       Background = Utils.BitmapToImageSource(_display.Background);
       Window = Utils.BitmapToImageSource(_display.Window);
       Sprite = Utils.BitmapToImageSource(_display.GetSprite(_currentSpriteIndex));
+      SpriteLayer = Utils.BitmapToImageSource(_display.SpriteLayer);
 
       var lcdControl = _memory.Data[(int)MemoryMappedRegisters.LCDC];
       BlockSelectionFlag = (lcdControl & (byte)LCDControlFlags.OBJBlockCompositionSelection) > 0;
