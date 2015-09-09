@@ -51,6 +51,32 @@ namespace GBSharp.VideoSpace
     {
       return spriteOAMs[index];
     }
+    internal void SetOAM(int index, byte x, byte y, byte spriteCode, byte flags)
+    {
+        spriteOAMs[index].x           = x;
+        spriteOAMs[index].y           = y;
+        spriteOAMs[index].spriteCode  = spriteCode;
+        spriteOAMs[index].flags       = flags;
+    }
+
+    /// <summary>
+    /// Load an OAM from direct byte data. NOTE THE ARRAY FORMAT
+    /// </summary>
+    /// <param name="index"></param>
+    /// <param name="data">
+    /// Data layout assumes
+    /// data[0]: y 
+    /// data[0]: x
+    /// data[0]: spriteCode 
+    /// data[0]: flags 
+    /// This is because this is the way the OAM are in memory.
+    /// </param>
+    internal void SetOAM(int index, byte[] data)
+    {
+      SetOAM(index, data[1], data[0], data[2], data[3]);
+    }
+
+
 
     /// <summary>
     /// Pixel numbers of the display.
@@ -129,31 +155,6 @@ namespace GBSharp.VideoSpace
     }
 
 
-    internal void SetOAM(int index, byte x, byte y, byte spriteCode, byte flags)
-    {
-        spriteOAMs[index].x           = x;
-        spriteOAMs[index].y           = y;
-        spriteOAMs[index].spriteCode  = spriteCode;
-        spriteOAMs[index].flags       = flags;
-    }
-
-    /// <summary>
-    /// Load an OAM from direct byte data. NOTE THE ARRAY FORMAT
-    /// </summary>
-    /// <param name="index"></param>
-    /// <param name="data">
-    /// Data layout assumes
-    /// data[0]: y 
-    /// data[0]: x
-    /// data[0]: spriteCode 
-    /// data[0]: flags 
-    /// This is because this is the way the OAM are in memory.
-    /// </param>
-    internal void SetOAM(int index, byte[] data)
-    {
-      SetOAM(index, data[1], data[0], data[2], data[3]);
-    }
-
     public Bitmap GetSprite(int index)
     {
       DrawSprite(index);
@@ -162,7 +163,8 @@ namespace GBSharp.VideoSpace
 
     internal void DrawSprite(int index)
     {
-      byte[] pixels = DisplayFunctions.GetTileData(disDef, memory, 0x8000, index);
+      OAM oam = GetOAM(index);
+      byte[] pixels = DisplayFunctions.GetTileData(disDef, memory, 0x8000, oam.SpriteCode);
       BitmapData spriteBmd = DisplayFunctions.LockBitmap(sprite,
                                                          ImageLockMode.WriteOnly,
                                                          disDef.pixelFormat);
