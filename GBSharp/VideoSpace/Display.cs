@@ -1,6 +1,7 @@
 ﻿using GBSharp.CPUSpace;
 using GBSharp.MemorySpace;
 using System;
+using System.Collections;
 using System.Drawing;
 using System.Drawing.Imaging;
 
@@ -97,6 +98,12 @@ namespace GBSharp.VideoSpace
     public Bitmap Frame { get { return frame; } }
 
 
+    private Bitmap sprite;
+
+    private Bitmap spriteLayer;
+    public Bitmap SpriteLayer { get { return spriteLayer; } }
+
+
     /// <summary>
     /// The bitmap that represents the actual screen.
     /// It's a portial of the frame specified by the SCX and SCY registers.
@@ -104,7 +111,6 @@ namespace GBSharp.VideoSpace
     private Bitmap screen;
     public Bitmap Screen { get { return screen; } }
 
-    private Bitmap sprite;
 
     /// <summary>
     /// Display constructor.
@@ -134,7 +140,7 @@ namespace GBSharp.VideoSpace
       background = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, disDef.pixelFormat);
       window = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, disDef.pixelFormat);
       sprite = new Bitmap(8, 8, disDef.pixelFormat);
-
+      spriteLayer = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, disDef.pixelFormat);
 
       screen = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, disDef.pixelFormat);
       frame = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, disDef.pixelFormat);
@@ -157,19 +163,19 @@ namespace GBSharp.VideoSpace
 
     public Bitmap GetSprite(int index)
     {
-      DrawSprite(index);
-      return sprite;
-    }
-
-    internal void DrawSprite(int index)
-    {
-      OAM oam = GetOAM(index);
-      byte[] pixels = DisplayFunctions.GetTileData(disDef, memory, 0x8000, oam.SpriteCode);
       BitmapData spriteBmd = DisplayFunctions.LockBitmap(sprite,
                                                          ImageLockMode.WriteOnly,
                                                          disDef.pixelFormat);
-      DisplayFunctions.DrawTile(disDef, spriteBmd, pixels, 0, 0);
+      OAM oam = GetOAM(index);
+      DrawSprite(spriteBmd, oam.spriteCode, 0, 0);
       sprite.UnlockBits(spriteBmd);
+      return sprite;
+    }
+
+    internal void DrawSprite(BitmapData spriteBmd, int spriteCode, int pX, int pY)
+    {
+      byte[] pixels = DisplayFunctions.GetTileData(disDef, memory, 0x8000, spriteCode);
+      DisplayFunctions.DrawTile(disDef, spriteBmd, pixels, pX, pY);
     }
 
     internal void UpdateScreen()
@@ -217,7 +223,54 @@ namespace GBSharp.VideoSpace
       window.UnlockBits(windowBmpData);
 
       // *** SPRITES ***
-      // TODO(Cristian): Sprites!
+      // TODO(Cristian): Find a more efficient way to keep this list sorted by priority
+      OAM[] oams = (OAM[])spriteOAMs.Clone();
+      Array.Sort<OAM>(oams, (a, b) => (a.x == b.x) ?
+                                      (a.y - b.y) : (a.x - b.x));
+
+      for (int i = 0; i < spriteOAMs.Length; ++i)
+      {
+        Console.Out.WriteLine("OLD: ({0}, {1}) \t, NEW: ({2}, {3})",
+                              spriteOAMs[i].x, spriteOAMs[i].y,
+                              oams[i].x, oams[i].y);
+      }
+
+
+      BitmapData spriteLayerBmp = DisplayFunctions.LockBitmap(spriteLayer,
+                                                              ImageLockMode.WriteOnly,
+                                                              disDef.pixelFormat);
+      DisplayFunctions.DrawTransparency(disDef, spriteLayerBmp, 0, 0, spriteLayerBmp.Width, spriteLayerBmp.Height);
+      int maxScanLineSize = 10;
+      OAM[] scanLineOAMs = new OAM[maxScanLineSize];
+      for (int row = 0; row < disDef.screenPixelCountY; row++)
+      {
+        // We select which sprites enter the scan
+        int scanLineSize = 0;
+        for(int i = 0; i < spriteCount; ++i)
+        {
+          // We load the OAMs to be displayed
+          OAM oam = oams[i];
+          int y = oam.y - 16;
+          if ((y <= row) && (row <= (y + 8)))
+          {
+            scanLineOAMs[scanLineSize++] = oam;
+            if(scanLineSize == maxScanLineSize) { break; }
+          }
+        }
+
+        int a = 10;
+
+        for (int i = (scanLineSize - 1); i >= 0; --i)
+        {
+          OAM oam = scanLineOAMs[i];
+          int x = oam.x - 8;
+          int y = oam.y - 16;
+          // TODO(Cristian): Make the Draw calls boundary safe!!!
+          //DrawSprite(spriteLayerBmp, oam.spriteCode, x, y);
+        }
+      }
+      spriteLayer.UnlockBits(spriteLayerBmp);
+
 
 
       // *** SCREEN ***
