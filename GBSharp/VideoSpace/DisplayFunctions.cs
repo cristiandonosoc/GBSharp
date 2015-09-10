@@ -46,14 +46,14 @@ namespace GBSharp.VideoSpace
 
       if(wrap)
       {
-        tileX %= disDef.windowTileCountX;
-        tileY %= disDef.windowTileCountY;
+        tileX %= disDef.frameTileCountX;
+        tileY %= disDef.screenTileCountY;
       }
       else
       {
         // TODO(Cristian): See if clipping is what we want
-        if(tileX >= disDef.windowTileCountX) { tileX = disDef.windowTileCountX - 1; }
-        if(tileY >= disDef.windowTileCountY) { tileY = disDef.windowTileCountY - 1; }
+        if(tileX >= disDef.frameTileCountX) { tileX = disDef.frameTileCountX - 1; }
+        if(tileY >= disDef.screenTileCountY) { tileY = disDef.screenTileCountY - 1; }
       }
 
       // We obtain the correct tile index
@@ -61,7 +61,7 @@ namespace GBSharp.VideoSpace
       if(LCDBit4)
       {
         tileOffset = memory.LowLevelRead((ushort)(tileMapBaseAddress + 
-                                                 (disDef.windowTileCountX * tileY) + 
+                                                 (disDef.frameTileCountX * tileY) + 
                                                  tileX));
       }
       else
@@ -69,7 +69,7 @@ namespace GBSharp.VideoSpace
         unchecked
         {
           byte t = memory.LowLevelRead((ushort)(tileMapBaseAddress + 
-                                                (disDef.windowTileCountX * tileY) + 
+                                                (disDef.frameTileCountX * tileY) + 
                                                 tileX));
           sbyte tR = (sbyte)t;
           tileOffset = tR;
@@ -121,14 +121,14 @@ namespace GBSharp.VideoSpace
       int tileRemainder = row % disDef.pixelPerTileY;
 
       uint[] pixels = new uint[disDef.framePixelCountX];
-      for(int tileX = 0; tileX < disDef.windowTileCountX; tileX++)
+      for(int tileX = 0; tileX < disDef.frameTileCountX; tileX++)
       {
         // We obtain the correct tile index
         int tileIndex;
         if (LCDBit4)
         {
           tileIndex = memory.LowLevelRead((ushort)(tileMapBaseAddress + 
-                                                   (disDef.windowTileCountX * tileY) + 
+                                                   (disDef.frameTileCountX * tileY) + 
                                                    tileX));
         }
         else
@@ -136,7 +136,7 @@ namespace GBSharp.VideoSpace
           unchecked
           {
             byte t = memory.LowLevelRead((ushort)(tileMapBaseAddress + 
-                                                  (disDef.windowTileCountX * tileY) + 
+                                                  (disDef.frameTileCountX * tileY) + 
                                                   tileX));
             sbyte tR = (sbyte)t;
             tileIndex = tR;
@@ -217,7 +217,7 @@ namespace GBSharp.VideoSpace
     internal static void 
     DrawTransparency(DisplayDefinition disDef, BitmapData bmd, int minX, int minY, int maxX, int maxY)
     {
-      uint[] colors = { 0xF0FCFCFC, 0xF0CDCDCD };
+      uint[] colors = { 0xF0F0F0F0, 0xF0CDCDCD };
       int squareSize = 7;
       unsafe
       {

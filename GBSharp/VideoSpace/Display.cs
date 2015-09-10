@@ -27,8 +27,8 @@ namespace GBSharp.VideoSpace
     internal int framePixelCountY;
     internal int screenPixelCountX;
     internal int screenPixelCountY;
-    internal int windowTileCountX;
-    internal int windowTileCountY;
+    internal int frameTileCountX;
+    internal int frameTileCountY;
     internal int screenTileCountX;
     internal int screenTileCountY;
     internal int bytesPerTile;
@@ -124,8 +124,8 @@ namespace GBSharp.VideoSpace
       disDef.framePixelCountY = 256;
       disDef.screenPixelCountX = 160;
       disDef.screenPixelCountY = 144;
-      disDef.windowTileCountX = 32;
-      disDef.windowTileCountY = 32;
+      disDef.frameTileCountX = 32;
+      disDef.frameTileCountY = 32;
       disDef.screenTileCountX = 20;
       disDef.screenTileCountY = 18;
       disDef.bytesPerTile = 16;
@@ -175,7 +175,8 @@ namespace GBSharp.VideoSpace
     internal void DrawSprite(BitmapData spriteBmd, int spriteCode, int pX, int pY)
     {
       byte[] pixels = DisplayFunctions.GetTileData(disDef, memory, 0x8000, spriteCode);
-      DisplayFunctions.DrawTile(disDef, spriteBmd, pixels, pX, pY);
+      DisplayFunctions.DrawTile(disDef, spriteBmd, pixels, pX, pY,
+                                disDef.screenPixelCountX, disDef.screenPixelCountY);
     }
 
     internal void UpdateScreen()
