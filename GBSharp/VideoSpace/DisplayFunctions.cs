@@ -189,8 +189,9 @@ namespace GBSharp.VideoSpace
     /// <param name="tileData">The 16 bytes that conform the 8x8 pixels</param>
     /// <param name="pX">x coord of the pixel where to start drawing the tile</param>
     /// <param name="pY">y coord of the pixel where to start drawing the tile</param>
-    internal static void 
-    DrawTile(DisplayDefinition disDef, BitmapData bmd, byte[] tileData, int pX, int pY)
+    internal static void
+    DrawTile(DisplayDefinition disDef, BitmapData bmd, byte[] tileData,
+             int pX, int pY, int maxPx, int maxPy)
     {
       unsafe
       {
@@ -201,12 +202,16 @@ namespace GBSharp.VideoSpace
         for (int j = 0; j < 16; j += 2)
         {
           int pixelY = pY + (j / 2);
+          if(pixelY < 0) { continue; }
+          if(pixelY >= maxPy) { break; } // We can continue no further
 
           uint* row = start + pixelY * uintStride; // Only add every 2 bytes
           uint[] pixels = GetPixelsFromTileBytes(disDef, tileData[j], tileData[j + 1]);
           for (int i = 0; i < 8; i++)
           {
             int pixelX = pX + i;
+            if(pixelX < 0) { continue; }
+            if(pixelX >= maxPx) { break; }
             uint* cPtr = row + pixelX;
             cPtr[0] = pixels[7 - i];
           }

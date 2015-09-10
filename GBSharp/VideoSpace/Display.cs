@@ -229,6 +229,7 @@ namespace GBSharp.VideoSpace
       Array.Sort<OAM>(oams, (a, b) => (a.x == b.x) ?
                                       (a.y - b.y) : (a.x - b.x));
 
+#if DEBUG
       for (int i = 0; i < spriteOAMs.Length; ++i)
       {
         Console.Out.WriteLine("OLD: ({0}, {1}) \t, NEW: ({2}, {3})",
@@ -236,18 +237,41 @@ namespace GBSharp.VideoSpace
                               oams[i].x, oams[i].y);
       }
 
+      Console.Out.WriteLine("FILTERED SPRITES");
+      for (int i = 0; i < spriteOAMs.Length; ++i)
+      {
+        int x = oams[i].x - 8;
+        int y = oams[i].y - 16;
+        if (x < 0 || x >= 160 ||
+            y < 0 || y >= 144)
+          continue;
+        Console.Out.WriteLine("X: {0} \t, Y: {1}", x, y);
+      }
+
+      //// Sprite Checks
+      //DrawSprite(spriteLayerBmp, 0, -5, -5);
+      //DrawSprite(spriteLayerBmp, 0, 155, -5);
+      //DrawSprite(spriteLayerBmp, 0, -5, 80);
+      //DrawSprite(spriteLayerBmp, 0, -5, 140);
+      //DrawSprite(spriteLayerBmp, 0, -50, -50);
+      //DrawSprite(spriteLayerBmp, 0, 155, 80);
+      //DrawSprite(spriteLayerBmp, 0, 10, 140);
+      //DrawSprite(spriteLayerBmp, 0, 155, 140);
+      //DrawSprite(spriteLayerBmp, 0, 200, 200);
+#endif
 
       BitmapData spriteLayerBmp = DisplayFunctions.LockBitmap(spriteLayer,
                                                               ImageLockMode.WriteOnly,
                                                               disDef.pixelFormat);
       DisplayFunctions.DrawTransparency(disDef, spriteLayerBmp, 0, 0, spriteLayerBmp.Width, spriteLayerBmp.Height);
+
       int maxScanLineSize = 10;
       OAM[] scanLineOAMs = new OAM[maxScanLineSize];
       for (int row = 0; row < disDef.screenPixelCountY; row++)
       {
         // We select which sprites enter the scan
         int scanLineSize = 0;
-        for(int i = 0; i < spriteCount; ++i)
+        for (int i = 0; i < spriteCount; ++i)
         {
           // We load the OAMs to be displayed
           OAM oam = oams[i];
@@ -255,7 +279,7 @@ namespace GBSharp.VideoSpace
           if ((y <= row) && (row <= (y + 8)))
           {
             scanLineOAMs[scanLineSize++] = oam;
-            if(scanLineSize == maxScanLineSize) { break; }
+            if (scanLineSize == maxScanLineSize) { break; }
           }
         }
 
@@ -266,10 +290,11 @@ namespace GBSharp.VideoSpace
           OAM oam = scanLineOAMs[i];
           int x = oam.x - 8;
           int y = oam.y - 16;
-          // TODO(Cristian): Make the Draw calls boundary safe!!!
-          //DrawSprite(spriteLayerBmp, oam.spriteCode, x, y);
+          DrawSprite(spriteLayerBmp, oam.spriteCode, x, y);
         }
       }
+
+
       spriteLayer.UnlockBits(spriteLayerBmp);
 
 
