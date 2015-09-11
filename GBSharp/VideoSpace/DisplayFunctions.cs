@@ -172,8 +172,8 @@ namespace GBSharp.VideoSpace
         int index = 2 * up + down;
         // TODO(Cristian): Obtain color from a palette!
         uint color = 0xFFFFFFFF;
-        if (index == 1) { color = 0xFFBBBBBB; }
-        if (index == 2) { color = 0xFF666666; }
+        if (index == 1) { color = 0xFF666666; }
+        if (index == 2) { color = 0xFFBBBBBB; }
         if (index == 3) { color = 0xFF000000; }
         pixels[i] = color;
       }
@@ -213,7 +213,7 @@ namespace GBSharp.VideoSpace
             if(pixelX < 0) { continue; }
             if(pixelX >= maxPx) { break; }
             uint* cPtr = row + pixelX;
-            cPtr[0] = pixels[7 - i];
+            cPtr[0] = pixels[i];
           }
         }
       }

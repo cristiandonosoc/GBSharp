@@ -146,7 +146,7 @@ namespace GBSharp.VideoSpace
       frame = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, disDef.pixelFormat);
 
       // We load the OAMs
-      ushort spriteOAMAddress = 0xFF00;
+      ushort spriteOAMAddress = 0xFE00;
       spriteOAMs = new OAM[spriteCount];
       for (int i = 0; i < spriteCount; i++)
       {
@@ -200,9 +200,9 @@ namespace GBSharp.VideoSpace
       background.UnlockBits(backgroundBmpData);
 
       // *** WINDOW ***
-      int WX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WX) + 30;
+      int WX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WX);
       int rWX = WX - 7; // The window pos is (WX - 7, WY)
-      int WY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WY) + 30;
+      int WY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WY);
 
       BitmapData windowBmpData = DisplayFunctions.LockBitmap(window, 
                                                              ImageLockMode.WriteOnly, 
