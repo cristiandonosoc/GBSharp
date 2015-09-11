@@ -150,7 +150,7 @@ namespace GBSharp.ViewModel
       _memorySections.Add(new MemorySectionViewModel("Switchable RAM", 0xA000, 0xC000));
       _memorySections.Add(new MemorySectionViewModel("VRAM", 0x8000, 0xC000));
       _memorySections.Add(new MemorySectionViewModel("ROM", 0x0000, 0x8000));
-      SelectedSection = _memorySections.First();
+      SelectedSection = _memorySections.Last();
 
       _numberOfWordsOptions.Add(1);
       _numberOfWordsOptions.Add(2);
