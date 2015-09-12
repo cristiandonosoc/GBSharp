@@ -83,7 +83,7 @@
             <Image Height="128" Width="256" Source="{Binding Sprite}"
                    RenderOptions.BitmapScalingMode="NearestNeighbor"/>
             <Slider Grid.Row="1" x:Name="spriteSlider" 
-                    Minimum="0" Maximum="39" Value="{Binding CurrentSprite}"
+                    Minimum="0" Maximum="39" Value="{Binding CurrentSpriteIndex}"
                     IsSnapToTickEnabled="True" TickFrequency="1" />
             <Grid Grid.Row="3">
               <Grid.ColumnDefinitions>
