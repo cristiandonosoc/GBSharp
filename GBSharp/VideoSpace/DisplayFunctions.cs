@@ -41,8 +41,6 @@ namespace GBSharp.VideoSpace
     GetTileData(DisplayDefinition disDef, Memory memory, 
                 int tileX, int tileY, bool LCDBit3, bool LCDBit4, bool wrap)
     {
-      ushort tileBaseAddress = (ushort)(LCDBit4 ? 0x8000 : 0x9000);
-      ushort tileMapBaseAddress = (ushort)(!LCDBit3 ? 0x9C00 : 0x9800);
 
       if(wrap)
       {
@@ -56,26 +54,11 @@ namespace GBSharp.VideoSpace
         if(tileY >= disDef.screenTileCountY) { tileY = disDef.screenTileCountY - 1; }
       }
 
-      // We obtain the correct tile index
-      int tileOffset;
-      if(LCDBit4)
-      {
-        tileOffset = memory.LowLevelRead((ushort)(tileMapBaseAddress + 
-                                                 (disDef.frameTileCountX * tileY) + 
-                                                 tileX));
-      }
-      else
-      {
-        unchecked
-        {
-          byte t = memory.LowLevelRead((ushort)(tileMapBaseAddress + 
-                                                (disDef.frameTileCountX * tileY) + 
-                                                tileX));
-          sbyte tR = (sbyte)t;
-          tileOffset = tR;
-        }
-      }
+      ushort tileMapBaseAddress = GetTileMapBaseAddress(LCDBit3);
+      ushort tileBaseAddress = GetTileBaseAddress(LCDBit4);
+      int tileOffset = GetTileOffset(disDef, memory, tileMapBaseAddress, LCDBit4, tileX, tileY);
 
+      // We obtain the correct tile index
       byte[] result = GetTileData(disDef, memory, tileBaseAddress, tileOffset);
       return result;
     }
@@ -113,38 +96,21 @@ namespace GBSharp.VideoSpace
     GetRowPixels(DisplayDefinition disDef, Memory memory,
                  int row, bool LCDBit3, bool LCDBit4)
     {
-      ushort tileBaseAddress = (ushort)(LCDBit4 ? 0x8000 : 0x9000);
-      ushort tileMapBaseAddress = (ushort)(LCDBit3 ? 0x9C00 : 0x9800);
-
       // We determine the y tile
       int tileY = row / disDef.pixelPerTileY;
       int tileRemainder = row % disDef.pixelPerTileY;
+
+      ushort tileMapBaseAddress = GetTileMapBaseAddress(LCDBit3);
+      ushort tileBaseAddress = GetTileBaseAddress(LCDBit4);
 
       uint[] pixels = new uint[disDef.framePixelCountX];
       for(int tileX = 0; tileX < disDef.frameTileCountX; tileX++)
       {
         // We obtain the correct tile index
-        int tileIndex;
-        if (LCDBit4)
-        {
-          tileIndex = memory.LowLevelRead((ushort)(tileMapBaseAddress + 
-                                                   (disDef.frameTileCountX * tileY) + 
-                                                   tileX));
-        }
-        else
-        {
-          unchecked
-          {
-            byte t = memory.LowLevelRead((ushort)(tileMapBaseAddress + 
-                                                  (disDef.frameTileCountX * tileY) + 
-                                                  tileX));
-            sbyte tR = (sbyte)t;
-            tileIndex = tR;
-          }
-        }
+        int tileOffset = GetTileOffset(disDef, memory, tileMapBaseAddress, LCDBit4, tileX, tileY);
 
         // We obtain both pixels
-        int currentTileBaseAddress = tileBaseAddress + disDef.bytesPerTile * tileIndex;
+        int currentTileBaseAddress = tileBaseAddress + disDef.bytesPerTile * tileOffset;
         byte top = memory.LowLevelRead((ushort)(currentTileBaseAddress + 2 * tileRemainder));
         byte bottom = memory.LowLevelRead((ushort)(currentTileBaseAddress + 2 * tileRemainder + 1));
 
@@ -157,6 +123,48 @@ namespace GBSharp.VideoSpace
       }
 
       return pixels;
+    }
+
+    internal static int
+    GetTileOffset(DisplayDefinition disDef, Memory memory, 
+                  ushort tileMapBaseAddress, bool LCDBit4,
+                  int tileX, int tileY)
+    {
+      int tileOffset;
+      if(LCDBit4)
+      {
+        tileOffset = memory.LowLevelRead((ushort)(tileMapBaseAddress + 
+                                                 (disDef.frameTileCountX * tileY) + 
+                                                 tileX));
+      }
+      else
+      {
+        unchecked
+        {
+          byte t = memory.LowLevelRead((ushort)(tileMapBaseAddress + 
+                                                (disDef.frameTileCountX * tileY) + 
+                                                tileX));
+          sbyte tR = (sbyte)t;
+          tileOffset = tR;
+        }
+      }
+
+      return tileOffset;
+    }
+
+
+    internal static ushort
+    GetTileBaseAddress(bool LCDBit4)
+    {
+      ushort result = (ushort)(LCDBit4 ? 0x8000 : 0x9000);
+      return result;
+    }
+    
+    internal static ushort
+    GetTileMapBaseAddress(bool LCDBit3)
+    {
+      ushort result = (ushort)(LCDBit3 ? 0x9C00 : 0x9800);
+      return result;
     }
 
 
