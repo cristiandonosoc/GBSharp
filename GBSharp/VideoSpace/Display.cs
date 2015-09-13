@@ -265,34 +265,43 @@ namespace GBSharp.VideoSpace
                                                               disDef.pixelFormat);
       DisplayFunctions.DrawTransparency(disDef, spriteLayerBmp, 0, 0, spriteLayerBmp.Width, spriteLayerBmp.Height);
 
-      int maxScanLineSize = 10;
-      OAM[] scanLineOAMs = new OAM[maxScanLineSize];
+      //int maxScanLineSize = 10;
+      //OAM[] scanLineOAMs = new OAM[maxScanLineSize];
+      //for (int row = 0; row < disDef.screenPixelCountY; row++)
+      //{
+      //  // We select which sprites enter the scan
+      //  int scanLineSize = 0;
+      //  for (int i = 0; i < spriteCount; ++i)
+      //  {
+      //    // We load the OAMs to be displayed
+      //    OAM oam = oams[i];
+      //    int y = oam.y - 16;
+      //    if ((y <= row) && (row <= (y + 8)))
+      //    {
+      //      scanLineOAMs[scanLineSize++] = oam;
+      //      if (scanLineSize == maxScanLineSize) { break; }
+      //    }
+      //  }
+
+      //  int a = 10;
+
+      //  for (int i = (scanLineSize - 1); i >= 0; --i)
+      //  {
+      //    OAM oam = scanLineOAMs[i];
+      //    int x = oam.x - 8;
+      //    int y = oam.y - 16;
+      //    DrawSprite(spriteLayerBmp, oam.spriteCode, x, y);
+      //  }
+      //}
+
+
       for (int row = 0; row < disDef.screenPixelCountY; row++)
       {
-        // We select which sprites enter the scan
-        int scanLineSize = 0;
-        for (int i = 0; i < spriteCount; ++i)
-        {
-          // We load the OAMs to be displayed
-          OAM oam = oams[i];
-          int y = oam.y - 16;
-          if ((y <= row) && (row <= (y + 8)))
-          {
-            scanLineOAMs[scanLineSize++] = oam;
-            if (scanLineSize == maxScanLineSize) { break; }
-          }
-        }
-
-        int a = 10;
-
-        for (int i = (scanLineSize - 1); i >= 0; --i)
-        {
-          OAM oam = scanLineOAMs[i];
-          int x = oam.x - 8;
-          int y = oam.y - 16;
-          DrawSprite(spriteLayerBmp, oam.spriteCode, x, y);
-        }
+        uint[] pixels = DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, row);
+        DisplayFunctions.DrawLine(disDef, spriteLayerBmp, pixels, 0, row, 0, disDef.screenPixelCountX);
       }
+
+
 
 
       spriteLayer.UnlockBits(spriteLayerBmp);

@@ -125,6 +125,67 @@ namespace GBSharp.VideoSpace
       return pixels;
     }
 
+    internal static uint[]
+    GetSpriteRowPixels(DisplayDefinition disDef, Memory memory, OAM[] spriteOAMs, int row)
+    {
+      // First we sort the oams
+      // TODO(Cristian): Find a more efficient way to keep this list sorted by priority
+      OAM[] oams = (OAM[])spriteOAMs.Clone();
+      Array.Sort<OAM>(oams, (a, b) => (a.x == b.x) ?
+                                      (a.y - b.y) : (a.x - b.x));
+
+      // Then we select the 10 that correspond
+      int scanLineSize = 0;
+      int maxScanLineSize = 10;
+      OAM[] scanLineOAMs = new OAM[maxScanLineSize];
+      foreach(OAM oam in oams)
+      {
+          int y = oam.y - 16;
+          if ((y <= row) && (row < (y + 8)))
+          {
+            scanLineOAMs[scanLineSize++] = oam;
+            if (scanLineSize == maxScanLineSize) { break; }
+          }
+      }
+
+      //Console.Out.WriteLine("FILTERED SPRITES");
+      //if(scanLineSize > 0)
+      //{
+      //  foreach (OAM oam in scanLineOAMs)
+      //  {
+      //    int x = oam.x - 8;
+      //    int y = oam.y - 16;
+      //    Console.Out.WriteLine("X: {0} \t, Y: {1}", x, y);
+      //  }
+      //}
+
+
+      // We obtain the pixels we want from it
+      uint[] pixels = new uint[disDef.screenPixelCountX];
+      for (int oamIndex = scanLineSize - 1; oamIndex >= 0; --oamIndex)
+      //for (int oamIndex = 0; oamIndex < scanLineSize; ++oamIndex)
+      {
+        // TODO(Cristian): Obtain only the tile data we care about
+        OAM oam = scanLineOAMs[oamIndex];
+        byte[] tilePixels = GetTileData(disDef, memory, 0x8000, oam.spriteCode);
+
+        int x = oam.x - 8;
+        int y = row - (oam.y - 16);
+
+        uint[] spritePixels = GetPixelsFromTileBytes(disDef, tilePixels[y], tilePixels[y + 1]);
+        y = y + 1;
+
+        for (int i = 0; i < 8; ++i)
+        {
+          int pX = x + i;
+          if(pX >= disDef.screenPixelCountX) { break; }
+          pixels[pX] = spritePixels[i];
+        }
+      }
+
+      return pixels;
+    }
+
     internal static int
     GetTileOffset(DisplayDefinition disDef, Memory memory, 
                   ushort tileMapBaseAddress, bool LCDBit4,
@@ -278,15 +339,18 @@ namespace GBSharp.VideoSpace
 
     internal static void 
     DrawLine(DisplayDefinition disDef, BitmapData bmd, uint[] rowPixels,
-             int targetX, int targetY, int rowStart, int rowSpan)
+             int targetX, int targetY, int rowStart, int rowSpan,
+             bool CopyZeroPixels = false)
     {
       // We obtain the data 
       unsafe
       {
         uint* bmdPtr = (uint*)bmd.Scan0 + (targetY * bmd.Stride / disDef.bytesPerPixel) + targetX;
         // NOTE(Cristian): rowMax is included
-        for(int i = 0; i < rowSpan; i++)
+        for (int i = 0; i < rowSpan; i++)
         {
+          uint pixel = rowPixels[rowStart + i];
+          if(!CopyZeroPixels && pixel == 0) { continue; }
           bmdPtr[i] = rowPixels[rowStart + i];
         }
       }
