@@ -204,107 +204,72 @@ namespace GBSharp.VideoSpace
       int rWX = WX - 7; // The window pos is (WX - 7, WY)
       int WY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WY);
 
-      BitmapData windowBmpData = DisplayFunctions.LockBitmap(window, 
-                                                             ImageLockMode.WriteOnly, 
+      BitmapData windowBmpData = DisplayFunctions.LockBitmap(window,
+                                                             ImageLockMode.WriteOnly,
                                                              disDef.pixelFormat);
       DisplayFunctions.DrawTransparency(disDef, windowBmpData, 0, 0, disDef.screenPixelCountX, WY);
       DisplayFunctions.DrawTransparency(disDef, windowBmpData, 0, WY, rWX, disDef.screenPixelCountY);
 
       for (int row = 0; row < disDef.screenPixelCountY; row++)
       {
-        if(row >= WY)
+        if (row >= WY)
         {
           // The offset indexes represent that the window is drawn from it's beggining
           // at (WX, WY)
           uint[] rowPixels = DisplayFunctions.GetRowPixels(disDef, memory, row - WY, LCDBit3, LCDBit4);
-          DisplayFunctions.DrawLine(disDef, windowBmpData, 
+          DisplayFunctions.DrawLine(disDef, windowBmpData,
                                     rowPixels, rWX, row, 0, disDef.screenPixelCountX - rWX);
         }
       }
       window.UnlockBits(windowBmpData);
 
       // *** SPRITES ***
-      // TODO(Cristian): Find a more efficient way to keep this list sorted by priority
-      OAM[] oams = (OAM[])spriteOAMs.Clone();
-      Array.Sort<OAM>(oams, (a, b) => (a.x == b.x) ?
-                                      (a.y - b.y) : (a.x - b.x));
-
-#if DEBUG
-      for (int i = 0; i < spriteOAMs.Length; ++i)
-      {
-        Console.Out.WriteLine("OLD: ({0}, {1}) \t, NEW: ({2}, {3})",
-                              spriteOAMs[i].x, spriteOAMs[i].y,
-                              oams[i].x, oams[i].y);
-      }
-
-      Console.Out.WriteLine("FILTERED SPRITES");
-      for (int i = 0; i < spriteOAMs.Length; ++i)
-      {
-        int x = oams[i].x - 8;
-        int y = oams[i].y - 16;
-        if (x < 0 || x >= 160 ||
-            y < 0 || y >= 144)
-          continue;
-        Console.Out.WriteLine("X: {0} \t, Y: {1}", x, y);
-      }
-
-      //// Sprite Checks
-      //DrawSprite(spriteLayerBmp, 0, -5, -5);
-      //DrawSprite(spriteLayerBmp, 0, 155, -5);
-      //DrawSprite(spriteLayerBmp, 0, -5, 80);
-      //DrawSprite(spriteLayerBmp, 0, -5, 140);
-      //DrawSprite(spriteLayerBmp, 0, -50, -50);
-      //DrawSprite(spriteLayerBmp, 0, 155, 80);
-      //DrawSprite(spriteLayerBmp, 0, 10, 140);
-      //DrawSprite(spriteLayerBmp, 0, 155, 140);
-      //DrawSprite(spriteLayerBmp, 0, 200, 200);
-#endif
-
       BitmapData spriteLayerBmp = DisplayFunctions.LockBitmap(spriteLayer,
                                                               ImageLockMode.WriteOnly,
                                                               disDef.pixelFormat);
       DisplayFunctions.DrawTransparency(disDef, spriteLayerBmp, 0, 0, spriteLayerBmp.Width, spriteLayerBmp.Height);
-
-      //int maxScanLineSize = 10;
-      //OAM[] scanLineOAMs = new OAM[maxScanLineSize];
-      //for (int row = 0; row < disDef.screenPixelCountY; row++)
-      //{
-      //  // We select which sprites enter the scan
-      //  int scanLineSize = 0;
-      //  for (int i = 0; i < spriteCount; ++i)
-      //  {
-      //    // We load the OAMs to be displayed
-      //    OAM oam = oams[i];
-      //    int y = oam.y - 16;
-      //    if ((y <= row) && (row <= (y + 8)))
-      //    {
-      //      scanLineOAMs[scanLineSize++] = oam;
-      //      if (scanLineSize == maxScanLineSize) { break; }
-      //    }
-      //  }
-
-      //  int a = 10;
-
-      //  for (int i = (scanLineSize - 1); i >= 0; --i)
-      //  {
-      //    OAM oam = scanLineOAMs[i];
-      //    int x = oam.x - 8;
-      //    int y = oam.y - 16;
-      //    DrawSprite(spriteLayerBmp, oam.spriteCode, x, y);
-      //  }
-      //}
-
-
       for (int row = 0; row < disDef.screenPixelCountY; row++)
       {
         uint[] pixels = DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, row);
         DisplayFunctions.DrawLine(disDef, spriteLayerBmp, pixels, 0, row, 0, disDef.screenPixelCountX);
       }
-
-
-
-
       spriteLayer.UnlockBits(spriteLayerBmp);
+
+      // DEBUG SPRITE DRAWING CODE
+      //BitmapData testSpriteBmd = DisplayFunctions.LockBitmap(window,
+      //                                                    ImageLockMode.WriteOnly,
+      //                                                    disDef.pixelFormat);
+      //DisplayFunctions.DrawTransparency(disDef, testSpriteBmd, 0, 0, disDef.screenPixelCountX, disDef.screenPixelCountY);
+      //uint[] yellow = new uint[disDef.screenPixelCountX];
+      //for (int i = 0; i < disDef.screenPixelCountX; ++i)
+      //  yellow[i] = 0xFFFF0000;
+      //int maxScanLineSize = 10;
+      //OAM[] scanLineOAMs = new OAM[maxScanLineSize];
+      //// We select which sprites enter the scan
+      //int scanLineSize = 0;
+      //for (int i = 0; i < spriteCount; ++i)
+      //{
+      //  // We load the OAMs to be displayed
+      //  OAM oam = oams[i];
+      //  int y = oam.y - 16;
+      //  if ((y <= currentRow) && (currentRow <= (y + 8)))
+      //  {
+      //    scanLineOAMs[scanLineSize++] = oam;
+      //    if (scanLineSize == maxScanLineSize) { break; }
+      //  }
+      //}
+
+      //for (int i = (scanLineSize - 1); i >= 0; --i)
+      //{
+      //  OAM oam = scanLineOAMs[i];
+      //  int x = oam.x - 8;
+      //  int y = oam.y - 16;
+      //  DrawSprite(testSpriteBmd, oam.spriteCode, x, y);
+      //}
+
+      //DisplayFunctions.DrawLine(disDef, testSpriteBmd, yellow, 0, currentRow, 0, disDef.screenPixelCountX);
+      //window.UnlockBits(testSpriteBmd);
+
 
 
 
@@ -347,7 +312,7 @@ namespace GBSharp.VideoSpace
       }
 
       bool drawWindow = Utils.UtilFuncs.TestBit(lcdRegister, 5) != 0;
-      if(drawWindow)
+      if (drawWindow)
       {
         windowBmpData = DisplayFunctions.LockBitmap(window, ImageLockMode.ReadOnly, disDef.pixelFormat);
 
@@ -361,7 +326,7 @@ namespace GBSharp.VideoSpace
             unsafe
             {
               uint* bP = (uint*)windowBmpData.Scan0 + (y * windowUintStrided) + x;
-              if (((*bP) & 0xFF000000)  != 0) // We check if the pixel wasn't disabled
+              if (((*bP) & 0xFF000000) != 0) // We check if the pixel wasn't disabled
               {
                 uint* sP = (uint*)screenBmpData.Scan0 + (y * screenUintStride) + x;
                 sP[0] = bP[0];
@@ -369,7 +334,6 @@ namespace GBSharp.VideoSpace
             }
           }
         }
-
         window.UnlockBits(windowBmpData);
       }
 

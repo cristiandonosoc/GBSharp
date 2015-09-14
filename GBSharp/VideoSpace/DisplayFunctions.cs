@@ -172,7 +172,7 @@ namespace GBSharp.VideoSpace
         int x = oam.x - 8;
         int y = row - (oam.y - 16);
 
-        uint[] spritePixels = GetPixelsFromTileBytes(disDef, tilePixels[y], tilePixels[y + 1]);
+        uint[] spritePixels = GetPixelsFromTileBytes(disDef, tilePixels[2*y], tilePixels[2*y + 1]);
         y = y + 1;
 
         for (int i = 0; i < 8; ++i)
@@ -292,7 +292,7 @@ namespace GBSharp.VideoSpace
     DrawTransparency(DisplayDefinition disDef, BitmapData bmd, int minX, int minY, int maxX, int maxY)
     {
       uint[] colors = { 0xF0F0F0F0, 0xF0CDCDCD };
-      int squareSize = 7;
+      int squareSize = 5;
       unsafe
       {
         int uintStride = bmd.Stride / disDef.bytesPerPixel;
