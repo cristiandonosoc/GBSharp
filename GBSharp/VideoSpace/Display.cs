@@ -36,6 +36,8 @@ namespace GBSharp.VideoSpace
     internal int pixelPerTileY;
     internal int bytesPerPixel;
     internal PixelFormat pixelFormat;
+    internal uint[] tilePallete;
+    internal uint[] spritePallete;
   }
 
   class Display : IDisplay
@@ -60,6 +62,7 @@ namespace GBSharp.VideoSpace
         spriteOAMs[index].flags       = flags;
     }
 
+
     /// <summary>
     /// Load an OAM from direct byte data. NOTE THE ARRAY FORMAT
     /// </summary>
@@ -76,8 +79,6 @@ namespace GBSharp.VideoSpace
     {
       SetOAM(index, data[1], data[0], data[2], data[3]);
     }
-
-
 
     /// <summary>
     /// Pixel numbers of the display.
@@ -133,6 +134,23 @@ namespace GBSharp.VideoSpace
       disDef.pixelPerTileY = 8;
       disDef.bytesPerPixel = 4;
       disDef.pixelFormat = PixelFormat.Format32bppArgb;
+      disDef.tilePallete = new uint[4]
+      {
+        0xFFFFFFFF,
+        0xFFBBBBBB,
+        0xFF666666,
+        0xFF000000
+      };
+
+      disDef.spritePallete = new uint[4]
+      {
+        0x00000000,
+        0xFFBBBBBB,
+        0xFF666666,
+        0xFF000000
+      };
+
+
 
       this.memory = memory;
 

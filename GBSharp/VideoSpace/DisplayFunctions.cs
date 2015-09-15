@@ -114,7 +114,8 @@ namespace GBSharp.VideoSpace
         byte top = memory.LowLevelRead((ushort)(currentTileBaseAddress + 2 * tileRemainder));
         byte bottom = memory.LowLevelRead((ushort)(currentTileBaseAddress + 2 * tileRemainder + 1));
 
-        uint[] tilePixels = GetPixelsFromTileBytes(disDef, top, bottom);
+        uint[] tilePixels = GetPixelsFromTileBytes(disDef.tilePallete, disDef.pixelPerTileX, 
+                                                   top, bottom);
         int currentTileIndex = tileX * disDef.pixelPerTileX;
         for (int i = 0; i < disDef.pixelPerTileX; i++)
         {
@@ -148,22 +149,9 @@ namespace GBSharp.VideoSpace
           }
       }
 
-      //Console.Out.WriteLine("FILTERED SPRITES");
-      //if(scanLineSize > 0)
-      //{
-      //  foreach (OAM oam in scanLineOAMs)
-      //  {
-      //    int x = oam.x - 8;
-      //    int y = oam.y - 16;
-      //    Console.Out.WriteLine("X: {0} \t, Y: {1}", x, y);
-      //  }
-      //}
-
-
       // We obtain the pixels we want from it
       uint[] pixels = new uint[disDef.screenPixelCountX];
       for (int oamIndex = scanLineSize - 1; oamIndex >= 0; --oamIndex)
-      //for (int oamIndex = 0; oamIndex < scanLineSize; ++oamIndex)
       {
         // TODO(Cristian): Obtain only the tile data we care about
         OAM oam = scanLineOAMs[oamIndex];
@@ -172,14 +160,20 @@ namespace GBSharp.VideoSpace
         int x = oam.x - 8;
         int y = row - (oam.y - 16);
 
-        uint[] spritePixels = GetPixelsFromTileBytes(disDef, tilePixels[2*y], tilePixels[2*y + 1]);
+        uint[] spritePixels = GetPixelsFromTileBytes(disDef.spritePallete, 
+                                                     disDef.pixelPerTileX, 
+                                                     tilePixels[2*y], tilePixels[2*y + 1]);
         y = y + 1;
 
         for (int i = 0; i < 8; ++i)
         {
           int pX = x + i;
           if(pX >= disDef.screenPixelCountX) { break; }
-          pixels[pX] = spritePixels[i];
+          uint color = spritePixels[i];
+          if(color != 0) // transparent pixel
+          {
+            pixels[pX] = color;
+          }
         }
       }
 
@@ -230,20 +224,15 @@ namespace GBSharp.VideoSpace
 
 
     internal static uint[] 
-    GetPixelsFromTileBytes(DisplayDefinition disDef, byte top, byte bottom)
+    GetPixelsFromTileBytes(uint[] pallete, int pixelPerTileX, byte top, byte bottom)
     {
-      uint[] pixels = new uint[disDef.pixelPerTileX];
-      for(int i = 0; i < disDef.pixelPerTileX; i++)
+      uint[] pixels = new uint[pixelPerTileX];
+      for(int i = 0; i < pixelPerTileX; i++)
       {
-        int up = (top >> (7 - i)) & 1;
-        int down = (bottom >> (7 - i)) & 1;
-
-        int index = 2 * up + down;
-        // TODO(Cristian): Obtain color from a palette!
-        uint color = 0xFFFFFFFF;
-        if (index == 1) { color = 0xFF666666; }
-        if (index == 2) { color = 0xFFBBBBBB; }
-        if (index == 3) { color = 0xFF000000; }
+        int up = (bottom >> (7 - i)) & 1;
+        int down = (top >> (7 - i)) & 1;
+        int index = (up << 1) | down;
+        uint color = pallete[index];
         pixels[i] = color;
       }
 
@@ -275,7 +264,9 @@ namespace GBSharp.VideoSpace
           if(pixelY >= maxPy) { break; } // We can continue no further
 
           uint* row = start + pixelY * uintStride; // Only add every 2 bytes
-          uint[] pixels = GetPixelsFromTileBytes(disDef, tileData[j], tileData[j + 1]);
+          uint[] pixels = GetPixelsFromTileBytes(disDef.tilePallete, 
+                                                 disDef.pixelPerTileX,
+                                                 tileData[j], tileData[j + 1]);
           for (int i = 0; i < 8; i++)
           {
             int pixelX = pX + i;
