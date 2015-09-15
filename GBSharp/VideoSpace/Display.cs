@@ -275,7 +275,8 @@ namespace GBSharp.VideoSpace
 
       // *** SCREEN ***
 
-      // We draw the SCREEN
+      // TODO(Cristian): Do the image composition line-based instead of image-based
+
       int SCX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX);
       int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
       BitmapData screenBmpData = screen.LockBits(
@@ -326,7 +327,7 @@ namespace GBSharp.VideoSpace
             unsafe
             {
               uint* bP = (uint*)windowBmpData.Scan0 + (y * windowUintStrided) + x;
-              if (((*bP) & 0xFF000000) != 0) // We check if the pixel wasn't disabled
+              if (((*bP) & 0xFF000000) == 0xFF000000) // We check if the pixel wasn't disabled
               {
                 uint* sP = (uint*)screenBmpData.Scan0 + (y * screenUintStride) + x;
                 sP[0] = bP[0];
@@ -335,6 +336,36 @@ namespace GBSharp.VideoSpace
           }
         }
         window.UnlockBits(windowBmpData);
+      }
+
+      bool drawSprites = Utils.UtilFuncs.TestBit(lcdRegister, 1) != 0;
+      if (drawSprites)
+      {
+        spriteLayerBmp = DisplayFunctions.LockBitmap(spriteLayer,
+                                                     ImageLockMode.ReadOnly,
+                                                     disDef.pixelFormat);
+
+
+        int spriteLayerUintStride = spriteLayerBmp.Stride / disDef.bytesPerPixel;
+        int screenUintStride = screenBmpData.Stride / disDef.bytesPerPixel;
+        for (int y = 0; y < disDef.screenPixelCountY; ++y)
+        {
+          for (int x = 0; x < disDef.screenPixelCountX; ++x)
+          {
+            unsafe
+            {
+              uint* bP = (uint*)spriteLayerBmp.Scan0 + (y * spriteLayerUintStride) + x;
+              if (((*bP) & 0xFF000000) == 0xFF000000) // We check if the pixel wasn't disabled
+              {
+                uint* sP = (uint*)screenBmpData.Scan0 + (y * screenUintStride) + x;
+                sP[0] = bP[0];
+              }
+            }
+          }
+        }
+
+
+        spriteLayer.UnlockBits(spriteLayerBmp);
       }
 
       // *** SCREEN RECTANGLE ***
