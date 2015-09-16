@@ -36,8 +36,11 @@ namespace GBSharp.VideoSpace
     internal int pixelPerTileY;
     internal int bytesPerPixel;
     internal PixelFormat pixelFormat;
+    internal uint[] tileColors;
+    internal uint[] spriteColors;
     internal uint[] tilePallete;
-    internal uint[] spritePallete;
+    internal uint[] spritePallete0;
+    internal uint[] spritePallete1;
   }
 
   class Display : IDisplay
@@ -134,23 +137,26 @@ namespace GBSharp.VideoSpace
       disDef.pixelPerTileY = 8;
       disDef.bytesPerPixel = 4;
       disDef.pixelFormat = PixelFormat.Format32bppArgb;
-      disDef.tilePallete = new uint[4]
+      // TODO(Cristian): Output the color to the view for custom setting
+      disDef.tileColors = new uint[4]
       {
         0xFFFFFFFF,
         0xFFBBBBBB,
         0xFF666666,
         0xFF000000
       };
+      disDef.tilePallete = new uint[4];
 
-      disDef.spritePallete = new uint[4]
+      // TODO(Cristian): Output the color to the view for custom setting
+      disDef.spriteColors = new uint[4]
       {
-        0x00000000,
+        0xFFFFFFFF,
         0xFFBBBBBB,
         0xFF666666,
         0xFF000000
       };
-
-
+      disDef.spritePallete0 = new uint[4];
+      disDef.spritePallete1 = new uint[4];
 
       this.memory = memory;
 
@@ -204,6 +210,8 @@ namespace GBSharp.VideoSpace
       bool LCDBit3 = Utils.UtilFuncs.TestBit(lcdRegister, 3) != 0;
       bool LCDBit4 = Utils.UtilFuncs.TestBit(lcdRegister, 4) != 0;
 
+      DisplayFunctions.SetupTilePallete(disDef, memory);
+      DisplayFunctions.SetupSpritePalletes(disDef, memory);
 
       BitmapData screenBmpData = DisplayFunctions.LockBitmap(screen,
                                                              ImageLockMode.ReadWrite,

@@ -114,7 +114,8 @@ namespace GBSharp.VideoSpace
         byte top = memory.LowLevelRead((ushort)(currentTileBaseAddress + 2 * tileRemainder));
         byte bottom = memory.LowLevelRead((ushort)(currentTileBaseAddress + 2 * tileRemainder + 1));
 
-        uint[] tilePixels = GetPixelsFromTileBytes(disDef.tilePallete, disDef.pixelPerTileX, 
+        uint[] tilePixels = GetPixelsFromTileBytes(disDef.tilePallete,
+                                                   disDef.pixelPerTileX, 
                                                    top, bottom);
         int currentTileIndex = tileX * disDef.pixelPerTileX;
         for (int i = 0; i < disDef.pixelPerTileX; i++)
@@ -160,7 +161,10 @@ namespace GBSharp.VideoSpace
         int x = oam.x - 8;
         int y = row - (oam.y - 16);
 
-        uint[] spritePixels = GetPixelsFromTileBytes(disDef.spritePallete, 
+        uint[] spritePallete = (Utils.UtilFuncs.TestBit(oam.flags, 4) == 0) ?
+                                  disDef.spritePallete0 : disDef.spritePallete1;
+
+        uint[] spritePixels = GetPixelsFromTileBytes(spritePallete, 
                                                      disDef.pixelPerTileX, 
                                                      tilePixels[2*y], tilePixels[2*y + 1]);
         y = y + 1;
@@ -220,6 +224,45 @@ namespace GBSharp.VideoSpace
     {
       ushort result = (ushort)(LCDBit3 ? 0x9C00 : 0x9800);
       return result;
+    }
+
+    internal static void
+    SetupTilePallete(DisplayDefinition disDef, Memory memory)
+    {
+      // We extract the BGP (BG Pallete Data)
+      byte bgp = memory.LowLevelRead((ushort)MemoryMappedRegisters.BGP);
+
+      for(int color = 0; color < 4; ++color)
+      {
+        int down = (bgp >> (2 * color)) & 1;
+        int up = (bgp >> (2 * color + 1)) & 1;
+        int index = (up << 1) | down;
+        disDef.tilePallete[color] = disDef.tileColors[index];
+      }
+    }
+
+    internal static void
+    SetupSpritePalletes(DisplayDefinition disDef, Memory memory)
+    {
+      byte obp0 = memory.LowLevelRead((ushort)MemoryMappedRegisters.OBP0);
+      disDef.spritePallete0[0] = 0x00000000; // Sprite colors are trasparent
+      for(int color = 1; color < 4; ++color)
+      {
+        int down = (obp0 >> (2 * color)) & 1;
+        int up = (obp0 >> (2 * color + 1)) & 1;
+        int index = (up << 1) | down;
+        disDef.spritePallete0[color] = disDef.spriteColors[index];
+      }
+
+      byte obp1 = memory.LowLevelRead((ushort)MemoryMappedRegisters.OBP1);
+      disDef.spritePallete1[1] = 0x00000000; // Sprite colors are trasparent
+      for(int color = 1; color < 4; ++color)
+      {
+        int down = (obp1 >> (2 * color)) & 1;
+        int up = (obp1 >> (2 * color + 1)) & 1;
+        int index = (up << 1) | down;
+        disDef.spritePallete1[color] = disDef.spriteColors[index];
+      }
     }
 
 
