@@ -90,6 +90,24 @@ namespace GBSharp.VideoSpace
         }
       }
 
+      if(flipY)
+      {
+        // NOTE(Cristian): We have to flip them in pairs, because
+        //                 otherwise the colors change!
+        for (int i = 0; i < disDef.bytesPerTile / 4; ++i)
+        {
+          byte d0 = data[2 * i];
+          byte d1 = data[2 * i + 1];
+
+          int index = (disDef.bytesPerTile - 1) - 2 * i;
+          data[2 * i] = data[index - 1];
+          data[2 * i + 1] = data[index];
+
+          data[index - 1] = d0;
+          data[index] = d1;
+        }
+      }
+
       return data;
     }
 
