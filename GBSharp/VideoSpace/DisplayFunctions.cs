@@ -63,15 +63,34 @@ namespace GBSharp.VideoSpace
       return result;
     }
 
+    static byte[] flipLookup = new byte[16]
+    {
+      0x0, 0x8, 0x4, 0xC, 0x2, 0xA, 0x6, 0xE,
+      0x1, 0x9, 0x5, 0xD, 0x3, 0xB, 0x7, 0xF
+    };
+
     internal static byte[]
-    GetTileData(DisplayDefinition disDef, Memory memory, int tileBaseAddress, int tileOffset)
+    GetTileData(DisplayDefinition disDef, Memory memory, 
+                int tileBaseAddress, int tileOffset,
+                bool flipX = false, bool flipY = false)
     {
       // We obtain the tile memory
-      byte[] result = new byte[disDef.bytesPerTile];
-      result = memory.LowLevelArrayRead(
+      byte[] data = new byte[disDef.bytesPerTile];
+      data = memory.LowLevelArrayRead(
         (ushort)(tileBaseAddress + (disDef.bytesPerTile * tileOffset)),
         disDef.bytesPerTile);
-      return result;
+
+      if(flipX)
+      {
+        for(int i = 0; i < disDef.bytesPerTile; ++i)
+        {
+          byte d = data[i];
+          byte r = (byte)((flipLookup[d & 0x0F] << 4) | flipLookup[d >> 4]);
+          data[i] = r;
+        }
+      }
+
+      return data;
     }
 
     /// <summary>
