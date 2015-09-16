@@ -193,7 +193,10 @@ namespace GBSharp.VideoSpace
       {
         // TODO(Cristian): Obtain only the tile data we care about
         OAM oam = scanLineOAMs[oamIndex];
-        byte[] tilePixels = GetTileData(disDef, memory, 0x8000, oam.spriteCode);
+
+        bool flipX = Utils.UtilFuncs.TestBit(oam.flags, 5) != 0;
+        bool flipY = Utils.UtilFuncs.TestBit(oam.flags, 6) != 0;
+        byte[] tilePixels = GetTileData(disDef, memory, 0x8000, oam.spriteCode, flipX, flipY);
 
         int x = oam.x - 8;
         int y = row - (oam.y - 16);
