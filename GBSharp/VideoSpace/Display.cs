@@ -9,6 +9,7 @@ namespace GBSharp.VideoSpace
 {
   public struct OAM
   {
+    internal int index;
     internal byte y;
     internal byte x;
     internal byte spriteCode;
@@ -59,10 +60,11 @@ namespace GBSharp.VideoSpace
     }
     internal void SetOAM(int index, byte x, byte y, byte spriteCode, byte flags)
     {
-        spriteOAMs[index].x           = x;
-        spriteOAMs[index].y           = y;
-        spriteOAMs[index].spriteCode  = spriteCode;
-        spriteOAMs[index].flags       = flags;
+      spriteOAMs[index].index = index;
+      spriteOAMs[index].x = x;
+      spriteOAMs[index].y = y;
+      spriteOAMs[index].spriteCode = spriteCode;
+      spriteOAMs[index].flags = flags;
     }
 
 

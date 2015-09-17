@@ -171,7 +171,7 @@ namespace GBSharp.VideoSpace
       // TODO(Cristian): Find a more efficient way to keep this list sorted by priority
       OAM[] oams = (OAM[])spriteOAMs.Clone();
       Array.Sort<OAM>(oams, (a, b) => (a.x == b.x) ?
-                                      (a.y - b.y) : (a.x - b.x));
+                                      (a.index - b.index) : (a.x - b.x));
 
       // Then we select the 10 that correspond
       int scanLineSize = 0;
