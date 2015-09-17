@@ -5,17 +5,15 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-  <Grid >
-    <Canvas>
-      <Image Canvas.Top="0" Canvas.Left="0" Source="Images/Nintendo_Gameboy720.jpg" RenderTransformOrigin="0.5,0.5" Height="568" Width="345">
-        <Image.RenderTransform>
-          <TransformGroup>
-            <ScaleTransform/>
-            <SkewTransform/>
-            <RotateTransform Angle="0.152"/>
-            <TranslateTransform/>
-          </TransformGroup>
-        </Image.RenderTransform>
+  <Grid Style="{DynamicResource MainContentGrid}">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*" ></ColumnDefinition>
+      <ColumnDefinition Width="Auto" ></ColumnDefinition>
+      <ColumnDefinition Width="*" ></ColumnDefinition>
+    </Grid.ColumnDefinitions>
+    <Canvas Grid.Column="1" Height="568" Width="345">
+      <Image Canvas.Top="0" Canvas.Left="0" Source="Images/Nintendo_Gameboy720.jpg"  Height="568" Width="345">
+        
       </Image>
       <Button x:Name="A" Command="{Binding ButtonACommand}" Canvas.Top="345" Canvas.Left="274" HorizontalAlignment="Left" VerticalAlignment="Top" Width="40" Height="40">
         <Button.Template>
