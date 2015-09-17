@@ -9,6 +9,7 @@ namespace GBSharp.VideoSpace
 {
   public struct OAM
   {
+    internal int index;
     internal byte y;
     internal byte x;
     internal byte spriteCode;
@@ -59,10 +60,11 @@ namespace GBSharp.VideoSpace
     }
     internal void SetOAM(int index, byte x, byte y, byte spriteCode, byte flags)
     {
-        spriteOAMs[index].x           = x;
-        spriteOAMs[index].y           = y;
-        spriteOAMs[index].spriteCode  = spriteCode;
-        spriteOAMs[index].flags       = flags;
+      spriteOAMs[index].index = index;
+      spriteOAMs[index].x = x;
+      spriteOAMs[index].y = y;
+      spriteOAMs[index].spriteCode = spriteCode;
+      spriteOAMs[index].flags = flags;
     }
 
 
@@ -228,8 +230,12 @@ namespace GBSharp.VideoSpace
       for (int row = 0; row < disDef.framePixelCountY; row++)
       {
         uint[] rowPixels = DisplayFunctions.GetRowPixels(disDef, memory, row, LCDBit3, LCDBit4);
-        DisplayFunctions.DrawLine(disDef, backgroundBmpData, 
-                                  rowPixels, 0, row, 0, disDef.framePixelCountY);
+        DisplayFunctions.DrawLine(disDef, backgroundBmpData, rowPixels, 
+                                  0, row, 
+                                  0, disDef.framePixelCountY);
+
+        // TODO(Cristian): Move the background render to a DrawLine call instead of copying
+        //                 from one bitmap to another
       }
 
       bool drawBackground = Utils.UtilFuncs.TestBit(lcdRegister, 0) != 0;
@@ -281,6 +287,7 @@ namespace GBSharp.VideoSpace
       DisplayFunctions.DrawTransparency(disDef, windowBmpData, 0, 0, disDef.screenPixelCountX, WY);
       DisplayFunctions.DrawTransparency(disDef, windowBmpData, 0, WY, rWX, disDef.screenPixelCountY);
 
+      bool drawWindow = Utils.UtilFuncs.TestBit(lcdRegister, 5) != 0;
       for (int row = 0; row < disDef.screenPixelCountY; row++)
       {
         if (row >= WY)
@@ -288,32 +295,18 @@ namespace GBSharp.VideoSpace
           // The offset indexes represent that the window is drawn from it's beggining
           // at (WX, WY)
           uint[] rowPixels = DisplayFunctions.GetRowPixels(disDef, memory, row - WY, LCDBit3, LCDBit4);
-          DisplayFunctions.DrawLine(disDef, windowBmpData,
-                                    rowPixels, rWX, row, 0, disDef.screenPixelCountX - rWX);
-        }
-      }
+          
+          // Independent target
+          DisplayFunctions.DrawLine(disDef, windowBmpData, rowPixels, 
+                                    rWX, row, 
+                                    0, disDef.screenPixelCountX - rWX);
 
-
-      bool drawWindow = Utils.UtilFuncs.TestBit(lcdRegister, 5) != 0;
-      if (drawWindow)
-      {
-
-        int windowUintStrided = windowBmpData.Stride / disDef.bytesPerPixel;
-        int screenUintStride = screenBmpData.Stride / disDef.bytesPerPixel;
-
-        for (int y = 0; y < disDef.screenPixelCountY; y++)
-        {
-          for (int x = 0; x < disDef.screenPixelCountX; x++)
+          // Screen target
+          if (drawWindow)
           {
-            unsafe
-            {
-              uint* bP = (uint*)windowBmpData.Scan0 + (y * windowUintStrided) + x;
-              if (((*bP) & 0xFF000000) == 0xFF000000) // We check if the pixel wasn't disabled
-              {
-                uint* sP = (uint*)screenBmpData.Scan0 + (y * screenUintStride) + x;
-                sP[0] = bP[0];
-              }
-            }
+            DisplayFunctions.DrawLine(disDef, screenBmpData, rowPixels,
+                                      rWX, row,
+                                      0, disDef.screenPixelCountX - rWX);
           }
         }
       }
@@ -329,38 +322,25 @@ namespace GBSharp.VideoSpace
                                                               ImageLockMode.ReadWrite,
                                                               disDef.pixelFormat);
       DisplayFunctions.DrawTransparency(disDef, spriteLayerBmp, 0, 0, spriteLayerBmp.Width, spriteLayerBmp.Height);
-      for (int row = 0; row < disDef.screenPixelCountY; row++)
-      {
-        uint[] pixels = DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, row);
-        DisplayFunctions.DrawLine(disDef, spriteLayerBmp, pixels, 0, row, 0, disDef.screenPixelCountX);
-      }
-
 
       bool drawSprites = Utils.UtilFuncs.TestBit(lcdRegister, 1) != 0;
-      if (drawSprites)
+      for (int row = 0; row < disDef.screenPixelCountY; row++)
       {
-        int spriteLayerUintStride = spriteLayerBmp.Stride / disDef.bytesPerPixel;
-        int screenUintStride = screenBmpData.Stride / disDef.bytesPerPixel;
-        for (int y = 0; y < disDef.screenPixelCountY; ++y)
+        // Independent target
+        uint[] pixels = new uint[disDef.screenPixelCountX];
+        DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels, row);
+        DisplayFunctions.DrawLine(disDef, spriteLayerBmp, pixels, 0, row, 0, disDef.screenPixelCountX);
+
+        // Screen Target
+        if(drawSprites)
         {
-          for (int x = 0; x < disDef.screenPixelCountX; ++x)
-          {
-            unsafe
-            {
-              uint* bP = (uint*)spriteLayerBmp.Scan0 + (y * spriteLayerUintStride) + x;
-              if (((*bP) & 0xFF000000) == 0xFF000000) // We check if the pixel wasn't disabled
-              {
-                uint* sP = (uint*)screenBmpData.Scan0 + (y * screenUintStride) + x;
-                sP[0] = bP[0];
-              }
-            }
-          }
+          uint[] linePixels = DisplayFunctions.GetPixelRowFromBitmap(disDef, screenBmpData, row);
+          DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, linePixels, row);
+          DisplayFunctions.DrawLine(disDef, screenBmpData, linePixels, 0, row, 0, disDef.screenPixelCountX);
         }
       }
 
-
       spriteLayer.UnlockBits(spriteLayerBmp);
-
 
       #endregion
 
