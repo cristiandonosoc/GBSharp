@@ -36,7 +36,7 @@
                   <Button DockPanel.Dock="Right" Content="&gt;" Command="{Binding ScrollXIncreaseCommand}"></Button>
                   <Button DockPanel.Dock="Top" Content="^" Command="{Binding ScrollYIncreaseCommand}"></Button>
                   <Button DockPanel.Dock="Bottom" Content="v" Command="{Binding ScrollYDecreaseCommand}"></Button>
-                  <Image Height="256" Width="256" Source="{Binding SpriteLayer}"
+                  <Image Height="256" Width="256" Source="{Binding Background}"
                      RenderOptions.BitmapScalingMode="NearestNeighbor"/>
                 </DockPanel>
               </Grid>

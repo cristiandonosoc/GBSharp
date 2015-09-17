@@ -165,7 +165,27 @@ namespace GBSharp.VideoSpace
     }
 
     internal static uint[]
-    GetSpriteRowPixels(DisplayDefinition disDef, Memory memory, OAM[] spriteOAMs, int row)
+    GetPixelRowFromBitmap(DisplayDefinition disDef, BitmapData bmp, int row)
+    {
+      uint[] pixels = new uint[bmp.Width];
+      unsafe
+      {
+        int uintStride = bmp.Stride / disDef.bytesPerPixel;
+        uint* rowPtr = (uint*)bmp.Scan0 + row * uintStride;
+
+
+        for (int x = 0; x < bmp.Width; ++x)
+        {
+          pixels[x] = *rowPtr++;
+        }
+      }
+
+      return pixels;
+    }
+
+    internal static void
+    GetSpriteRowPixels(DisplayDefinition disDef, Memory memory, OAM[] spriteOAMs,
+                       uint[] targetPixels, int row)
     {
       // First we sort the oams
       // TODO(Cristian): Find a more efficient way to keep this list sorted by priority
@@ -188,7 +208,6 @@ namespace GBSharp.VideoSpace
       }
 
       // We obtain the pixels we want from it
-      uint[] pixels = new uint[disDef.screenPixelCountX];
       for (int oamIndex = scanLineSize - 1; oamIndex >= 0; --oamIndex)
       {
         // TODO(Cristian): Obtain only the tile data we care about
@@ -207,21 +226,23 @@ namespace GBSharp.VideoSpace
         uint[] spritePixels = GetPixelsFromTileBytes(spritePallete, 
                                                      disDef.pixelPerTileX, 
                                                      tilePixels[2*y], tilePixels[2*y + 1]);
-        y = y + 1;
-
+        bool backgroundPriority = Utils.UtilFuncs.TestBit(oam.flags, 7) != 0;
         for (int i = 0; i < 8; ++i)
         {
           int pX = x + i;
           if(pX >= disDef.screenPixelCountX) { break; }
           uint color = spritePixels[i];
-          if(color != 0) // transparent pixel
+          if (color == 0) { continue; } // transparent pixel
+
+          // NOTE(Cristian): If the BG priority bit is set, the sprite is hidden
+          //                 on every color except tile color 0
+          if(backgroundPriority)
           {
-            pixels[pX] = color;
+            if (targetPixels[pX] != disDef.tileColors[0]) { continue; }
           }
+          targetPixels[pX] = color;
         }
       }
-
-      return pixels;
     }
 
     internal static int
