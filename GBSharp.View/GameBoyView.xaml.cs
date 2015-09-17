@@ -16,7 +16,7 @@ namespace GBSharp.View
     {
       InitializeComponent();
       _gameBoy = new GameBoy();
-      _mainWindowViewModel = new GameBoyViewModel(_gameBoy, new DispatcherAdapter(this), new WindowAdapter(this));
+      _mainWindowViewModel = new GameBoyViewModel(_gameBoy, new DispatcherAdapter(this), new WindowAdapter(this), new OpenFileDialogAdapterFactory());
       this.DataContext = _mainWindowViewModel;
     }
 

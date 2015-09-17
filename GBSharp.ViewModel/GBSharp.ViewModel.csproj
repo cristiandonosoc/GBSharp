@@ -44,7 +44,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CartridgeViewModel.cs" />
     <Compile Include="CPUViewModel.cs" />
     <Compile Include="DelegateCommand.cs" />
     <Compile Include="GameBoyContollerViewModel.cs" />
@@ -52,6 +51,8 @@
     <Compile Include="GameBoyViewModel.cs" />
     <Compile Include="IDispatcher.cs" />
     <Compile Include="InterruptViewModel.cs" />
+    <Compile Include="IOpenFileDialog.cs" />
+    <Compile Include="IOpenFileDialogFactory.cs" />
     <Compile Include="IWindow.cs" />
     <Compile Include="MemorySectionViewModel.cs" />
     <Compile Include="MemoryViewModel.cs" />

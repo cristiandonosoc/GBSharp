@@ -1,11 +1,13 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Windows.Input;
 
 namespace GBSharp.ViewModel
 {
-  public class GameBoyContollerViewModel : ViewModelBase
+  public class GameBoyContollerViewModel : ViewModelBase, IDisposable
   {
     private readonly IGameBoy _gameBoy;
+    private readonly IOpenFileDialog _fileDialog;
 
     private string _filePath;
     private string _cartridgeTitle;
@@ -18,7 +20,7 @@ namespace GBSharp.ViewModel
         if (_filePath != value)
         {
           _filePath = value;
-          NotifyCartridgeFileLoaded();
+          OnPropertyChanged(() => FilePath);
         }
       }
     }
@@ -57,16 +59,21 @@ namespace GBSharp.ViewModel
       get { return new DelegateCommand(Stop); }
     }
 
-    public GameBoyContollerViewModel(IGameBoy gameBoy)
+    public ICommand LoadCommand
     {
-      _gameBoy = gameBoy;
-      //_gameBoy.StepFinished += OnStepFinished;
+      get { return new DelegateCommand(Load); }
     }
 
-    private void NotifyCartridgeFileLoaded()
+    public GameBoyContollerViewModel(IGameBoy gameBoy, IOpenFileDialogFactory fileDialogFactory)
     {
-      if (File.Exists(_filePath))
-        OnCartridgeFileLoaded(File.ReadAllBytes(_filePath));
+      _gameBoy = gameBoy;
+      _fileDialog = fileDialogFactory.Create();
+      _fileDialog.OnFileOpened += OnCartridgeFileLoaded;
+    }
+
+    private void Load()
+    {
+      _fileDialog.Open();
     }
 
     private void Run()
@@ -89,18 +96,19 @@ namespace GBSharp.ViewModel
       _gameBoy.Stop();
     }
 
-    private void OnStepFinished()
-    {
-      //_dispatcher.Invoke(PrintCPU);
-    }
     
-    private void OnCartridgeFileLoaded(byte[] data)
+    private void OnCartridgeFileLoaded(string filePath)
     {
+      FilePath = filePath;
+      var data = File.ReadAllBytes(filePath);
       _gameBoy.LoadCartridge(data);
       CartridgeTitle = _gameBoy.Cartridge.Title;
     }
 
-   
-    
+
+    public void Dispose()
+    {
+      _fileDialog.OnFileOpened -= OnCartridgeFileLoaded;
+    }
   }
 }

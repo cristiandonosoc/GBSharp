@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Windows.Input;
+using GBSharp.MemorySpace;
 
 namespace GBSharp.ViewModel
 {
  
-  public class MemoryViewModel : ViewModelBase
+  public class MemoryViewModel : ViewModelBase, IDisposable
   {
-    private readonly IMemory _memory;
+    private readonly IOpenFileDialog _fileDialog;
+    private IMemory _memory;
     private readonly ObservableCollection<MemoryFormatViewModel> _addressFormats = new ObservableCollection<MemoryFormatViewModel>();
     private MemoryFormatViewModel _selectedAddressFormat;
     private readonly ObservableCollection<MemoryFormatViewModel> _valueFormats = new ObservableCollection<MemoryFormatViewModel>();
@@ -18,6 +21,7 @@ namespace GBSharp.ViewModel
     private MemorySectionViewModel _selectedSection;
     private readonly ObservableCollection<MemorySectionViewModel> _memorySections = new ObservableCollection<MemorySectionViewModel>();
 
+    private readonly IGameBoy _gameBoy;
     private string _name;
     private uint _numberOfWordsPerLine = 16;
     private readonly List<uint> _numberOfWordsOptions = new List<uint>(); 
@@ -89,9 +93,14 @@ namespace GBSharp.ViewModel
       get { return _name; }
     }
 
+    public ICommand LoadCommand
+    {
+      get { return new DelegateCommand(LoadFromDump); }
+    }
+
     public ICommand ReadCommand
     {
-      get { return new DelegateCommand(CopyFromDomain); }
+      get { return new DelegateCommand(ReadFromGameboy); }
     }
 
     public ICommand WriteCommand
@@ -119,10 +128,14 @@ namespace GBSharp.ViewModel
     }
 
 
-    public MemoryViewModel(IMemory memory, string name, int initialAddress=0, int finalAddress=-1)
+    public MemoryViewModel(IOpenFileDialogFactory fileDialogFactory, IGameBoy gameBoy, string name)
     {
-      if (memory == null) throw new ArgumentNullException("memory");
-      _memory = memory;
+      if (fileDialogFactory == null) throw new ArgumentNullException("fileDialogFactory");
+      if (gameBoy == null) throw new ArgumentNullException("gameBoy");
+      _fileDialog = fileDialogFactory.Create();
+      _fileDialog.OnFileOpened += CopyFromDump;
+      _gameBoy = gameBoy;
+      _memory = _gameBoy.Memory;
       _name = name;
       
       Init();
@@ -183,7 +196,25 @@ namespace GBSharp.ViewModel
     {
       CopyFromDomain();
     }
-  
+
+    private void LoadFromDump()
+    {
+      _fileDialog.Open();
+    }
+
+
+    private void CopyFromDump(string dumpFile)
+    {
+      _memory = new MemoryDump(File.ReadAllBytes(dumpFile));
+      CopyFromDomain();
+    }
+
+    private void ReadFromGameboy()
+    {
+      _memory = _gameBoy.Memory;
+      CopyFromDomain();
+    }
+
     private void CopyFromDomain()
     {
       _memoryWordGroups.Clear();
@@ -200,7 +231,10 @@ namespace GBSharp.ViewModel
       throw new NotImplementedException();
     }
 
-  
-  
+
+    public void Dispose()
+    {
+      _fileDialog.OnFileOpened -= CopyFromDump;
+    }
   }
 }

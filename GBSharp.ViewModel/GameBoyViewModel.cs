@@ -44,14 +44,14 @@
     }
 
 
-    public GameBoyViewModel(IGameBoy gameBoy, IDispatcher dispatcher, IWindow window)
+    public GameBoyViewModel(IGameBoy gameBoy, IDispatcher dispatcher, IWindow window, IOpenFileDialogFactory fileDialogFactory)
     {
       _gameBoy = gameBoy;
       _dispatcher = dispatcher;
       _window = window;
       _window.OnClosing += HandleClosing;
-      _gameBoyController = new GameBoyContollerViewModel(_gameBoy);
-      _memory = new MemoryViewModel(_gameBoy.Memory, "Memory View");//, 0xC000, 0xE000);
+      _gameBoyController = new GameBoyContollerViewModel(_gameBoy, fileDialogFactory);
+      _memory = new MemoryViewModel(fileDialogFactory, _gameBoy, "Memory View");//, 0xC000, 0xE000);
       _cpu = new CPUViewModel(_gameBoy.CPU, _gameBoy.Display, _dispatcher);
       _interrupt = new InterruptViewModel(_gameBoy, _dispatcher);
       _display = new DisplayViewModel(_gameBoy.Display, _gameBoy.Memory, _dispatcher);
@@ -64,6 +64,8 @@
       _interrupt.Dispose();
       _gameBoyGamePad.Dispose();
       _cpu.Dispose();
+      _memory.Dispose();
+      _gameBoyController.Dispose();
       _gameBoy.Stop();
     }
   }

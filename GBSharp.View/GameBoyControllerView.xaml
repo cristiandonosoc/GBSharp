@@ -20,9 +20,9 @@
         <RowDefinition Height="Auto"></RowDefinition>
       </Grid.RowDefinitions>
       <Border BorderBrush="{StaticResource TextBrush}" BorderThickness="1">
-        <TextBlock Name="FileText" Text="{Binding FilePath, Mode=TwoWay}" FontSize="9"></TextBlock>
+        <TextBlock Name="FileText" Text="{Binding FilePath}" FontSize="9"></TextBlock>
       </Border>
-      <Button Grid.Row="0" Grid.Column="1" Click="ButtonBase_OnClick" Content="Load Game"></Button>
+      <Button Grid.Row="0" Grid.Column="1" Command="{Binding LoadCommand}" Content="Load Game"></Button>
       <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding CartridgeTitle}" ></TextBlock>
     </Grid>
     <Grid Grid.Row="1" Margin="5">

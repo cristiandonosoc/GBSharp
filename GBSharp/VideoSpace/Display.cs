@@ -180,7 +180,7 @@ namespace GBSharp.VideoSpace
 
       // TODO(Cristian): Remove this call eventually, when testing is not needed!
 #if DEBUG
-      UpdateScreen();
+      //UpdateScreen();
 #endif
     }
 
