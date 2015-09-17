@@ -3,24 +3,28 @@
   <SolidColorBrush x:Key="DarkBrush" Color="#0B0D19"/>
   <SolidColorBrush x:Key="MedBrush" Color="#595B68"/>
   <SolidColorBrush x:Key="LightBrush" Color="#BFBEBA"/>
+  <SolidColorBrush x:Key="SectionBrush" Color="#979995"/>
   <SolidColorBrush x:Key="HoverBrush" Color="White"/>
   <SolidColorBrush x:Key="TextBrush" Color="#0E1879"/>
 
   <Style x:Key="ControlStyle" TargetType="{x:Type Control}">
     <Setter Property="FontSize" Value="12"/>
   </Style>
-  
+
   <Style TargetType="Grid" x:Key="SpacingGrid">
-    <Setter Property="Margin" Value="5"/>
+    <Setter Property="Margin" Value="3"/>
   </Style>
   <Style TargetType="Grid" x:Key="SubContentGrid">
-    <Setter Property="Margin" Value="5"/>
+    <Setter Property="Margin" Value="3"/>
     <Setter Property="Background" Value="{StaticResource LightBrush}" />
   </Style>
   <Style x:Key="MainContentGrid" TargetType="Grid">
     <Setter Property="Background" Value="{StaticResource MedBrush}" />
   </Style>
-
+  <Style TargetType="Grid" x:Key="SectionGrid">
+    <Setter Property="Margin" Value="3"/>
+    <Setter Property="Background" Value="{StaticResource SectionBrush}" />
+  </Style>
 
   <Style TargetType="ComboBox" BasedOn="{StaticResource ControlStyle}">
     <Setter Property="VerticalAlignment" Value="Center"/>
@@ -41,7 +45,15 @@
     <!--<Setter Property="FontFamily" Value="Digital-7"/>-->
     <Setter Property="FontSize" Value="11"/>
     <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-    </Style>
+  </Style>
+
+  <Style TargetType="TextBlock" x:Key="TitleText">
+    <!--<Setter Property="FontFamily" Value="Digital-7"/>-->
+    <Setter Property="FontSize" Value="14"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+    <Setter Property="Margin" Value="5,2,2,2"/>
+  </Style>
 
   <Style TargetType="Button" BasedOn="{StaticResource ControlStyle}">
     <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
