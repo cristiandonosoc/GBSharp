@@ -39,7 +39,7 @@
   </Window.Resources>
 
   <Grid Style="{DynamicResource MainContentGrid}">
-    <ScrollViewer HorizontalScrollBarVisibility="Auto">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*"></ColumnDefinition>

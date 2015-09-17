@@ -10,7 +10,7 @@
       <RowDefinition Height="*"/>
       <RowDefinition Height="Auto"/>
     </Grid.RowDefinitions>
-    <ScrollViewer HorizontalScrollBarVisibility="Auto">
+    <ScrollViewer>
       <TabControl>
         <TabItem Header="Background">
 
