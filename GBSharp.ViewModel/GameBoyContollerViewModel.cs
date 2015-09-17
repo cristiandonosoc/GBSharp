@@ -68,12 +68,12 @@ namespace GBSharp.ViewModel
     {
       _gameBoy = gameBoy;
       _fileDialog = fileDialogFactory.Create();
-      _fileDialog.OnFileOpened += OnCartridgeFileLoaded;
+      _fileDialog.OnFileOpened += OnFileOpened;
     }
 
     private void Load()
     {
-      _fileDialog.Open();
+      _fileDialog.Open("ROM Files (*.gb)|*.gb|Dump Files (*.dmp)|*.dmp");
     }
 
     private void Run()
@@ -96,8 +96,15 @@ namespace GBSharp.ViewModel
       _gameBoy.Stop();
     }
 
-    
-    private void OnCartridgeFileLoaded(string filePath)
+    private void OnFileOpened(string filePath, int filterIndex)
+    {
+      if(filterIndex == 1)
+        LoadROM(filePath);
+      else if (filterIndex == 2)
+        LoadMemoryDump(filePath);
+    }
+
+    private void LoadROM(string filePath)
     {
       FilePath = filePath;
       var data = File.ReadAllBytes(filePath);
@@ -105,10 +112,18 @@ namespace GBSharp.ViewModel
       CartridgeTitle = _gameBoy.Cartridge.Title;
     }
 
+    private void LoadMemoryDump(string filePath)
+    {
+      FilePath = filePath;
+      var data = File.ReadAllBytes(filePath);
+      _gameBoy.Memory.Load(data);
+      _gameBoy.Display.UpdateScreen();
+    }
+
 
     public void Dispose()
     {
-      _fileDialog.OnFileOpened -= OnCartridgeFileLoaded;
+      _fileDialog.OnFileOpened -= OnFileOpened;
     }
   }
 }

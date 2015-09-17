@@ -19,5 +19,7 @@ namespace GBSharp
     Bitmap Frame { get; }
     Bitmap Screen { get; }
     Bitmap GetSprite(int index);
+
+    void UpdateScreen();
   }
 }

@@ -5,5 +5,6 @@ namespace GBSharp
   public interface IMemory
   {
     byte[] Data { get; }
+    void Load(byte[] data);
   }
 }

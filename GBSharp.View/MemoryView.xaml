@@ -6,7 +6,7 @@
              xmlns:view="clr-namespace:GBSharp.View"
              xmlns:viewModel="clr-namespace:GBSharp.ViewModel;assembly=GBSharp.ViewModel"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="300" d:DesignWidth="300" MaxHeight="600">
   <UserControl.Resources>
     <DataTemplate DataType="{x:Type viewModel:MemoryWordViewModel}">
       <Grid Width="15" Background="{Binding WordColor}">
@@ -102,16 +102,14 @@
     </Grid>
     <Grid Margin="5" Grid.Row="2">
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="Auto"></ColumnDefinition>
         <ColumnDefinition Width="*"></ColumnDefinition>
         <ColumnDefinition Width="20"></ColumnDefinition>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
       </Grid.ColumnDefinitions>
-      <Button Grid.Column="0" Content="Load Dump" Command="{Binding LoadCommand}"></Button>
-      <Slider Grid.Column="1" x:Name="uiScaleSlider" Value="1" Minimum="0.01" Maximum="1"/>
-      <Button Grid.Column="3" Content="Read" Command="{Binding ReadCommand}"></Button>
-      <Button Grid.Column="4" Content="Write" Command="{Binding WriteCommand}"></Button>
+      <Slider Grid.Column="0" x:Name="uiScaleSlider" Value="1" Minimum="0.01" Maximum="1"/>
+      <Button Grid.Column="2" Content="Read" Command="{Binding ReadCommand}"></Button>
+      <Button Grid.Column="3" Content="Write" Command="{Binding WriteCommand}"></Button>
     </Grid>
   </Grid>
 </UserControl>

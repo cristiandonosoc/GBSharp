@@ -203,7 +203,7 @@ namespace GBSharp.VideoSpace
                                 disDef.screenPixelCountX, disDef.screenPixelCountY);
     }
 
-    internal void UpdateScreen()
+    public void UpdateScreen()
     {
       // TODO(Cristian): Do the image composition line-based instead of image-based
       byte lcdRegister = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);

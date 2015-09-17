@@ -114,6 +114,12 @@ namespace GBSharp.MemorySpace
     {
       get { return this.data; }
     }
+
+    public void Load(byte[] data)
+    {
+      this.data = data;
+    }
+
     #endregion
   }
 }

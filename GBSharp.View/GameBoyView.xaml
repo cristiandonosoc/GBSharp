@@ -39,106 +39,113 @@
   </Window.Resources>
 
   <Grid Style="{DynamicResource MainContentGrid}">
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="*"></ColumnDefinition>
-      <ColumnDefinition Width="*"></ColumnDefinition>
-      <ColumnDefinition Width="*"></ColumnDefinition>
-    </Grid.ColumnDefinitions>
-    <Grid>
-      <Grid.RowDefinitions>
-        <RowDefinition Height="*"></RowDefinition>
-        <RowDefinition Height="*"></RowDefinition>
-      </Grid.RowDefinitions>
-      <Grid Style="{StaticResource SectionGrid}">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"></RowDefinition>
-          <RowDefinition Height="*"></RowDefinition>
-        </Grid.RowDefinitions>
+    <ScrollViewer HorizontalScrollBarVisibility="Auto">
+      <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*"></ColumnDefinition>
-          <ColumnDefinition Width="Auto"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <TextBlock Style="{StaticResource TitleText}" Text="Memory"></TextBlock>
-        <CheckBox x:Name="MemorySectionCheck" Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="True"></CheckBox>
-        <ContentPresenter x:Name="MemorySection" Visibility="{Binding ElementName=MemorySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Content="{Binding Memory}"/>
-      </Grid>
-      <Grid Grid.Row="1" Style="{StaticResource SectionGrid}">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"></RowDefinition>
-          <RowDefinition Height="*"></RowDefinition>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*"></ColumnDefinition>
-          <ColumnDefinition Width="Auto"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <TextBlock Style="{StaticResource TitleText}" Text="Display"></TextBlock>
-        <CheckBox x:Name="DisplaySectionCheck" Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="True"></CheckBox>
-        <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Display}"/>
-      </Grid>
-    </Grid>
-    <Grid Grid.Column="1">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto"></RowDefinition>
-        <RowDefinition Height="Auto"></RowDefinition>
-      </Grid.RowDefinitions>
-      <Grid Grid.Row="0" Style="{StaticResource SectionGrid}">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"></RowDefinition>
-          <RowDefinition Height="*"></RowDefinition>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*"></ColumnDefinition>
-          <ColumnDefinition Width="Auto"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <TextBlock Style="{StaticResource TitleText}" Text="Controller"></TextBlock>
-        <CheckBox x:Name="ControllerSectionCheck" Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="True"></CheckBox>
-        <ContentPresenter Content="{Binding GameBoyController}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=ControllerSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+          </Grid.RowDefinitions>
+          <Grid Grid.Row="0" Style="{StaticResource SectionGrid}">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"></RowDefinition>
+              <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"></ColumnDefinition>
+              <ColumnDefinition Width="Auto"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBlock Style="{StaticResource TitleText}" Text="Controller"></TextBlock>
+            <CheckBox x:Name="ControllerSectionCheck" Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="True"></CheckBox>
+            <ContentPresenter Content="{Binding GameBoyController}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=ControllerSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
+          </Grid>
+          <Grid Grid.Row="1" Style="{StaticResource SectionGrid}">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"></RowDefinition>
+              <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"></ColumnDefinition>
+              <ColumnDefinition Width="Auto"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBlock Style="{StaticResource TitleText}" Text="Display"></TextBlock>
+            <CheckBox x:Name="DisplaySectionCheck" Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="True"></CheckBox>
+            <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Display}"/>
+          </Grid>
+        </Grid>
+        <Grid Grid.Column="1">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+          </Grid.RowDefinitions>
+
+          <Grid Grid.Row="1" Style="{StaticResource SectionGrid}">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"></RowDefinition>
+              <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"></ColumnDefinition>
+              <ColumnDefinition Width="Auto"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBlock Style="{StaticResource TitleText}" Text="GameBoy"></TextBlock>
+            <CheckBox x:Name="GamePadSectionCheck" Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="True"></CheckBox>
+            <ContentPresenter Content="{Binding GameBoyGamePad}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=GamePadSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
+          </Grid>
+        </Grid>
+        <Grid Grid.Column="2" >
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+          </Grid.RowDefinitions>
+          <Grid Style="{StaticResource SectionGrid}">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"></RowDefinition>
+              <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"></ColumnDefinition>
+              <ColumnDefinition Width="Auto"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBlock Style="{StaticResource TitleText}" Text="CPU State"></TextBlock>
+            <CheckBox x:Name="CPUSectionCheck" Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="False"></CheckBox>
+            <ContentPresenter Content="{Binding CPU}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=CPUSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
+          </Grid>
+          <Grid Grid.Row="1" Style="{StaticResource SectionGrid}">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"></RowDefinition>
+              <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"></ColumnDefinition>
+              <ColumnDefinition Width="Auto"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBlock Style="{StaticResource TitleText}" Text="Memory"></TextBlock>
+            <CheckBox x:Name="MemorySectionCheck" Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="True"></CheckBox>
+            <ContentPresenter x:Name="MemorySection" Visibility="{Binding ElementName=MemorySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Content="{Binding Memory}"/>
+          </Grid>
+          <Grid Grid.Row="2" Style="{StaticResource SectionGrid}">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"></RowDefinition>
+              <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"></ColumnDefinition>
+              <ColumnDefinition Width="Auto"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBlock Style="{StaticResource TitleText}" Text="Interrupts"></TextBlock>
+            <CheckBox x:Name="InterruptSectionCheck" Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="False"></CheckBox>
+            <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=InterruptSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Interrupt}"/>
+          </Grid>
+
+        </Grid>
       </Grid>
-      <Grid Grid.Row="1" Style="{StaticResource SectionGrid}">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"></RowDefinition>
-          <RowDefinition Height="*"></RowDefinition>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="*"></ColumnDefinition>
-          <ColumnDefinition Width="Auto"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <TextBlock Style="{StaticResource TitleText}" Text="GameBoy"></TextBlock>
-        <CheckBox x:Name="GamePadSectionCheck" Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="True"></CheckBox>
-        <ContentPresenter Content="{Binding GameBoyGamePad}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=GamePadSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
-      </Grid>
-    </Grid>
-    <Grid Grid.Column="2" >
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto"></RowDefinition>
-        <RowDefinition Height="Auto"></RowDefinition>
-      </Grid.RowDefinitions>
-      <Grid Style="{StaticResource SectionGrid}">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"></RowDefinition>
-          <RowDefinition Height="*"></RowDefinition>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="*"></ColumnDefinition>
-          <ColumnDefinition Width="Auto"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <TextBlock Style="{StaticResource TitleText}" Text="CPU State"></TextBlock>
-        <CheckBox x:Name="CPUSectionCheck" Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="True"></CheckBox>
-        <ContentPresenter Content="{Binding CPU}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=CPUSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
-      </Grid>
-      <Grid Grid.Row="1" Style="{StaticResource SectionGrid}">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"></RowDefinition>
-          <RowDefinition Height="*"></RowDefinition>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="*"></ColumnDefinition>
-          <ColumnDefinition Width="Auto"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <TextBlock Style="{StaticResource TitleText}" Text="Interrupts"></TextBlock>
-        <CheckBox x:Name="InterruptSectionCheck" Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="True"></CheckBox>
-        <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=InterruptSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Interrupt}"/>
-      </Grid>
-    </Grid>
+    </ScrollViewer>
   </Grid>
 </Window>
