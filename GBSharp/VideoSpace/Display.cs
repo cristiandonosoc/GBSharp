@@ -171,6 +171,14 @@ namespace GBSharp.VideoSpace
       screen = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, disDef.pixelFormat);
       frame = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, disDef.pixelFormat);
 
+      // TODO(Cristian): Remove this call eventually, when testing is not needed!
+#if DEBUG
+      //UpdateScreen();
+#endif
+    }
+
+    internal void LoadSprites()
+    {
       // We load the OAMs
       ushort spriteOAMAddress = 0xFE00;
       spriteOAMs = new OAM[spriteCount];
@@ -179,11 +187,6 @@ namespace GBSharp.VideoSpace
         SetOAM(i, memory.LowLevelArrayRead(spriteOAMAddress, 4));
         spriteOAMAddress += 4;
       }
-
-      // TODO(Cristian): Remove this call eventually, when testing is not needed!
-#if DEBUG
-      //UpdateScreen();
-#endif
     }
 
 
@@ -207,6 +210,8 @@ namespace GBSharp.VideoSpace
 
     public void UpdateScreen()
     {
+      LoadSprites();
+
       // TODO(Cristian): Do the image composition line-based instead of image-based
       byte lcdRegister = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
       bool LCDBit3 = Utils.UtilFuncs.TestBit(lcdRegister, 3) != 0;
