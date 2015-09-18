@@ -6,6 +6,8 @@ namespace GBSharp.ViewModel
 {
   public class GameBoyContollerViewModel : ViewModelBase, IDisposable
   {
+    public event Action OnFileLoaded;
+
     private readonly IGameBoy _gameBoy;
     private readonly IOpenFileDialog _fileDialog;
 
@@ -71,6 +73,11 @@ namespace GBSharp.ViewModel
       _fileDialog.OnFileOpened += OnFileOpened;
     }
 
+    public void Dispose()
+    {
+      _fileDialog.OnFileOpened -= OnFileOpened;
+    }
+
     private void Load()
     {
       _fileDialog.Open("ROM Files (*.gb)|*.gb|Dump Files (*.dmp)|*.dmp");
@@ -102,6 +109,7 @@ namespace GBSharp.ViewModel
         LoadROM(filePath);
       else if (filterIndex == 2)
         LoadMemoryDump(filePath);
+      NotifyFileLoaded();
     }
 
     private void LoadROM(string filePath)
@@ -118,12 +126,14 @@ namespace GBSharp.ViewModel
       var data = File.ReadAllBytes(filePath);
       _gameBoy.Memory.Load(data);
       _gameBoy.Display.UpdateScreen();
+     
     }
 
-
-    public void Dispose()
+    private void NotifyFileLoaded()
     {
-      _fileDialog.OnFileOpened -= OnFileOpened;
+      if (OnFileLoaded != null)
+        OnFileLoaded();
     }
+    
   }
 }

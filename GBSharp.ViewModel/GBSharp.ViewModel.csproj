@@ -61,6 +61,7 @@
     <Compile Include="MemoryFormatViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DisplayViewModel.cs" />
+    <Compile Include="SpriteViewModel.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="ViewModelBase.cs" />
   </ItemGroup>

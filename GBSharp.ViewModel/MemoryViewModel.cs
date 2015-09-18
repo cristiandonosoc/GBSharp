@@ -186,7 +186,7 @@ namespace GBSharp.ViewModel
     }
 
 
-    private void CopyFromDomain()
+    public void CopyFromDomain()
     {
       _memoryWordGroups.Clear();
       for (uint address = _selectedSection.InitialAddress; address < _selectedSection.FinalAddress; address+= _numberOfWordsPerLine)

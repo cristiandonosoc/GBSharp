@@ -2,9 +2,66 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewModel="clr-namespace:GBSharp.ViewModel;assembly=GBSharp.ViewModel"
+             mc:Ignorable="d" Height="500"
              d:DesignHeight="300" d:DesignWidth="300">
+  <UserControl.Resources>
+    <DataTemplate DataType="{x:Type viewModel:SpriteViewModel}">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid Height="256" Width="256">
+          <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+            <Image Height="128" Width="256" Source="{Binding SpriteImage}"
+                     RenderOptions.BitmapScalingMode="NearestNeighbor">
+              <Image.LayoutTransform>
+                <ScaleTransform 
+                        CenterX="0" CenterY="0"
+                        ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
+                        ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
+              </Image.LayoutTransform>
+            </Image>
+          </ScrollViewer>
+        </Grid>
+        <Grid Grid.Row="1" HorizontalAlignment="Center">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <Label Grid.Row="0" Grid.Column="0" Content="X"/>
+          <Label Grid.Row="0" Grid.Column="1" Content=":"/>
+          <Label Grid.Row="0" Grid.Column="2" Content="{Binding SpriteData.X}" />
+
+          <Label Grid.Row="0" Grid.Column="4" Content="Y"/>
+          <Label Grid.Row="0" Grid.Column="5" Content=":"/>
+          <Label Grid.Row="0" Grid.Column="6" Content="{Binding SpriteData.Y}" />
+
+          <Label Grid.Row="1" Grid.Column="0" Content="Sprite Code"/>
+          <Label Grid.Row="1" Grid.Column="1" Content=":"/>
+          <Label Grid.Row="1" Grid.Column="2" Content="{Binding SpriteData.SpriteCode}" />
+
+          <Label Grid.Row="1" Grid.Column="4" Content="Flags"/>
+          <Label Grid.Row="1" Grid.Column="5" Content=":"/>
+          <Label Grid.Row="1" Grid.Column="6" Content="{Binding SpriteData.Flags}" />
+        </Grid>
+      </Grid>
+
+    </DataTemplate>
+  </UserControl.Resources>
   <Grid Style="{StaticResource SubContentGrid}">
     <Grid.RowDefinitions>
       <RowDefinition Height="*"/>
@@ -27,18 +84,24 @@
                 <CheckBox Grid.Row="1" Content="Code Area 0" IsChecked="{Binding CodeAreaSelectionFlag}" Margin="2" />
                 <CheckBox Grid.Row="2" Content="Signed Mode" IsChecked="{Binding CharacterDataSelectionFlag}" Margin="2" />
                 <DockPanel Grid.Row="3">
-                  <DockPanel.LayoutTransform>
-                    <ScaleTransform 
-            CenterX="0" CenterY="0"
-            ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
-            ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
-                  </DockPanel.LayoutTransform>
+
                   <Button DockPanel.Dock="Left" Content="&lt;" Command="{Binding ScrollXDecreaseCommand}"></Button>
                   <Button DockPanel.Dock="Right" Content="&gt;" Command="{Binding ScrollXIncreaseCommand}"></Button>
                   <Button DockPanel.Dock="Top" Content="^" Command="{Binding ScrollYIncreaseCommand}"></Button>
                   <Button DockPanel.Dock="Bottom" Content="v" Command="{Binding ScrollYDecreaseCommand}"></Button>
-                  <Image Height="256" Width="256" Source="{Binding Background}"
-                     RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                  <Grid Height="256" Width="256">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                      <Image Height="256" Width="256" Source="{Binding Background}"
+                     RenderOptions.BitmapScalingMode="NearestNeighbor">
+                        <Image.LayoutTransform>
+                          <ScaleTransform 
+                        CenterX="0" CenterY="0"
+                        ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
+                        ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
+                        </Image.LayoutTransform>
+                      </Image>
+                    </ScrollViewer>
+                  </Grid>
                 </DockPanel>
               </Grid>
             </Grid>
@@ -58,18 +121,23 @@
               <CheckBox Grid.Row="1" Content="Code Area 0" IsChecked="{Binding CodeAreaSelectionFlag}" Margin="2" />
               <CheckBox Grid.Row="2" Content="Signed Mode" IsChecked="{Binding CharacterDataSelectionFlag}" Margin="2" />
               <DockPanel Grid.Row="3">
-                <DockPanel.LayoutTransform>
-                  <ScaleTransform 
-            CenterX="0" CenterY="0"
-            ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
-            ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
-                </DockPanel.LayoutTransform>
                 <Button DockPanel.Dock="Left" Content="&lt;" Command="{Binding ScrollXDecreaseCommand}"></Button>
                 <Button DockPanel.Dock="Right" Content="&gt;" Command="{Binding ScrollXIncreaseCommand}"></Button>
                 <Button DockPanel.Dock="Top" Content="^" Command="{Binding ScrollYIncreaseCommand}"></Button>
                 <Button DockPanel.Dock="Bottom" Content="v" Command="{Binding ScrollYDecreaseCommand}"></Button>
-                <Image Height="256" Width="256" Source="{Binding Window}"
-                     RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                <Grid Height="256" Width="256">
+                  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                    <Image Height="256" Width="256" Source="{Binding Window}"
+                     RenderOptions.BitmapScalingMode="NearestNeighbor">
+                      <Image.LayoutTransform>
+                        <ScaleTransform 
+                        CenterX="0" CenterY="0"
+                        ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
+                        ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
+                      </Image.LayoutTransform>
+                    </Image>
+                  </ScrollViewer>
+                </Grid>
               </DockPanel>
             </Grid>
           </Grid>
@@ -77,55 +145,26 @@
 
         <TabItem Header="Sprites">
           <Grid Margin="5">
-            <Grid>
-              <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-              </Grid.RowDefinitions>
-              <Image Height="128" Width="256" Source="{Binding Sprite}"
-                   RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-              <Slider Grid.Row="1" x:Name="spriteSlider" 
-                    Minimum="0" Maximum="39" Value="{Binding CurrentSpriteIndex}"
-                    IsSnapToTickEnabled="True" TickFrequency="1" />
-              <Grid Grid.Row="3">
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="Auto" />
-                  <ColumnDefinition Width="Auto" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Label Grid.Column="0" Content="Sprite" />
-                <Label Grid.Column="1" Content="{Binding ElementName=spriteSlider, Path=Value}" />
-                <Grid Grid.Column="2">
-                  <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                  </Grid.RowDefinitions>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                  </Grid.ColumnDefinitions>
-                  <Label Grid.Row="0" Grid.Column="0" Content="X"/>
-                  <Label Grid.Row="0" Grid.Column="1" Content=":"/>
-                  <Label Grid.Row="0" Grid.Column="2" Content="{Binding CurrentOAM.X}" />
-
-                  <Label Grid.Row="1" Grid.Column="0" Content="Y"/>
-                  <Label Grid.Row="1" Grid.Column="1" Content=":"/>
-                  <Label Grid.Row="1" Grid.Column="2" Content="{Binding CurrentOAM.Y}" />
-
-                  <Label Grid.Row="2" Grid.Column="0" Content="Sprite Code"/>
-                  <Label Grid.Row="2" Grid.Column="1" Content=":"/>
-                  <Label Grid.Row="2" Grid.Column="2" Content="{Binding CurrentOAM.SpriteCode}" />
-
-                  <Label Grid.Row="3" Grid.Column="0" Content="Flags"/>
-                  <Label Grid.Row="3" Grid.Column="1" Content=":"/>
-                  <Label Grid.Row="3" Grid.Column="2" Content="{Binding CurrentOAM.Flags}" />
-                </Grid>
-              </Grid>
-            </Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="50"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <ListView ItemsSource="{Binding Sprites}" SelectedItem="{Binding SelectedSprite}">
+              <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Horizontal"></StackPanel>
+                </ItemsPanelTemplate>
+              </ListView.ItemsPanel>
+              <ListView.Resources>
+                <DataTemplate DataType="{x:Type viewModel:SpriteViewModel}">
+                  <Grid>
+                    <Image Width="32" Height="32" Source="{Binding SpriteImage}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                  </Grid>
+                </DataTemplate>
+              </ListView.Resources>
+            </ListView>
+            <ContentPresenter Grid.Row="2" Content="{Binding SelectedSprite}"></ContentPresenter>
           </Grid>
         </TabItem>
         <TabItem Header="SpriteLayer">
@@ -134,8 +173,19 @@
               <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
               </Grid.RowDefinitions>
-              <Image Height="256" Width="256" Source="{Binding SpriteLayer}"
-                   RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+              <Grid Height="256" Width="256">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                  <Image Height="256" Width="256" Source="{Binding SpriteLayer}"
+                     RenderOptions.BitmapScalingMode="NearestNeighbor">
+                    <Image.LayoutTransform>
+                      <ScaleTransform 
+                        CenterX="0" CenterY="0"
+                        ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
+                        ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
+                    </Image.LayoutTransform>
+                  </Image>
+                </ScrollViewer>
+              </Grid>
             </Grid>
           </Grid>
         </TabItem>
@@ -152,7 +202,7 @@
         <ColumnDefinition Width="Auto"></ColumnDefinition>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
       </Grid.ColumnDefinitions>
-      <Slider x:Name="uiScaleSlider" Value="1" Minimum="0.01" Maximum="5"/>
+      <Slider x:Name="uiScaleSlider" Value="1" Minimum="0.1" Maximum="10"/>
       <Button Grid.Column="2" Content="Read" Command="{Binding ReadCommand}"></Button>
       <Button Grid.Column="3" Content="Write" Command="{Binding WriteCommand}"></Button>
     </Grid>

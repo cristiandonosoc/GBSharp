@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using GBSharp.MemorySpace;
@@ -24,6 +26,11 @@ namespace GBSharp.ViewModel
     private byte _scrollY;
 
     private BitmapImage _background;
+    private BitmapImage _window;
+    private SpriteViewModel _selectedSprite;
+    private readonly ObservableCollection<SpriteViewModel> _sprites = new ObservableCollection<SpriteViewModel>();
+    private BitmapImage _spriteLayer;
+    
     public BitmapImage Background
     {
       get { return _background; }
@@ -34,7 +41,6 @@ namespace GBSharp.ViewModel
       }
     }
 
-    private BitmapImage _window;
     public BitmapImage Window
     {
       get { return _window; }
@@ -45,18 +51,19 @@ namespace GBSharp.ViewModel
       }
     }
 
-    private BitmapImage _sprite;
-    public BitmapImage Sprite 
+    public SpriteViewModel SelectedSprite 
     {
-      get { return _sprite; }
+      get { return _selectedSprite; }
       set
       {
-        _sprite = value;
-        OnPropertyChanged(() => Sprite);
+        if (_selectedSprite != value)
+        {
+          _selectedSprite = value;
+          OnPropertyChanged(() => SelectedSprite);
+        }
       }
     }
-
-    private BitmapImage _spriteLayer;
+    
     public BitmapImage SpriteLayer
     {
       get { return _spriteLayer; }
@@ -66,31 +73,6 @@ namespace GBSharp.ViewModel
         OnPropertyChanged(() => SpriteLayer);
       }
     }
-
-    private int _currentSpriteIndex;
-    public int CurrentSpriteIndex
-    {
-      get { return _currentSpriteIndex; }
-      set
-      {
-        _currentSpriteIndex = value;
-        // TODO(Cristian): Use the correct event bs
-        Sprite = Utils.BitmapToImageSource(_display.GetSprite(_currentSpriteIndex));
-        CurrentOAM = _display.GetOAM(_currentSpriteIndex);
-      }
-    }
-
-    private OAM _currentOAM;
-    public OAM CurrentOAM
-    {
-      get { return _currentOAM; }
-      set
-      {
-        _currentOAM = value;
-        OnPropertyChanged(() => CurrentOAM);
-      }
-    }
-
 
 
     public bool BlockSelectionFlag
@@ -132,6 +114,11 @@ namespace GBSharp.ViewModel
       }
     }
 
+    public ObservableCollection<SpriteViewModel> Sprites
+    {
+      get { return _sprites; }
+    }
+
     public ICommand ReadCommand
     {
       get { return new DelegateCommand(CopyFromDomain); }
@@ -162,6 +149,8 @@ namespace GBSharp.ViewModel
       get { return new DelegateCommand(ScrollYIncrease); }
     }
 
+   
+
     public DisplayViewModel(IDisplay display, IMemory memory, IDispatcher dispatcher)
     {
       _display = display;
@@ -176,7 +165,12 @@ namespace GBSharp.ViewModel
       Window = Utils.BitmapToImageSource(_display.Window);
       SpriteLayer = Utils.BitmapToImageSource(_display.SpriteLayer);
 
-      CurrentSpriteIndex = 0;
+      Sprites.Clear();
+      for (int i = 0; i < 40; i++)
+      {
+        Sprites.Add(new SpriteViewModel(Utils.BitmapToImageSource(_display.GetSprite(i)), _display.GetOAM(i)));
+      }
+      SelectedSprite = Sprites.First();
 
       var lcdControl = _memory.Data[(int)MemoryMappedRegisters.LCDC];
       BlockSelectionFlag = (lcdControl & (byte)LCDControlFlags.OBJBlockCompositionSelection) > 0;
