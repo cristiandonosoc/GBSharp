@@ -5,7 +5,7 @@
   <SolidColorBrush x:Key="LightBrush" Color="#BFBEBA"/>
   <SolidColorBrush x:Key="SectionBrush" Color="#979995"/>
   <SolidColorBrush x:Key="HoverBrush" Color="White"/>
-  <SolidColorBrush x:Key="TextBrush" Color="#0E1879"/>
+  <SolidColorBrush x:Key="TextBrush" Color="Black"/>
 
   <Style x:Key="ControlStyle" TargetType="{x:Type Control}">
     <Setter Property="FontSize" Value="12"/>
@@ -19,11 +19,15 @@
     <Setter Property="Background" Value="{StaticResource LightBrush}" />
   </Style>
   <Style x:Key="MainContentGrid" TargetType="Grid">
-    <Setter Property="Background" Value="{StaticResource MedBrush}" />
+    <Setter Property="Background" Value="{StaticResource DarkBrush}" />
   </Style>
   <Style TargetType="Grid" x:Key="SectionGrid">
     <Setter Property="Margin" Value="3"/>
     <Setter Property="Background" Value="{StaticResource SectionBrush}" />
+  </Style>
+  <Style TargetType="Grid" x:Key="MedGrid">
+    <Setter Property="Margin" Value="3"/>
+    <Setter Property="Background" Value="{StaticResource MedBrush}" />
   </Style>
 
   <Style TargetType="ComboBox" BasedOn="{StaticResource ControlStyle}">

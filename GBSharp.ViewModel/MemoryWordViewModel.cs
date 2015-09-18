@@ -11,8 +11,8 @@ namespace GBSharp.ViewModel
     private string _addressFormatString;
     private string _valueFormatString;
 
-    private Color _color1 = Color.FromRgb(159, 159, 255);
-    private Color _color2 = Colors.White;
+    private Color _color2 = Color.FromRgb(15, 56, 15);
+    private Color _color1 = Color.FromRgb(155, 188, 15);
 
     public string Address
     {

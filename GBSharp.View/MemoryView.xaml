@@ -10,7 +10,7 @@
   <UserControl.Resources>
     <DataTemplate DataType="{x:Type viewModel:MemoryWordViewModel}">
       <Grid Width="15" Background="{Binding WordColor}">
-        <TextBlock Text="{Binding Value}" Style="{StaticResource NumericText}"></TextBlock>
+        <TextBlock Text="{Binding Value}" Style="{StaticResource NumericText}" Foreground="White"></TextBlock>
       </Grid>
 
     </DataTemplate>
