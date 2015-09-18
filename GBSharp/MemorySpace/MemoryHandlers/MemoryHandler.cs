@@ -7,153 +7,165 @@ using GBSharp.Cartridge;
 
 namespace GBSharp.MemorySpace.MemoryHandlers
 {
-    /// <summary>
-    /// A memory handler contains the logic for the management
-    /// of the memory for a certain catdridge type. Different
-    /// catdridges handle memory mapping and storing in
-    /// different ways, but should be transparent to the CPU.
-    /// </summary>
-    class MemoryHandler
+  /// <summary>
+  /// A memory handler contains the logic for the management
+  /// of the memory for a certain catdridge type. Different
+  /// catdridges handle memory mapping and storing in
+  /// different ways, but should be transparent to the CPU.
+  /// </summary>
+  class MemoryHandler
+  {
+
+    #region ATTRIBUTES
+    protected GameBoy gameboy;
+    protected byte[] memoryData;
+    protected Cartridge.Cartridge cartridge;
+    protected DMA dma;
+    #endregion
+
+    #region CONSTRUCTORS
+    internal MemoryHandler(GameBoy gameboy)
     {
+      this.gameboy = gameboy;
+      this.cartridge = (Cartridge.Cartridge)gameboy.Cartridge;
+      this.memoryData = gameboy.Memory.Data;
+      this.dma = new DMA(this.memoryData);
+    }
+    #endregion
 
-      #region ATTRIBUTES
-      protected GameBoy gameboy;
-      protected byte[] memory;
-      protected Cartridge.Cartridge cartridge;
-      #endregion
+    #region PUBLIC METHODS
 
-      #region CONSTRUCTORS
-      internal MemoryHandler(GameBoy gameboy)
+    internal virtual void UpdateMemoryReference(byte[] memory)
+    {
+      this.memoryData = memory;
+    }
+
+    /// <summary>
+    /// Writes 8 bits value to memory according to
+    /// the correspondant memory management scheme.
+    /// </summary>
+    /// <param name="address">16 bits address.</param>
+    /// <param name="value">8 bits value.</param>
+    internal virtual void Write(ushort address, byte value)
+    {
+      /* [0x0000 - 0x7FFF]: Memory Bank 0, Memory Bank 1 */
+      if (address < 0x8000)
       {
-        this.gameboy = gameboy;
-        this.cartridge = (Cartridge.Cartridge)gameboy.Cartridge;
-        this.memory = gameboy.Memory.Data;
+        // Do nothing, not writeable!
       }
-      #endregion
 
-      #region PUBLIC METHODS
-
-      internal virtual void UpdateMemoryReference(byte[] memory)
+      /* [0x8000 - 0xBFFF]: VRAM, Cartridge RAM */
+      else if (address < 0xC000)
       {
-        this.memory = memory;
+        this.memoryData[address] = value;
       }
 
-      /// <summary>
-      /// Writes 8 bits value to memory according to
-      /// the correspondant memory management scheme.
-      /// </summary>
-      /// <param name="address">16 bits address.</param>
-      /// <param name="value">8 bits value.</param>
-      internal virtual void Write(ushort address, byte value)
+      /* [0xC000 - 0xDFFF]: Internal RAM */
+      else if (address < 0xE000)
       {
-        /* [0x0000 - 0x7FFF]: Memory Bank 0, Memory Bank 1 */
-        if (address < 0x8000) {
-          // Do nothing, not writeable!
-        }
+        this.memoryData[address] = value;
 
-        /* [0x8000 - 0xBFFF]: VRAM, Cartridge RAM */
-        else if (address < 0xC000)
+        // Internal RAM is 8kb, but RAM Echo is only 7.5kb
+        if (address < 0xDE00)
         {
-          this.memory[address] = value;
+          // Copy to RAM Echo, add 8kb offset
+          this.memoryData[address + 0x2000] = value;
         }
+      }
 
-        /* [0xC000 - 0xDFFF]: Internal RAM */
-        else if (address < 0xE000) {
-          this.memory[address] = value;
+      /* [0xE000 - 0xFDFF]: RAM Echo */
+      else if (address < 0xFE00)
+      {
+        this.memoryData[address] = value;
+        this.memoryData[address - 0x2000] = value; // 8kb offset
+      }
 
-          // Internal RAM is 8kb, but RAM Echo is only 7.5kb
-          if (address < 0xDE00)
-          {
-            // Copy to RAM Echo, add 8kb offset
-            this.memory[address + 0x2000] = value;
-          }
-        }
+      /* [0xFE00 - 0xFE9F]: Sprite Attributes Memory (OAM) */
+      else if (address < 0xFEA0)
+      {
+        this.memoryData[address] = value;
+      }
 
-        /* [0xE000 - 0xFDFF]: RAM Echo */
-        else if (address < 0xFE00)
+      /* [0xFEA0 - 0xFEFF]: Empty but unusable for I/O */
+      else if (address < 0xFF00)
+      {
+        this.memoryData[address] = value;
+      }
+
+      /* [0xFF00 - 0xFF4B]: I/O Ports */
+      else if (address < 0xFF4C)
+      {
+        if (address == (ushort)MemoryMappedRegisters.P1)
         {
-          this.memory[address] = value;
-          this.memory[address - 0x2000] = value; // 8kb offset
+          byte p1 = this.memoryData[address];
+          // Only the bits 4 and 5 are writable in P1
+          p1 &= 0xCF; // &= 11001111;
+          p1 |= (byte)(value & 0x30); // |= (value & 00110000); writable mask
+          this.memoryData[address] = p1;
+
+
+          // Request an interrupt if necessary
+          this.gameboy.InterruptController.UpdateKeypadState();
         }
 
-        /* [0xFE00 - 0xFE9F]: Sprite Attributes Memory (OAM) */
-        else if (address < 0xFEA0)
+        // NOTE(Cristian): We start a DMA process.
+        else if (address == (ushort)MemoryMappedRegisters.DMA)
         {
-          this.memory[address] = value;
+          this.dma.Start(value);
         }
-
-        /* [0xFEA0 - 0xFEFF]: Empty but unusable for I/O */
-        else if (address < 0xFF00)
-        {
-          this.memory[address] = value;
-        }
-
-        /* [0xFF00 - 0xFF4B]: I/O Ports */
-        else if (address < 0xFF4C)
-        {
-          if (address == (ushort)MemoryMappedRegisters.P1)
-          {
-            byte p1 = this.memory[address];
-            // Only the bits 4 and 5 are writable in P1
-            p1 &= 0xCF; // &= 11001111;
-            p1 |= (byte)(value & 0x30); // |= (value & 00110000); writable mask
-            this.memory[address] = p1;
-
-            // Request an interrupt if necessary
-            this.gameboy.InterruptController.UpdateKeypadState();
-          }
-          else
-          {
-            this.memory[address] = value;
-          }
-        }
-
-        /* [0xFF4C - 0xFF7F]: Empty but unusable for I/O */
-        else if (address < 0xFF80)
-        {
-          this.memory[address] = value;
-        }
-
-        /* [0xFF80 - 0xFFFE]: Internal RAM */
-        else if (address < 0xFFFE)
-        {
-          this.memory[address] = value;
-        }
-
-        /* [0xFFFF]: INTERRUPT ENABLE */
         else
         {
-          this.memory[address] = value;
+          this.memoryData[address] = value;
         }
+
       }
 
-      /// <summary>
-      /// Writes 16 bits value to memory according to
-      /// the correspondant memory management scheme.
-      /// </summary>
-      /// <param name="address">16 bit address.</param>
-      /// <param name="value">16 bit value.</param>
-      internal virtual void Write(ushort address, ushort value)
+      /* [0xFF4C - 0xFF7F]: Empty but unusable for I/O */
+      else if (address < 0xFF80)
       {
-        Write(address, (byte)(value & 0x00FF));
-        Write(address, (byte)((value >> 8) & 0x00FF));
+        this.memoryData[address] = value;
       }
 
-      /// <summary>
-      /// Reads 8 bit value from memory according to
-      /// the correspondant memory management scheme.
-      /// </summary>
-      /// <param name="address">16 bit address.</param>
-      /// <returns>
-      /// 8 bit value located at the address
-      /// correspondant to the memory management scheme.
-      /// </returns>
-      virtual internal byte Read(ushort address)
+      /* [0xFF80 - 0xFFFE]: Internal RAM */
+      else if (address < 0xFFFE)
       {
-        // I don't care
-        return this.memory[address];
+        this.memoryData[address] = value;
       }
 
-      #endregion
+      /* [0xFFFF]: INTERRUPT ENABLE */
+      else
+      {
+        this.memoryData[address] = value;
+      }
     }
+
+    /// <summary>
+    /// Writes 16 bits value to memory according to
+    /// the correspondant memory management scheme.
+    /// </summary>
+    /// <param name="address">16 bit address.</param>
+    /// <param name="value">16 bit value.</param>
+    internal virtual void Write(ushort address, ushort value)
+    {
+      Write(address, (byte)(value & 0x00FF));
+      Write(address, (byte)((value >> 8) & 0x00FF));
+    }
+
+    /// <summary>
+    /// Reads 8 bit value from memory according to
+    /// the correspondant memory management scheme.
+    /// </summary>
+    /// <param name="address">16 bit address.</param>
+    /// <returns>
+    /// 8 bit value located at the address
+    /// correspondant to the memory management scheme.
+    /// </returns>
+    virtual internal byte Read(ushort address)
+    {
+      // I don't care
+      return this.memoryData[address];
+    }
+
+    #endregion
+  }
 }
