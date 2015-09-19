@@ -138,6 +138,7 @@ namespace GBSharp
     public void Step()
     {
       byte ticks = this.cpu.Step();
+      this.memory.Step(ticks);
       this.display.Step(ticks);
 
       this.tickCounter += ticks;

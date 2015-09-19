@@ -29,15 +29,15 @@ namespace GBSharp.MemorySpace.MemoryHandlers
       this.gameboy = gameboy;
       this.cartridge = (Cartridge.Cartridge)gameboy.Cartridge;
       this.memoryData = gameboy.Memory.Data;
-      this.dma = new DMA(this.memoryData);
     }
     #endregion
 
     #region PUBLIC METHODS
 
-    internal virtual void UpdateMemoryReference(byte[] memory)
+    internal virtual void UpdateMemoryReference(byte[] memory, DMA dma)
     {
       this.memoryData = memory;
+      this.dma = dma;
     }
 
     /// <summary>

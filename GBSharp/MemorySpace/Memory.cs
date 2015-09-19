@@ -14,6 +14,7 @@ namespace GBSharp.MemorySpace
     /// This is what can be addressed.
     /// </summary>
     private byte[] data;
+    private DMA dma;
 
     /// <summary>
     /// The class that is going to handle the memory writes depending on the cartridge type.
@@ -26,6 +27,13 @@ namespace GBSharp.MemorySpace
     internal Memory()
     {
       data = new byte[65536];
+
+      this.dma = new DMA(this.data);
+    }
+
+    internal void Step(byte ticks)
+    {
+      this.dma.Step(ticks);
     }
 
     /// <summary>
@@ -46,7 +54,7 @@ namespace GBSharp.MemorySpace
     internal void SetMemoryHandler(MemoryHandler memoryHandler)
     {
       this.memoryHandler = memoryHandler;
-      this.memoryHandler.UpdateMemoryReference(this.data);
+      this.memoryHandler.UpdateMemoryReference(this.data, this.dma);
     }
 
     /// <summary>
