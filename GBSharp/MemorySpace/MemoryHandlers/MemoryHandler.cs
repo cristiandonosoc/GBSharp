@@ -48,6 +48,20 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     /// <param name="value">8 bits value.</param>
     internal virtual void Write(ushort address, byte value)
     {
+      // During DMA transfer, the CPU can only access the High-RAM block
+      // HRAM: 0xFF80-0xFE9F
+      if (this.dma.Active)
+      {
+        if (address < 0xFF80 || 0xFE9F < address)
+        {
+          // TODO(Cristian): Investigate what the gameboy actually does on this event.
+          //                 Does it just return and the instruction took as much time?
+          //                 Does it crash and it's simply not done?
+          //                 Who knows...
+          throw new InvalidOperationException("Can only access HRAM during DMA transfer");
+        }
+      }
+
       /* [0x0000 - 0x7FFF]: Memory Bank 0, Memory Bank 1 */
       if (address < 0x8000)
       {
@@ -162,6 +176,20 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     /// </returns>
     virtual internal byte Read(ushort address)
     {
+      // During DMA transfer, the CPU can only access the High-RAM block
+      // HRAM: 0xFF80-0xFE9F
+      if (this.dma.Active)
+      {
+        if (address < 0xFF80 || 0xFE9F < address)
+        {
+          // TODO(Cristian): Investigate what the gameboy actually does on this event.
+          //                 Does it just return and the instruction took as much time?
+          //                 Does it crash and it's simply not done?
+          //                 Who knows...
+          throw new InvalidOperationException("Can only access HRAM during DMA transfer");
+        }
+      }
+
       // I don't care
       return this.memoryData[address];
     }

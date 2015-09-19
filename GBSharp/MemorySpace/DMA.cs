@@ -9,7 +9,6 @@ namespace GBSharp.MemorySpace
   class DMA
   {
     byte[] memoryData;
-    bool active = false;
     ushort startAddress;
     ushort currentTickCount;
     // TODO(Cristian): This GB timing, not GBC
@@ -17,12 +16,15 @@ namespace GBSharp.MemorySpace
     static double usPerTick = 0.2384;
     ushort targetTickCount = (ushort)(Math.Ceiling(160 / usPerTick));
 
+    internal bool Active { get; set; }
+
     /// <summary>
     /// Class constructor.
     /// </summary>
     /// <param name="memory">A reference to the virtual memory array.</param>
     internal DMA(byte[] memory)
     {
+      this.Active = false;
       this.memoryData = memory;
     }
 
@@ -39,10 +41,13 @@ namespace GBSharp.MemorySpace
     /// </param>
     internal void Start(byte source)
     {
-      if(active) { return; } // Defensive programming :]
+      if(Active) {
+        throw new InvalidOperationException(
+          "There should not be a DMA start during DMA transfer");
+      }
       startAddress = (ushort)(source << 8);
       currentTickCount = 0;
-      active = true;
+      Active = true;
     }
 
     /// <summary>
@@ -52,7 +57,7 @@ namespace GBSharp.MemorySpace
     /// <param name="ticks">Clock ticks since last update.</param>
     internal void Step(byte ticks)
     {
-      if (!active) { return; }
+      if (!Active) { return; }
       currentTickCount += ticks;
       if(currentTickCount >= targetTickCount)
       {
@@ -61,7 +66,7 @@ namespace GBSharp.MemorySpace
                          this.memoryData, 0xFF00,
                          0xA0);
         currentTickCount = 0;
-        active = false;
+        Active = false;
       }
     }
   }
