@@ -56,7 +56,12 @@ namespace GBSharp.MemorySpace
       currentTickCount += ticks;
       if(currentTickCount >= targetTickCount)
       {
-        throw new NotImplementedException();
+        // We copy the result of the DMA
+        Buffer.BlockCopy(this.memoryData, startAddress,
+                         this.memoryData, 0xFF00,
+                         0xA0);
+        currentTickCount = 0;
+        active = false;
       }
     }
   }
