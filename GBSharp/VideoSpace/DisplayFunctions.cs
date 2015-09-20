@@ -183,9 +183,8 @@ namespace GBSharp.VideoSpace
       return pixels;
     }
 
-    internal static void
-    GetSpriteRowPixels(DisplayDefinition disDef, Memory memory, OAM[] spriteOAMs,
-                       uint[] targetPixels, int row)
+    internal static OAM[]
+    GetScanLineOAMs(OAM[] spriteOAMs, int row)
     {
       // First we sort the oams
       // TODO(Cristian): Find a more efficient way to keep this list sorted by priority
@@ -207,8 +206,24 @@ namespace GBSharp.VideoSpace
           }
       }
 
+      // NOTE(Cristian): This array "resize" will actually allocate a new
+      //                 array and copy the correspondent data, so it's not
+      //                 that magical afterall. (The GB will have to collect the
+      //                 past one anyway).
+      Array.Resize<OAM>(ref scanLineOAMs, scanLineSize);
+
+      return scanLineOAMs;
+    }
+
+    
+    internal static void
+    GetSpriteRowPixels(DisplayDefinition disDef, Memory memory, OAM[] spriteOAMs,
+                       uint[] targetPixels, int row)
+    {
+      OAM[] scanLineOAMs = GetScanLineOAMs(spriteOAMs, row);
+
       // We obtain the pixels we want from it
-      for (int oamIndex = scanLineSize - 1; oamIndex >= 0; --oamIndex)
+      for (int oamIndex = scanLineOAMs.Length - 1; oamIndex >= 0; --oamIndex)
       {
         // TODO(Cristian): Obtain only the tile data we care about
         OAM oam = scanLineOAMs[oamIndex];
@@ -223,20 +238,20 @@ namespace GBSharp.VideoSpace
         uint[] spritePallete = (Utils.UtilFuncs.TestBit(oam.flags, 4) == 0) ?
                                   disDef.spritePallete0 : disDef.spritePallete1;
 
-        uint[] spritePixels = GetPixelsFromTileBytes(spritePallete, 
-                                                     disDef.pixelPerTileX, 
-                                                     tilePixels[2*y], tilePixels[2*y + 1]);
+        uint[] spritePixels = GetPixelsFromTileBytes(spritePallete,
+                                                     disDef.pixelPerTileX,
+                                                     tilePixels[2 * y], tilePixels[2 * y + 1]);
         bool backgroundPriority = Utils.UtilFuncs.TestBit(oam.flags, 7) != 0;
         for (int i = 0; i < 8; ++i)
         {
           int pX = x + i;
-          if(pX >= disDef.screenPixelCountX) { break; }
+          if (pX >= disDef.screenPixelCountX) { break; }
           uint color = spritePixels[i];
           if (color == 0) { continue; } // transparent pixel
 
           // NOTE(Cristian): If the BG priority bit is set, the sprite is hidden
           //                 on every color except tile color 0
-          if(backgroundPriority)
+          if (backgroundPriority)
           {
             if (targetPixels[pX] != disDef.tileColors[0]) { continue; }
           }
