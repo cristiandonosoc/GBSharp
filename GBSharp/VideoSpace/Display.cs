@@ -289,8 +289,12 @@ namespace GBSharp.VideoSpace
       BitmapData windowBmpData = DisplayFunctions.LockBitmap(window,
                                                              ImageLockMode.ReadWrite,
                                                              disDef.pixelFormat);
-      DisplayFunctions.DrawTransparency(disDef, windowBmpData, 0, 0, disDef.screenPixelCountX, WY);
-      DisplayFunctions.DrawTransparency(disDef, windowBmpData, 0, WY, rWX, disDef.screenPixelCountY);
+      DisplayFunctions.DrawTransparency(disDef, windowBmpData, 
+                                        0, 0, 
+                                        disDef.screenPixelCountX, WY);
+      DisplayFunctions.DrawTransparency(disDef, windowBmpData, 
+                                        0, WY, 
+                                        rWX, disDef.screenPixelCountY);
 
       bool drawWindow = Utils.UtilFuncs.TestBit(lcdRegister, 5) != 0;
       for (int row = 0; row < disDef.screenPixelCountY; row++)
@@ -299,7 +303,8 @@ namespace GBSharp.VideoSpace
         {
           // The offset indexes represent that the window is drawn from it's beggining
           // at (WX, WY)
-          uint[] rowPixels = DisplayFunctions.GetRowPixels(disDef, memory, row - WY, LCDBit3, LCDBit4);
+          uint[] rowPixels = DisplayFunctions.GetRowPixels(disDef, memory, row - WY, 
+                                                           LCDBit3, LCDBit4);
           
           // Independent target
           DisplayFunctions.DrawLine(disDef, windowBmpData, rowPixels, 
@@ -326,7 +331,9 @@ namespace GBSharp.VideoSpace
       BitmapData spriteLayerBmp = DisplayFunctions.LockBitmap(spriteLayer,
                                                               ImageLockMode.ReadWrite,
                                                               disDef.pixelFormat);
-      DisplayFunctions.DrawTransparency(disDef, spriteLayerBmp, 0, 0, spriteLayerBmp.Width, spriteLayerBmp.Height);
+      DisplayFunctions.DrawTransparency(disDef, spriteLayerBmp, 
+                                        0, 0, 
+                                        spriteLayerBmp.Width, spriteLayerBmp.Height);
 
       bool drawSprites = Utils.UtilFuncs.TestBit(lcdRegister, 1) != 0;
       for (int row = 0; row < disDef.screenPixelCountY; row++)
@@ -334,14 +341,18 @@ namespace GBSharp.VideoSpace
         // Independent target
         uint[] pixels = new uint[disDef.screenPixelCountX];
         DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels, row);
-        DisplayFunctions.DrawLine(disDef, spriteLayerBmp, pixels, 0, row, 0, disDef.screenPixelCountX);
+        DisplayFunctions.DrawLine(disDef, spriteLayerBmp, pixels, 
+                                  0, row, 
+                                  0, disDef.screenPixelCountX);
 
         // Screen Target
         if(drawSprites)
         {
           uint[] linePixels = DisplayFunctions.GetPixelRowFromBitmap(disDef, screenBmpData, row);
           DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, linePixels, row);
-          DisplayFunctions.DrawLine(disDef, screenBmpData, linePixels, 0, row, 0, disDef.screenPixelCountX);
+          DisplayFunctions.DrawLine(disDef, screenBmpData, linePixels, 
+                                    0, row, 
+                                    0, disDef.screenPixelCountX);
         }
       }
 
@@ -357,6 +368,16 @@ namespace GBSharp.VideoSpace
 
     private const int screenStep = 96905; // Aprox. ~16.6687 ms
     private int screenSum = 0;
+
+    private int totalLineTickCount = 456;
+    private int currentLineTickCount = 456; // We trigger OAM search at the start
+    private int OAMSearchTickCount;
+    private int DataTransferTickCount;
+
+    private OAM[] currentLineOAMs;
+    private byte currentLine = 255; // The first run will fix this numberooh
+
+
     /// <summary>
     /// Simulates the update of the display for a period of time of a given number of ticks.
     /// </summary>
@@ -364,22 +385,41 @@ namespace GBSharp.VideoSpace
     /// A tick is a complete source clock oscillation, ~238.4 ns (2^-22 seconds).</param>
     internal void Step(byte ticks)
     {
-      // Count ticks and then..
-      // OAM Access?
-      // Do Line Magics?
-      // H-Blank?
-      // V-Blank?
+      currentLineTickCount += ticks;
+      
+      // NOTE(Cristian): In the current state, it will *surely* crash
 
-      screenSum += ticks;
-      if(screenSum > screenStep)
+      /*** WE CHECK IF THE DEVICE CHANGE OF MODE ***/
+
+      // This means H-BLANK is over (MODE 00 -> MODE 10)
+      if(currentLineTickCount >= totalLineTickCount)
       {
-        screenSum %= screenStep;
-        UpdateScreen();
-        if (RefreshScreen != null)
+        // We synchronize the line & timings
+        currentLineTickCount -= totalLineTickCount;
+        // TODO(Cristian): Implement the V-BLANK mode change and logic
+        //                 As of now it will increase line 'til forever
+        ++currentLine;
+        if(currentLine >= 144)
         {
-          RefreshScreen();
+          throw new NotImplementedException("Implement V-BLANK");
         }
-      } 
+        this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.LY, currentLine);
+
+
+        // We synchronize the OAMs
+        // TODO(Cristian): Use the currentLineOAMs Length to determine the actual timings!
+        currentLineOAMs = DisplayFunctions.GetScanLineOAMs(this.spriteOAMs, currentLine);
+      }
+      // This means h-blank is starting (MODE 11 -> MODE 00)
+      else if(currentLineTickCount >= DataTransferTickCount)
+      {
+        throw new NotImplementedException("Implement H-BLANK");
+      }
+      // This means data-transfer start (MODE 10 -> MODE 11)
+      else if(currentLineTickCount >= OAMSearchTickCount) 
+      {
+        throw new NotImplementedException("Implement Data Transfer");
+      }
     }
   }
 }

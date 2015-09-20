@@ -220,6 +220,7 @@ namespace GBSharp.VideoSpace
     GetSpriteRowPixels(DisplayDefinition disDef, Memory memory, OAM[] spriteOAMs,
                        uint[] targetPixels, int row)
     {
+      // TODO(Cristian): Separate this step from the call and pass it as an argument
       OAM[] scanLineOAMs = GetScanLineOAMs(spriteOAMs, row);
 
       // We obtain the pixels we want from it
