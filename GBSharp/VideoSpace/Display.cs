@@ -365,17 +365,17 @@ namespace GBSharp.VideoSpace
       screen.UnlockBits(screenBmpData);
     }
 
-
     private const int screenStep = 96905; // Aprox. ~16.6687 ms
     private int screenSum = 0;
 
-    private int totalLineTickCount = 456;
+    private const int totalLineTickCount = 456;
     private int currentLineTickCount = 456; // We trigger OAM search at the start
     private int OAMSearchTickCount;
     private int DataTransferTickCount;
 
     private OAM[] currentLineOAMs;
     private byte currentLine = 255; // The first run will fix this numberooh
+    private bool vBlank = false;
 
 
     /// <summary>
@@ -385,40 +385,68 @@ namespace GBSharp.VideoSpace
     /// A tick is a complete source clock oscillation, ~238.4 ns (2^-22 seconds).</param>
     internal void Step(byte ticks)
     {
+      int prevTickCount = currentLineTickCount;
       currentLineTickCount += ticks;
-      
+      byte STAT = memory.LowLevelRead((ushort)MemoryMappedRegisters.STAT);
+
       // NOTE(Cristian): In the current state, it will *surely* crash
 
       /*** WE CHECK IF THE DEVICE CHANGE OF MODE ***/
 
-      // This means H-BLANK is over (MODE 00 -> MODE 10)
-      if(currentLineTickCount >= totalLineTickCount)
+      // V-BLANK FUNCTION
+      if (vBlank)
       {
-        // We synchronize the line & timings
-        currentLineTickCount -= totalLineTickCount;
-        // TODO(Cristian): Implement the V-BLANK mode change and logic
-        //                 As of now it will increase line 'til forever
-        ++currentLine;
-        if(currentLine >= 144)
+        if ((prevTickCount < totalLineTickCount) && (currentLineTickCount >= totalLineTickCount))
         {
-          throw new NotImplementedException("Implement V-BLANK");
+          ++currentLine;
+          // This means V-BLANK is over (MODE 01 -> MODE 10)
+          if(currentLine >= 154)
+          {
+            currentLine = 0;
+            MemoryFunctions.CalculateSTATModeChange(STAT, DisplayModes.Mode10);
+            throw new NotImplementedException("Implement H-BLANK");
+          }
+          this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.LY, currentLine);
         }
-        this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.LY, currentLine);
-
-
-        // We synchronize the OAMs
-        // TODO(Cristian): Use the currentLineOAMs Length to determine the actual timings!
-        currentLineOAMs = DisplayFunctions.GetScanLineOAMs(this.spriteOAMs, currentLine);
       }
-      // This means h-blank is starting (MODE 11 -> MODE 00)
-      else if(currentLineTickCount >= DataTransferTickCount)
+      // NORMAL DISPLAY FUNCTION
+      else
       {
-        throw new NotImplementedException("Implement H-BLANK");
-      }
-      // This means data-transfer start (MODE 10 -> MODE 11)
-      else if(currentLineTickCount >= OAMSearchTickCount) 
-      {
-        throw new NotImplementedException("Implement Data Transfer");
+        /*** (MODE 00 -> MODE 10)
+             This means H-BLANK is over  ***/
+        if ((prevTickCount < totalLineTickCount) && (currentLineTickCount >= totalLineTickCount))
+        {
+          // We synchronize the line & timings
+          currentLineTickCount -= totalLineTickCount;
+          // TODO(Cristian): Implement the V-BLANK mode change and logic
+          //                 As of now it will increase line 'til forever
+          ++currentLine;
+          if (currentLine >= 144)
+          {
+            MemoryFunctions.CalculateSTATModeChange(STAT, DisplayModes.Mode01);
+            throw new NotImplementedException("Implement V-BLANK");
+          }
+          else
+          {
+            MemoryFunctions.CalculateSTATModeChange(STAT, DisplayModes.Mode10);
+          }
+          this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.LY, currentLine);
+        }
+        /*** (MODE 11 -> MODE 00)
+             This means h-blank is starting  ***/
+        else if ((prevTickCount < DataTransferTickCount) && (currentLineTickCount >= DataTransferTickCount))
+        {
+          MemoryFunctions.CalculateSTATModeChange(STAT, DisplayModes.Mode00);
+          throw new NotImplementedException("Implement H-BLANK");
+        }
+        
+        /*** (MODE 10 -> MODE 11)
+             This means data-transfer start  ***/
+        else if ((prevTickCount < OAMSearchTickCount) && (currentLineTickCount >= OAMSearchTickCount))
+        {
+          MemoryFunctions.CalculateSTATModeChange(STAT, DisplayModes.Mode11);
+          throw new NotImplementedException("Implement Data Transfer");
+        }
       }
     }
   }
