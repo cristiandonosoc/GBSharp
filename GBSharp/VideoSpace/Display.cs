@@ -7,6 +7,28 @@ using System.Drawing.Imaging;
 
 namespace GBSharp.VideoSpace
 {
+
+  internal enum DisplayModes : byte
+  {
+    /// <summary>
+    /// H-Blank. CPU can access all VRAM
+    /// </summary>
+    Mode00,
+    /// <summary>
+    /// V-Blank. CPU can access all VRAM
+    /// </summary>
+    Mode01,
+    /// <summary>
+    /// OAM Search. CPU cannot access OAM Memory (0xFE00-0xFE9F)
+    /// </summary>
+    Mode10,
+    /// <summary>
+    /// Data Transfer. CPU cannot access any VRAM (0x8000-0x9FFF)
+    /// or OAM (0xFE00-0xFE9F)
+    /// </summary>
+    Mode11
+  }
+
   public struct OAM
   {
     internal int index;
