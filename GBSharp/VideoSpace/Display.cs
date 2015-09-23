@@ -400,20 +400,16 @@ namespace GBSharp.VideoSpace
     private const int totalLineTickCount = 456;
     private int currentLineTickCount = totalLineTickCount; // We trigger OAM search at the start
     private int prevTickCount = totalLineTickCount;
-    private int OAMSearchTickCount;
-    private int DataTransferTickCount;
+    private int OAMSearchTickCount = 83;
+    private int DataTransferTickCount = 175;
 
     private OAM[] currentLineOAMs;
-    private byte currentLine = 255; // The first run will fix this numberooh
-    private bool vBlank = false;
+    private byte currentLine = 154; // The first run will fix this numberooh
+    private bool vBlank = true;
     private byte STAT;
     private DisplayModes displayMode;
 
-    private void CalculateSTAT()
-    {
-      this.STAT = memory.LowLevelRead((ushort)MemoryMappedRegisters.STAT);
-      this.displayMode = (DisplayModes)(STAT & 0x03);
-    }
+    private double pixelsPerTick = (double)256 / (double)456;
 
     /// <summary>
     /// Simulates the update of the display for a period of time of a given number of ticks.
@@ -430,15 +426,26 @@ namespace GBSharp.VideoSpace
       // V-BLANK FUNCTION
       if (vBlank)
       {
-        if ((prevTickCount < totalLineTickCount) && (currentLineTickCount >= totalLineTickCount))
+        if ((prevTickCount <= totalLineTickCount) && (currentLineTickCount >= totalLineTickCount))
         {
           ++currentLine;
+          currentLineTickCount -= totalLineTickCount;
+
           // This means V-BLANK is over (MODE 01 -> MODE 10)
           if(currentLine >= 154)
           {
             currentLine = 0;
             CalculateSTATModeChange(DisplayModes.Mode10);
-            // TODO(Cristian): Implement H-BLANK
+
+            // TODO(Cristian): Calculate Start
+            BitmapData bmp = DisplayFunctions.LockBitmap(background,
+                                                         ImageLockMode.WriteOnly,
+                                                         disDef.pixelFormat);
+            DisplayFunctions.DrawTransparency(disDef, bmp, 0, 0, 256, 256);
+
+            background.UnlockBits(bmp);
+            vBlank = false;
+            
           }
           this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.LY, currentLine);
         }
@@ -483,10 +490,42 @@ namespace GBSharp.VideoSpace
         }
       }
 
+
+      DrawPixels();
+      RefreshScreen();
+
       prevTickCount = currentLineTickCount;
       // TODO(Cristian): Make the line render
-      UpdateScreen();
-      RefreshScreen();
+
+    }
+
+    internal void DrawPixels()
+    {
+      BitmapData backgroundBmpData = DisplayFunctions.LockBitmap(background,
+                                                             ImageLockMode.WriteOnly,
+                                                             disDef.pixelFormat);
+      int uintStride = backgroundBmpData.Stride / disDef.bytesPerPixel;
+      unsafe
+      {
+        uint* row = (uint*)backgroundBmpData.Scan0 + currentLine * uintStride;
+
+        int beginX = (int)(pixelsPerTick * prevTickCount);
+        int endX = (int)(pixelsPerTick * currentLineTickCount);
+        if(beginX >= 256 || endX >= 256)
+        {
+          background.UnlockBits(backgroundBmpData);
+          return;
+        }
+
+        byte mode = (byte)displayMode;
+        uint color = 0xFFFFFFFF | (uint)(mode << 16) | (uint)(mode << 12) | (uint)(mode << 4);
+
+        for(int i = beginX; i < endX; ++i)
+        {
+          row[i] = 0xFFFFFFFF;
+        }
+      }
+      background.UnlockBits(backgroundBmpData);
     }
 
     internal void 
@@ -497,6 +536,16 @@ namespace GBSharp.VideoSpace
       // TODO(Cristian): See if we can specify binary masks directy in binary, not hex
       byte result = (byte)((this.STAT | 0x03) & (bMode | 0xFC));
       this.STAT = result;
+      this.displayMode = mode;
     }
+
+    private void CalculateSTAT()
+    {
+      this.STAT = memory.LowLevelRead((ushort)MemoryMappedRegisters.STAT);
+      this.displayMode = (DisplayModes)(STAT & 0x03);
+    }
+
+
+    
   }
 }
