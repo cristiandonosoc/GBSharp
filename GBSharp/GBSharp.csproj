@@ -62,7 +62,6 @@
     <Compile Include="Keypad.cs" />
     <Compile Include="MemorySpace\DMA.cs" />
     <Compile Include="MemorySpace\Memory.cs" />
-    <Compile Include="MemorySpace\MemoryFunctions.cs" />
     <Compile Include="MemorySpace\MemoryHandlers\MemoryHandler.cs" />
     <Compile Include="MemorySpace\MemoryHandlers\MemoryHandlerFactory.cs" />
     <Compile Include="MemorySpace\MemoryHandlers\RomOnlyMemoryHandler.cs" />

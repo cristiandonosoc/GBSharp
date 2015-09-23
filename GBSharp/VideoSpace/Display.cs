@@ -398,14 +398,22 @@ namespace GBSharp.VideoSpace
     private int screenSum = 0;
 
     private const int totalLineTickCount = 456;
-    private int currentLineTickCount = 456; // We trigger OAM search at the start
+    private int currentLineTickCount = totalLineTickCount; // We trigger OAM search at the start
+    private int prevTickCount = totalLineTickCount;
     private int OAMSearchTickCount;
     private int DataTransferTickCount;
 
     private OAM[] currentLineOAMs;
     private byte currentLine = 255; // The first run will fix this numberooh
     private bool vBlank = false;
+    private byte STAT;
+    private DisplayModes displayMode;
 
+    private void CalculateSTAT()
+    {
+      this.STAT = memory.LowLevelRead((ushort)MemoryMappedRegisters.STAT);
+      this.displayMode = (DisplayModes)(STAT & 0x03);
+    }
 
     /// <summary>
     /// Simulates the update of the display for a period of time of a given number of ticks.
@@ -414,11 +422,8 @@ namespace GBSharp.VideoSpace
     /// A tick is a complete source clock oscillation, ~238.4 ns (2^-22 seconds).</param>
     internal void Step(byte ticks)
     {
-      int prevTickCount = currentLineTickCount;
       currentLineTickCount += ticks;
-      byte STAT = memory.LowLevelRead((ushort)MemoryMappedRegisters.STAT);
-
-      // NOTE(Cristian): In the current state, it will *surely* crash
+      CalculateSTAT();
 
       /*** WE CHECK IF THE DEVICE CHANGE OF MODE ***/
 
@@ -432,8 +437,8 @@ namespace GBSharp.VideoSpace
           if(currentLine >= 154)
           {
             currentLine = 0;
-            MemoryFunctions.CalculateSTATModeChange(STAT, DisplayModes.Mode10);
-            throw new NotImplementedException("Implement H-BLANK");
+            CalculateSTATModeChange(DisplayModes.Mode10);
+            // TODO(Cristian): Implement H-BLANK
           }
           this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.LY, currentLine);
         }
@@ -443,7 +448,7 @@ namespace GBSharp.VideoSpace
       {
         /*** (MODE 00 -> MODE 10)
              This means H-BLANK is over  ***/
-        if ((prevTickCount < totalLineTickCount) && (currentLineTickCount >= totalLineTickCount))
+        if ((prevTickCount <= totalLineTickCount) && (currentLineTickCount >= totalLineTickCount))
         {
           // We synchronize the line & timings
           currentLineTickCount -= totalLineTickCount;
@@ -452,31 +457,46 @@ namespace GBSharp.VideoSpace
           ++currentLine;
           if (currentLine >= 144)
           {
-            MemoryFunctions.CalculateSTATModeChange(STAT, DisplayModes.Mode01);
-            throw new NotImplementedException("Implement V-BLANK");
+            CalculateSTATModeChange(DisplayModes.Mode01);
+            // TODO(Cristian): Implement V-BLANK
           }
           else
           {
-            MemoryFunctions.CalculateSTATModeChange(STAT, DisplayModes.Mode10);
+            CalculateSTATModeChange(DisplayModes.Mode10);
           }
           this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.LY, currentLine);
         }
         /*** (MODE 11 -> MODE 00)
              This means h-blank is starting  ***/
-        else if ((prevTickCount < DataTransferTickCount) && (currentLineTickCount >= DataTransferTickCount))
+        else if ((prevTickCount <= DataTransferTickCount) && (currentLineTickCount >= DataTransferTickCount))
         {
-          MemoryFunctions.CalculateSTATModeChange(STAT, DisplayModes.Mode00);
-          throw new NotImplementedException("Implement H-BLANK");
+          CalculateSTATModeChange(DisplayModes.Mode00);
+          // TODO(Cristian): Implement H-BLANK
         }
         
         /*** (MODE 10 -> MODE 11)
              This means data-transfer start  ***/
-        else if ((prevTickCount < OAMSearchTickCount) && (currentLineTickCount >= OAMSearchTickCount))
+        else if ((prevTickCount <= OAMSearchTickCount) && (currentLineTickCount >= OAMSearchTickCount))
         {
-          MemoryFunctions.CalculateSTATModeChange(STAT, DisplayModes.Mode11);
-          throw new NotImplementedException("Implement Data Transfer");
+          CalculateSTATModeChange(DisplayModes.Mode11);
+          // TODO(Cristian): Implement Data Transfer
         }
       }
+
+      prevTickCount = currentLineTickCount;
+      // TODO(Cristian): Make the line render
+      UpdateScreen();
+      RefreshScreen();
+    }
+
+    internal void 
+    CalculateSTATModeChange(DisplayModes mode)
+    {
+      // The mode is in the first 2 bytes, we want them in position 
+      byte bMode = (byte)mode;
+      // TODO(Cristian): See if we can specify binary masks directy in binary, not hex
+      byte result = (byte)((this.STAT | 0x03) & (bMode | 0xFC));
+      this.STAT = result;
     }
   }
 }
