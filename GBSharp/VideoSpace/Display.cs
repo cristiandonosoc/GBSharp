@@ -29,7 +29,7 @@ namespace GBSharp.VideoSpace
     Mode11
   }
 
-  public struct OAM
+  public class OAM
   {
     internal int index;
     internal byte y;
@@ -44,7 +44,7 @@ namespace GBSharp.VideoSpace
 
   }
 
-  internal struct DisplayDefinition
+  internal class DisplayDefinition
   {
     internal int framePixelCountX;
     internal int framePixelCountY;
@@ -76,10 +76,12 @@ namespace GBSharp.VideoSpace
 
     private int spriteCount = 40;
     private OAM[] spriteOAMs;
+
     public OAM GetOAM(int index)
     {
       return spriteOAMs[index];
     }
+
     internal void SetOAM(int index, byte x, byte y, byte spriteCode, byte flags)
     {
       spriteOAMs[index].index = index;
@@ -193,6 +195,12 @@ namespace GBSharp.VideoSpace
       screen = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, disDef.pixelFormat);
       frame = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, disDef.pixelFormat);
 
+      spriteOAMs = new OAM[spriteCount];
+      for(int i = 0; i < spriteOAMs.Length; ++i)
+      {
+        spriteOAMs[i] = new OAM(); 
+      }
+
       // TODO(Cristian): Remove this call eventually, when testing is not needed!
 #if DEBUG
       //UpdateScreen();
@@ -203,7 +211,6 @@ namespace GBSharp.VideoSpace
     {
       // We load the OAMs
       ushort spriteOAMAddress = 0xFE00;
-      spriteOAMs = new OAM[spriteCount];
       for (int i = 0; i < spriteCount; i++)
       {
         SetOAM(i, memory.LowLevelArrayRead(spriteOAMAddress, 4));
