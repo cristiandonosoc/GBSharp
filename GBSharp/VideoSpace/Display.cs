@@ -401,7 +401,7 @@ namespace GBSharp.VideoSpace
     private int currentLineTickCount = totalLineTickCount; // We trigger OAM search at the start
     private int prevTickCount = totalLineTickCount;
     private int OAMSearchTickCount = 83;
-    private int DataTransferTickCount = 175;
+    private int DataTransferTickCount = 83+175;
 
     private OAM[] currentLineOAMs;
     private byte currentLine = 154; // The first run will fix this numberooh
@@ -419,7 +419,6 @@ namespace GBSharp.VideoSpace
     internal void Step(byte ticks)
     {
       currentLineTickCount += ticks;
-      CalculateSTAT();
 
       /*** WE CHECK IF THE DEVICE CHANGE OF MODE ***/
 
@@ -478,6 +477,14 @@ namespace GBSharp.VideoSpace
         else if ((prevTickCount <= DataTransferTickCount) && (currentLineTickCount >= DataTransferTickCount))
         {
           CalculateSTATModeChange(DisplayModes.Mode00);
+          if(currentLine >= 144)
+          {
+            CalculateSTATModeChange(DisplayModes.Mode01);
+            // TODO(Cristian): Implement V-BLANK
+            vBlank = true;
+
+          }
+
           // TODO(Cristian): Implement H-BLANK
         }
         
@@ -492,7 +499,12 @@ namespace GBSharp.VideoSpace
 
 
       DrawPixels();
-      RefreshScreen();
+      // TODO(Cristian): Copying the bitmap to the View is EXTREMELY slow. 
+      //                 We need some kind of direct access.
+      if((currentLine % 5) == 0)
+      {
+        RefreshScreen();
+      }
 
       prevTickCount = currentLineTickCount;
       // TODO(Cristian): Make the line render
@@ -518,11 +530,14 @@ namespace GBSharp.VideoSpace
         }
 
         byte mode = (byte)displayMode;
-        uint color = 0xFFFFFFFF | (uint)(mode << 16) | (uint)(mode << 12) | (uint)(mode << 4);
+        uint color = 0xFFFFFFFF;
+        if(mode == 1) { color = 0xFFFF0000; }
+        if(mode == 2) { color = 0xFF00FF00; }
+        if(mode == 3) { color = 0xFF0000FF; }
 
         for(int i = beginX; i < endX; ++i)
         {
-          row[i] = 0xFFFFFFFF;
+          row[i] = color;
         }
       }
       background.UnlockBits(backgroundBmpData);
