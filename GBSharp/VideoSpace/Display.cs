@@ -397,118 +397,108 @@ namespace GBSharp.VideoSpace
     private const int screenStep = 96905; // Aprox. ~16.6687 ms
     private int screenSum = 0;
 
-    private const int totalLineTickCount = 456;
-    private int currentLineTickCount = totalLineTickCount; // We trigger OAM search at the start
-    private int prevTickCount = totalLineTickCount;
+    private int prevTickCount = 0;
+    private int currentLineTickCount = 0; // We trigger OAM search at the start
+
     private int OAMSearchTickCount = 83;
     private int DataTransferTickCount = 83+175;
+    private const int totalLineTickCount = 456;
 
-    private OAM[] currentLineOAMs;
-    private byte currentLine = 154; // The first run will fix this numberooh
-    private bool vBlank = true;
-    private byte STAT;
+    private byte currentLine = 0; // The first run will fix this numberooh
     private DisplayModes displayMode;
 
     private double pixelsPerTick = (double)256 / (double)456;
+
+    private bool debugFirstRun = true;
 
     /// <summary>
     /// Simulates the update of the display for a period of time of a given number of ticks.
     /// </summary>
     /// <param name="ticks">The number of ticks ellapsed since the last call.
     /// A tick is a complete source clock oscillation, ~238.4 ns (2^-22 seconds).</param>
-    internal void Step(byte ticks)
+    internal void Step(int ticks)
     {
-      currentLineTickCount += ticks;
 
-      /*** WE CHECK IF THE DEVICE CHANGE OF MODE ***/
-
-      // V-BLANK FUNCTION
-      if (vBlank)
+      // TODO(Cristian): Remove this code!!
+      if(debugFirstRun)
       {
-        if ((prevTickCount <= totalLineTickCount) && (currentLineTickCount >= totalLineTickCount))
-        {
-          ++currentLine;
-          currentLineTickCount -= totalLineTickCount;
-
-          // This means V-BLANK is over (MODE 01 -> MODE 10)
-          if(currentLine >= 154)
-          {
-            currentLine = 0;
-            CalculateSTATModeChange(DisplayModes.Mode10);
-
-            // TODO(Cristian): Calculate Start
-            BitmapData bmp = DisplayFunctions.LockBitmap(background,
-                                                         ImageLockMode.WriteOnly,
-                                                         disDef.pixelFormat);
-            DisplayFunctions.DrawTransparency(disDef, bmp, 0, 0, 256, 256);
-
-            background.UnlockBits(bmp);
-            vBlank = false;
-            
-          }
-          this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.LY, currentLine);
-        }
-      }
-      // NORMAL DISPLAY FUNCTION
-      else
-      {
-        /*** (MODE 00 -> MODE 10)
-             This means H-BLANK is over  ***/
-        if ((prevTickCount <= totalLineTickCount) && (currentLineTickCount >= totalLineTickCount))
-        {
-          // We synchronize the line & timings
-          currentLineTickCount -= totalLineTickCount;
-          // TODO(Cristian): Implement the V-BLANK mode change and logic
-          //                 As of now it will increase line 'til forever
-          ++currentLine;
-          if (currentLine >= 144)
-          {
-            CalculateSTATModeChange(DisplayModes.Mode01);
-            // TODO(Cristian): Implement V-BLANK
-          }
-          else
-          {
-            CalculateSTATModeChange(DisplayModes.Mode10);
-          }
-          this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.LY, currentLine);
-        }
-        /*** (MODE 11 -> MODE 00)
-             This means h-blank is starting  ***/
-        else if ((prevTickCount <= DataTransferTickCount) && (currentLineTickCount >= DataTransferTickCount))
-        {
-          CalculateSTATModeChange(DisplayModes.Mode00);
-          if(currentLine >= 144)
-          {
-            CalculateSTATModeChange(DisplayModes.Mode01);
-            // TODO(Cristian): Implement V-BLANK
-            vBlank = true;
-
-          }
-
-          // TODO(Cristian): Implement H-BLANK
-        }
-        
-        /*** (MODE 10 -> MODE 11)
-             This means data-transfer start  ***/
-        else if ((prevTickCount <= OAMSearchTickCount) && (currentLineTickCount >= OAMSearchTickCount))
-        {
-          CalculateSTATModeChange(DisplayModes.Mode11);
-          // TODO(Cristian): Implement Data Transfer
-        }
-      }
-
-
-      DrawPixels();
-      // TODO(Cristian): Copying the bitmap to the View is EXTREMELY slow. 
-      //                 We need some kind of direct access.
-      if((currentLine % 5) == 0)
-      {
-        RefreshScreen();
+        DrawTransparency();
+        debugFirstRun = false;
       }
 
       prevTickCount = currentLineTickCount;
-      // TODO(Cristian): Make the line render
+      /*** WE CHECK IF THE DEVICE CHANGE OF MODE ***/
 
+      /**
+       * We want to advance the display according to the tick count
+       * So the simulation is to decrease the tick count and simulating
+       * the display accordingly
+       **/
+
+      while(ticks > 0)
+      {
+        // We try to advance to the next state
+        // The display behaves differently if it's on V-BLANK or not
+        if(displayMode != DisplayModes.Mode01)
+        {
+          if(displayMode == DisplayModes.Mode10)
+          {
+            if(CalculateTickChange(OAMSearchTickCount, ref ticks))
+            {
+              ChangeDisplayMode(DisplayModes.Mode11);
+            }
+          }
+          else if(displayMode == DisplayModes.Mode11)
+          {
+            if(CalculateTickChange(DataTransferTickCount, ref ticks))
+            {
+              ChangeDisplayMode(DisplayModes.Mode00);
+            }
+          }
+          else if(displayMode == DisplayModes.Mode00)
+          {
+            if(CalculateTickChange(totalLineTickCount, ref ticks))
+            {
+              // We start a new line
+              currentLineTickCount = 0;
+              ++currentLine;
+              if(currentLine < 144) // We continue on normal mode
+              {
+                ChangeDisplayMode(DisplayModes.Mode10);
+              }
+              else // V-BLANK
+              {
+                ChangeDisplayMode(DisplayModes.Mode01);
+              }
+
+              RefreshScreen();
+            }
+          }
+        }
+        else // V-BLANK
+        {
+          // TODO(Cristian): Find out if the display triggers H-BLANK
+          //                 events during V-BLANK
+          if (CalculateTickChange(totalLineTickCount, ref ticks))
+          {
+            currentLineTickCount = 0;
+            ++currentLine;
+            if (currentLine >= 154)
+            {
+              ChangeDisplayMode(DisplayModes.Mode10);
+              currentLine = 0;
+              DrawTransparency();
+            }
+
+            RefreshScreen();
+          }
+        }
+      }
+
+      // TODO(Cristian): Copying the bitmap to the View is EXTREMELY slow. 
+      //                 We (will probably) need some kind of direct access
+      //                 if we want to achieve 60 FPS
+      DrawPixels();
     }
 
     internal void DrawPixels()
@@ -543,24 +533,49 @@ namespace GBSharp.VideoSpace
       background.UnlockBits(backgroundBmpData);
     }
 
-    internal void 
-    CalculateSTATModeChange(DisplayModes mode)
+    private void DrawTransparency()
     {
-      // The mode is in the first 2 bytes, we want them in position 
-      byte bMode = (byte)mode;
-      // TODO(Cristian): See if we can specify binary masks directy in binary, not hex
-      byte result = (byte)((this.STAT | 0x03) & (bMode | 0xFC));
-      this.STAT = result;
-      this.displayMode = mode;
+      BitmapData bmp = DisplayFunctions.LockBitmap(background,
+                                                   ImageLockMode.WriteOnly,
+                                                   disDef.pixelFormat);
+      DisplayFunctions.DrawTransparency(disDef, bmp,
+                                        0, 0,
+                                        bmp.Width, bmp.Height);
+      background.UnlockBits(bmp);
+
     }
 
-    private void CalculateSTAT()
+    // Returns whether the tick count is enough to get to the target
+    private bool CalculateTickChange(int target, ref int ticks)
     {
-      this.STAT = memory.LowLevelRead((ushort)MemoryMappedRegisters.STAT);
-      this.displayMode = (DisplayModes)(STAT & 0x03);
+      if (currentLineTickCount > target)
+      {
+        throw new ArgumentOutOfRangeException("currentLineTickCount in invalid state");
+      }
+
+      int remainder = target - currentLineTickCount;
+      if(ticks >= remainder)
+      {
+        // We got to the target
+        currentLineTickCount += remainder;
+        ticks -= remainder;
+        return true;
+      }
+      else
+      {
+        currentLineTickCount += ticks;
+        ticks = 0;
+        return false;
+      }
     }
 
+    private void ChangeDisplayMode(DisplayModes newDisplayMode)
+    {
+      this.displayMode = newDisplayMode;
 
+      // TODO(Cristian): Update STAT register
+      // TODO(Cristian): Call InterruptHandler when it corresponds
+    }
     
   }
 }
