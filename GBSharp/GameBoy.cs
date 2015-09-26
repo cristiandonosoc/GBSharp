@@ -137,7 +137,6 @@ namespace GBSharp
     /// </summary>
     public void Step()
     {
-      if (!this.run) { return; }
       byte ticks = this.cpu.Step();
       this.memory.Step(ticks);
       this.display.Step(ticks);
@@ -197,6 +196,7 @@ namespace GBSharp
       {
         this.manualResetEvent.Wait(); // Wait for pauses.
         this.Step();
+        NotifyStepFinished();
 
         // Check timing issues
         if (this.stepCounter % stepCheck == 0)
