@@ -573,7 +573,11 @@ namespace GBSharp.VideoSpace
     {
       this.displayMode = newDisplayMode;
 
-      // TODO(Cristian): Update STAT register
+      byte STAT = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.STAT);
+      // We strip the last 2 bits of STAT and replace them with the mode
+      STAT = (byte)((STAT & 0xFC) | (byte)this.displayMode);
+      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.STAT, STAT);
+
       // TODO(Cristian): Call InterruptHandler when it corresponds
     }
     
