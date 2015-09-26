@@ -426,7 +426,6 @@ namespace GBSharp.VideoSpace
     /// A tick is a complete source clock oscillation, ~238.4 ns (2^-22 seconds).</param>
     internal void Step(int ticks)
     {
-
       // TODO(Cristian): Remove this code!!
       if(debugFirstRun)
       {
@@ -434,15 +433,14 @@ namespace GBSharp.VideoSpace
         debugFirstRun = false;
       }
 
-      prevTickCount = currentLineTickCount;
-      /*** WE CHECK IF THE DEVICE CHANGE OF MODE ***/
+      // TODO(Cristian): Check that the LY=LYC is correct when the display starts
 
       /**
        * We want to advance the display according to the tick count
        * So the simulation is to decrease the tick count and simulating
        * the display accordingly
        **/
-
+      prevTickCount = currentLineTickCount;
       while(ticks > 0)
       {
         // We try to advance to the next state
@@ -468,8 +466,7 @@ namespace GBSharp.VideoSpace
             if(CalculateTickChange(totalLineTickCount, ref ticks))
             {
               // We start a new line
-              currentLineTickCount = 0;
-              ++currentLine;
+              ChangeDisplayLine();
               if(currentLine < 144) // We continue on normal mode
               {
                 ChangeDisplayMode(DisplayModes.Mode10);
@@ -489,8 +486,7 @@ namespace GBSharp.VideoSpace
           //                 events during V-BLANK
           if (CalculateTickChange(totalLineTickCount, ref ticks))
           {
-            currentLineTickCount = 0;
-            ++currentLine;
+            ChangeDisplayLine();
             if (currentLine >= 154)
             {
               ChangeDisplayMode(DisplayModes.Mode10);
@@ -511,6 +507,8 @@ namespace GBSharp.VideoSpace
 
     internal void DrawPixels()
     {
+      //  TODO(Cristian): Remember that the WY state changes over frame (after V-BLANK)
+      //                  and not between lines (as changes with WX)
       BitmapData backgroundBmpData = DisplayFunctions.LockBitmap(background,
                                                              ImageLockMode.WriteOnly,
                                                              disDef.pixelFormat);
@@ -598,6 +596,35 @@ namespace GBSharp.VideoSpace
       {
         interruptController.SetInterrupt(Interrupts.LCDCStatus);
       }
+    }
+
+    private void ChangeDisplayLine()
+    {
+      currentLineTickCount = 0;
+      ++currentLine;
+
+      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.LY, currentLine);
+      byte LYC = this.memory.Read((ushort)MemoryMappedRegisters.LYC);
+
+      byte STAT = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.STAT);
+      // We update the STAT corresponding to the LY=LYC coincidence
+      if (LYC == currentLine)
+      {
+        byte STATMask = 0x04; // Bit 2 is set 1
+        STAT = (byte)(STAT | STATMask);
+
+        if((STAT & 0x40) == 1) // We check if Bit 6 is enabled
+        {
+          interruptController.SetInterrupt(Interrupts.LCDCStatus);
+        }
+      }
+      else
+      {
+        byte STATMask = 0xFB; // Bit 2 is set to 0 
+        STAT = (byte)(STAT & STATMask);
+      }
+
+      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.STAT, STAT);
     }
   }
 }
