@@ -417,7 +417,7 @@ namespace GBSharp.VideoSpace
 
     private double pixelsPerTick = (double)256 / (double)456;
 
-    private bool debugFirstRun = true;
+    private bool firstRun = true;
 
     /// <summary>
     /// Simulates the update of the display for a period of time of a given number of ticks.
@@ -426,11 +426,15 @@ namespace GBSharp.VideoSpace
     /// A tick is a complete source clock oscillation, ~238.4 ns (2^-22 seconds).</param>
     internal void Step(int ticks)
     {
-      // TODO(Cristian): Remove this code!!
-      if(debugFirstRun)
+      if(firstRun)
       {
+        // NOTE(Cristian): We update the registers to reflect the current 
+        //                 state of the display
+        UpdateDisplayLineInfo(false);
+
+        // TODO(Cristian): Remove this draw!!
         DrawTransparency();
-        debugFirstRun = false;
+        firstRun = false;
       }
 
       // TODO(Cristian): Check that the LY=LYC is correct when the display starts
@@ -466,7 +470,7 @@ namespace GBSharp.VideoSpace
             if(CalculateTickChange(totalLineTickCount, ref ticks))
             {
               // We start a new line
-              ChangeDisplayLine();
+              UpdateDisplayLineInfo();
               if(currentLine < 144) // We continue on normal mode
               {
                 ChangeDisplayMode(DisplayModes.Mode10);
@@ -486,7 +490,7 @@ namespace GBSharp.VideoSpace
           //                 events during V-BLANK
           if (CalculateTickChange(totalLineTickCount, ref ticks))
           {
-            ChangeDisplayLine();
+            UpdateDisplayLineInfo();
             if (currentLine >= 154)
             {
               ChangeDisplayMode(DisplayModes.Mode10);
@@ -598,10 +602,22 @@ namespace GBSharp.VideoSpace
       }
     }
 
-    private void ChangeDisplayLine()
+    /// <summary>
+    /// Updates the line variables of the Display and gameboy's registers.
+    /// Triggers the LYC=LY interrupt when in corresponds.
+    /// </summary>
+    /// <param name="updateLineCount">
+    /// Whether update the variables.
+    /// This is used when we want only to update the gameboy's registers
+    /// without changing the line count (for example, when the display starts).
+    /// </param>
+    private void UpdateDisplayLineInfo(bool updateLineCount = true)
     {
-      currentLineTickCount = 0;
-      ++currentLine;
+      if (updateLineCount)
+      {
+        currentLineTickCount = 0;
+        ++currentLine;
+      }
 
       this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.LY, currentLine);
       byte LYC = this.memory.Read((ushort)MemoryMappedRegisters.LYC);
