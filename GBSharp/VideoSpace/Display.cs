@@ -70,6 +70,7 @@ namespace GBSharp.VideoSpace
   {
     public event Action RefreshScreen;
 
+    private InterruptController interruptController;
     private Memory memory;
 
     private DisplayDefinition disDef;
@@ -149,56 +150,63 @@ namespace GBSharp.VideoSpace
     /// <param name="Memory">A reference to the memory.</param>
     public Display(InterruptController interruptController, Memory memory)
     {
-      disDef = new DisplayDefinition();
-      disDef.framePixelCountX = 256;
-      disDef.framePixelCountY = 256;
-      disDef.screenPixelCountX = 160;
-      disDef.screenPixelCountY = 144;
-      disDef.frameTileCountX = 32;
-      disDef.frameTileCountY = 32;
-      disDef.screenTileCountX = 20;
-      disDef.screenTileCountY = 18;
-      disDef.bytesPerTile = 16;
-      disDef.pixelPerTileX = 8;
-      disDef.pixelPerTileY = 8;
-      disDef.bytesPerPixel = 4;
-      disDef.pixelFormat = PixelFormat.Format32bppArgb;
-      // TODO(Cristian): Output the color to the view for custom setting
-      disDef.tileColors = new uint[4]
-      {
-        0xFFFFFFFF,
-        0xFFBBBBBB,
-        0xFF666666,
-        0xFF000000
-      };
-      disDef.tilePallete = new uint[4];
-
-      // TODO(Cristian): Output the color to the view for custom setting
-      disDef.spriteColors = new uint[4]
-      {
-        0xFFFFFFFF,
-        0xFFBBBBBB,
-        0xFF666666,
-        0xFF000000
-      };
-      disDef.spritePallete0 = new uint[4];
-      disDef.spritePallete1 = new uint[4];
-
+      this.interruptController = interruptController;
       this.memory = memory;
 
+      this.disDef = new DisplayDefinition();
+      this.disDef.framePixelCountX = 256;
+      this.disDef.framePixelCountY = 256;
+      this.disDef.screenPixelCountX = 160;
+      this.disDef.screenPixelCountY = 144;
+      this.disDef.frameTileCountX = 32;
+      this.disDef.frameTileCountY = 32;
+      this.disDef.screenTileCountX = 20;
+      this.disDef.screenTileCountY = 18;
+      this.disDef.bytesPerTile = 16;
+      this.disDef.pixelPerTileX = 8;
+      this.disDef.pixelPerTileY = 8;
+      this.disDef.bytesPerPixel = 4;
+      this.disDef.pixelFormat = PixelFormat.Format32bppArgb;
+      // TODO(Cristian): Output the color to the view for custom setting
+      this.disDef.tileColors = new uint[4]
+      {
+        0xFFFFFFFF,
+        0xFFBBBBBB,
+        0xFF666666,
+        0xFF000000
+      };
+      this.disDef.tilePallete = new uint[4];
+
+      // TODO(Cristian): Output the color to the view for custom setting
+      this.disDef.spriteColors = new uint[4]
+      {
+        0xFFFFFFFF,
+        0xFFBBBBBB,
+        0xFF666666,
+        0xFF000000
+      };
+      this.disDef.spritePallete0 = new uint[4];
+      this.disDef.spritePallete1 = new uint[4];
+
+
       // We create the target bitmaps
-      background = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, disDef.pixelFormat);
-      window = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, disDef.pixelFormat);
-      sprite = new Bitmap(8, 8, disDef.pixelFormat);
-      spriteLayer = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, disDef.pixelFormat);
+      this.background = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, 
+                                   disDef.pixelFormat);
+      this.window = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
+                               disDef.pixelFormat);
+      this.sprite = new Bitmap(8, 8, disDef.pixelFormat);
+      this.spriteLayer = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
+                                    disDef.pixelFormat);
 
-      screen = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, disDef.pixelFormat);
-      frame = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, disDef.pixelFormat);
+      this.screen = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
+                               disDef.pixelFormat);
+      this.frame = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, 
+                              disDef.pixelFormat);
 
-      spriteOAMs = new OAM[spriteCount];
+      this.spriteOAMs = new OAM[spriteCount];
       for(int i = 0; i < spriteOAMs.Length; ++i)
       {
-        spriteOAMs[i] = new OAM(); 
+        this.spriteOAMs[i] = new OAM(); 
       }
 
       // TODO(Cristian): Remove this call eventually, when testing is not needed!
@@ -572,14 +580,24 @@ namespace GBSharp.VideoSpace
     private void ChangeDisplayMode(DisplayModes newDisplayMode)
     {
       this.displayMode = newDisplayMode;
+      byte byteDisplayMode = (byte)this.displayMode;
 
       byte STAT = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.STAT);
       // We strip the last 2 bits of STAT and replace them with the mode
-      STAT = (byte)((STAT & 0xFC) | (byte)this.displayMode);
+      STAT = (byte)((STAT & 0xFC) | byteDisplayMode);
       this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.STAT, STAT);
 
-      // TODO(Cristian): Call InterruptHandler when it corresponds
+      // NOTE(Cristian): The bits that determine which interrupt is enabled
+      //                 are ordered in the same numbers that the mode numbering
+      //                 So basically we can shift by the mode numbering to get
+      //                 the corresponding bit for the current mode being changed.
+      //                 Bit 5: Mode 10
+      // 								 Bit 4: Mode 01
+      // 								 Bit 3: Mode 00
+      if (((STAT >> (byteDisplayMode + 3)) & 1) == 1)
+      {
+        interruptController.SetInterrupt(Interrupts.LCDCStatus);
+      }
     }
-    
   }
 }
