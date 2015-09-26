@@ -48,7 +48,11 @@ namespace GBSharp.CPUSpace
     private Dictionary<byte, string> instructionNames;
     private Dictionary<byte, string> CBinstructionNames;
 
+    private Dictionary<byte, string> instructionDescriptions;
+    private Dictionary<byte, string> CBinstructionDescriptions;
+
     private string _instructionName = "";
+    private string _instructionDescription = "";
 
     private void CreateInstructionLambdas()
     {
@@ -2844,6 +2848,9 @@ namespace GBSharp.CPUSpace
       instructionNames = CPUOpcodeNames.Setup();
       CBinstructionNames = CPUCBOpcodeNames.Setup();
 
+      instructionDescriptions = CPUInstructionDescriptions.Setup();
+      CBinstructionDescriptions = CPUCBInstructionDescriptions.Setup();
+
       this.memory = memory;
       this.interruptController = new InterruptController(this.memory);
 
@@ -2930,6 +2937,7 @@ namespace GBSharp.CPUSpace
         instruction = this.instructionLambdas[(byte)opcode];
         ticks = this.instructionClocks[(byte)opcode];
         _instructionName = instructionNames[(byte)opcode];
+        _instructionDescription = instructionDescriptions[(byte)opcode];
 
         // Disable interrupts during interrupt handling and clear the current one
         this.interruptController.InterruptMasterEnable = false;
@@ -2964,7 +2972,7 @@ namespace GBSharp.CPUSpace
           instruction = this.instructionLambdas[(byte)opcode];
           ticks = this.instructionClocks[(byte)opcode];
           _instructionName = instructionNames[(byte)opcode];
-
+          _instructionDescription = instructionDescriptions[(byte)opcode];
         }
         else
         {
@@ -2977,6 +2985,7 @@ namespace GBSharp.CPUSpace
           instruction = this.CBInstructionLambdas[(byte)opcode];
           ticks = this.CBInstructionClocks[(byte)opcode];
           _instructionName = CBinstructionNames[(byte)opcode];
+          _instructionDescription = CBinstructionDescriptions[(byte)opcode];
         }
       }
 
@@ -3002,6 +3011,12 @@ namespace GBSharp.CPUSpace
     public string GetCurrentInstructionName()
     {
       return _instructionName;
+    }
+
+    public string GetCurrentInstructionDescription()
+    {
+      return _instructionDescription;
+
     }
 
     /// <summary>

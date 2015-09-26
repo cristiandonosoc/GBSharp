@@ -53,7 +53,7 @@
       _gameBoyController = new GameBoyContollerViewModel(_gameBoy, fileDialogFactory);
       _gameBoyController.OnFileLoaded += FileLoadedHandler;
       _memory = new MemoryViewModel(_gameBoy.Memory, "Memory View");
-      _cpu = new CPUViewModel(_gameBoy.CPU, _gameBoy.Display, _dispatcher);
+      _cpu = new CPUViewModel(_gameBoy, _dispatcher);
       _interrupt = new InterruptViewModel(_gameBoy, _dispatcher);
       _display = new DisplayViewModel(_gameBoy.Display, _gameBoy.Memory, _dispatcher);
       _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher, _display);

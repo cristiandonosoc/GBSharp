@@ -6,10 +6,12 @@ namespace GBSharp.ViewModel
   public class CPUViewModel : ViewModelBase, IDisposable
   {
     private ICPU _cpu;
-    private readonly IDisplay _display;
+    private IGameBoy _gameBoy;
     private readonly IDispatcher _dispatcher;
 
     private string _registerPC;
+    private string _registerPCOpcode;
+    private string _registerPCDescription;
     private string _registerSP;
     private string _registerA;
     private string _registerB;
@@ -128,6 +130,32 @@ namespace GBSharp.ViewModel
       }
     }
 
+    public string RegisterPCOpcode
+    {
+      get { return _registerPCOpcode; }
+      set
+      {
+        if(_registerPCOpcode != value )
+        {
+          _registerPCOpcode = value;
+          OnPropertyChanged(() => RegisterPCOpcode);
+        }
+      }
+    }
+
+    public string RegisterPCDescription
+    {
+      get { return _registerPCDescription; }
+      set
+      {
+        if(_registerPCDescription != value )
+        {
+          _registerPCDescription= value;
+          OnPropertyChanged(() => RegisterPCDescription);
+        }
+      }
+    }
+
     public string RegisterSP
     {
       get { return _registerSP; }
@@ -203,12 +231,14 @@ namespace GBSharp.ViewModel
       get { return new DelegateCommand(CopyToDomain); }
     }
 
-    public CPUViewModel(ICPU cpu, IDisplay display, IDispatcher dispatcher)
+    public CPUViewModel(IGameBoy gameBoy, IDispatcher dispatcher)
     {
-      _cpu = cpu;
-      _display = display;
+      _gameBoy = gameBoy;
+      _cpu = _gameBoy.CPU;
       _dispatcher = dispatcher;
-      _display.RefreshScreen += OnRefreshScreen;
+
+      //_display.RefreshScreen += OnRefreshScreen;
+      _gameBoy.StepFinished += OnRefreshScreen;
     }
 
     private void OnRefreshScreen()
@@ -219,6 +249,8 @@ namespace GBSharp.ViewModel
     private void CopyFromDomain()
     {
       RegisterPC = "0x" + _cpu.Registers.PC.ToString("x2");
+      RegisterPCOpcode = _cpu.GetCurrentInstructionName();
+      RegisterPCDescription = _cpu.GetCurrentInstructionDescription();
       RegisterSP = "0x" + _cpu.Registers.SP.ToString("x2");
 
       RegisterA = "0x" + _cpu.Registers.A.ToString("x2");
@@ -242,7 +274,8 @@ namespace GBSharp.ViewModel
 
     public void Dispose()
     {
-      _display.RefreshScreen -= OnRefreshScreen;
+      //_display.RefreshScreen -= OnRefreshScreen;
+      _gameBoy.StepFinished -= OnRefreshScreen;
     }
   }
 }

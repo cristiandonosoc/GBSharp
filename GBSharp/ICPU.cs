@@ -7,6 +7,7 @@ namespace GBSharp
     CPURegisters Registers { get; }
     byte Step();
     string GetCurrentInstructionName();
+    string GetCurrentInstructionDescription();
 
     bool InterruptMasterEnable { get; }
   }

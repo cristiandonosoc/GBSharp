@@ -181,7 +181,8 @@ namespace GBSharp.ViewModel
       _dispatcher = dispatcher;
       _gameBoy = gameBoy;
       _display = gameBoy.Display;
-      _display.RefreshScreen += OnRefreshScreen;
+      //_display.RefreshScreen += OnRefreshScreen;
+      _gameBoy.StepFinished += OnRefreshScreen;
     }
 
     private void OnRefreshScreen()
@@ -215,7 +216,8 @@ namespace GBSharp.ViewModel
 
     public void Dispose()
     {
-      _display.RefreshScreen -= OnRefreshScreen;
+      //_display.RefreshScreen -= OnRefreshScreen;
+      _gameBoy.StepFinished -= OnRefreshScreen;
     }
   }
 }
