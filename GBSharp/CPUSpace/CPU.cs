@@ -54,6 +54,18 @@ namespace GBSharp.CPUSpace
     private string _instructionName = "";
     private string _instructionDescription = "";
 
+    /// <summary>
+    /// The current operands (extra bytes) used by the current instruction
+    /// running in the CPU. This is (for now) mainly used to display this
+    /// information in the CPU view
+    /// NOTE is nullable so we can signify less operands
+    /// </summary>
+    private byte?[] currentOperands;
+    public byte?[] CurrentOperands
+    {
+      get { return currentOperands; }
+    }
+
     private void CreateInstructionLambdas()
     {
 #warning TODO: Conditional JUMP and CALL instructions should increment the clock if the condition is met.
@@ -2851,6 +2863,9 @@ namespace GBSharp.CPUSpace
       instructionDescriptions = CPUInstructionDescriptions.Setup();
       CBinstructionDescriptions = CPUCBInstructionDescriptions.Setup();
 
+      // NOTE(Cristian): The longest instruction is 3 bytes long (therefore 2 operands)
+      currentOperands = new byte?[2];
+
       this.memory = memory;
       this.interruptController = new InterruptController(this.memory);
 
@@ -2926,6 +2941,10 @@ namespace GBSharp.CPUSpace
       ushort initialClock = this.clock;
       ushort literal = 0;
       ushort opcode = 0x00; // NOP
+      
+      // We assume empty operands when we begin
+      currentOperands[0] = null;
+      currentOperands[1] = null;
 
       Interrupts? interrupt = InterruptRequired();
       if (interrupt != null)
@@ -2960,13 +2979,21 @@ namespace GBSharp.CPUSpace
           if (instructionLength == 2)
           {
             // 8 bit literal
-            literal = this.memory.Read((ushort)(this.registers.PC + 1));
+            byte op1 = this.memory.Read((ushort)(this.registers.PC + 1));
+            currentOperands[0] = op1;
+            literal = op1;
           }
           else if (instructionLength == 3)
           {
             // 16 bit literal, little endian
-            literal = this.memory.Read((ushort)(this.registers.PC + 1));
-            literal += (ushort)(this.memory.Read((ushort)(this.registers.PC + 2)) << 8);
+            byte op1 = this.memory.Read((ushort)(this.registers.PC + 2));
+            byte op2 = this.memory.Read((ushort)(this.registers.PC + 1));
+
+            currentOperands[0] = op1;
+            currentOperands[1] = op2;
+
+            literal = op2;
+            literal += (ushort)(op1 << 8);
           }
 
           instruction = this.instructionLambdas[(byte)opcode];

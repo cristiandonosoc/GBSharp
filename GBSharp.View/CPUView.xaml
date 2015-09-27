@@ -24,18 +24,27 @@
           <RowDefinition Height="Auto"/>
           <RowDefinition Height="Auto"/>
           <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto"></ColumnDefinition>
           <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
 
-        <TextBlock Text="Register PC:" Margin="2"/>
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="Register PC:" Margin="2"/>
         <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding RegisterPC}" Margin="3,1,115,3"/>
         <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding RegisterPCOpcode}" Margin="116,1,2,3"/>
-        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding RegisterPCDescription}" />
-        <TextBlock Grid.Row="2" Grid.Column="0" Text="Register SP:" Margin="2"/>
-        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding RegisterSP}" Margin="2"/>
+
+        <TextBlock Grid.Row="1" Grid.Column="0" Text="PC Description:" Margin="2"/>
+        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding RegisterPCDescription}" Margin="2" />
+
+        
+        <TextBlock Grid.Row="2" Grid.Column="0" Text="PC Operands:" Margin="2"/>
+        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding RegisterPCOperand1}" Margin="3,1,115,3"/>
+        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding RegisterPCOperand2}" Margin="116,1,2,3"/>
+
+        <TextBlock Grid.Row="3" Grid.Column="0" Text="Register SP:" Margin="2"/>
+        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding RegisterSP}" Margin="2"/>
       </Grid>
     </Grid>
     <Grid Margin="5" Grid.Row="1">
