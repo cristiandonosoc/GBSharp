@@ -19,7 +19,7 @@
     <Setter Property="Background" Value="{StaticResource LightBrush}" />
   </Style>
   <Style x:Key="MainContentGrid" TargetType="Grid">
-    <Setter Property="Background" Value="{StaticResource DarkBrush}" />
+    <Setter Property="Background" Value="{StaticResource LightBrush}" />
   </Style>
   <Style TargetType="Grid" x:Key="SectionGrid">
     <Setter Property="Margin" Value="3"/>
