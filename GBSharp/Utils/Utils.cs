@@ -133,5 +133,15 @@ namespace GBSharp.Utils
 
       unchecked { registers.A = (byte)res; } // unchecked so it wraps
     }
+
+    public static int
+    Interpolate(int minValue, int maxValue, int minIndex, int maxIndex, int value)
+    {
+      double m = (double)(maxValue - minValue) / (double)(maxIndex - minIndex);
+      double n = maxValue - maxIndex * m;
+
+      double result = m * value + n;
+      return (int)result;
+    }
   }
 }

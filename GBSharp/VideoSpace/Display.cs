@@ -7,7 +7,29 @@ using System.Drawing.Imaging;
 
 namespace GBSharp.VideoSpace
 {
-  public struct OAM
+
+  internal enum DisplayModes : byte
+  {
+    /// <summary>
+    /// H-Blank. CPU can access all VRAM
+    /// </summary>
+    Mode00,
+    /// <summary>
+    /// V-Blank. CPU can access all VRAM
+    /// </summary>
+    Mode01,
+    /// <summary>
+    /// OAM Search. CPU cannot access OAM Memory (0xFE00-0xFE9F)
+    /// </summary>
+    Mode10,
+    /// <summary>
+    /// Data Transfer. CPU cannot access any VRAM (0x8000-0x9FFF)
+    /// or OAM (0xFE00-0xFE9F)
+    /// </summary>
+    Mode11
+  }
+
+  public class OAM
   {
     internal int index;
     internal byte y;
@@ -22,7 +44,7 @@ namespace GBSharp.VideoSpace
 
   }
 
-  internal struct DisplayDefinition
+  internal class DisplayDefinition
   {
     internal int framePixelCountX;
     internal int framePixelCountY;
@@ -48,16 +70,19 @@ namespace GBSharp.VideoSpace
   {
     public event Action RefreshScreen;
 
+    private InterruptController interruptController;
     private Memory memory;
 
     private DisplayDefinition disDef;
 
     private int spriteCount = 40;
     private OAM[] spriteOAMs;
+
     public OAM GetOAM(int index)
     {
       return spriteOAMs[index];
     }
+
     internal void SetOAM(int index, byte x, byte y, byte spriteCode, byte flags)
     {
       spriteOAMs[index].index = index;
@@ -125,51 +150,64 @@ namespace GBSharp.VideoSpace
     /// <param name="Memory">A reference to the memory.</param>
     public Display(InterruptController interruptController, Memory memory)
     {
-      disDef = new DisplayDefinition();
-      disDef.framePixelCountX = 256;
-      disDef.framePixelCountY = 256;
-      disDef.screenPixelCountX = 160;
-      disDef.screenPixelCountY = 144;
-      disDef.frameTileCountX = 32;
-      disDef.frameTileCountY = 32;
-      disDef.screenTileCountX = 20;
-      disDef.screenTileCountY = 18;
-      disDef.bytesPerTile = 16;
-      disDef.pixelPerTileX = 8;
-      disDef.pixelPerTileY = 8;
-      disDef.bytesPerPixel = 4;
-      disDef.pixelFormat = PixelFormat.Format32bppArgb;
-      // TODO(Cristian): Output the color to the view for custom setting
-      disDef.tileColors = new uint[4]
-      {
-        0xFFFFFFFF,
-        0xFFBBBBBB,
-        0xFF666666,
-        0xFF000000
-      };
-      disDef.tilePallete = new uint[4];
-
-      // TODO(Cristian): Output the color to the view for custom setting
-      disDef.spriteColors = new uint[4]
-      {
-        0xFFFFFFFF,
-        0xFFBBBBBB,
-        0xFF666666,
-        0xFF000000
-      };
-      disDef.spritePallete0 = new uint[4];
-      disDef.spritePallete1 = new uint[4];
-
+      this.interruptController = interruptController;
       this.memory = memory;
 
-      // We create the target bitmaps
-      background = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, disDef.pixelFormat);
-      window = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, disDef.pixelFormat);
-      sprite = new Bitmap(8, 8, disDef.pixelFormat);
-      spriteLayer = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, disDef.pixelFormat);
+      this.disDef = new DisplayDefinition();
+      this.disDef.framePixelCountX = 256;
+      this.disDef.framePixelCountY = 256;
+      this.disDef.screenPixelCountX = 160;
+      this.disDef.screenPixelCountY = 144;
+      this.disDef.frameTileCountX = 32;
+      this.disDef.frameTileCountY = 32;
+      this.disDef.screenTileCountX = 20;
+      this.disDef.screenTileCountY = 18;
+      this.disDef.bytesPerTile = 16;
+      this.disDef.pixelPerTileX = 8;
+      this.disDef.pixelPerTileY = 8;
+      this.disDef.bytesPerPixel = 4;
+      this.disDef.pixelFormat = PixelFormat.Format32bppArgb;
+      // TODO(Cristian): Output the color to the view for custom setting
+      this.disDef.tileColors = new uint[4]
+      {
+        0xFFFFFFFF,
+        0xFFBBBBBB,
+        0xFF666666,
+        0xFF000000
+      };
+      this.disDef.tilePallete = new uint[4];
 
-      screen = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, disDef.pixelFormat);
-      frame = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, disDef.pixelFormat);
+      // TODO(Cristian): Output the color to the view for custom setting
+      this.disDef.spriteColors = new uint[4]
+      {
+        0xFFFFFFFF,
+        0xFFBBBBBB,
+        0xFF666666,
+        0xFF000000
+      };
+      this.disDef.spritePallete0 = new uint[4];
+      this.disDef.spritePallete1 = new uint[4];
+
+
+      // We create the target bitmaps
+      this.background = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, 
+                                   disDef.pixelFormat);
+      this.window = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
+                               disDef.pixelFormat);
+      this.sprite = new Bitmap(8, 8, disDef.pixelFormat);
+      this.spriteLayer = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
+                                    disDef.pixelFormat);
+
+      this.screen = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
+                               disDef.pixelFormat);
+      this.frame = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, 
+                              disDef.pixelFormat);
+
+      this.spriteOAMs = new OAM[spriteCount];
+      for(int i = 0; i < spriteOAMs.Length; ++i)
+      {
+        this.spriteOAMs[i] = new OAM(); 
+      }
 
       // TODO(Cristian): Remove this call eventually, when testing is not needed!
 #if DEBUG
@@ -181,7 +219,6 @@ namespace GBSharp.VideoSpace
     {
       // We load the OAMs
       ushort spriteOAMAddress = 0xFE00;
-      spriteOAMs = new OAM[spriteCount];
       for (int i = 0; i < spriteCount; i++)
       {
         SetOAM(i, memory.LowLevelArrayRead(spriteOAMAddress, 4));
@@ -365,61 +402,245 @@ namespace GBSharp.VideoSpace
       screen.UnlockBits(screenBmpData);
     }
 
-
     private const int screenStep = 96905; // Aprox. ~16.6687 ms
     private int screenSum = 0;
 
-    private int totalLineTickCount = 456;
-    private int currentLineTickCount = 456; // We trigger OAM search at the start
-    private int OAMSearchTickCount;
-    private int DataTransferTickCount;
+    private int prevTickCount = 0;
+    private int currentLineTickCount = 0; // We trigger OAM search at the start
 
-    private OAM[] currentLineOAMs;
-    private byte currentLine = 255; // The first run will fix this numberooh
+    private int OAMSearchTickCount = 83;
+    private int DataTransferTickCount = 83+175;
+    private const int totalLineTickCount = 456;
 
+    private byte currentLine = 0; // The first run will fix this numberooh
+    private DisplayModes displayMode;
+
+    private double pixelsPerTick = (double)256 / (double)456;
+
+    private bool firstRun = true;
 
     /// <summary>
     /// Simulates the update of the display for a period of time of a given number of ticks.
     /// </summary>
     /// <param name="ticks">The number of ticks ellapsed since the last call.
     /// A tick is a complete source clock oscillation, ~238.4 ns (2^-22 seconds).</param>
-    internal void Step(byte ticks)
+    internal void Step(int ticks)
     {
-      currentLineTickCount += ticks;
-      
-      // NOTE(Cristian): In the current state, it will *surely* crash
-
-      /*** WE CHECK IF THE DEVICE CHANGE OF MODE ***/
-
-      // This means H-BLANK is over (MODE 00 -> MODE 10)
-      if(currentLineTickCount >= totalLineTickCount)
+      if(firstRun)
       {
-        // We synchronize the line & timings
-        currentLineTickCount -= totalLineTickCount;
-        // TODO(Cristian): Implement the V-BLANK mode change and logic
-        //                 As of now it will increase line 'til forever
-        ++currentLine;
-        if(currentLine >= 144)
+        // NOTE(Cristian): We update the registers to reflect the current 
+        //                 state of the display
+        UpdateDisplayLineInfo(false);
+
+        // TODO(Cristian): Remove this draw!!
+        DrawTransparency();
+        firstRun = false;
+      }
+
+      // TODO(Cristian): Check that the LY=LYC is correct when the display starts
+
+      /**
+       * We want to advance the display according to the tick count
+       * So the simulation is to decrease the tick count and simulating
+       * the display accordingly
+       **/
+      prevTickCount = currentLineTickCount;
+      while(ticks > 0)
+      {
+        // We try to advance to the next state
+        // The display behaves differently if it's on V-BLANK or not
+        if(displayMode != DisplayModes.Mode01)
         {
-          throw new NotImplementedException("Implement V-BLANK");
+          if(displayMode == DisplayModes.Mode10)
+          {
+            if(CalculateTickChange(OAMSearchTickCount, ref ticks))
+            {
+              ChangeDisplayMode(DisplayModes.Mode11);
+            }
+          }
+          else if(displayMode == DisplayModes.Mode11)
+          {
+            if(CalculateTickChange(DataTransferTickCount, ref ticks))
+            {
+              ChangeDisplayMode(DisplayModes.Mode00);
+            }
+          }
+          else if(displayMode == DisplayModes.Mode00)
+          {
+            if(CalculateTickChange(totalLineTickCount, ref ticks))
+            {
+              // We start a new line
+              UpdateDisplayLineInfo();
+              if(currentLine < 144) // We continue on normal mode
+              {
+                ChangeDisplayMode(DisplayModes.Mode10);
+              }
+              else // V-BLANK
+              {
+                ChangeDisplayMode(DisplayModes.Mode01);
+              }
+
+              RefreshScreen();
+            }
+          }
         }
-        this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.LY, currentLine);
+        else // V-BLANK
+        {
+          // TODO(Cristian): Find out if the display triggers H-BLANK
+          //                 events during V-BLANK
+          if (CalculateTickChange(totalLineTickCount, ref ticks))
+          {
+            UpdateDisplayLineInfo();
+            if (currentLine >= 154)
+            {
+              ChangeDisplayMode(DisplayModes.Mode10);
+              currentLine = 0;
+              DrawTransparency();
+            }
 
+            RefreshScreen();
+          }
+        }
+      }
 
-        // We synchronize the OAMs
-        // TODO(Cristian): Use the currentLineOAMs Length to determine the actual timings!
-        currentLineOAMs = DisplayFunctions.GetScanLineOAMs(this.spriteOAMs, currentLine);
-      }
-      // This means h-blank is starting (MODE 11 -> MODE 00)
-      else if(currentLineTickCount >= DataTransferTickCount)
+      // TODO(Cristian): Copying the bitmap to the View is EXTREMELY slow. 
+      //                 We (will probably) need some kind of direct access
+      //                 if we want to achieve 60 FPS
+      DrawPixels();
+    }
+
+    internal void DrawPixels()
+    {
+      //  TODO(Cristian): Remember that the WY state changes over frame (after V-BLANK)
+      //                  and not between lines (as changes with WX)
+      BitmapData backgroundBmpData = DisplayFunctions.LockBitmap(background,
+                                                             ImageLockMode.WriteOnly,
+                                                             disDef.pixelFormat);
+      int uintStride = backgroundBmpData.Stride / disDef.bytesPerPixel;
+      unsafe
       {
-        throw new NotImplementedException("Implement H-BLANK");
+        uint* row = (uint*)backgroundBmpData.Scan0 + currentLine * uintStride;
+
+        int beginX = (int)(pixelsPerTick * prevTickCount);
+        int endX = (int)(pixelsPerTick * currentLineTickCount);
+        if(beginX >= 256 || endX >= 256)
+        {
+          background.UnlockBits(backgroundBmpData);
+          return;
+        }
+
+        byte mode = (byte)displayMode;
+        uint color = 0xFFFFFFFF;
+        if(mode == 1) { color = 0xFFFF0000; }
+        if(mode == 2) { color = 0xFF00FF00; }
+        if(mode == 3) { color = 0xFF0000FF; }
+
+        for(int i = beginX; i < endX; ++i)
+        {
+          row[i] = color;
+        }
       }
-      // This means data-transfer start (MODE 10 -> MODE 11)
-      else if(currentLineTickCount >= OAMSearchTickCount) 
+      background.UnlockBits(backgroundBmpData);
+    }
+
+    private void DrawTransparency()
+    {
+      BitmapData bmp = DisplayFunctions.LockBitmap(background,
+                                                   ImageLockMode.WriteOnly,
+                                                   disDef.pixelFormat);
+      DisplayFunctions.DrawTransparency(disDef, bmp,
+                                        0, 0,
+                                        bmp.Width, bmp.Height);
+      background.UnlockBits(bmp);
+
+    }
+
+    // Returns whether the tick count is enough to get to the target
+    private bool CalculateTickChange(int target, ref int ticks)
+    {
+      if (currentLineTickCount > target)
       {
-        throw new NotImplementedException("Implement Data Transfer");
+        throw new ArgumentOutOfRangeException("currentLineTickCount in invalid state");
       }
+
+      int remainder = target - currentLineTickCount;
+      if(ticks >= remainder)
+      {
+        // We got to the target
+        currentLineTickCount += remainder;
+        ticks -= remainder;
+        return true;
+      }
+      else
+      {
+        currentLineTickCount += ticks;
+        ticks = 0;
+        return false;
+      }
+    }
+
+    private void ChangeDisplayMode(DisplayModes newDisplayMode)
+    {
+      this.displayMode = newDisplayMode;
+      byte byteDisplayMode = (byte)this.displayMode;
+
+      byte STAT = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.STAT);
+      // We strip the last 2 bits of STAT and replace them with the mode
+      STAT = (byte)((STAT & 0xFC) | byteDisplayMode);
+      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.STAT, STAT);
+
+      // NOTE(Cristian): The bits that determine which interrupt is enabled
+      //                 are ordered in the same numbers that the mode numbering
+      //                 So basically we can shift by the mode numbering to get
+      //                 the corresponding bit for the current mode being changed.
+      //                 Bit 5: Mode 10
+      // 								 Bit 4: Mode 01
+      // 								 Bit 3: Mode 00
+      if (((STAT >> (byteDisplayMode + 3)) & 1) == 1)
+      {
+        interruptController.SetInterrupt(Interrupts.LCDCStatus);
+      }
+    }
+
+    /// <summary>
+    /// Updates the line variables of the Display and gameboy's registers.
+    /// Triggers the LYC=LY interrupt when in corresponds.
+    /// </summary>
+    /// <param name="updateLineCount">
+    /// Whether update the variables.
+    /// This is used when we want only to update the gameboy's registers
+    /// without changing the line count (for example, when the display starts).
+    /// </param>
+    private void UpdateDisplayLineInfo(bool updateLineCount = true)
+    {
+      if (updateLineCount)
+      {
+        currentLineTickCount = 0;
+        ++currentLine;
+      }
+
+      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.LY, currentLine);
+      byte LYC = this.memory.Read((ushort)MemoryMappedRegisters.LYC);
+
+      byte STAT = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.STAT);
+      // We update the STAT corresponding to the LY=LYC coincidence
+      if (LYC == currentLine)
+      {
+        byte STATMask = 0x04; // Bit 2 is set 1
+        STAT = (byte)(STAT | STATMask);
+
+        if((STAT & 0x40) == 1) // We check if Bit 6 is enabled
+        {
+          interruptController.SetInterrupt(Interrupts.LCDCStatus);
+        }
+      }
+      else
+      {
+        byte STATMask = 0xFB; // Bit 2 is set to 0 
+        STAT = (byte)(STAT & STATMask);
+      }
+
+      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.STAT, STAT);
     }
   }
 }

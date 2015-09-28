@@ -114,6 +114,9 @@ namespace GBSharp.CPUSpace
     /// <param name="kind">An interrupt (or a combination of).</param>
     internal void SetInterrupt(Interrupts kind)
     {
+      // TODO(Cristian, Wooo): Do we want to track what kind of LCDStatus interrupts we
+      //                       are receiving. It's technically not necesarry, but might
+      //                       interesting information to log... maybe?
       byte IF = this.memory.Read((ushort)MemoryMappedRegisters.IF);
       this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.IF, (byte)(IF | (byte)kind));
     }

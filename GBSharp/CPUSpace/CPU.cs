@@ -48,7 +48,23 @@ namespace GBSharp.CPUSpace
     private Dictionary<byte, string> instructionNames;
     private Dictionary<byte, string> CBinstructionNames;
 
+    private Dictionary<byte, string> instructionDescriptions;
+    private Dictionary<byte, string> CBinstructionDescriptions;
+
     private string _instructionName = "";
+    private string _instructionDescription = "";
+
+    /// <summary>
+    /// The current operands (extra bytes) used by the current instruction
+    /// running in the CPU. This is (for now) mainly used to display this
+    /// information in the CPU view
+    /// NOTE is nullable so we can signify less operands
+    /// </summary>
+    private byte?[] currentOperands;
+    public byte?[] CurrentOperands
+    {
+      get { return currentOperands; }
+    }
 
     private void CreateInstructionLambdas()
     {
@@ -2844,6 +2860,12 @@ namespace GBSharp.CPUSpace
       instructionNames = CPUOpcodeNames.Setup();
       CBinstructionNames = CPUCBOpcodeNames.Setup();
 
+      instructionDescriptions = CPUInstructionDescriptions.Setup();
+      CBinstructionDescriptions = CPUCBInstructionDescriptions.Setup();
+
+      // NOTE(Cristian): The longest instruction is 3 bytes long (therefore 2 operands)
+      currentOperands = new byte?[2];
+
       this.memory = memory;
       this.interruptController = new InterruptController(this.memory);
 
@@ -2919,6 +2941,10 @@ namespace GBSharp.CPUSpace
       ushort initialClock = this.clock;
       ushort literal = 0;
       ushort opcode = 0x00; // NOP
+      
+      // We assume empty operands when we begin
+      currentOperands[0] = null;
+      currentOperands[1] = null;
 
       Interrupts? interrupt = InterruptRequired();
       if (interrupt != null)
@@ -2930,6 +2956,7 @@ namespace GBSharp.CPUSpace
         instruction = this.instructionLambdas[(byte)opcode];
         ticks = this.instructionClocks[(byte)opcode];
         _instructionName = instructionNames[(byte)opcode];
+        _instructionDescription = instructionDescriptions[(byte)opcode];
 
         // Disable interrupts during interrupt handling and clear the current one
         this.interruptController.InterruptMasterEnable = false;
@@ -2952,19 +2979,27 @@ namespace GBSharp.CPUSpace
           if (instructionLength == 2)
           {
             // 8 bit literal
-            literal = this.memory.Read((ushort)(this.registers.PC + 1));
+            byte op1 = this.memory.Read((ushort)(this.registers.PC + 1));
+            currentOperands[0] = op1;
+            literal = op1;
           }
           else if (instructionLength == 3)
           {
             // 16 bit literal, little endian
-            literal = this.memory.Read((ushort)(this.registers.PC + 1));
-            literal += (ushort)(this.memory.Read((ushort)(this.registers.PC + 2)) << 8);
+            byte op1 = this.memory.Read((ushort)(this.registers.PC + 2));
+            byte op2 = this.memory.Read((ushort)(this.registers.PC + 1));
+
+            currentOperands[0] = op1;
+            currentOperands[1] = op2;
+
+            literal = op2;
+            literal += (ushort)(op1 << 8);
           }
 
           instruction = this.instructionLambdas[(byte)opcode];
           ticks = this.instructionClocks[(byte)opcode];
           _instructionName = instructionNames[(byte)opcode];
-
+          _instructionDescription = instructionDescriptions[(byte)opcode];
         }
         else
         {
@@ -2977,6 +3012,7 @@ namespace GBSharp.CPUSpace
           instruction = this.CBInstructionLambdas[(byte)opcode];
           ticks = this.CBInstructionClocks[(byte)opcode];
           _instructionName = CBinstructionNames[(byte)opcode];
+          _instructionDescription = CBinstructionDescriptions[(byte)opcode];
         }
       }
 
@@ -3002,6 +3038,12 @@ namespace GBSharp.CPUSpace
     public string GetCurrentInstructionName()
     {
       return _instructionName;
+    }
+
+    public string GetCurrentInstructionDescription()
+    {
+      return _instructionDescription;
+
     }
 
     /// <summary>

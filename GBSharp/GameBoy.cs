@@ -43,7 +43,6 @@ namespace GBSharp
       this.interruptController = this.cpu.interruptController;
       this.display = new Display(this.interruptController, this.memory);
 
-      this.cartridge = new Cartridge.Cartridge();
       this.buttons = Keypad.None;
       this.manualResetEvent = new ManualResetEventSlim(false);
       this.clockThread = new Thread(new ThreadStart(this.ThreadedRun));
@@ -86,6 +85,7 @@ namespace GBSharp
     /// <param name="cartridgeData"></param>
     public void LoadCartridge(byte[] cartridgeData)
     {
+      if (this.run) { Stop(); }
       this.cartridge = new Cartridge.Cartridge();
       this.cartridge.Load(cartridgeData);
       // We create the MemoryHandler according to the data
@@ -152,6 +152,9 @@ namespace GBSharp
     /// </summary>
     public void Run()
     {
+      // NOTE(cdonoso): If we're running, we shouldn't restart. Or should we?
+      if(this.run) { return; }
+      if (this.cartridge == null) { return; }
       this.run = true;
       this.stepCounter = 0;
       this.tickCounter = 0;
@@ -175,6 +178,7 @@ namespace GBSharp
     /// </summary>
     public void Stop()
     {
+      if (!this.run) { return; }
       this.stopwatch.Stop();
       this.run = false; // Allow the thread to exit.
       this.manualResetEvent.Set(); // Unlock the thread to make that happen.
@@ -192,6 +196,7 @@ namespace GBSharp
       {
         this.manualResetEvent.Wait(); // Wait for pauses.
         this.Step();
+        NotifyStepFinished();
 
         // Check timing issues
         if (this.stepCounter % stepCheck == 0)
