@@ -52,11 +52,17 @@
       _window.OnClosing += HandleClosing;
       _gameBoyController = new GameBoyContollerViewModel(_gameBoy, fileDialogFactory);
       _gameBoyController.OnFileLoaded += FileLoadedHandler;
+      _gameBoyController.OnStep += StepHandler;
       _memory = new MemoryViewModel(_gameBoy.Memory, "Memory View");
       _cpu = new CPUViewModel(_gameBoy, _dispatcher);
       _interrupt = new InterruptViewModel(_gameBoy, _dispatcher);
       _display = new DisplayViewModel(_gameBoy.Display, _gameBoy.Memory, _dispatcher);
       _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher, _display);
+    }
+
+    private void StepHandler()
+    {
+      _cpu.CopyFromDomain();
     }
 
     private void FileLoadedHandler()
@@ -72,6 +78,7 @@
       _gameBoyGamePad.Dispose();
       _cpu.Dispose();
       _gameBoyController.OnFileLoaded -= FileLoadedHandler;
+      _gameBoyController.OnStep -= StepHandler;
       _gameBoyController.Dispose();
       _gameBoy.Stop();
 

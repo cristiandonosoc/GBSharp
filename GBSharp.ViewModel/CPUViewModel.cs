@@ -265,8 +265,8 @@ namespace GBSharp.ViewModel
       _cpu = _gameBoy.CPU;
       _dispatcher = dispatcher;
 
-      //_display.RefreshScreen += OnRefreshScreen;
-      _gameBoy.StepFinished += OnRefreshScreen;
+      _gameBoy.Display.RefreshScreen += OnRefreshScreen;
+      //_gameBoy.StepFinished += OnRefreshScreen;
     }
 
     private void OnRefreshScreen()
@@ -274,7 +274,7 @@ namespace GBSharp.ViewModel
       _dispatcher.Invoke(CopyFromDomain);
     }
 
-    private void CopyFromDomain()
+    public void CopyFromDomain()
     {
       // TODO(Cristian): Apparently, the PC being displayed is the one
       //                 that was already updated by the Step cycle,
@@ -323,8 +323,8 @@ namespace GBSharp.ViewModel
 
     public void Dispose()
     {
-      //_display.RefreshScreen -= OnRefreshScreen;
-      _gameBoy.StepFinished -= OnRefreshScreen;
+      _gameBoy.Display.RefreshScreen -= OnRefreshScreen;
+      //_gameBoy.StepFinished -= OnRefreshScreen;
     }
   }
 }

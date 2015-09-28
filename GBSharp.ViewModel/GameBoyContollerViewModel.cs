@@ -7,6 +7,7 @@ namespace GBSharp.ViewModel
   public class GameBoyContollerViewModel : ViewModelBase, IDisposable
   {
     public event Action OnFileLoaded;
+    public event Action OnStep;
 
     private readonly IGameBoy _gameBoy;
     private readonly IOpenFileDialog _fileDialog;
@@ -91,6 +92,7 @@ namespace GBSharp.ViewModel
     private void Step()
     {
       _gameBoy.Step();
+      NotifyStep();
     }
 
     private void Pause()
@@ -133,6 +135,12 @@ namespace GBSharp.ViewModel
     {
       if (OnFileLoaded != null)
         OnFileLoaded();
+    }
+
+    private void NotifyStep()
+    {
+      if (OnStep != null)
+        OnStep();
     }
     
   }
