@@ -1,15 +1,18 @@
-﻿using System;
+﻿using System.Collections;
+using System.Collections.Generic;
 
 namespace GBSharp
 {
   public interface ICPU
   {
     CPURegisters Registers { get; }
-    byte?[] CurrentOperands { get; }
-    byte Step();
-    string GetCurrentInstructionName();
-    string GetCurrentInstructionDescription();
-
     bool InterruptMasterEnable { get; }
+    IInstruction CurrentInstruction { get; }
+
+    byte Step();
+    IEnumerable<IInstruction> Dissamble();
+
+  
+    
   }
 }
