@@ -54,7 +54,8 @@ namespace GBSharp.VideoSpace
     internal int frameTileCountY;
     internal int screenTileCountX;
     internal int screenTileCountY;
-    internal int bytesPerTile;
+    internal int bytesPerTileShort;
+    internal int bytesPerTileLong;
     internal int pixelPerTileX;
     internal int pixelPerTileY;
     internal int bytesPerPixel;
@@ -162,7 +163,8 @@ namespace GBSharp.VideoSpace
       this.disDef.frameTileCountY = 32;
       this.disDef.screenTileCountX = 20;
       this.disDef.screenTileCountY = 18;
-      this.disDef.bytesPerTile = 16;
+      this.disDef.bytesPerTileShort = 16;
+      this.disDef.bytesPerTileLong = 32;
       this.disDef.pixelPerTileX = 8;
       this.disDef.pixelPerTileY = 8;
       this.disDef.bytesPerPixel = 4;
@@ -194,7 +196,7 @@ namespace GBSharp.VideoSpace
                                    disDef.pixelFormat);
       this.window = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
                                disDef.pixelFormat);
-      this.sprite = new Bitmap(8, 8, disDef.pixelFormat);
+      this.sprite = new Bitmap(8, 16, disDef.pixelFormat);
       this.spriteLayer = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
                                     disDef.pixelFormat);
 
@@ -240,7 +242,13 @@ namespace GBSharp.VideoSpace
 
     internal void DrawSprite(BitmapData spriteBmd, int spriteCode, int pX, int pY)
     {
-      byte[] pixels = DisplayFunctions.GetTileData(disDef, memory, 0x8000, spriteCode);
+
+      byte LCDC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
+      bool LCDCBit2 = Utils.UtilFuncs.TestBit(LCDC, 2) != 0;
+      DisplayFunctions.DrawTransparency(disDef, spriteBmd,
+                                        0, 0, 8, 16);
+      // We draw the top part
+      byte[] pixels = DisplayFunctions.GetTileData(disDef, memory, 0x8000, spriteCode, LCDCBit2);
       DisplayFunctions.DrawTile(disDef, spriteBmd, pixels, pX, pY,
                                 disDef.screenPixelCountX, disDef.screenPixelCountY);
     }
