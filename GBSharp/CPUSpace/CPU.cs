@@ -1574,7 +1574,7 @@ namespace GBSharp.CPUSpace
             {0xE3, (n)=>{throw new InvalidInstructionException("XX (0xE3)");}},
 
             // XX: Operation removed in this CPU
-            {0xE4, (n)=>{throw new InvalidInstructionException("XX (0xE4)");}},
+            {0xE4, (n)=>{}},
 
             // PUSH HL: Push 16-bit HL onto stack
             {0xE5, (n)=>{
@@ -3045,13 +3045,18 @@ namespace GBSharp.CPUSpace
     {
       var instructions = new List<IInstruction>();
       ushort instructionAddress = 0x0100;
+      var visitedAddresses = new HashSet<ushort>();
       while (instructionAddress < 0x8000)
       {
         try
         {
           var instruction = FetchAndDecode(instructionAddress);
           instructions.Add(instruction);
-          instructionAddress += instruction.Length;
+          if (instruction.OpCode == 0xC3 && !visitedAddresses.Contains(instruction.Literal))
+            instructionAddress = instruction.Literal;
+          else
+            instructionAddress += instruction.Length;
+          visitedAddresses.Add(instructionAddress);
         }
         catch (Exception)
         {
