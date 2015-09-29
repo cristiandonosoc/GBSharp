@@ -39,7 +39,9 @@ namespace GBSharp.VideoSpace
     /// <returns>A byte[] with the 16 bytes that create a tile</returns>
     internal static byte[] 
     GetTileData(DisplayDefinition disDef, Memory memory, 
-                int tileX, int tileY, bool LCDBit3, bool LCDBit4, bool wrap)
+                int tileX, int tileY, 
+                bool LCDCBit2, bool LCDBit3, bool LCDBit4, 
+                bool wrap)
     {
 
       if(wrap)
@@ -59,7 +61,7 @@ namespace GBSharp.VideoSpace
       int tileOffset = GetTileOffset(disDef, memory, tileMapBaseAddress, LCDBit4, tileX, tileY);
 
       // We obtain the correct tile index
-      byte[] result = GetTileData(disDef, memory, tileBaseAddress, tileOffset);
+      byte[] result = GetTileData(disDef, memory, tileBaseAddress, tileOffset, LCDCBit2);
       return result;
     }
 
@@ -70,19 +72,23 @@ namespace GBSharp.VideoSpace
     };
 
     internal static byte[]
-    GetTileData(DisplayDefinition disDef, Memory memory, 
+    GetTileData(DisplayDefinition disDef, Memory memory,
                 int tileBaseAddress, int tileOffset,
+                bool LCDCBit2,
                 bool flipX = false, bool flipY = false)
     {
-      // We obtain the tile memory
-      byte[] data = new byte[disDef.bytesPerTile];
-      data = memory.LowLevelArrayRead(
-        (ushort)(tileBaseAddress + (disDef.bytesPerTile * tileOffset)),
-        disDef.bytesPerTile);
+      int tileLength = disDef.bytesPerTileShort;
+      if (LCDCBit2) { tileLength = disDef.bytesPerTileLong; }
 
-      if(flipX)
+      // We obtain the tile memory
+      byte[] data = new byte[tileLength];
+      data = memory.LowLevelArrayRead(
+        (ushort)(tileBaseAddress + (tileLength * tileOffset)),
+        tileLength);
+
+      if (flipX)
       {
-        for(int i = 0; i < disDef.bytesPerTile; ++i)
+        for (int i = 0; i < tileLength; ++i)
         {
           byte d = data[i];
           byte r = (byte)((flipLookup[d & 0x0F] << 4) | flipLookup[d >> 4]);
@@ -90,16 +96,16 @@ namespace GBSharp.VideoSpace
         }
       }
 
-      if(flipY)
+      if (flipY)
       {
         // NOTE(Cristian): We have to flip them in pairs, because
         //                 otherwise the colors change!
-        for (int i = 0; i < disDef.bytesPerTile / 4; ++i)
+        for (int i = 0; i < tileLength / 4; ++i)
         {
           byte d0 = data[2 * i];
           byte d1 = data[2 * i + 1];
 
-          int index = (disDef.bytesPerTile - 1) - 2 * i;
+          int index = (tileLength - 1) - 2 * i;
           data[2 * i] = data[index - 1];
           data[2 * i + 1] = data[index];
 
@@ -147,7 +153,7 @@ namespace GBSharp.VideoSpace
         int tileOffset = GetTileOffset(disDef, memory, tileMapBaseAddress, LCDBit4, tileX, tileY);
 
         // We obtain both pixels
-        int currentTileBaseAddress = tileBaseAddress + disDef.bytesPerTile * tileOffset;
+        int currentTileBaseAddress = tileBaseAddress + disDef.bytesPerTileShort * tileOffset;
         byte top = memory.LowLevelRead((ushort)(currentTileBaseAddress + 2 * tileRemainder));
         byte bottom = memory.LowLevelRead((ushort)(currentTileBaseAddress + 2 * tileRemainder + 1));
 
@@ -183,14 +189,24 @@ namespace GBSharp.VideoSpace
       return pixels;
     }
 
+    /// <summary>
+    /// Gets the pixel row from the sprites
+    /// </summary>
+    /// <param name="spriteOAMs"></param>
+    /// <param name="row"></param>
+    /// <param name="LCDCBit2"></param>
+    /// <returns></returns>
     internal static OAM[]
-    GetScanLineOAMs(OAM[] spriteOAMs, int row)
+    GetScanLineOAMs(DisplayDefinition disDef, OAM[] spriteOAMs, int row, bool LCDCBit2)
     {
       // First we sort the oams
       // TODO(Cristian): Find a more efficient way to keep this list sorted by priority
       OAM[] oams = (OAM[])spriteOAMs.Clone();
       Array.Sort<OAM>(oams, (a, b) => (a.x == b.x) ?
                                       (a.index - b.index) : (a.x - b.x));
+
+      int spriteSize = disDef.bytesPerTileShort / 2;
+      if(LCDCBit2) { spriteSize = disDef.bytesPerTileLong / 2; }
 
       // Then we select the 10 that correspond
       int scanLineSize = 0;
@@ -199,7 +215,7 @@ namespace GBSharp.VideoSpace
       foreach(OAM oam in oams)
       {
           int y = oam.y - 16;
-          if ((y <= row) && (row < (y + 8)))
+          if ((y <= row) && (row < (y + spriteSize)))
           {
             scanLineOAMs[scanLineSize++] = oam;
             if (scanLineSize == maxScanLineSize) { break; }
@@ -218,10 +234,10 @@ namespace GBSharp.VideoSpace
     
     internal static void
     GetSpriteRowPixels(DisplayDefinition disDef, Memory memory, OAM[] spriteOAMs,
-                       uint[] targetPixels, int row)
+                       uint[] targetPixels, int row, bool LCDCBit2)
     {
       // TODO(Cristian): Separate this step from the call and pass it as an argument
-      OAM[] scanLineOAMs = GetScanLineOAMs(spriteOAMs, row);
+      OAM[] scanLineOAMs = GetScanLineOAMs(disDef, spriteOAMs, row, LCDCBit2);
 
       // We obtain the pixels we want from it
       for (int oamIndex = scanLineOAMs.Length - 1; oamIndex >= 0; --oamIndex)
@@ -231,7 +247,8 @@ namespace GBSharp.VideoSpace
 
         bool flipX = Utils.UtilFuncs.TestBit(oam.flags, 5) != 0;
         bool flipY = Utils.UtilFuncs.TestBit(oam.flags, 6) != 0;
-        byte[] tilePixels = GetTileData(disDef, memory, 0x8000, oam.spriteCode, flipX, flipY);
+        byte[] tilePixels = GetTileData(disDef, memory, 0x8000, oam.spriteCode, 
+                                        LCDCBit2, flipX, flipY);
 
         int x = oam.x - 8;
         int y = row - (oam.y - 16);
@@ -377,7 +394,7 @@ namespace GBSharp.VideoSpace
         uint* start = (uint*)bmd.Scan0;
 
         // We iterate for the actual bytes
-        for (int j = 0; j < 16; j += 2)
+        for (int j = 0; j < tileData.Length; j += 2)
         {
           int pixelY = pY + (j / 2);
           if(pixelY < 0) { continue; }

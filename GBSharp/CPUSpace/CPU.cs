@@ -1558,7 +1558,7 @@ namespace GBSharp.CPUSpace
             {0xDF, (n)=>{instructionLambdas[0xCD](0x18);}},
 
             // LDH (n),A: Save A at address pointed to by (FF00h + 8-bit immediate)
-            {0xE0, (n)=>{memory.Write((ushort)(0xFF00 & n), registers.A);}},
+            {0xE0, (n)=>{memory.Write((ushort)(0xFF00 | n), registers.A);}},
 
             // POP HL: Pop 16-bit value from stack into HL
             {0xE1, (n)=>{
@@ -1568,7 +1568,7 @@ namespace GBSharp.CPUSpace
             }},
 
             // LDH (C),A: Save A at address pointed to by (FF00h + C)
-            {0xE2, (n)=>{memory.Write((ushort)(0xFF00 & registers.C), registers.A);}},
+            {0xE2, (n)=>{memory.Write((ushort)(0xFF00 | registers.C), registers.A);}},
 
             // XX: Operation removed in this CPU
             {0xE3, (n)=>{throw new InvalidInstructionException("XX (0xE3)");}},
@@ -1631,7 +1631,7 @@ namespace GBSharp.CPUSpace
             {0xEF, (n)=>{instructionLambdas[0xCD](0x28);}},
 
             // LDH A,(n): Load A from address pointed to by (FF00h + 8-bit immediate)
-            {0xF0, (n)=>{registers.A = memory.Read((ushort)(0xFF00 & n));}},
+            {0xF0, (n)=>{registers.A = memory.Read((ushort)(0xFF00 | n));}},
 
             // POP AF: Pop 16-bit value from stack into AF
             {0xF1, (n)=>{
@@ -1641,7 +1641,7 @@ namespace GBSharp.CPUSpace
             }},
 
             // LDH A, (C): Operation removed in this CPU? (Or Load into A memory from FF00 + C?)
-            {0xF2, (n)=>{registers.A = memory.Read((ushort)(0xFF00 & registers.C));}},
+            {0xF2, (n)=>{registers.A = memory.Read((ushort)(0xFF00 | registers.C));}},
 
             // DI: DIsable interrupts
             {0xF3, (n)=>{this.interruptController.InterruptMasterEnable=false;}},
