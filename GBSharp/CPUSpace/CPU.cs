@@ -2987,6 +2987,7 @@ namespace GBSharp.CPUSpace
     private Instruction FetchAndDecode(ushort instructionAddress)
     {
       Instruction instruction = new Instruction();
+      instruction.Address = instructionAddress;
       instruction.OpCode = this.memory.Read(instructionAddress);
 
       if (instruction.OpCode != 0xCB)
@@ -3042,9 +3043,17 @@ namespace GBSharp.CPUSpace
       ushort instructionAddress = 0x0100;
       while (instructionAddress < 0x8000)
       {
-        var instruction = FetchAndDecode(instructionAddress);
-        instructions.Add(instruction);
-        instructionAddress += instruction.Length;
+        try
+        {
+          var instruction = FetchAndDecode(instructionAddress);
+          instructions.Add(instruction);
+          instructionAddress += instruction.Length;
+        }
+        catch (Exception)
+        {
+          break;
+        }
+       
       }
       return instructions;
     }

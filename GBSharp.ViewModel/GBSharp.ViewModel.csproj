@@ -46,10 +46,12 @@
   <ItemGroup>
     <Compile Include="CPUViewModel.cs" />
     <Compile Include="DelegateCommand.cs" />
+    <Compile Include="DissasembleViewModel.cs" />
     <Compile Include="GameBoyContollerViewModel.cs" />
     <Compile Include="GameBoyGamePadViewModel.cs" />
     <Compile Include="GameBoyViewModel.cs" />
     <Compile Include="IDispatcher.cs" />
+    <Compile Include="InstructionViewModel.cs" />
     <Compile Include="InterruptViewModel.cs" />
     <Compile Include="IOpenFileDialog.cs" />
     <Compile Include="IOpenFileDialogFactory.cs" />

@@ -12,6 +12,7 @@
     private readonly DisplayViewModel _display;
     private readonly GameBoyContollerViewModel _gameBoyController;
     private readonly GameBoyGamePadViewModel _gameBoyGamePad;
+    private readonly DissasembleViewModel _dissasemble;
     
     public MemoryViewModel Memory
     {
@@ -43,6 +44,11 @@
       get { return _gameBoyGamePad; }
     }
 
+    public DissasembleViewModel Dissasemble
+    {
+      get { return _dissasemble; }
+    }
+
 
     public GameBoyViewModel(IGameBoy gameBoy, IDispatcher dispatcher, IWindow window, IOpenFileDialogFactory fileDialogFactory)
     {
@@ -58,6 +64,7 @@
       _interrupt = new InterruptViewModel(_gameBoy, _dispatcher);
       _display = new DisplayViewModel(_gameBoy.Display, _gameBoy.Memory, _dispatcher);
       _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher, _display);
+      _dissasemble = new DissasembleViewModel(_gameBoy.CPU);
     }
 
     private void StepHandler()
@@ -69,6 +76,7 @@
     {
       _memory.CopyFromDomain();
       _display.CopyFromDomain();
+      _dissasemble.Dissasemble();
     }
 
     private void HandleClosing()
