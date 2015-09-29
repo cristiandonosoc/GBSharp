@@ -16,6 +16,9 @@ namespace GBSharp.CPUSpace
     internal bool halted;
     internal bool stopped;
 
+    private Instruction _currentInstruction = null;
+
+
     // Interrupt starting addresses
     Dictionary<Interrupts, ushort> interruptHandlers = new Dictionary<Interrupts, ushort>()
     {
@@ -26,9 +29,28 @@ namespace GBSharp.CPUSpace
       {Interrupts.P10to13TerminalNegativeEdge, 0x0060}
     };
 
+    CPURegisters ICPU.Registers
+    {
+      get
+      {
+        return this.registers;
+      }
+    }
+
     public bool InterruptMasterEnable
     {
       get { return interruptController.InterruptMasterEnable; }
+    }
+
+    /// <summary>
+    /// The current operands (extra bytes) used by the current instruction
+    /// running in the CPU. This is (for now) mainly used to display this
+    /// information in the CPU view
+    /// NOTE is nullable so we can signify less operands
+    /// </summary>
+    public IInstruction CurrentInstruction
+    {
+      get { return _currentInstruction; }
     }
 
     #region Lengths and clocks
@@ -50,21 +72,6 @@ namespace GBSharp.CPUSpace
 
     private Dictionary<byte, string> instructionDescriptions;
     private Dictionary<byte, string> CBinstructionDescriptions;
-
-    private string _instructionName = "";
-    private string _instructionDescription = "";
-
-    /// <summary>
-    /// The current operands (extra bytes) used by the current instruction
-    /// running in the CPU. This is (for now) mainly used to display this
-    /// information in the CPU view
-    /// NOTE is nullable so we can signify less operands
-    /// </summary>
-    private byte?[] currentOperands;
-    public byte?[] CurrentOperands
-    {
-      get { return currentOperands; }
-    }
 
     private void CreateInstructionLambdas()
     {
@@ -1551,7 +1558,7 @@ namespace GBSharp.CPUSpace
             {0xDF, (n)=>{instructionLambdas[0xCD](0x18);}},
 
             // LDH (n),A: Save A at address pointed to by (FF00h + 8-bit immediate)
-            {0xE0, (n)=>{memory.Write((ushort)(0xFF00 & n), registers.A);}},
+            {0xE0, (n)=>{memory.Write((ushort)(0xFF00 | n), registers.A);}},
 
             // POP HL: Pop 16-bit value from stack into HL
             {0xE1, (n)=>{
@@ -1561,7 +1568,7 @@ namespace GBSharp.CPUSpace
             }},
 
             // LDH (C),A: Save A at address pointed to by (FF00h + C)
-            {0xE2, (n)=>{memory.Write((ushort)(0xFF00 & registers.C), registers.A);}},
+            {0xE2, (n)=>{memory.Write((ushort)(0xFF00 | registers.C), registers.A);}},
 
             // XX: Operation removed in this CPU
             {0xE3, (n)=>{throw new InvalidInstructionException("XX (0xE3)");}},
@@ -1624,7 +1631,7 @@ namespace GBSharp.CPUSpace
             {0xEF, (n)=>{instructionLambdas[0xCD](0x28);}},
 
             // LDH A,(n): Load A from address pointed to by (FF00h + 8-bit immediate)
-            {0xF0, (n)=>{registers.A = memory.Read((ushort)(0xFF00 & n));}},
+            {0xF0, (n)=>{registers.A = memory.Read((ushort)(0xFF00 | n));}},
 
             // POP AF: Pop 16-bit value from stack into AF
             {0xF1, (n)=>{
@@ -1634,7 +1641,7 @@ namespace GBSharp.CPUSpace
             }},
 
             // LDH A, (C): Operation removed in this CPU? (Or Load into A memory from FF00 + C?)
-            {0xF2, (n)=>{registers.A = memory.Read((ushort)(0xFF00 & registers.C));}},
+            {0xF2, (n)=>{registers.A = memory.Read((ushort)(0xFF00 | registers.C));}},
 
             // DI: DIsable interrupts
             {0xF3, (n)=>{this.interruptController.InterruptMasterEnable=false;}},
@@ -2862,9 +2869,8 @@ namespace GBSharp.CPUSpace
 
       instructionDescriptions = CPUInstructionDescriptions.Setup();
       CBinstructionDescriptions = CPUCBInstructionDescriptions.Setup();
-
-      // NOTE(Cristian): The longest instruction is 3 bytes long (therefore 2 operands)
-      currentOperands = new byte?[2];
+      
+      _currentInstruction = new Instruction();
 
       this.memory = memory;
       this.interruptController = new InterruptController(this.memory);
@@ -2935,115 +2941,125 @@ namespace GBSharp.CPUSpace
     public byte Step()
     {
       // Instruction fetch and decode
-      byte instructionLength;
-      byte ticks;
-      Action<ushort> instruction;
-      ushort initialClock = this.clock;
-      ushort literal = 0;
-      ushort opcode = 0x00; // NOP
-      
-      // We assume empty operands when we begin
-      currentOperands[0] = null;
-      currentOperands[1] = null;
-
       Interrupts? interrupt = InterruptRequired();
       if (interrupt != null)
-      {
-        // Handle interrupt with a CALL instruction to the interrupt handler
-        opcode = 0xCD; // CALL!
-        instructionLength = this.instructionLengths[(byte)opcode];
-        literal = this.interruptHandlers[(Interrupts)interrupt];
-        instruction = this.instructionLambdas[(byte)opcode];
-        ticks = this.instructionClocks[(byte)opcode];
-        _instructionName = instructionNames[(byte)opcode];
-        _instructionDescription = instructionDescriptions[(byte)opcode];
-
-        // Disable interrupts during interrupt handling and clear the current one
-        this.interruptController.InterruptMasterEnable = false;
-        byte IF = this.memory.Read((ushort)MemoryMappedRegisters.IF);
-        IF &= (byte)~(byte)interrupt;
-        this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.IF, IF);
-
-      }
+        _currentInstruction = InterruptHandler(interrupt.Value);
       else
-      {
-        // No interrupts, keep going!
-        opcode = this.memory.Read(this.registers.PC);
-
-        if (opcode != 0xCB)
-        {
-          // Normal instructions
-          instructionLength = this.instructionLengths[(byte)opcode];
-
-          // Extract literal
-          if (instructionLength == 2)
-          {
-            // 8 bit literal
-            byte op1 = this.memory.Read((ushort)(this.registers.PC + 1));
-            currentOperands[0] = op1;
-            literal = op1;
-          }
-          else if (instructionLength == 3)
-          {
-            // 16 bit literal, little endian
-            byte op1 = this.memory.Read((ushort)(this.registers.PC + 2));
-            byte op2 = this.memory.Read((ushort)(this.registers.PC + 1));
-
-            currentOperands[0] = op1;
-            currentOperands[1] = op2;
-
-            literal = op2;
-            literal += (ushort)(op1 << 8);
-          }
-
-          instruction = this.instructionLambdas[(byte)opcode];
-          ticks = this.instructionClocks[(byte)opcode];
-          _instructionName = instructionNames[(byte)opcode];
-          _instructionDescription = instructionDescriptions[(byte)opcode];
-        }
-        else
-        {
-          // CB instructions block
-          opcode <<= 8;
-          opcode += this.memory.Read((ushort)(this.registers.PC + 1));
-          instructionLength = this.CBInstructionLengths[(byte)opcode];
-          // There is no literal in CB instructions!
-
-          instruction = this.CBInstructionLambdas[(byte)opcode];
-          ticks = this.CBInstructionClocks[(byte)opcode];
-          _instructionName = CBinstructionNames[(byte)opcode];
-          _instructionDescription = CBinstructionDescriptions[(byte)opcode];
-        }
-      }
-
+        _currentInstruction = FetchAndDecode(this.registers.PC);
+      
       // Prepare for program counter movement, but wait for instruction execution.
       // Overwrite nextPC in the instruction lambdas if you want to implement jumps.
-      this.nextPC = (ushort)(this.registers.PC + instructionLength);
+      this.nextPC = (ushort)(this.registers.PC + _currentInstruction.Length);
 
 
-      //Console.WriteLine("Instruction:" + instructionName + " , OpCode: " + opcode.ToString("x") + " , Literal: " + literal.ToString("x"));
-      //Console.WriteLine(registers.ToString());
       // Execute instruction
-      instruction(literal);
+      _currentInstruction.Lambda(_currentInstruction.Literal);
 
       // Push the next program counter value into the real program counter!
       this.registers.PC = this.nextPC;
 
       // Perform timing operations and adjust the real number of ellapsed ticks
-      ticks = UpdateClockAndTimers(initialClock, ticks);
-
+      var initialClock = this.clock;
+      var ticks = UpdateClockAndTimers(initialClock, _currentInstruction.Ticks);
       return ticks;
     }
 
-    public string GetCurrentInstructionName()
+    private Instruction InterruptHandler(Interrupts interrupt)
     {
-      return _instructionName;
+      // Handle interrupt with a CALL instruction to the interrupt handler
+      Instruction instruction = new Instruction();
+      instruction.OpCode = 0xCD; // CALL!
+      instruction.Length = this.instructionLengths[(byte)instruction.OpCode];
+      instruction.Literal = this.interruptHandlers[(Interrupts) interrupt];
+      instruction.Lambda = this.instructionLambdas[(byte)instruction.OpCode];
+      instruction.Ticks = this.instructionClocks[(byte)instruction.OpCode];
+      instruction.Name = this.instructionNames[(byte)instruction.OpCode];
+      instruction.Description = this.instructionDescriptions[(byte)instruction.OpCode];
+
+      // Disable interrupts during interrupt handling and clear the current one
+      this.interruptController.InterruptMasterEnable = false;
+      byte IF = this.memory.Read((ushort) MemoryMappedRegisters.IF);
+      IF &= (byte) ~(byte) interrupt;
+      this.memory.LowLevelWrite((ushort) MemoryMappedRegisters.IF, IF);
+      return instruction;
     }
 
-    public string GetCurrentInstructionDescription()
+    private Instruction FetchAndDecode(ushort instructionAddress)
     {
-      return _instructionDescription;
+      Instruction instruction = new Instruction();
+      instruction.Address = instructionAddress;
+      instruction.OpCode = this.memory.Read(instructionAddress);
 
+      if (instruction.OpCode != 0xCB)
+      {
+        // Normal instructions
+        instruction.Length = this.instructionLengths[(byte) instruction.OpCode];
+
+        // Extract literal
+        if (instruction.Length == 2)
+        {
+          // 8 bit literal
+          byte op1 = this.memory.Read((ushort) (instructionAddress + 1));
+          instruction.Operands[0] = op1;
+          instruction.Literal = op1;
+        }
+        else if (instruction.Length == 3)
+        {
+          // 16 bit literal, little endian
+          byte op1 = this.memory.Read((ushort) (instructionAddress + 2));
+          byte op2 = this.memory.Read((ushort) (instructionAddress + 1));
+
+          instruction.Operands[0] = op1;
+          instruction.Operands[1] = op2;
+
+          instruction.Literal = op2;
+          instruction.Literal += (ushort) (op1 << 8);
+        }
+
+        instruction.Lambda = this.instructionLambdas[(byte) instruction.OpCode];
+        instruction.Ticks = this.instructionClocks[(byte) instruction.OpCode];
+        instruction.Name = instructionNames[(byte) instruction.OpCode];
+        instruction.Description = instructionDescriptions[(byte) instruction.OpCode];
+      }
+      else
+      {
+        // CB instructions block
+        instruction.OpCode <<= 8;
+        instruction.OpCode += this.memory.Read((ushort) (instructionAddress + 1));
+        instruction.Length = this.CBInstructionLengths[(byte) instruction.OpCode];
+        // There is no literal in CB instructions!
+
+        instruction.Lambda = this.CBInstructionLambdas[(byte) instruction.OpCode];
+        instruction.Ticks = this.CBInstructionClocks[(byte) instruction.OpCode];
+        instruction.Name = CBinstructionNames[(byte) instruction.OpCode];
+        instruction.Description = CBinstructionDescriptions[(byte) instruction.OpCode];
+      }
+      return instruction;
+    }
+
+    /// <summary>
+    /// Poor man's dissambly (for now)
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<IInstruction> Dissamble()
+    {
+      var instructions = new List<IInstruction>();
+      ushort instructionAddress = 0x0100;
+      while (instructionAddress < 0x8000)
+      {
+        try
+        {
+          var instruction = FetchAndDecode(instructionAddress);
+          instructions.Add(instruction);
+          instructionAddress += instruction.Length;
+        }
+        catch (Exception)
+        {
+          break;
+        }
+       
+      }
+      return instructions;
     }
 
     /// <summary>
@@ -3171,14 +3187,6 @@ namespace GBSharp.CPUSpace
 
       // Return the real total number of ellapsed ticks (base instruction ticks + direct instruction addition to this.clock)
       return ticks;
-    }
-
-    CPURegisters ICPU.Registers
-    {
-      get
-      {
-        return this.registers;
-      }
     }
 
     public override string ToString()

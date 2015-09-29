@@ -282,10 +282,10 @@ namespace GBSharp.ViewModel
       //                 of the one currently displayed.
       //                 Verify if this is the case, and fix it.
       RegisterPC = "0x" + _cpu.Registers.PC.ToString("x2");
-      RegisterPCOpcode = _cpu.GetCurrentInstructionName();
-      RegisterPCDescription = _cpu.GetCurrentInstructionDescription();
+      RegisterPCOpcode = _cpu.CurrentInstruction.Name;
+      RegisterPCDescription = _cpu.CurrentInstruction.Description;
 
-      byte?[] currentOperands = _cpu.CurrentOperands;
+      byte?[] currentOperands = _cpu.CurrentInstruction.Operands;
       string op1String = "";
       if(currentOperands[0] != null)
       {

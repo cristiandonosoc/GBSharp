@@ -60,7 +60,9 @@
     <Compile Include="ICPU.cs" />
     <Compile Include="IDisplay.cs" />
     <Compile Include="IGameBoy.cs" />
+    <Compile Include="IInstruction.cs" />
     <Compile Include="IMemory.cs" />
+    <Compile Include="CPUSpace\Instruction.cs" />
     <Compile Include="Keypad.cs" />
     <Compile Include="MemorySpace\DMA.cs" />
     <Compile Include="MemorySpace\Memory.cs" />
