@@ -3037,6 +3037,10 @@ namespace GBSharp.CPUSpace
       return instruction;
     }
 
+    /// <summary>
+    /// Poor man's dissambly (for now)
+    /// </summary>
+    /// <returns></returns>
     public IEnumerable<IInstruction> Dissamble()
     {
       var instructions = new List<IInstruction>();
