@@ -13,7 +13,7 @@ namespace GBSharp.MemorySpace
     ushort currentTickCount;
     // TODO(Cristian): This GB timing, not GBC
     // TODO(Cristian): Unify this value throughout the program!!!
-    static double usPerTick = 0.2384;
+    static double usPerTick = 0.2384185791015625; // 2^-22
     ushort targetTickCount = (ushort)(Math.Ceiling(160 / usPerTick));
 
     internal bool Active { get; set; }

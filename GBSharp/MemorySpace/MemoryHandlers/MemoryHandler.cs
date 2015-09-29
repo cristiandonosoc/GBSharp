@@ -48,31 +48,18 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     /// <param name="value">8 bits value.</param>
     internal virtual void Write(ushort address, byte value)
     {
-      // During DMA transfer, the CPU can only access the High-RAM block
-      // HRAM: 0xFF80-0xFE9F
-      if (this.dma.Active)
-      {
-        if (address < 0xFF80 || 0xFE9F < address)
-        {
-          // TODO(Cristian): Investigate what the gameboy actually does on this event.
-          //                 Does it just return and the instruction took as much time?
-          //                 Does it crash and it's simply not done?
-          //                 Who knows...
-          throw new InvalidOperationException("Can only access HRAM during DMA transfer");
-        }
-      }
 
       /* [0x0000 - 0x7FFF]: Memory Bank 0, Memory Bank 1 */
       if (address < 0x8000)
       {
         // Do nothing, not writeable!
-      }
+      } // < 0x8000
 
       /* [0x8000 - 0xBFFF]: VRAM, Cartridge RAM */
       else if (address < 0xC000)
       {
         this.memoryData[address] = value;
-      }
+      } // < 0xC000
 
       /* [0xC000 - 0xDFFF]: Internal RAM */
       else if (address < 0xE000)
@@ -85,72 +72,87 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           // Copy to RAM Echo, add 8kb offset
           this.memoryData[address + 0x2000] = value;
         }
-      }
+      } // < 0xE000
 
       /* [0xE000 - 0xFDFF]: RAM Echo */
       else if (address < 0xFE00)
       {
         this.memoryData[address] = value;
         this.memoryData[address - 0x2000] = value; // 8kb offset
-      }
+      } // < 0xFE00
 
       /* [0xFE00 - 0xFE9F]: Sprite Attributes Memory (OAM) */
       else if (address < 0xFEA0)
       {
         this.memoryData[address] = value;
-      }
+      } // < 0xFEA0
 
-      /* [0xFEA0 - 0xFEFF]: Empty but unusable for I/O */
-      else if (address < 0xFF00)
+      /* [0xFEA0 - 0xFF7F]: */
+      else if (address < 0xFF80)
       {
-        this.memoryData[address] = value;
-      }
-
-      /* [0xFF00 - 0xFF4B]: I/O Ports */
-      else if (address < 0xFF4C)
-      {
-        if (address == (ushort)MemoryMappedRegisters.P1)
+        // During DMA transfer, the CPU can only access the High-RAM block
+        // HRAM: 0xFF80-0xFE9F
+        if (this.dma.Active)
         {
-          byte p1 = this.memoryData[address];
-          // Only the bits 4 and 5 are writable in P1
-          p1 &= 0xCF; // &= 11001111;
-          p1 |= (byte)(value & 0x30); // |= (value & 00110000); writable mask
-          this.memoryData[address] = p1;
-
-
-          // Request an interrupt if necessary
-          this.gameboy.InterruptController.UpdateKeypadState();
+          // TODO(Cristian): Investigate what the gameboy actually does on this event.
+          //                 Does it just return and the instruction took as much time?
+          //                 Does it crash and it's simply not done?
+          //                 Who knows...
+          throw new InvalidOperationException("Can only access HRAM during DMA transfer");
         }
 
-        // NOTE(Cristian): We start a DMA process.
-        else if (address == (ushort)MemoryMappedRegisters.DMA)
-        {
-          this.dma.Start(value);
-        }
-        else
+        /* [0xFEA0 - 0xFEFF]: Empty but unusable for I/O */
+        if (address < 0xFF00)
         {
           this.memoryData[address] = value;
         }
 
-      }
+        /* [0xFF00 - 0xFF4B]: I/O Ports */
+        else if (address < 0xFF4C)
+        {
+          if (address == (ushort)MemoryMappedRegisters.P1)
+          {
+            byte p1 = this.memoryData[address];
+            // Only the bits 4 and 5 are writable in P1
+            p1 &= 0xCF; // &= 11001111;
+            p1 |= (byte)(value & 0x30); // |= (value & 00110000); writable mask
+            this.memoryData[address] = p1;
 
-      /* [0xFF4C - 0xFF7F]: Empty but unusable for I/O */
-      else if (address < 0xFF80)
-      {
-        this.memoryData[address] = value;
-      }
+
+            // Request an interrupt if necessary
+            this.gameboy.InterruptController.UpdateKeypadState();
+          }
+
+          // NOTE(Cristian): We start a DMA process.
+          else if (address == (ushort)MemoryMappedRegisters.DMA)
+          {
+            this.dma.Start(value);
+          }
+          else
+          {
+            this.memoryData[address] = value;
+          }
+
+        }
+
+        /* [0xFF4C - 0xFF7F]: Empty but unusable for I/O */
+        else
+        {
+          this.memoryData[address] = value;
+        }
+      } // < 0xFF80
 
       /* [0xFF80 - 0xFFFE]: Internal RAM */
-      else if (address < 0xFFFE)
+      else if (address < 0xFFFF)
       {
         this.memoryData[address] = value;
-      }
+      } // < 0xFFFF
 
       /* [0xFFFF]: INTERRUPT ENABLE */
       else
       {
         this.memoryData[address] = value;
-      }
+      } // < 0x10000
     }
 
     /// <summary>
