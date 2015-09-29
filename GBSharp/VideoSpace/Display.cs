@@ -257,10 +257,14 @@ namespace GBSharp.VideoSpace
     {
       LoadSprites();
 
-      // TODO(Cristian): Do the image composition line-based instead of image-based
-      byte lcdRegister = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
-      bool LCDBit3 = Utils.UtilFuncs.TestBit(lcdRegister, 3) != 0;
-      bool LCDBit4 = Utils.UtilFuncs.TestBit(lcdRegister, 4) != 0;
+      byte LCDC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
+      bool LCDCBit2 = Utils.UtilFuncs.TestBit(LCDC, 2) != 0;
+      if(LCDCBit2)
+      {
+        throw new Exception("I need to detect a game that uses this mode!");
+      }
+      bool LCDCBit3 = Utils.UtilFuncs.TestBit(LCDC, 3) != 0;
+      bool LCDCBit4 = Utils.UtilFuncs.TestBit(LCDC, 4) != 0;
 
       DisplayFunctions.SetupTilePallete(disDef, memory);
       DisplayFunctions.SetupSpritePalletes(disDef, memory);
@@ -271,7 +275,6 @@ namespace GBSharp.VideoSpace
 
       #region BACKGROUND
 
-
       int SCX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX);
       int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
       BitmapData backgroundBmpData = DisplayFunctions.LockBitmap(background, 
@@ -279,7 +282,7 @@ namespace GBSharp.VideoSpace
                                                                  disDef.pixelFormat);
       for (int row = 0; row < disDef.framePixelCountY; row++)
       {
-        uint[] rowPixels = DisplayFunctions.GetRowPixels(disDef, memory, row, LCDBit3, LCDBit4);
+        uint[] rowPixels = DisplayFunctions.GetRowPixels(disDef, memory, row, LCDCBit3, LCDCBit4);
         DisplayFunctions.DrawLine(disDef, backgroundBmpData, rowPixels, 
                                   0, row, 
                                   0, disDef.framePixelCountY);
@@ -288,7 +291,7 @@ namespace GBSharp.VideoSpace
         //                 from one bitmap to another
       }
 
-      bool drawBackground = Utils.UtilFuncs.TestBit(lcdRegister, 0) != 0;
+      bool drawBackground = Utils.UtilFuncs.TestBit(LCDC, 0) != 0;
       if(drawBackground)
       {
         // We copy the information from the background tile to the effective screen
@@ -341,7 +344,7 @@ namespace GBSharp.VideoSpace
                                         0, WY, 
                                         rWX, disDef.screenPixelCountY);
 
-      bool drawWindow = Utils.UtilFuncs.TestBit(lcdRegister, 5) != 0;
+      bool drawWindow = Utils.UtilFuncs.TestBit(LCDC, 5) != 0;
       for (int row = 0; row < disDef.screenPixelCountY; row++)
       {
         if (row >= WY)
@@ -349,7 +352,7 @@ namespace GBSharp.VideoSpace
           // The offset indexes represent that the window is drawn from it's beggining
           // at (WX, WY)
           uint[] rowPixels = DisplayFunctions.GetRowPixels(disDef, memory, row - WY, 
-                                                           LCDBit3, LCDBit4);
+                                                           LCDCBit3, LCDCBit4);
           
           // Independent target
           DisplayFunctions.DrawLine(disDef, windowBmpData, rowPixels, 
@@ -380,12 +383,12 @@ namespace GBSharp.VideoSpace
                                         0, 0, 
                                         spriteLayerBmp.Width, spriteLayerBmp.Height);
 
-      bool drawSprites = Utils.UtilFuncs.TestBit(lcdRegister, 1) != 0;
+      bool drawSprites = Utils.UtilFuncs.TestBit(LCDC, 1) != 0;
       for (int row = 0; row < disDef.screenPixelCountY; row++)
       {
         // Independent target
         uint[] pixels = new uint[disDef.screenPixelCountX];
-        DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels, row);
+        DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels, row, LCDCBit2);
         DisplayFunctions.DrawLine(disDef, spriteLayerBmp, pixels, 
                                   0, row, 
                                   0, disDef.screenPixelCountX);
@@ -394,7 +397,7 @@ namespace GBSharp.VideoSpace
         if(drawSprites)
         {
           uint[] linePixels = DisplayFunctions.GetPixelRowFromBitmap(disDef, screenBmpData, row);
-          DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, linePixels, row);
+          DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, linePixels, row, LCDCBit2);
           DisplayFunctions.DrawLine(disDef, screenBmpData, linePixels, 
                                     0, row, 
                                     0, disDef.screenPixelCountX);
