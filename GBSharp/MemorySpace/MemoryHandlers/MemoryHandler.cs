@@ -98,7 +98,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           //                 Does it just return and the instruction took as much time?
           //                 Does it crash and it's simply not done?
           //                 Who knows...
-          throw new InvalidOperationException("Can only access HRAM during DMA transfer");
+          //throw new InvalidOperationException("Can only access HRAM during DMA transfer");
         }
 
         /* [0xFEA0 - 0xFEFF]: Empty but unusable for I/O */
@@ -188,7 +188,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           //                 Does it just return and the instruction took as much time?
           //                 Does it crash and it's simply not done?
           //                 Who knows...
-          throw new InvalidOperationException("Can only access HRAM during DMA transfer");
+          //throw new InvalidOperationException("Can only access HRAM during DMA transfer");
         }
       }
 
