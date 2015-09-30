@@ -430,6 +430,7 @@ namespace GBSharp.VideoSpace
     private double pixelsPerTick = (double)256 / (double)456;
 
     private bool firstRun = true;
+    private bool enabled = true;
 
     /// <summary>
     /// Simulates the update of the display for a period of time of a given number of ticks.
@@ -438,6 +439,7 @@ namespace GBSharp.VideoSpace
     /// A tick is a complete source clock oscillation, ~238.4 ns (2^-22 seconds).</param>
     internal void Step(int ticks)
     {
+      // TODO(Cristian): Move this initialization to the constructor or somethin'
       if(firstRun)
       {
         // NOTE(Cristian): We update the registers to reflect the current 
@@ -448,6 +450,29 @@ namespace GBSharp.VideoSpace
         DrawTransparency();
         firstRun = false;
       }
+
+      // We check if the display is supposed to run
+      byte LCDC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
+      bool activate = (Utils.UtilFuncs.TestBit(LCDC, 7) != 0);
+
+      if(activate && !enabled) // We need to turn on the LCD
+      {
+        enabled = true;
+      }
+      if(!activate && enabled) // We need to turn off the LCD
+      {
+        if(currentLine < 144)
+        {
+          // NOTE(Cristian): Turning off the gameboy *should* be made only during V-BLANK.
+          //                 Apparently it damages the hardware otherwise.
+          // TODO(Cristian): See if this should be an assertion
+          throw new InvalidOperationException("Stopping LCD should be made during V-BLANK");
+        }
+        enabled = false;
+      }
+
+      // If the LCD is not enabled, no need to simulate anything
+      if(!enabled) { return; }
 
       // TODO(Cristian): Check that the LY=LYC is correct when the display starts
 
@@ -542,7 +567,7 @@ namespace GBSharp.VideoSpace
         }
 
         byte mode = (byte)displayMode;
-        uint color = 0xFFFFFFFF;
+        uint color = 0xFFFFFF00;
         if(mode == 1) { color = 0xFFFF0000; }
         if(mode == 2) { color = 0xFF00FF00; }
         if(mode == 3) { color = 0xFF0000FF; }

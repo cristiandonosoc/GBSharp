@@ -130,6 +130,10 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           }
           else
           {
+            // NOTE(Cristian): The 0xFF40 display handling is done in the display step
+            //                 This means that any display state change will be handled
+            //                 by reading the value of the register rather than triggrering
+            //                 an event here.
             this.memoryData[address] = value;
           }
 
