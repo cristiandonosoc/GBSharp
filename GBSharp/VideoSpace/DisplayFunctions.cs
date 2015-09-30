@@ -77,18 +77,19 @@ namespace GBSharp.VideoSpace
                 bool LCDCBit2,
                 bool flipX = false, bool flipY = false)
     {
-      int tileLength = disDef.bytesPerTileShort;
-      if (LCDCBit2) { tileLength = disDef.bytesPerTileLong; }
+      int tileLength = 16;
+      int spriteLength = disDef.bytesPerTileShort;
+      if (LCDCBit2) { spriteLength = disDef.bytesPerTileLong; }
 
       // We obtain the tile memory
-      byte[] data = new byte[tileLength];
+      byte[] data = new byte[spriteLength];
       data = memory.LowLevelArrayRead(
         (ushort)(tileBaseAddress + (tileLength * tileOffset)),
-        tileLength);
+        spriteLength);
 
       if (flipX)
       {
-        for (int i = 0; i < tileLength; ++i)
+        for (int i = 0; i < spriteLength; ++i)
         {
           byte d = data[i];
           byte r = (byte)((flipLookup[d & 0x0F] << 4) | flipLookup[d >> 4]);
@@ -100,12 +101,12 @@ namespace GBSharp.VideoSpace
       {
         // NOTE(Cristian): We have to flip them in pairs, because
         //                 otherwise the colors change!
-        for (int i = 0; i < tileLength / 4; ++i)
+        for (int i = 0; i < spriteLength / 4; ++i)
         {
           byte d0 = data[2 * i];
           byte d1 = data[2 * i + 1];
 
-          int index = (tileLength - 1) - 2 * i;
+          int index = (spriteLength - 1) - 2 * i;
           data[2 * i] = data[index - 1];
           data[2 * i + 1] = data[index];
 

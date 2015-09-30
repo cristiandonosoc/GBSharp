@@ -242,11 +242,16 @@ namespace GBSharp.VideoSpace
 
     internal void DrawSprite(BitmapData spriteBmd, int spriteCode, int pX, int pY)
     {
+      DisplayFunctions.DrawTransparency(disDef, spriteBmd, 0, 0, 8, 16);
 
       byte LCDC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
       bool LCDCBit2 = Utils.UtilFuncs.TestBit(LCDC, 2) != 0;
-      DisplayFunctions.DrawTransparency(disDef, spriteBmd,
-                                        0, 0, 8, 16);
+
+      if(LCDCBit2)
+      {
+        spriteCode = spriteCode & 0xFE; // We remove the last bit
+      }
+
       // We draw the top part
       byte[] pixels = DisplayFunctions.GetTileData(disDef, memory, 0x8000, spriteCode, LCDCBit2);
       DisplayFunctions.DrawTile(disDef, spriteBmd, pixels, pX, pY,
@@ -259,10 +264,6 @@ namespace GBSharp.VideoSpace
 
       byte LCDC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
       bool LCDCBit2 = Utils.UtilFuncs.TestBit(LCDC, 2) != 0;
-      if(LCDCBit2)
-      {
-        throw new Exception("I need to detect a game that uses this mode!");
-      }
       bool LCDCBit3 = Utils.UtilFuncs.TestBit(LCDC, 3) != 0;
       bool LCDCBit4 = Utils.UtilFuncs.TestBit(LCDC, 4) != 0;
 
