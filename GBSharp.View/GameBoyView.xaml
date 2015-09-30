@@ -69,15 +69,15 @@
               </avalonDock:LayoutAnchorable>
             </avalonDock:LayoutAnchorablePane>
             <avalonDock:LayoutAnchorablePane>
-              <avalonDock:LayoutAnchorable Title="Dissasemble">
-                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Dissasemble}"/>
-              </avalonDock:LayoutAnchorable>
-            </avalonDock:LayoutAnchorablePane>
-            <avalonDock:LayoutAnchorablePane>
               <avalonDock:LayoutAnchorable Title="Display">
                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Display}"/>
               </avalonDock:LayoutAnchorable>
             </avalonDock:LayoutAnchorablePane>
+            <!--<avalonDock:LayoutAnchorablePane>
+              <avalonDock:LayoutAnchorable Title="Dissasemble">
+                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Dissasemble}"/>
+              </avalonDock:LayoutAnchorable>
+            </avalonDock:LayoutAnchorablePane>-->
           </avalonDock:LayoutAnchorablePaneGroup>
           <avalonDock:LayoutAnchorablePane>
             <avalonDock:LayoutAnchorable Title="GameBoy">
