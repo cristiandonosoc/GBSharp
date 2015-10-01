@@ -14,6 +14,7 @@ namespace GBSharp
     Bitmap Background { get; }
     Bitmap Window { get; }
     Bitmap SpriteLayer { get; }
+    Bitmap DisplayTiming { get; }
     
     // Composed targets
     Bitmap Frame { get; }

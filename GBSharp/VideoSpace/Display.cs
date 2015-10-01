@@ -143,6 +143,8 @@ namespace GBSharp.VideoSpace
     private Bitmap screen;
     public Bitmap Screen { get { return screen; } }
 
+    private Bitmap displayTiming;
+    public Bitmap DisplayTiming { get { return displayTiming; } }
 
     /// <summary>
     /// Display constructor.
@@ -204,12 +206,16 @@ namespace GBSharp.VideoSpace
                                disDef.pixelFormat);
       this.frame = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, 
                               disDef.pixelFormat);
+      this.displayTiming = new Bitmap(256, 154, disDef.pixelFormat);
 
       this.spriteOAMs = new OAM[spriteCount];
       for(int i = 0; i < spriteOAMs.Length; ++i)
       {
         this.spriteOAMs[i] = new OAM(); 
       }
+
+
+      UpdateDisplayLineInfo(false);
 
       // TODO(Cristian): Remove this call eventually, when testing is not needed!
 #if DEBUG
@@ -439,18 +445,6 @@ namespace GBSharp.VideoSpace
     /// A tick is a complete source clock oscillation, ~238.4 ns (2^-22 seconds).</param>
     internal void Step(int ticks)
     {
-      // TODO(Cristian): Move this initialization to the constructor or somethin'
-      if(firstRun)
-      {
-        // NOTE(Cristian): We update the registers to reflect the current 
-        //                 state of the display
-        UpdateDisplayLineInfo(false);
-
-        // TODO(Cristian): Remove this draw!!
-        DrawTransparency();
-        firstRun = false;
-      }
-
       // We check if the display is supposed to run
       byte LCDC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
       bool activate = (Utils.UtilFuncs.TestBit(LCDC, 7) != 0);
@@ -544,27 +538,41 @@ namespace GBSharp.VideoSpace
       //                 We (will probably) need some kind of direct access
       //                 if we want to achieve 60 FPS
       DrawPixels();
+
+      if(firstRun)
+      {
+        firstRun = false;
+      }
     }
 
     internal void DrawPixels()
     {
       //  TODO(Cristian): Remember that the WY state changes over frame (after V-BLANK)
       //                  and not between lines (as changes with WX)
-      BitmapData backgroundBmpData = DisplayFunctions.LockBitmap(background,
-                                                             ImageLockMode.WriteOnly,
-                                                             disDef.pixelFormat);
-      int uintStride = backgroundBmpData.Stride / disDef.bytesPerPixel;
+      BitmapData displayTimingBmpData = DisplayFunctions.LockBitmap(displayTiming,
+                                                                 ImageLockMode.WriteOnly,
+                                                                 disDef.pixelFormat);
+
+      int uintStride = displayTimingBmpData.Stride / disDef.bytesPerPixel;
       unsafe
       {
-        uint* row = (uint*)backgroundBmpData.Scan0 + currentLine * uintStride;
+        uint* row = (uint*)displayTimingBmpData.Scan0 + currentLine * uintStride;
 
         int beginX = (int)(pixelsPerTick * prevTickCount);
         int endX = (int)(pixelsPerTick * currentLineTickCount);
         if(beginX >= 256 || endX >= 256)
         {
-          background.UnlockBits(backgroundBmpData);
+          displayTiming.UnlockBits(displayTimingBmpData);
           return;
         }
+
+        if((currentLine == 0) && 
+           ((endX <= beginX) || firstRun))
+        {
+          DisplayFunctions.DrawTransparency(disDef, displayTimingBmpData, 0, 0, 256, 154);
+        }
+
+
 
         byte mode = (byte)displayMode;
         uint color = 0xFFFFFF00;
@@ -577,7 +585,7 @@ namespace GBSharp.VideoSpace
           row[i] = color;
         }
       }
-      background.UnlockBits(backgroundBmpData);
+      displayTiming.UnlockBits(displayTimingBmpData);
     }
 
     private void DrawTransparency()
@@ -657,7 +665,7 @@ namespace GBSharp.VideoSpace
       }
 
       this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.LY, currentLine);
-      byte LYC = this.memory.Read((ushort)MemoryMappedRegisters.LYC);
+      byte LYC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LYC);
 
       byte STAT = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.STAT);
       // We update the STAT corresponding to the LY=LYC coincidence

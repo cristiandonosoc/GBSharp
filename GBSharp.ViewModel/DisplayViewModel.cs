@@ -30,6 +30,7 @@ namespace GBSharp.ViewModel
     private SpriteViewModel _selectedSprite;
     private readonly ObservableCollection<SpriteViewModel> _sprites = new ObservableCollection<SpriteViewModel>();
     private BitmapImage _spriteLayer;
+    private BitmapImage _displayTiming;
     
     public BitmapImage Background
     {
@@ -74,6 +75,15 @@ namespace GBSharp.ViewModel
       }
     }
 
+    public BitmapImage DisplayTiming
+    {
+      get { return _displayTiming; }
+      set
+      {
+        _displayTiming = value;
+        OnPropertyChanged(() => DisplayTiming);
+      }
+    }
 
     public bool BlockSelectionFlag
     {
@@ -164,6 +174,7 @@ namespace GBSharp.ViewModel
       Background = Utils.BitmapToImageSource(_display.Background);
       Window = Utils.BitmapToImageSource(_display.Window);
       SpriteLayer = Utils.BitmapToImageSource(_display.SpriteLayer);
+      DisplayTiming = Utils.BitmapToImageSource(_display.DisplayTiming);
 
       Sprites.Clear();
       for (int i = 0; i < 40; i++)

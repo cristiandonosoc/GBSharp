@@ -190,6 +190,28 @@
           </Grid>
         </TabItem>
 
+        <TabItem Header="DisplayTiming">
+          <Grid Margin="5">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+              <Grid Height="256" Width="256">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                  <Image Height="256" Width="256" Source="{Binding DisplayTiming}"
+                     RenderOptions.BitmapScalingMode="NearestNeighbor">
+                    <Image.LayoutTransform>
+                      <ScaleTransform 
+                        CenterX="0" CenterY="0"
+                        ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
+                        ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
+                    </Image.LayoutTransform>
+                  </Image>
+                </ScrollViewer>
+              </Grid>
+            </Grid>
+          </Grid>
+        </TabItem>
 
       </TabControl>
     </ScrollViewer>
