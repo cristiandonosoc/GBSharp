@@ -478,6 +478,9 @@ namespace GBSharp.VideoSpace
         // NOTE(Cristian): rowMax is included
         for (int i = 0; i < rowSpan; i++)
         {
+          // NOTE(Cristian): Sometimes the window is 7 pixels to the left (in the case of the windows)
+          //                 We must draw on those cases
+          if(targetX < 0) { targetX++; } 
           uint pixel = rowPixels[rowStart + i];
           if(!CopyZeroPixels && pixel == 0) { continue; }
           bmdPtr[i] = rowPixels[rowStart + i];

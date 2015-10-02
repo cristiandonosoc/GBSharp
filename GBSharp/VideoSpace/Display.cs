@@ -264,8 +264,11 @@ namespace GBSharp.VideoSpace
                                 disDef.screenPixelCountX, disDef.screenPixelCountY);
     }
 
-    public void UpdateScreen(int rowBegin, int rowEnd)
+    public void DrawDisplay(int rowBegin, int rowEnd)
     {
+      if(rowBegin >= 143) { return; }
+
+
       // Necesary, sprites could have changed during H-BLANK
       LoadSprites();
 
@@ -352,6 +355,7 @@ namespace GBSharp.VideoSpace
                                         0, WY, 
                                         rWX, disDef.screenPixelCountY);
 
+      // TODO(Cristian): If BG display is off, it actually prints white
       bool drawWindow = Utils.UtilFuncs.TestBit(LCDC, 5) != 0;
       for (int row = rowBegin; row < rowEnd; row++)
       {
@@ -512,7 +516,7 @@ namespace GBSharp.VideoSpace
                 ChangeDisplayMode(DisplayModes.Mode01);
               }
 
-              RefreshScreen();
+              UpdateDisplay();
             }
           }
         }
@@ -529,7 +533,7 @@ namespace GBSharp.VideoSpace
               currentLine = 0;
             }
 
-            RefreshScreen();
+            UpdateDisplay(true);
           }
         }
       }
@@ -545,13 +549,13 @@ namespace GBSharp.VideoSpace
       }
     }
 
-    internal void DrawScreen()
+    internal void UpdateDisplay(bool refresh = false)
     {
-      BitmapData screenBmp = DisplayFunctions.LockBitmap(screen,
-                                                         ImageLockMode.ReadWrite,
-                                                         disDef.pixelFormat);
-
-      screen.UnlockBits(screenBmp);
+      DrawDisplay(0, 144);
+      if(refresh)
+      {
+        RefreshScreen();
+      }
     }
 
     internal void DrawTiming()
