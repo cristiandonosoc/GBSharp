@@ -21,6 +21,6 @@ namespace GBSharp
     Bitmap Screen { get; }
     Bitmap GetSprite(int index);
 
-    void UpdateScreen();
+    void UpdateScreen(int rowStart = 0, int rowEnd = 144);
   }
 }

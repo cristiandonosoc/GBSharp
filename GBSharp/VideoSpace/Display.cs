@@ -264,8 +264,9 @@ namespace GBSharp.VideoSpace
                                 disDef.screenPixelCountX, disDef.screenPixelCountY);
     }
 
-    public void UpdateScreen()
+    public void UpdateScreen(int rowBegin, int rowEnd)
     {
+      // Necesary, sprites could have changed during H-BLANK
       LoadSprites();
 
       byte LCDC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
@@ -292,7 +293,7 @@ namespace GBSharp.VideoSpace
         uint[] rowPixels = DisplayFunctions.GetRowPixels(disDef, memory, row, LCDCBit3, LCDCBit4);
         DisplayFunctions.DrawLine(disDef, backgroundBmpData, rowPixels, 
                                   0, row, 
-                                  0, disDef.framePixelCountY);
+                                  0, disDef.framePixelCountX);
 
         // TODO(Cristian): Move the background render to a DrawLine call instead of copying
         //                 from one bitmap to another
@@ -304,7 +305,7 @@ namespace GBSharp.VideoSpace
         // We copy the information from the background tile to the effective screen
         int backgroundUintStride = backgroundBmpData.Stride / disDef.bytesPerPixel;
         int screenUintStride = screenBmpData.Stride / disDef.bytesPerPixel;
-        for (int y = 0; y < disDef.screenPixelCountY; y++)
+        for (int y = rowBegin; y < rowEnd; y++)
         {
           for (int x = 0; x < disDef.screenPixelCountX; x++)
           {
@@ -352,7 +353,7 @@ namespace GBSharp.VideoSpace
                                         rWX, disDef.screenPixelCountY);
 
       bool drawWindow = Utils.UtilFuncs.TestBit(LCDC, 5) != 0;
-      for (int row = 0; row < disDef.screenPixelCountY; row++)
+      for (int row = rowBegin; row < rowEnd; row++)
       {
         if (row >= WY)
         {
@@ -391,7 +392,7 @@ namespace GBSharp.VideoSpace
                                         spriteLayerBmp.Width, spriteLayerBmp.Height);
 
       bool drawSprites = Utils.UtilFuncs.TestBit(LCDC, 1) != 0;
-      for (int row = 0; row < disDef.screenPixelCountY; row++)
+      for (int row = rowBegin; row < rowEnd; row++)
       {
         // Independent target
         uint[] pixels = new uint[disDef.screenPixelCountX];
@@ -526,7 +527,6 @@ namespace GBSharp.VideoSpace
             {
               ChangeDisplayMode(DisplayModes.Mode10);
               currentLine = 0;
-              DrawTransparency();
             }
 
             RefreshScreen();
@@ -537,7 +537,7 @@ namespace GBSharp.VideoSpace
       // TODO(Cristian): Copying the bitmap to the View is EXTREMELY slow. 
       //                 We (will probably) need some kind of direct access
       //                 if we want to achieve 60 FPS
-      DrawPixels();
+      DrawTiming();
 
       if(firstRun)
       {
@@ -545,7 +545,16 @@ namespace GBSharp.VideoSpace
       }
     }
 
-    internal void DrawPixels()
+    internal void DrawScreen()
+    {
+      BitmapData screenBmp = DisplayFunctions.LockBitmap(screen,
+                                                         ImageLockMode.ReadWrite,
+                                                         disDef.pixelFormat);
+
+      screen.UnlockBits(screenBmp);
+    }
+
+    internal void DrawTiming()
     {
       //  TODO(Cristian): Remember that the WY state changes over frame (after V-BLANK)
       //                  and not between lines (as changes with WX)
@@ -565,7 +574,7 @@ namespace GBSharp.VideoSpace
           displayTiming.UnlockBits(displayTimingBmpData);
           return;
         }
-
+        
         if((currentLine == 0) && 
            ((endX <= beginX) || firstRun))
         {
@@ -586,18 +595,6 @@ namespace GBSharp.VideoSpace
         }
       }
       displayTiming.UnlockBits(displayTimingBmpData);
-    }
-
-    private void DrawTransparency()
-    {
-      BitmapData bmp = DisplayFunctions.LockBitmap(background,
-                                                   ImageLockMode.WriteOnly,
-                                                   disDef.pixelFormat);
-      DisplayFunctions.DrawTransparency(disDef, bmp,
-                                        0, 0,
-                                        bmp.Width, bmp.Height);
-      background.UnlockBits(bmp);
-
     }
 
     // Returns whether the tick count is enough to get to the target
