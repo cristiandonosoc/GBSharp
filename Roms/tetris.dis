@@ -1,0 +1,1308 @@
+Warning: Unknown opcode (0xE4) at 0x000003A6
+SECTION "rom0", HOME[0]
+
+	INCBIN "..\..\Roms\tetris.gb",$0,$100-$0
+	NOP
+	JP jmp_150
+
+	INCBIN "..\..\Roms\tetris.gb",$104,$150-$104
+jmp_150:
+	JP jmp_28b
+
+	INCBIN "..\..\Roms\tetris.gb",$153,$28b-$153
+jmp_28b:
+	XOR A             // A = 0x00 (0)
+	LD HL,$DFFF       // HL = 0xDFFF
+	LD C,$10          // C = 0x10 (16)
+	LD B,$00          // B = 0x00 (0)
+
+/**
+ * This loop clears 0xD000-0xDFFF
+ * This is part of the gameboy's internal RAM
+ */
+jmp_293:
+	LD [HLD],A        // Insert A (0) into DFFF and lower
+	DEC B             // B = 0 at first
+	JR NZ,jmp_293     // If B = 0 pass (Every 256 it will pass)
+	DEC C             // C = 0x10 (16)
+	JR NZ,jmp_293     // Thus, 16 256 loops
+
+jmp_29a:
+	LD A,$01          // A = 0x01 (1)
+	DI                // Disable interrupts (IME = 0)
+	LDH [$0F],A       // 0xFF0F = 1 -> Only V-BLANK interrupt is requested
+	LDH [$FF],A       // 0xFFFF = 0 -> Only V-BLANK interrupt is enabled
+	XOR A             // A = 0
+	LDH [$42],A       // 0xFF42 = 0 -> SCY = 0
+	LDH [$43],A       // 0xFF43 = 0 -> SCX = 0
+	LDH [$A4],A       // 0xFFA4 = 0 -> IDK what dis is
+	LDH [$41],A       // 0xFF41 = 0 -> All LCDC interrumpts disabled
+	LDH [$01],A       // 0xFF01 = 0 -> 0 to be in serial transfe
+	LDH [$02],A       // 0xFF02 = 0 -> No serial transfer
+	LD A,$80          // A = 0x80 (128)
+	LDH [$40],A       // 0xFF40 = 0x80 -> DISPLAY ON (according to me, it was already enabled...)
+
+/**
+ * This loop waits for LY (display line) to be 0x94 (150).
+ * This is well into V-BLANK territory
+ */
+jmp_2b2:
+	LDH A,[$44]       // A = (0xFF44) -> Load LY into A
+	CP $94            // CP 0x96 (150) with LY
+	JR NZ,jmp_2b2     // If NZ (different), back to loop
+
+	LD A,$03          // A = 0x03 (3)
+  /**
+   * This disabled the DISPLAY. This can only be made in V-BLANK, which the program does
+   */
+	LDH [$40],A       // 0xFF40 = 0x03 -> BG display ON,
+                                        Sprite display ON,
+                                        Sprite Size 8x8,
+                                        BG tilemap 0x9800-0x9BFF,
+                                        BG tiles 0x8800-0x97FF (signed access),
+                                        WINDOW OFF,
+                                        WINDOW tilemap 0x9800-0x9BFF,
+                                        DISPLAY OFF
+	LD A,$E4          // A = 0xE4 (228)
+	LDH [$47],A       // 0xFF47 = 0xE4 -> BG Tile pallete set
+	LDH [$48],A       // 0xFF48 = 0xE4 -> Sprite Pallete 0 set (same as BG)
+	LD A,$C4          // A = 0xC4 (196)
+	LDH [$49],A       // 0xFF49 = 0xC4 -> Sprite Pallete 1 set (Different)
+	LD HL,$FF26       // HL = 0xFF26
+	LD A,$80          // A = 0x80 (128)
+	LD [HLD],A        // 0xFF26 = 0x80 -> SOUND ON
+                    // HL = 0xFF25
+	LD A,$FF          // A = 0xFF (255)
+	LD [HLD],A        // 0xFF25 = 0xFF -> Output all 4 channels to both S01 and S02
+                    //                  (I imagine it's some kind of stereo thing)
+                    // HL = 0xFF24
+	LD [HL],$77       // 0xFF24 = 0x77 -> Both channels volume to max (7),
+                                        Both channels don't output Vin (IDK what this means yet)
+	LD A,$01          // A = 0x01 (1)
+	LD [$2000],A      // 0x2000 = 0x01 -> Could this be some of the MBC magic? This is strange,
+                                        because tetris is ROM ONLY...
+	LD SP,$CFFF       // SP = 0xCFFF
+	XOR A             // A = 0x00 (0)
+	LD HL,$DFFF       // HL = 0xDFFF
+	LD B,$00          // B = 0x00 (0)
+
+/**
+ * This loop clears 0xDF00-0xDFFF
+ * This is strange because I feel the past loop already cleared this
+ * This is part of the gameboy's internal RAM
+ */
+jmp_2df:
+	LD [HLD],A        // 0xDFFF = 0x00
+	DEC B             // B is initially 0
+	JR NZ,jmp_2df     // This will trigger after 256 passes
+
+	LD HL,$CFFF       // HL = 0xCFFF
+	LD C,$10          // C = 0x10 (16)
+	LD B,$00          // B = 0x00 (0)
+
+/**
+ * This loop clears 0xC000-0xCFFF
+ * This part wasn't cleared by the first clear loop
+ * This is part of the gameboy's internal RAM
+ */
+jmp_2ea:
+	LD [HLD],A        // 0xCFFF = 0x00
+	DEC B             // B is initially 0
+	JR NZ,jmp_2ea     // This will trigger after 256 passes
+	DEC C             // C is initially 16
+	JR NZ,jmp_2ea
+
+
+	LD HL,$9FFF       // HL = 0x9FFF
+	LD C,$20          // C = 0x20 (32)
+	XOR A             // A = 0x00 (0)
+	LD B,$00          // B = 0x00 (0)
+
+/**
+ * This loop clears 0x8000-0x9FFF
+ * This is all of the VRAM
+ */
+jmp_2f9:
+	LD [HLD],A
+	DEC B             // B is initially 0
+	JR NZ,jmp_2f9
+	DEC C             // C is initially 32
+	JR NZ,jmp_2f9
+
+	LD HL,$FEFF       // HL = 0xFEFF
+	LD B,$00          // B = 0x00 (0)
+
+/**
+ * This loop clears 0xFE00-0xFEFF
+ * This clears all of OAM data
+ * This clears the 96 "unusable" bytes (0xFEA0-0xFEFF)
+ */
+jmp_305:
+	LD [HLD],A
+	DEC B             // B is initially 0
+	JR NZ,jmp_305
+
+	LD HL,$FFFE       // HL = 0xFFFE
+	LD B,$80          // B = 0x80 (128)
+
+
+/**
+ * This loop clears 0xFF80-0xFFFE
+ * This is the HRAM
+ */
+jmp_30e:
+	LD [HLD],A
+	DEC B             // B initially is 128
+	JR NZ,jmp_30e
+
+
+	LD C,$B6          // C = 0xB6 (182)
+	LD B,$0C          // B = 0x0C (12)
+	LD HL,$2AC7       // HL = 0x2AC7
+
+/**
+ * This loop copies 0x2AC7-0x2AD3 into 0xB6-0xC2
+ * That range is probably an interrupt handler
+ */
+jmp_319:
+	LD A,[HLI]        // A = (0x2AC7), HL++
+	LD [C],A          // 0xB6 = (0x2AC7) -> This is probably some kind of interrupt handler
+	INC C
+	DEC B
+	JR NZ,jmp_319
+
+	CALL sub_27e9     // This call writes very hackily into (hopefully only)
+                    // the OAM range 0x9800-0x9BFF
+	CALL sub_7ff3     // CALL into a JP that sets sound channel registers
+
+	LD A,$09          // A = 0x09 (9)
+	LDH [$FF],A       // 0xFFFF = 0x09 -> Enables Joypad and Serial interrupts
+	LD A,$37          // A = 0x37 (55)
+	LDH [$C0],A       // 0xFFC0 = 0x37 -> Internal RAM data set?
+	LD A,$1C          // A = 0x1C (28)
+	LDH [$C1],A       // 0xFFC1 = 0x1C -> Internal RAM data set?
+	LD A,$24          // A = 0x24 (36)
+	LDH [$E1],A       // 0xFFE1 -0x24 -> Internal RAM data set?
+	LD A,$80          // A = 0x80 (128)
+	LDH [$40],A       // 0xFF40 = 0x80 -> DISPLAY ON (All else disabled)
+	EI                // Enable interrupts
+	XOR A             // A = 0x00 (0)
+	LDH [$0F],A       // 0xFF0F = 0x00 -> Clears all interrupts (is this useful?)
+	LDH [$4A],A       // 0xFF4A = 0x00 -> WY = 0
+	LDH [$4B],A       // 0xFF4B = 0x00 -> WX = 0
+	LDH [$06],A       // 0xFF06 = 0x00 -> Sets time modulo to 0
+jmp_343:
+	CALL sub_29fa     // Gets information from the joypad and stores it in 0xFF80
+	CALL sub_377
+	CALL sub_7ff0
+	LDH A,[$80]
+	AND $0F
+	CP $0F
+	JP Z,jmp_29a
+	LD HL,$FFA6
+	LD B,$02
+jmp_35a:
+	LD A,[HL]
+	AND A
+	JR Z,jmp_35f
+	DEC [HL]
+jmp_35f:
+	INC L
+	DEC B
+	JR NZ,jmp_35a
+	LDH A,[$C5]
+	AND A
+	JR Z,jmp_36c
+	LD A,$09
+	LDH [$FF],A
+jmp_36c:
+	LDH A,[$85]
+	AND A
+	JR Z,jmp_36c
+	XOR A
+	LDH [$85],A
+	JP jmp_343
+sub_377:
+	LDH A,[$E1]       // A = 0xE1 (225)
+	RST $28           // CALL 0x0028 -> Sadly this is not disassembled
+	ADD HL,HL
+	INC E
+	DEC A
+	DEC E
+	XOR B
+	LD [DE],A
+	RST $18
+	LD [DE],A
+	LD H,C
+	DEC E
+	ADD A,C
+	DEC E
+	ADD HL,DE
+	INC B
+	AND $04
+	XOR B
+	INC D
+	LDH A,[$14]
+	LD L,E
+	LD A,[DE]
+	DEC DE
+	LD E,$71
+	RRA
+	LD A,D
+	RRA
+	ADC A,C
+	DEC D
+	INC D
+	DEC D
+	RST $18
+	DEC D
+	INC HL
+	LD D,$8D
+	LD D,$DE
+	LD D,$4F
+	RLA
+	LD [HL],A
+	ADD HL,DE
+	-                 // ILLEGAL OPCODE
+
+	INCBIN "..\..\Roms\tetris.gb",$3a7,$27e9-$3a7
+/**
+ * This is a very hacky way of writing into the BG tilemap
+ */
+sub_27e9:
+	LD HL,$9BFF       // HL = 0x9BFF
+	LD BC,$0400       // BC = 0x400 (1024)
+jmp_27ef:
+	LD A,$2F          // A = 0x2F (47)
+	LD [HLD],A        // This decreases HL
+	DEC BC
+	LD A,B            // B is the high part of BC (starts at 0x04)
+	OR C              // A = A | C
+	JR NZ,jmp_27ef
+	RET
+
+
+	INCBIN "..\..\Roms\tetris.gb",$27f8,$29fa-$27f8
+/**
+ * This whole subroutine is for reading into 0xFF80 (HRAM) the
+ * result of reading the joypad. This information is separated by nibbles
+ */
+sub_29fa:
+	LD A,$20          // A = 0x20 (32)
+	LDH [$00],A       // 0xFF00 = 0x20 -> Select both P14 and P15 for joypad
+	LDH A,[$00]       // A = (0xFF00) -> Read joypad
+	LDH A,[$00]       // A = (0xFF00) -> Read joypad
+  // This is some h4ck0r way of getting the info of the button pressed
+	CPL               // A = ~A             // In gameboy, 0 is pressed
+	AND $0F           // A = A & 0x0F       // Only select the buttons that are pressed
+	SWAP A            // Swap A's nibbles   // Move the pressed buttons to the top part
+	LD B,A            // B = A              // Store those buttons in the top part
+	LD A,$10          // A = 0x10 (16)
+	LDH [$00],A       // 0xFF00 = 0x10 -> Select only P15
+	LDH A,[$00]       // A = (0xFF00) -> Read joypad
+	LDH A,[$00]       // A = (0xFF00) -> Read joypad
+	LDH A,[$00]       // A = (0xFF00) -> Read joypad
+	LDH A,[$00]       // A = (0xFF00) -> Read joypad
+	LDH A,[$00]       // A = (0xFF00) -> Read joypad
+	LDH A,[$00]       // A = (0xFF00) -> Read joypad
+	CPL               // A = ~A             // In gameboy, 0 is pressed
+	AND $0F           // A = A & 0x0F       // Only select the buttons that are pressed
+	OR B              // A = A | B          // In B the top 4 bits where the other pressed buttons
+	LD C,A            // C = A              // In C the top nibble is one set of press
+                                          //      the bottom nibble is other set of press
+	LDH A,[$80]       // A = (0xFF80) -> Internal RAM load (should be 0)
+	XOR C             // A = A XOR C
+	AND C             // A = A AND C
+	LDH [$81],A       // 0xFF81 = A -> Internal RAM load
+	LD A,C            // A = C
+	LDH [$80],A       // 0xFF80 = A
+	LD A,$30          // A = 0x30 (48)
+	LDH [$00],A       // 0xFF00 = A -> Unselect P14 and P15
+	RET
+
+
+	INCBIN "..\..\Roms\tetris.gb",$2a2b,$4000-$2a2b
+
+SECTION "bank1",DATA,BANK[$1]
+
+	INCBIN "..\..\Roms\tetris.gb",$4000,$6552-$4000
+sub_6552:
+	RET
+
+jmp_6553:
+	PUSH AF
+	PUSH BC
+	PUSH DE
+	PUSH HL
+	LD A,[$DF7F]
+	CP $01
+	JR Z,jmp_65a4
+	CP $02
+	JR Z,jmp_65dd
+	LD A,[$DF7E]
+	AND A
+	JR NZ,jmp_65e3
+jmp_6568:
+	LDH A,[$E4]
+	AND A
+	JR Z,jmp_657a
+	XOR A
+	LD [$DFE0],A
+	LD [$DFE8],A
+	LD [$DFF0],A
+	LD [$DFF8],A
+jmp_657a:
+	CALL sub_6552
+	CALL sub_6a0e
+	CALL sub_6a2e
+	CALL sub_6879
+	CALL sub_6a52
+	CALL sub_6c75
+	CALL sub_6a96
+jmp_658f:
+	XOR A
+	LD [$DFE0],A
+	LD [$DFE8],A
+	LD [$DFF0],A
+	LD [$DFF8],A
+	LD [$DF7F],A
+	POP HL
+	POP DE
+	POP BC
+	POP AF
+	RET
+
+jmp_65a4:
+	CALL sub_69f8
+	XOR A
+	LD [$DFE1],A
+	LD [$DFF1],A
+	LD [$DFF9],A
+	LD HL,$DFBF
+	RES 7,[HL]
+	LD HL,$DF9F
+	RES 7,[HL]
+	LD HL,$DFAF
+	RES 7,[HL]
+	LD HL,$DFCF
+	RES 7,[HL]
+	LD HL,$6F1A
+	CALL sub_69c9
+	LD A,$30
+	LD [$DF7E],A
+jmp_65d0:
+	LD HL,$65FB
+jmp_65d3:
+	CALL sub_698e
+	JR jmp_658f
+jmp_65d8:
+	LD HL,$65FF
+	JR jmp_65d3
+jmp_65dd:
+	XOR A
+	LD [$DF7E],A
+	JR jmp_6568
+jmp_65e3:
+	LD HL,$DF7E
+	DEC [HL]
+	LD A,[HL]
+	CP $28
+	JR Z,jmp_65d8
+	CP $20
+	JR Z,jmp_65d0
+	CP $18
+	JR Z,jmp_65d8
+	CP $10
+	JR NZ,jmp_658f
+	INC [HL]
+	JR jmp_658f
+
+	INCBIN "..\..\Roms\tetris.gb",$65fb,$683d-$65fb
+jmp_683d:
+	LD HL,$6F0A
+	CALL sub_693e
+	LDH A,[$04]
+	AND $1F
+	LD B,A
+	LD A,$D0
+	ADD A,B
+	LD [$DFF5],A
+	LD HL,$6838
+	JP jmp_6995
+jmp_6854:
+	LDH A,[$04]
+	AND $0F
+	LD B,A
+	LD HL,$DFF4
+	INC [HL]
+	LD A,[HL]
+	LD HL,$DFF5
+	CP $0E
+	JR NC,jmp_686f
+	INC [HL]
+	INC [HL]
+jmp_6867:
+	LD A,[HL]
+	AND $F0
+	OR B
+	LD C,$1D
+	LD [C],A
+	RET
+
+jmp_686f:
+	CP $1E
+	JP Z,jmp_691f
+	DEC [HL]
+	DEC [HL]
+	DEC [HL]
+	JR jmp_6867
+sub_6879:
+	LD A,[$DFF0]
+	CP $01
+	JP Z,jmp_68a8
+	CP $02
+	JP Z,jmp_683d
+	LD A,[$DFF1]
+	CP $01
+	JP Z,jmp_68f3
+	CP $02
+	JP Z,jmp_6854
+	RET
+
+
+	INCBIN "..\..\Roms\tetris.gb",$6894,$68a8-$6894
+jmp_68a8:
+	LD HL,$6EDA
+	CALL sub_693e
+	LD HL,$6897
+	LD A,[HL]
+	LD [$DFF6],A
+	LD A,$01
+	LD [$DFF5],A
+	LD HL,$6894
+jmp_68bd:
+	JP jmp_6995
+jmp_68c0:
+	LD A,$00
+	LD [$DFF5],A
+	LD HL,$689C
+	LD A,[HL]
+	LD [$DFF6],A
+	LD HL,$6899
+	JR jmp_68bd
+jmp_68d1:
+	LD A,$01
+	LD [$DFF5],A
+	LD HL,$68A1
+	LD A,[HL]
+	LD [$DFF6],A
+	LD HL,$689E
+	JR jmp_68bd
+jmp_68e2:
+	LD A,$02
+	LD [$DFF5],A
+	LD HL,$68A6
+	LD A,[HL]
+	LD [$DFF6],A
+	LD HL,$68A3
+	JR jmp_68bd
+jmp_68f3:
+	LD HL,$DFF4
+	INC [HL]
+	LD A,[HLI]
+	CP $09
+	JR Z,jmp_68c0
+	CP $13
+	JR Z,jmp_68d1
+	CP $17
+	JR Z,jmp_68e2
+	CP $20
+	JR Z,jmp_691f
+	LD A,[HLI]
+	CP $00
+	RET Z
+	CP $01
+	JR Z,jmp_6915
+	CP $02
+	JR Z,jmp_6919
+	RET
+
+jmp_6915:
+	INC [HL]
+	INC [HL]
+	JR jmp_691b
+jmp_6919:
+	DEC [HL]
+	DEC [HL]
+jmp_691b:
+	LD A,[HL]
+	LDH [$1D],A
+	RET
+
+jmp_691f:
+	XOR A
+	LD [$DFF1],A
+	LDH [$1A],A
+	LD HL,$DFBF
+	RES 7,[HL]
+	LD HL,$DF9F
+	RES 7,[HL]
+	LD HL,$DFAF
+	RES 7,[HL]
+	LD HL,$DFCF
+	RES 7,[HL]
+	LD HL,$6F1A
+	JR jmp_6963
+sub_693e:
+	PUSH HL
+	LD [$DFF1],A
+	LD HL,$DFBF
+	SET 7,[HL]
+	XOR A
+	LD [$DFF4],A
+	LD [$DFF5],A
+	LD [$DFF6],A
+	LDH [$1A],A
+	LD HL,$DF9F
+	SET 7,[HL]
+	LD HL,$DFAF
+	SET 7,[HL]
+	LD HL,$DFCF
+	SET 7,[HL]
+	POP HL
+jmp_6963:
+	CALL sub_69c9
+	RET
+
+
+	INCBIN "..\..\Roms\tetris.gb",$6967,$698e-$6967
+sub_698e:
+	PUSH BC
+	LD C,$16
+	LD B,$04
+	JR jmp_69a1
+jmp_6995:
+	PUSH BC
+	LD C,$1A
+	LD B,$05
+	JR jmp_69a1
+
+	INCBIN "..\..\Roms\tetris.gb",$699c,$69a1-$699c
+jmp_69a1:
+	LD A,[HLI]
+	LD [C],A
+	INC C
+	DEC B
+	JR NZ,jmp_69a1
+	POP BC
+	RET
+
+sub_69a9:
+	INC E
+	LD [$DF71],A
+sub_69ad:
+	INC E
+	DEC A
+	SLA A
+	LD C,A
+	LD B,$00
+	ADD HL,BC
+	LD C,[HL]
+	INC HL
+	LD B,[HL]
+	LD L,C
+	LD H,B
+	LD A,H
+	RET
+
+
+	INCBIN "..\..\Roms\tetris.gb",$69bc,$69c9-$69bc
+sub_69c9:
+	PUSH BC
+	LD C,$30
+jmp_69cc:
+	LD A,[HLI]
+	LD [C],A
+	INC C
+	LD A,C
+	CP $40
+	JR NZ,jmp_69cc
+	POP BC
+	RET
+
+/**
+ * This loop setups sound channel stuff
+ */
+jmp_69d6:
+sub_69d6:
+	XOR A             // A = 0x00 (0)
+	LD [$DFE1],A      // 0xDFE1 = 0x00
+	LD [$DFE9],A      // 0xDFE9 = 0x00
+	LD [$DFF1],A      // 0xDFF1 = 0x00
+	LD [$DFF9],A      // 0xDFF9 = 0x00
+	LD [$DF9F],A      // 0xDF9F = 0x00
+	LD [$DFAF],A      // 0xDFAF = 0x00
+	LD [$DFBF],A      // 0xDFBF = 0x00
+	LD [$DFCF],A      // 0xDFCF = 0x00
+	LD A,$FF          // A = 0xFF (255)
+	LDH [$25],A       // 0xFF25 = 0xFF -> Again all sound channels to both outputs
+	LD A,$03          // A = 0x03 (3)
+	LD [$DF78],A      // 0xDF78 = 0x03
+sub_69f8:
+	LD A,$08          // A = 0x08 (8)
+	LDH [$12],A       // 0xFF12 = 0x08 -> Sound Channel 1 setup
+	LDH [$17],A       // 0xFF17 = 0x08 -> Sound Channel 2 setup
+	LDH [$21],A       // 0xFF21 = 0x08 -> Sound Channel 4 setup
+	LD A,$80          // A = 0x80 (128)
+	LDH [$14],A       // 0xFF14 = 0x80 -> Sound Channel 1 freq setup
+	LDH [$19],A       // 0xFF19 = 0x80 -> Sound Channel 2 freq setup
+	LDH [$23],A       // 0xFF23 = 0x80 -> Sound Channel 4 freq setup
+	XOR A             // A = 0x00 (0)
+	LDH [$10],A       // 0xFF10 = 0x00 -> Sound Channel 1 sweep setup
+	LDH [$1A],A       // 0xFF1A = 0x00 -> Sound Channel 3 OFF
+	RET
+
+sub_6a0e:
+	LD DE,$DFE0
+	LD A,[DE]
+	AND A
+	JR Z,jmp_6a21
+	LD HL,$DF9F
+	SET 7,[HL]
+	LD HL,$6500
+	CALL sub_69a9
+	JP [HL]
+jmp_6a21:
+	INC E
+	LD A,[DE]
+	AND A
+	JR Z,jmp_6a2d
+	LD HL,$6510
+	CALL sub_69ad
+	JP [HL]
+jmp_6a2d:
+	RET
+
+sub_6a2e:
+	LD DE,$DFF8
+	LD A,[DE]
+	AND A
+	JR Z,jmp_6a41
+	LD HL,$DFCF
+	SET 7,[HL]
+	LD HL,$6520
+	CALL sub_69a9
+	JP [HL]
+jmp_6a41:
+	INC E
+	LD A,[DE]
+	AND A
+	JR Z,jmp_6a4d
+	LD HL,$6528
+	CALL sub_69ad
+	JP [HL]
+jmp_6a4d:
+	RET
+
+jmp_6a4e:
+	CALL sub_69d6
+	RET
+
+sub_6a52:
+	LD HL,$DFE8
+	LD A,[HLI]
+	AND A
+	RET Z
+	CP $FF
+	JR Z,jmp_6a4e
+	LD [HL],A
+	LD B,A
+	LD HL,$6530
+	AND $1F
+	CALL sub_69ad
+	CALL sub_6b44
+	CALL sub_6a6d
+	RET
+
+sub_6a6d:
+	LD A,[$DFE9]
+	AND A
+	RET Z
+	LD HL,$6AEF
+jmp_6a75:
+	DEC A
+	JR Z,jmp_6a7e
+	INC HL
+	INC HL
+	INC HL
+	INC HL
+	JR jmp_6a75
+jmp_6a7e:
+	LD A,[HLI]
+	LD [$DF78],A
+	LD A,[HLI]
+	LD [$DF76],A
+	LD A,[HLI]
+	LD [$DF79],A
+	LD A,[HLI]
+	LD [$DF7A],A
+	XOR A
+	LD [$DF75],A
+	LD [$DF77],A
+	RET
+
+sub_6a96:
+	LD A,[$DFE9]
+	AND A
+	JR Z,jmp_6ad9
+	LD HL,$DF75
+	LD A,[$DF78]
+	CP $01
+	JR Z,jmp_6add
+	CP $03
+	JR Z,jmp_6ad9
+	INC [HL]
+	LD A,[HLI]
+	CP [HL]
+	JR NZ,jmp_6ae2
+	DEC L
+	LD [HL],$00
+	INC L
+	INC L
+	INC [HL]
+	LD A,[$DF79]
+	BIT 0,[HL]
+	JP Z,jmp_6ac0
+	LD A,[$DF7A]
+jmp_6ac0:
+	LD B,A
+	LD A,[$DFF1]
+	AND A
+	JR Z,jmp_6acb
+	SET 2,B
+	SET 6,B
+jmp_6acb:
+	LD A,[$DFF9]
+	AND A
+	JR Z,jmp_6ad5
+	SET 3,B
+	SET 7,B
+jmp_6ad5:
+	LD A,B
+jmp_6ad6:
+	LDH [$25],A
+	RET
+
+jmp_6ad9:
+	LD A,$FF
+	JR jmp_6ad6
+jmp_6add:
+	LD A,[$DF79]
+	JR jmp_6ac0
+jmp_6ae2:
+	LD A,[$DFF9]
+	AND A
+	JR NZ,jmp_6ad9
+	LD A,[$DFF1]
+	AND A
+	JR NZ,jmp_6ad9
+	RET
+
+
+	INCBIN "..\..\Roms\tetris.gb",$6aef,$6b33-$6aef
+sub_6b33:
+	LD A,[HLI]
+	LD C,A
+	LD A,[HL]
+	LD B,A
+	LD A,[BC]
+	LD [DE],A
+	INC E
+	INC BC
+	LD A,[BC]
+	LD [DE],A
+	RET
+
+sub_6b3e:
+	LD A,[HLI]
+	LD [DE],A
+	INC E
+	LD A,[HLI]
+	LD [DE],A
+	RET
+
+sub_6b44:
+	CALL sub_69f8
+	XOR A
+	LD [$DF75],A
+	LD [$DF77],A
+	LD DE,$DF80
+	LD B,$00
+	LD A,[HLI]
+	LD [DE],A
+	INC E
+	CALL sub_6b3e
+	LD DE,$DF90
+	CALL sub_6b3e
+	LD DE,$DFA0
+	CALL sub_6b3e
+	LD DE,$DFB0
+	CALL sub_6b3e
+	LD DE,$DFC0
+	CALL sub_6b3e
+	LD HL,$DF90
+	LD DE,$DF94
+	CALL sub_6b33
+	LD HL,$DFA0
+	LD DE,$DFA4
+	CALL sub_6b33
+	LD HL,$DFB0
+	LD DE,$DFB4
+	CALL sub_6b33
+	LD HL,$DFC0
+	LD DE,$DFC4
+	CALL sub_6b33
+	LD BC,$0410
+	LD HL,$DF92
+jmp_6b9b:
+	LD [HL],$01
+	LD A,C
+	ADD A,L
+	LD L,A
+	DEC B
+	JR NZ,jmp_6b9b
+	XOR A
+	LD [$DF9E],A
+	LD [$DFAE],A
+	LD [$DFBE],A
+	RET
+
+jmp_6bae:
+	PUSH HL
+	XOR A
+	LDH [$1A],A
+	LD L,E
+	LD H,D
+	CALL sub_69c9
+	POP HL
+	JR jmp_6be4
+jmp_6bba:
+	CALL sub_6bea
+	CALL sub_6bff
+	LD E,A
+	CALL sub_6bea
+	CALL sub_6bff
+	LD D,A
+	CALL sub_6bea
+	CALL sub_6bff
+	LD C,A
+	INC L
+	INC L
+	LD [HL],E
+	INC L
+	LD [HL],D
+	INC L
+	LD [HL],C
+	DEC L
+	DEC L
+	DEC L
+	DEC L
+	PUSH HL
+	LD HL,$DF70
+	LD A,[HL]
+	POP HL
+	CP $03
+	JR Z,jmp_6bae
+jmp_6be4:
+	CALL sub_6bea
+	JP jmp_6c8f
+sub_6bea:
+	PUSH DE
+	LD A,[HLI]
+	LD E,A
+	LD A,[HLD]
+	LD D,A
+	INC DE
+jmp_6bf0:
+	LD A,E
+	LD [HLI],A
+	LD A,D
+	LD [HLD],A
+	POP DE
+	RET
+
+sub_6bf6:
+	PUSH DE
+	LD A,[HLI]
+	LD E,A
+	LD A,[HLD]
+	LD D,A
+	INC DE
+	INC DE
+	JR jmp_6bf0
+sub_6bff:
+	LD A,[HLI]
+	LD C,A
+	LD A,[HLD]
+	LD B,A
+	LD A,[BC]
+	LD B,A
+	RET
+
+jmp_6c06:
+	POP HL
+	JR jmp_6c35
+jmp_6c09:
+	LD A,[$DF70]
+	CP $03
+	JR NZ,jmp_6c20
+	LD A,[$DFB8]
+	BIT 7,A
+	JR Z,jmp_6c20
+	LD A,[HL]
+	CP $06
+	JR NZ,jmp_6c20
+	LD A,$40
+	LDH [$1C],A
+jmp_6c20:
+	PUSH HL
+	LD A,L
+	ADD A,$09
+	LD L,A
+	LD A,[HL]
+	AND A
+	JR NZ,jmp_6c06
+	LD A,L
+	ADD A,$04
+	LD L,A
+	BIT 7,[HL]
+	JR NZ,jmp_6c06
+	POP HL
+	CALL sub_6d98
+jmp_6c35:
+	DEC L
+	DEC L
+	JP jmp_6d6a
+jmp_6c3a:
+	DEC L
+	DEC L
+	DEC L
+	DEC L
+	CALL sub_6bf6
+jmp_6c41:
+	LD A,L
+	ADD A,$04
+	LD E,A
+	LD D,H
+	CALL sub_6b33
+	CP $00
+	JR Z,jmp_6c6c
+	CP $FF
+	JR Z,jmp_6c55
+	INC L
+	JP jmp_6c8d
+jmp_6c55:
+	DEC L
+	PUSH HL
+	CALL sub_6bf6
+	CALL sub_6bff
+	LD E,A
+	CALL sub_6bea
+	CALL sub_6bff
+	LD D,A
+	POP HL
+	LD A,E
+	LD [HLI],A
+	LD A,D
+	LD [HLD],A
+	JR jmp_6c41
+jmp_6c6c:
+	LD HL,$DFE9
+	LD [HL],$00
+	CALL sub_69d6
+	RET
+
+sub_6c75:
+	LD HL,$DFE9
+	LD A,[HL]
+	AND A
+	RET Z
+	LD A,$01
+	LD [$DF70],A
+	LD HL,$DF90
+jmp_6c83:
+	INC L
+	LD A,[HLI]
+	AND A
+	JP Z,jmp_6c35
+	DEC [HL]
+	JP NZ,jmp_6c09
+jmp_6c8d:
+	INC L
+	INC L
+jmp_6c8f:
+	CALL sub_6bff
+	CP $00
+	JP Z,jmp_6c3a
+	CP $9D
+	JP Z,jmp_6bba
+	AND $F0
+	CP $A0
+	JR NZ,jmp_6cbc
+	LD A,B
+	AND $0F
+	LD C,A
+	LD B,$00
+	PUSH HL
+	LD DE,$DF81
+	LD A,[DE]
+	LD L,A
+	INC DE
+	LD A,[DE]
+	LD H,A
+	ADD HL,BC
+	LD A,[HL]
+	POP HL
+	DEC L
+	LD [HLI],A
+	CALL sub_6bea
+	CALL sub_6bff
+jmp_6cbc:
+	LD A,B
+	LD C,A
+	LD B,$00
+	CALL sub_6bea
+	LD A,[$DF70]
+	CP $04
+	JP Z,jmp_6ced
+	PUSH HL
+	LD A,L
+	ADD A,$05
+	LD L,A
+	LD E,L
+	LD D,H
+	INC L
+	INC L
+	LD A,C
+	CP $01
+	JR Z,jmp_6ce8
+	LD [HL],$00
+	LD HL,$6E33
+	ADD HL,BC
+	LD A,[HLI]
+	LD [DE],A
+	INC E
+	LD A,[HL]
+	LD [DE],A
+	POP HL
+	JP jmp_6d04
+jmp_6ce8:
+	LD [HL],$01
+	POP HL
+	JR jmp_6d04
+jmp_6ced:
+	PUSH HL
+	LD DE,$DFC6
+	LD HL,$6EC5
+	ADD HL,BC
+jmp_6cf5:
+	LD A,[HLI]
+	LD [DE],A
+	INC E
+	LD A,E
+	CP $CB
+	JR NZ,jmp_6cf5
+	LD C,$20
+	LD HL,$DFC4
+	JR jmp_6d32
+jmp_6d04:
+	PUSH HL
+	LD A,[$DF70]
+	CP $01
+	JR Z,jmp_6d2d
+	CP $02
+	JR Z,jmp_6d29
+	LD C,$1A
+	LD A,[$DFBF]
+	BIT 7,A
+	JR NZ,jmp_6d1e
+	XOR A
+	LD [C],A
+	LD A,$80
+	LD [C],A
+jmp_6d1e:
+	INC C
+	INC L
+	INC L
+	INC L
+	INC L
+	LD A,[HLI]
+	LD E,A
+	LD D,$00
+	JR jmp_6d3e
+jmp_6d29:
+	LD C,$16
+	JR jmp_6d32
+jmp_6d2d:
+	LD C,$10
+	LD A,$00
+	INC C
+jmp_6d32:
+	INC L
+	INC L
+	INC L
+	LD A,[HLD]
+	AND A
+	JR NZ,jmp_6d88
+	LD A,[HLI]
+	LD E,A
+jmp_6d3b:
+	INC L
+	LD A,[HLI]
+	LD D,A
+jmp_6d3e:
+	PUSH HL
+	INC L
+	INC L
+	LD A,[HLI]
+	AND A
+	JR Z,jmp_6d47
+	LD E,$01
+jmp_6d47:
+	INC L
+	INC L
+	LD [HL],$00
+	INC L
+	LD A,[HL]
+	POP HL
+	BIT 7,A
+	JR NZ,jmp_6d65
+	LD A,D
+	LD [C],A
+	INC C
+	LD A,E
+	LD [C],A
+	INC C
+	LD A,[HLI]
+	LD [C],A
+	INC C
+	LD A,[HL]
+	OR $80
+	LD [C],A
+	LD A,L
+	OR $05
+	LD L,A
+	RES 0,[HL]
+jmp_6d65:
+	POP HL
+	DEC L
+	LD A,[HLD]
+	LD [HLD],A
+	DEC L
+jmp_6d6a:
+	LD DE,$DF70
+	LD A,[DE]
+	CP $04
+	JR Z,jmp_6d7b
+	INC A
+	LD [DE],A
+	LD DE,$0010
+	ADD HL,DE
+	JP jmp_6c83
+jmp_6d7b:
+	LD HL,$DF9E
+	INC [HL]
+	LD HL,$DFAE
+	INC [HL]
+	LD HL,$DFBE
+	INC [HL]
+	RET
+
+jmp_6d88:
+	LD B,$00
+	PUSH HL
+	POP HL
+	INC L
+	JR jmp_6d3b
+sub_6d8f:
+	LD A,B
+	SRL A
+	LD L,A
+	LD H,$00
+	ADD HL,DE
+	LD E,[HL]
+	RET
+
+sub_6d98:
+	PUSH HL
+	LD A,L
+	ADD A,$06
+	LD L,A
+	LD A,[HL]
+	AND $0F
+	JR Z,jmp_6dba
+	LD [$DF71],A
+	LD A,[$DF70]
+	LD C,$13
+	CP $01
+	JR Z,jmp_6dbc
+	LD C,$18
+	CP $02
+	JR Z,jmp_6dbc
+	LD C,$1D
+	CP $03
+	JR Z,jmp_6dbc
+jmp_6dba:
+	POP HL
+	RET
+
+jmp_6dbc:
+	INC L
+	LD A,[HLI]
+	LD E,A
+	LD A,[HL]
+	LD D,A
+	PUSH DE
+	LD A,L
+	ADD A,$04
+	LD L,A
+	LD B,[HL]
+	LD A,[$DF71]
+	CP $01
+	JR jmp_6dd7
+
+	INCBIN "..\..\Roms\tetris.gb",$6dce,$6dd7-$6dce
+jmp_6dd7:
+	LD DE,$6DFC
+	CALL sub_6d8f
+	BIT 0,B
+	JR NZ,jmp_6de3
+	SWAP E
+jmp_6de3:
+	LD A,E
+	AND $0F
+	BIT 3,A
+	JR Z,jmp_6df0
+	LD H,$FF
+	OR $F0
+	JR jmp_6df2
+jmp_6df0:
+	LD H,$00
+jmp_6df2:
+	LD L,A
+	POP DE
+	ADD HL,DE
+	LD A,L
+	LD [C],A
+	INC C
+	LD A,H
+	LD [C],A
+	JR jmp_6dba
+
+	INCBIN "..\..\Roms\tetris.gb",$6dfc,$7ff0-$6dfc
+sub_7ff0:
+	JP jmp_6553
+sub_7ff3:
+	JP jmp_69d6     // Jumps into sound setup (IDK why it needs the double jump)
+
+	INCBIN "..\..\Roms\tetris.gb",$7ff6,$8000-$7ff6

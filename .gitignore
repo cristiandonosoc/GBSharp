@@ -17,3 +17,5 @@
 
 # Emulator Ignore
 VBoy/*
+
+gb-disasm/*
