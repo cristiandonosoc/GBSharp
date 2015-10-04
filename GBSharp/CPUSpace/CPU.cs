@@ -64,6 +64,347 @@ namespace GBSharp.CPUSpace
 
     #endregion
 
+    public CPU(MemorySpace.Memory memory)
+    {
+      //Create Instruction Lambdas
+      CreateInstructionLambdas();
+      CreateCBInstructionLambdas();
+      instructionNames = CPUOpcodeNames.Setup();
+      CBinstructionNames = CPUCBOpcodeNames.Setup();
+
+      instructionDescriptions = CPUInstructionDescriptions.Setup();
+      CBinstructionDescriptions = CPUCBInstructionDescriptions.Setup();
+
+      _currentInstruction = new Instruction();
+
+      this.memory = memory;
+      this.interruptController = new InterruptController(this.memory);
+
+      // Initialize registers 
+      this.Initialize();
+    }
+
+    /// <summary>
+    /// Sets the initial values for the cpu registers and memory mapped registers.
+    /// This is the equivalent to run the BIOS rom.
+    /// </summary>
+    private void Initialize()
+    {
+      // Reset the clock state
+      this.clock = 0;
+
+      this.halted = false;
+      this.stopped = false;
+
+      // Magic CPU initial values (after bios execution).
+      this.registers.A = 1;
+      this.registers.BC = 0x0013;
+      this.registers.DE = 0x00D8;
+      this.registers.HL = 0x014D;
+      this.registers.PC = 0x0100;
+      this.registers.SP = 0xFFFE;
+
+      // Initialize memory mapped registers
+      this.memory.LowLevelWrite(0xFF05, 0x00); // TIMA
+      this.memory.LowLevelWrite(0xFF06, 0x00); // TMA
+      this.memory.LowLevelWrite(0xFF07, 0x00); // TAC
+      this.memory.LowLevelWrite(0xFF10, 0x80); // NR10
+      this.memory.LowLevelWrite(0xFF11, 0xBF); // NR11
+      this.memory.LowLevelWrite(0xFF12, 0xF3); // NR12
+      this.memory.LowLevelWrite(0xFF14, 0xBF); // NR14
+      this.memory.LowLevelWrite(0xFF16, 0x3F); // NR21
+      this.memory.LowLevelWrite(0xFF17, 0x00); // NR22
+      this.memory.LowLevelWrite(0xFF19, 0xBF); // NR24
+      this.memory.LowLevelWrite(0xFF1A, 0x7F); // NR30
+      this.memory.LowLevelWrite(0xFF1B, 0xFF); // NR31
+      this.memory.LowLevelWrite(0xFF1C, 0x9F); // NR32
+      this.memory.LowLevelWrite(0xFF1E, 0xBF); // NR33
+      this.memory.LowLevelWrite(0xFF20, 0xFF); // NR41
+      this.memory.LowLevelWrite(0xFF21, 0x00); // NR42
+      this.memory.LowLevelWrite(0xFF22, 0x00); // NR43
+      this.memory.LowLevelWrite(0xFF23, 0xBF); // NR30
+      this.memory.LowLevelWrite(0xFF24, 0x77); // NR50
+      this.memory.LowLevelWrite(0xFF25, 0xF3); // NR51
+      this.memory.LowLevelWrite(0xFF26, 0xF1); // NR52 GB: 0xF1, SGB: 0xF0
+      this.memory.LowLevelWrite(0xFF40, 0x91); // LCDC
+      this.memory.LowLevelWrite(0xFF42, 0x00); // SCY
+      this.memory.LowLevelWrite(0xFF43, 0x00); // SCX
+      this.memory.LowLevelWrite(0xFF45, 0x00); // LYC
+      this.memory.LowLevelWrite(0xFF47, 0xFC); // BGP
+      this.memory.LowLevelWrite(0xFF48, 0xFF); // OBP0
+      this.memory.LowLevelWrite(0xFF49, 0xFF); // OBP1
+      this.memory.LowLevelWrite(0xFF4A, 0x00); // WY
+      this.memory.LowLevelWrite(0xFF4B, 0x00); // WX
+      this.memory.LowLevelWrite(0xFFFF, 0x00); // IE
+    }
+
+    /// <summary>
+    /// Executes one instruction, requiring arbitrary machine and clock cycles.
+    /// </summary>
+    /// <returns>The number of ticks that were required at the base clock frequency (2^22hz, ~4Mhz).
+    /// This can be 0 in STOP mode or even 24 for CALL Z, nn and other long CALL instructions.</returns>
+    public byte Step()
+    {
+      // Instruction fetch and decode
+      Interrupts? interrupt = InterruptRequired();
+      if (interrupt != null)
+        _currentInstruction = InterruptHandler(interrupt.Value);
+      else
+        _currentInstruction = FetchAndDecode(this.registers.PC);
+
+      // Prepare for program counter movement, but wait for instruction execution.
+      // Overwrite nextPC in the instruction lambdas if you want to implement jumps.
+      this.nextPC = (ushort)(this.registers.PC + _currentInstruction.Length);
+
+
+      // Execute instruction
+      _currentInstruction.Lambda(_currentInstruction.Literal);
+
+      // Push the next program counter value into the real program counter!
+      this.registers.PC = this.nextPC;
+
+      // Perform timing operations and adjust the real number of ellapsed ticks
+      var initialClock = this.clock;
+      var ticks = UpdateClockAndTimers(initialClock, _currentInstruction.Ticks);
+      return ticks;
+    }
+
+    private Instruction InterruptHandler(Interrupts interrupt)
+    {
+      // Handle interrupt with a CALL instruction to the interrupt handler
+      Instruction instruction = new Instruction();
+      instruction.OpCode = 0xCD; // CALL!
+      instruction.Length = this.instructionLengths[(byte)instruction.OpCode];
+      instruction.Literal = this.interruptHandlers[(Interrupts)interrupt];
+      instruction.Lambda = this.instructionLambdas[(byte)instruction.OpCode];
+      instruction.Ticks = this.instructionClocks[(byte)instruction.OpCode];
+      instruction.Name = this.instructionNames[(byte)instruction.OpCode];
+      instruction.Description = this.instructionDescriptions[(byte)instruction.OpCode];
+
+      // Disable interrupts during interrupt handling and clear the current one
+      this.interruptController.InterruptMasterEnable = false;
+      byte IF = this.memory.Read((ushort)MemoryMappedRegisters.IF);
+      IF &= (byte)~(byte)interrupt;
+      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.IF, IF);
+      return instruction;
+    }
+
+    private Instruction FetchAndDecode(ushort instructionAddress)
+    {
+      Instruction instruction = new Instruction();
+      instruction.Address = instructionAddress;
+      instruction.OpCode = this.memory.Read(instructionAddress);
+
+      if (instruction.OpCode != 0xCB)
+      {
+        // Normal instructions
+        instruction.Length = this.instructionLengths[(byte)instruction.OpCode];
+
+        // Extract literal
+        if (instruction.Length == 2)
+        {
+          // 8 bit literal
+          byte op1 = this.memory.Read((ushort)(instructionAddress + 1));
+          instruction.Operands[0] = op1;
+          instruction.Literal = op1;
+        }
+        else if (instruction.Length == 3)
+        {
+          // 16 bit literal, little endian
+          byte op1 = this.memory.Read((ushort)(instructionAddress + 2));
+          byte op2 = this.memory.Read((ushort)(instructionAddress + 1));
+
+          instruction.Operands[0] = op1;
+          instruction.Operands[1] = op2;
+
+          instruction.Literal = op2;
+          instruction.Literal += (ushort)(op1 << 8);
+        }
+
+        instruction.Lambda = this.instructionLambdas[(byte)instruction.OpCode];
+        instruction.Ticks = this.instructionClocks[(byte)instruction.OpCode];
+        instruction.Name = instructionNames[(byte)instruction.OpCode];
+        instruction.Description = instructionDescriptions[(byte)instruction.OpCode];
+      }
+      else
+      {
+        // CB instructions block
+        instruction.OpCode <<= 8;
+        instruction.OpCode += this.memory.Read((ushort)(instructionAddress + 1));
+        instruction.Length = this.CBInstructionLengths[(byte)instruction.OpCode];
+        // There is no literal in CB instructions!
+
+        instruction.Lambda = this.CBInstructionLambdas[(byte)instruction.OpCode];
+        instruction.Ticks = this.CBInstructionClocks[(byte)instruction.OpCode];
+        instruction.Name = CBinstructionNames[(byte)instruction.OpCode];
+        instruction.Description = CBinstructionDescriptions[(byte)instruction.OpCode];
+      }
+      return instruction;
+    }
+
+    /// <summary>
+    /// Poor man's dissambly (for now)
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<IInstruction> Dissamble()
+    {
+      var instructions = new List<IInstruction>();
+      ushort instructionAddress = 0x0100;
+      var visitedAddresses = new HashSet<ushort>();
+      while (instructionAddress < 0x8000)
+      {
+        try
+        {
+          var instruction = FetchAndDecode(instructionAddress);
+          instructions.Add(instruction);
+          if (instruction.OpCode == 0xC3 && !visitedAddresses.Contains(instruction.Literal))
+            instructionAddress = instruction.Literal;
+          else
+            instructionAddress += instruction.Length;
+          visitedAddresses.Add(instructionAddress);
+        }
+        catch (Exception)
+        {
+          break;
+        }
+
+      }
+      return instructions;
+    }
+
+    /// <summary>
+    /// Returns the address of the interrupt handler 
+    /// </summary>
+    /// <returns></returns>
+    private Interrupts? InterruptRequired()
+    {
+      if (this.interruptController.InterruptMasterEnable)
+      {
+        // Read interrupt flags
+        int interrupt = this.memory.Read((ushort)MemoryMappedRegisters.IF);
+        // Mask enabled interrupts
+        interrupt &= this.memory.Read((ushort)MemoryMappedRegisters.IE);
+
+        if ((interrupt & 0x1F) == 0x00) // 0x1F masks the useful bits of IE and IF, there is only 5 interrupts.
+        {
+          // Nothing, or disabled, who cares
+          return null;
+        }
+
+        // Ok, find the interrupt with the highest priority, check the first bit set
+        interrupt &= -interrupt; // Magics ;)
+
+        // Return the first interrupt
+        return (Interrupts)(interrupt & 0x1F);
+      }
+      else
+      {
+        return null;
+      }
+    }
+
+    /// <summary>
+    /// Adjusts the this.clock counter to the right value after an instruction execution and updates the status of
+    /// the code-controlled timer system TIMA/TMA/TAC, setting the right flags if an overflow interrupt is required.
+    /// Updates the interrupt controller and the memory mapped registers related to timing.
+    /// </summary>
+    /// <param name="initialClock">The clock value before the instructions where executed.</param>
+    /// <param name="ticks">Base number of clock cycles required by the executed instruction.
+    /// This number is obtained from the instruction clocks dictionaries and does not include additional time
+    /// required for conditional CALL or JUMP instructions that is directly added into this.clock counter.</param>
+    /// <returns>The total real number of clock oscillations at 4194304 Hz that occurred during a Step execution.
+    /// This value includes the changes in the clock made directly by some instructions (conditionals) and the base
+    /// execution times obtained from CPUInstructionClocks and CPUCBInstructionClocks dictionaries.</returns>
+    private byte UpdateClockAndTimers(ushort initialClock, byte ticks)
+    {
+      // Update clock adding only base ticks. Conditional instructions times are already added at this point.
+      this.clock += ticks;
+
+      // Timing functions
+
+      /* We need to update the value in ticks variable since conditional CALL or JUMP instruction may
+       * add additional time to the base clock if their conditions are met.
+       * Since this.clock overflows every 65536 ticks, a substraction is not enough and an overflow
+       * condition must be checked first.
+       */
+      if (this.clock < initialClock)
+      {
+        // Clock overflow condition!
+        ticks = (byte)(0x10000 + this.clock - initialClock);
+      }
+      else
+      {
+        // Normal scenario
+        ticks = (byte)(this.clock - initialClock);
+      }
+
+      // Upper 8 bits of the clock should be accessible through DIV register.
+      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.DIV, (byte)(this.clock >> 8));
+
+      // Configurable timer TIMA/TMA/TAC system:
+      byte TAC = this.memory.Read((ushort)MemoryMappedRegisters.TAC);
+
+      byte clockSelect = (byte)(TAC & 0x03); // Clock select is the bits 0 and 1 of the TAC register
+      bool runTimer = (TAC & 0x04) == 0x04; // Run timer is the bit 2 of the TAC register
+
+      ushort timerMask;
+      switch (clockSelect)
+      {
+        case 1:
+          timerMask = 0x000F; // f/2^4 0000 0000 0000 1111, (262144 Hz)
+          break;
+        case 2:
+          timerMask = 0x003F; // f/2^6 0000 0000 0011 1111, (65536 Hz)
+          break;
+        case 3:
+          timerMask = 0x00FF; // f/2^8 0000 0000 1111 1111, (16384 Hz)
+          break;
+        default:
+          timerMask = 0x03FF; // f/2^10 0000 0011 1111 1111, (4096 Hz)
+          break;
+      }
+
+      if (runTimer)
+      {
+        // Simulate every tick that occurred during the execution of the instruction
+        for (int i = 1; i <= ticks; ++i)
+        {
+          // Maybe there is a faster way to do this without checking every clock value (??)
+          if (((initialClock + i) & timerMask) == 0x0000)
+          {
+            // We have a perfect match! The number of oscilations is now a multiple of clock selected by TAC
+
+            // Fetch current TIMA value
+            byte TIMA = this.memory.Read((ushort)MemoryMappedRegisters.TIMA);
+
+            // TIMA-tick
+            TIMA += 1;
+
+            if (TIMA == 0x0000)
+            {
+              // TIMA overflow, load TMA into TIMA
+              TIMA = this.memory.Read((ushort)MemoryMappedRegisters.TMA);
+
+              // Set the interrupt request flag
+              this.interruptController.SetInterrupt(Interrupts.TimerOverflow);
+            }
+
+            // Update memory mapped timer
+            this.memory.LowLevelWrite((ushort)MemorySpace.MemoryMappedRegisters.TIMA, TIMA);
+          }
+        }
+      }
+
+      // Return the real total number of ellapsed ticks (base instruction ticks + direct instruction addition to this.clock)
+      return ticks;
+    }
+
+    public override string ToString()
+    {
+      return registers.ToString();
+    }
+
+
     #region Instruction Lambdas
 
     private Dictionary<byte, Action<ushort>> instructionLambdas;
@@ -2861,344 +3202,5 @@ namespace GBSharp.CPUSpace
 
     #endregion
 
-    public CPU(MemorySpace.Memory memory)
-    {
-      //Create Instruction Lambdas
-      CreateInstructionLambdas();
-      CreateCBInstructionLambdas();
-      instructionNames = CPUOpcodeNames.Setup();
-      CBinstructionNames = CPUCBOpcodeNames.Setup();
-
-      instructionDescriptions = CPUInstructionDescriptions.Setup();
-      CBinstructionDescriptions = CPUCBInstructionDescriptions.Setup();
-      
-      _currentInstruction = new Instruction();
-
-      this.memory = memory;
-      this.interruptController = new InterruptController(this.memory);
-
-      // Initialize registers 
-      this.Initialize();
-    }
-
-    /// <summary>
-    /// Sets the initial values for the cpu registers and memory mapped registers.
-    /// This is the equivalent to run the BIOS rom.
-    /// </summary>
-    private void Initialize()
-    {
-      // Reset the clock state
-      this.clock = 0;
-
-      this.halted = false;
-      this.stopped = false;
-
-      // Magic CPU initial values (after bios execution).
-      this.registers.A = 1;
-      this.registers.BC = 0x0013;
-      this.registers.DE = 0x00D8;
-      this.registers.HL = 0x014D;
-      this.registers.PC = 0x0100;
-      this.registers.SP = 0xFFFE;
-
-      // Initialize memory mapped registers
-      this.memory.LowLevelWrite(0xFF05, 0x00); // TIMA
-      this.memory.LowLevelWrite(0xFF06, 0x00); // TMA
-      this.memory.LowLevelWrite(0xFF07, 0x00); // TAC
-      this.memory.LowLevelWrite(0xFF10, 0x80); // NR10
-      this.memory.LowLevelWrite(0xFF11, 0xBF); // NR11
-      this.memory.LowLevelWrite(0xFF12, 0xF3); // NR12
-      this.memory.LowLevelWrite(0xFF14, 0xBF); // NR14
-      this.memory.LowLevelWrite(0xFF16, 0x3F); // NR21
-      this.memory.LowLevelWrite(0xFF17, 0x00); // NR22
-      this.memory.LowLevelWrite(0xFF19, 0xBF); // NR24
-      this.memory.LowLevelWrite(0xFF1A, 0x7F); // NR30
-      this.memory.LowLevelWrite(0xFF1B, 0xFF); // NR31
-      this.memory.LowLevelWrite(0xFF1C, 0x9F); // NR32
-      this.memory.LowLevelWrite(0xFF1E, 0xBF); // NR33
-      this.memory.LowLevelWrite(0xFF20, 0xFF); // NR41
-      this.memory.LowLevelWrite(0xFF21, 0x00); // NR42
-      this.memory.LowLevelWrite(0xFF22, 0x00); // NR43
-      this.memory.LowLevelWrite(0xFF23, 0xBF); // NR30
-      this.memory.LowLevelWrite(0xFF24, 0x77); // NR50
-      this.memory.LowLevelWrite(0xFF25, 0xF3); // NR51
-      this.memory.LowLevelWrite(0xFF26, 0xF1); // NR52 GB: 0xF1, SGB: 0xF0
-      this.memory.LowLevelWrite(0xFF40, 0x91); // LCDC
-      this.memory.LowLevelWrite(0xFF42, 0x00); // SCY
-      this.memory.LowLevelWrite(0xFF43, 0x00); // SCX
-      this.memory.LowLevelWrite(0xFF45, 0x00); // LYC
-      this.memory.LowLevelWrite(0xFF47, 0xFC); // BGP
-      this.memory.LowLevelWrite(0xFF48, 0xFF); // OBP0
-      this.memory.LowLevelWrite(0xFF49, 0xFF); // OBP1
-      this.memory.LowLevelWrite(0xFF4A, 0x00); // WY
-      this.memory.LowLevelWrite(0xFF4B, 0x00); // WX
-      this.memory.LowLevelWrite(0xFFFF, 0x00); // IE
-    }
-
-    /// <summary>
-    /// Executes one instruction, requiring arbitrary machine and clock cycles.
-    /// </summary>
-    /// <returns>The number of ticks that were required at the base clock frequency (2^22hz, ~4Mhz).
-    /// This can be 0 in STOP mode or even 24 for CALL Z, nn and other long CALL instructions.</returns>
-    public byte Step()
-    {
-      // Instruction fetch and decode
-      Interrupts? interrupt = InterruptRequired();
-      if (interrupt != null)
-        _currentInstruction = InterruptHandler(interrupt.Value);
-      else
-        _currentInstruction = FetchAndDecode(this.registers.PC);
-      
-      // Prepare for program counter movement, but wait for instruction execution.
-      // Overwrite nextPC in the instruction lambdas if you want to implement jumps.
-      this.nextPC = (ushort)(this.registers.PC + _currentInstruction.Length);
-
-
-      // Execute instruction
-      _currentInstruction.Lambda(_currentInstruction.Literal);
-
-      // Push the next program counter value into the real program counter!
-      this.registers.PC = this.nextPC;
-
-      // Perform timing operations and adjust the real number of ellapsed ticks
-      var initialClock = this.clock;
-      var ticks = UpdateClockAndTimers(initialClock, _currentInstruction.Ticks);
-      return ticks;
-    }
-
-    private Instruction InterruptHandler(Interrupts interrupt)
-    {
-      // Handle interrupt with a CALL instruction to the interrupt handler
-      Instruction instruction = new Instruction();
-      instruction.OpCode = 0xCD; // CALL!
-      instruction.Length = this.instructionLengths[(byte)instruction.OpCode];
-      instruction.Literal = this.interruptHandlers[(Interrupts) interrupt];
-      instruction.Lambda = this.instructionLambdas[(byte)instruction.OpCode];
-      instruction.Ticks = this.instructionClocks[(byte)instruction.OpCode];
-      instruction.Name = this.instructionNames[(byte)instruction.OpCode];
-      instruction.Description = this.instructionDescriptions[(byte)instruction.OpCode];
-
-      // Disable interrupts during interrupt handling and clear the current one
-      this.interruptController.InterruptMasterEnable = false;
-      byte IF = this.memory.Read((ushort) MemoryMappedRegisters.IF);
-      IF &= (byte) ~(byte) interrupt;
-      this.memory.LowLevelWrite((ushort) MemoryMappedRegisters.IF, IF);
-      return instruction;
-    }
-
-    private Instruction FetchAndDecode(ushort instructionAddress)
-    {
-      Instruction instruction = new Instruction();
-      instruction.Address = instructionAddress;
-      instruction.OpCode = this.memory.Read(instructionAddress);
-
-      if (instruction.OpCode != 0xCB)
-      {
-        // Normal instructions
-        instruction.Length = this.instructionLengths[(byte) instruction.OpCode];
-
-        // Extract literal
-        if (instruction.Length == 2)
-        {
-          // 8 bit literal
-          byte op1 = this.memory.Read((ushort) (instructionAddress + 1));
-          instruction.Operands[0] = op1;
-          instruction.Literal = op1;
-        }
-        else if (instruction.Length == 3)
-        {
-          // 16 bit literal, little endian
-          byte op1 = this.memory.Read((ushort) (instructionAddress + 2));
-          byte op2 = this.memory.Read((ushort) (instructionAddress + 1));
-
-          instruction.Operands[0] = op1;
-          instruction.Operands[1] = op2;
-
-          instruction.Literal = op2;
-          instruction.Literal += (ushort) (op1 << 8);
-        }
-
-        instruction.Lambda = this.instructionLambdas[(byte) instruction.OpCode];
-        instruction.Ticks = this.instructionClocks[(byte) instruction.OpCode];
-        instruction.Name = instructionNames[(byte) instruction.OpCode];
-        instruction.Description = instructionDescriptions[(byte) instruction.OpCode];
-      }
-      else
-      {
-        // CB instructions block
-        instruction.OpCode <<= 8;
-        instruction.OpCode += this.memory.Read((ushort) (instructionAddress + 1));
-        instruction.Length = this.CBInstructionLengths[(byte) instruction.OpCode];
-        // There is no literal in CB instructions!
-
-        instruction.Lambda = this.CBInstructionLambdas[(byte) instruction.OpCode];
-        instruction.Ticks = this.CBInstructionClocks[(byte) instruction.OpCode];
-        instruction.Name = CBinstructionNames[(byte) instruction.OpCode];
-        instruction.Description = CBinstructionDescriptions[(byte) instruction.OpCode];
-      }
-      return instruction;
-    }
-
-    /// <summary>
-    /// Poor man's dissambly (for now)
-    /// </summary>
-    /// <returns></returns>
-    public IEnumerable<IInstruction> Dissamble()
-    {
-      var instructions = new List<IInstruction>();
-      ushort instructionAddress = 0x0100;
-      var visitedAddresses = new HashSet<ushort>();
-      while (instructionAddress < 0x8000)
-      {
-        try
-        {
-          var instruction = FetchAndDecode(instructionAddress);
-          instructions.Add(instruction);
-          if (instruction.OpCode == 0xC3 && !visitedAddresses.Contains(instruction.Literal))
-            instructionAddress = instruction.Literal;
-          else
-            instructionAddress += instruction.Length;
-          visitedAddresses.Add(instructionAddress);
-        }
-        catch (Exception)
-        {
-          break;
-        }
-       
-      }
-      return instructions;
-    }
-
-    /// <summary>
-    /// Returns the address of the interrupt handler 
-    /// </summary>
-    /// <returns></returns>
-    private Interrupts? InterruptRequired()
-    {
-      if (this.interruptController.InterruptMasterEnable)
-      {
-        // Read interrupt flags
-        int interrupt = this.memory.Read((ushort)MemoryMappedRegisters.IF);
-        // Mask enabled interrupts
-        interrupt &= this.memory.Read((ushort)MemoryMappedRegisters.IE);
-
-        if ((interrupt & 0x1F) == 0x00) // 0x1F masks the useful bits of IE and IF, there is only 5 interrupts.
-        {
-          // Nothing, or disabled, who cares
-          return null;
-        }
-
-        // Ok, find the interrupt with the highest priority, check the first bit set
-        interrupt &= -interrupt; // Magics ;)
-
-        // Return the first interrupt
-        return (Interrupts)(interrupt & 0x1F);
-      }
-      else
-      {
-        return null;
-      }
-    }
-
-    /// <summary>
-    /// Adjusts the this.clock counter to the right value after an instruction execution and updates the status of
-    /// the code-controlled timer system TIMA/TMA/TAC, setting the right flags if an overflow interrupt is required.
-    /// Updates the interrupt controller and the memory mapped registers related to timing.
-    /// </summary>
-    /// <param name="initialClock">The clock value before the instructions where executed.</param>
-    /// <param name="ticks">Base number of clock cycles required by the executed instruction.
-    /// This number is obtained from the instruction clocks dictionaries and does not include additional time
-    /// required for conditional CALL or JUMP instructions that is directly added into this.clock counter.</param>
-    /// <returns>The total real number of clock oscillations at 4194304 Hz that occurred during a Step execution.
-    /// This value includes the changes in the clock made directly by some instructions (conditionals) and the base
-    /// execution times obtained from CPUInstructionClocks and CPUCBInstructionClocks dictionaries.</returns>
-    private byte UpdateClockAndTimers(ushort initialClock, byte ticks)
-    {
-      // Update clock adding only base ticks. Conditional instructions times are already added at this point.
-      this.clock += ticks;
-
-      // Timing functions
-
-      /* We need to update the value in ticks variable since conditional CALL or JUMP instruction may
-       * add additional time to the base clock if their conditions are met.
-       * Since this.clock overflows every 65536 ticks, a substraction is not enough and an overflow
-       * condition must be checked first.
-       */
-      if (this.clock < initialClock)
-      {
-        // Clock overflow condition!
-        ticks = (byte)(0x10000 + this.clock - initialClock);
-      }
-      else
-      {
-        // Normal scenario
-        ticks = (byte)(this.clock - initialClock);
-      }
-
-      // Upper 8 bits of the clock should be accessible through DIV register.
-      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.DIV, (byte)(this.clock >> 8));
-
-      // Configurable timer TIMA/TMA/TAC system:
-      byte TAC = this.memory.Read((ushort)MemoryMappedRegisters.TAC);
-
-      byte clockSelect = (byte)(TAC & 0x03); // Clock select is the bits 0 and 1 of the TAC register
-      bool runTimer = (TAC & 0x04) == 0x04; // Run timer is the bit 2 of the TAC register
-
-      ushort timerMask;
-      switch (clockSelect)
-      {
-        case 1:
-          timerMask = 0x000F; // f/2^4 0000 0000 0000 1111, (262144 Hz)
-          break;
-        case 2:
-          timerMask = 0x003F; // f/2^6 0000 0000 0011 1111, (65536 Hz)
-          break;
-        case 3:
-          timerMask = 0x00FF; // f/2^8 0000 0000 1111 1111, (16384 Hz)
-          break;
-        default:
-          timerMask = 0x03FF; // f/2^10 0000 0011 1111 1111, (4096 Hz)
-          break;
-      }
-
-      if (runTimer)
-      {
-        // Simulate every tick that occurred during the execution of the instruction
-        for (int i = 1; i <= ticks; ++i)
-        {
-          // Maybe there is a faster way to do this without checking every clock value (??)
-          if (((initialClock + i) & timerMask) == 0x0000)
-          {
-            // We have a perfect match! The number of oscilations is now a multiple of clock selected by TAC
-
-            // Fetch current TIMA value
-            byte TIMA = this.memory.Read((ushort)MemoryMappedRegisters.TIMA);
-
-            // TIMA-tick
-            TIMA += 1;
-
-            if (TIMA == 0x0000)
-            {
-              // TIMA overflow, load TMA into TIMA
-              TIMA = this.memory.Read((ushort)MemoryMappedRegisters.TMA);
-
-              // Set the interrupt request flag
-              this.interruptController.SetInterrupt(Interrupts.TimerOverflow);
-            }
-
-            // Update memory mapped timer
-            this.memory.LowLevelWrite((ushort)MemorySpace.MemoryMappedRegisters.TIMA, TIMA);
-          }
-        }
-      }
-
-      // Return the real total number of ellapsed ticks (base instruction ticks + direct instruction addition to this.clock)
-      return ticks;
-    }
-
-    public override string ToString()
-    {
-      return registers.ToString();
-    }
   }
 }
