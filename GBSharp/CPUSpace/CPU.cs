@@ -16,8 +16,21 @@ namespace GBSharp.CPUSpace
     internal bool halted;
     internal bool stopped;
 
+    // NOTE(Cristian): This Instruction instance is no longer used to communicate
+    //                 the current state to the CPUView. This is because it's always
+    //                 one instruction behing because the PC advances after the Step.
+    //                 What it's done is that the current PC is decoded on-demand by the view.
     private Instruction _currentInstruction = null;
-
+    /// <summary>
+    /// The current operands (extra bytes) used by the current instruction
+    /// running in the CPU. This is (for now) mainly used to display this
+    /// information in the CPU view
+    /// NOTE is nullable so we can signify less operands
+    /// </summary>
+    public IInstruction CurrentInstruction
+    {
+      get { return FetchAndDecode(registers.PC); }
+    }
 
     // Interrupt starting addresses
     Dictionary<Interrupts, ushort> interruptHandlers = new Dictionary<Interrupts, ushort>()
@@ -40,17 +53,6 @@ namespace GBSharp.CPUSpace
     public bool InterruptMasterEnable
     {
       get { return interruptController.InterruptMasterEnable; }
-    }
-
-    /// <summary>
-    /// The current operands (extra bytes) used by the current instruction
-    /// running in the CPU. This is (for now) mainly used to display this
-    /// information in the CPU view
-    /// NOTE is nullable so we can signify less operands
-    /// </summary>
-    public IInstruction CurrentInstruction
-    {
-      get { return _currentInstruction; }
     }
 
     #region Lengths and clocks

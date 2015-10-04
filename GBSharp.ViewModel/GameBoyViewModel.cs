@@ -76,6 +76,7 @@
     {
       _memory.CopyFromDomain();
       _display.CopyFromDomain();
+      _cpu.CopyFromDomain();
       _dissasemble.Dissasemble();
     }
 
