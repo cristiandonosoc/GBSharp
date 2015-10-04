@@ -70,6 +70,7 @@
     private void StepHandler()
     {
       _cpu.CopyFromDomain();
+      _display.CopyFromDomain();
     }
 
     private void FileLoadedHandler()

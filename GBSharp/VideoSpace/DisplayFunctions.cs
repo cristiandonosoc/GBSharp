@@ -444,7 +444,7 @@ namespace GBSharp.VideoSpace
     
     internal static void 
     DrawRectangle(DisplayDefinition disDef, BitmapData bmd, 
-                  int rX, int rY, int rWidth, int rHeight, uint color)
+                  int rX, int rY, int rWidth, int rHeight, uint color, bool fill = false)
     {
       unsafe
       {
@@ -455,7 +455,8 @@ namespace GBSharp.VideoSpace
           {
             int pX = (rX + x) % disDef.framePixelCountX;
             int pY = (rY + y) % disDef.framePixelCountY;
-            if(x == 0 || x == (rWidth - 1) ||
+            if(fill ||
+               x == 0 || x == (rWidth - 1) ||
                y == 0 || y == (rHeight - 1))
             {
               uint* p = (uint*)bmd.Scan0 + pY * uintStride + pX;

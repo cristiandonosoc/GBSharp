@@ -192,6 +192,9 @@ namespace GBSharp.VideoSpace
       this.disDef.spritePallete0 = new uint[4];
       this.disDef.spritePallete1 = new uint[4];
 
+      // TODO(Cristian): Find out at what state the display starts!
+      this.displayMode = DisplayModes.Mode10;
+
 
       // We create the target bitmaps
       this.background = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, 
@@ -582,7 +585,11 @@ namespace GBSharp.VideoSpace
         if((currentLine == 0) && 
            ((endX <= beginX) || firstRun))
         {
-          DisplayFunctions.DrawTransparency(disDef, displayTimingBmpData, 0, 0, 256, 154);
+          //DisplayFunctions.DrawTransparency(disDef, displayTimingBmpData, 0, 0, 256, 154);
+          DisplayFunctions.DrawRectangle(disDef, displayTimingBmpData,
+                                         0, 0,
+                                         displayTimingBmpData.Width, displayTimingBmpData.Height,
+                                         0xFF000000, true);
         }
 
 
