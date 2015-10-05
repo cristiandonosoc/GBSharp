@@ -26,13 +26,12 @@ namespace GBSharp.ViewModel
 
     public void Dissasemble()
     {
-      // TODO(aaecheve): This is a tad too slow to run every time (gets old quick)
-      //var dissasembledInstructions = _cpu.Dissamble();
-      //_instructions.Clear();
-      //foreach (var dissasembledInstruction in dissasembledInstructions)
-      //{
-      //  _instructions.Add(new InstructionViewModel(dissasembledInstruction));
-      //}
+      var dissasembledInstructions = _cpu.Dissamble();
+      _instructions.Clear();
+      foreach (var dissasembledInstruction in dissasembledInstructions)
+      {
+        _instructions.Add(new InstructionViewModel(dissasembledInstruction));
+      }
     }
   }
 }

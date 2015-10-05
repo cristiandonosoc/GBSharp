@@ -249,27 +249,47 @@ namespace GBSharp.CPUSpace
     public IEnumerable<IInstruction> Dissamble()
     {
       var instructions = new List<IInstruction>();
-      ushort instructionAddress = 0x0100;
       var visitedAddresses = new HashSet<ushort>();
-      while (instructionAddress < 0x8000)
+      var addressesToVisit = new Stack<ushort>();
+      var directJumps = GetDirectJumpInstructionsOpCodes();
+      addressesToVisit.Push(0x0100);
+      while (addressesToVisit.Count > 0)
       {
+        ushort instructionAddress = addressesToVisit.Pop();
         try
         {
           var instruction = FetchAndDecode(instructionAddress);
           instructions.Add(instruction);
-          if (instruction.OpCode == 0xC3 && !visitedAddresses.Contains(instruction.Literal))
-            instructionAddress = instruction.Literal;
-          else
-            instructionAddress += instruction.Length;
-          visitedAddresses.Add(instructionAddress);
+
+          var nextInstructionAddress = (ushort)(instructionAddress + instruction.Length);
+          if (nextInstructionAddress < 0x8000 && !visitedAddresses.Contains(nextInstructionAddress))
+          {
+            visitedAddresses.Add(nextInstructionAddress);
+            addressesToVisit.Push(nextInstructionAddress);
+          }
+          if (directJumps.Contains(instruction.OpCode))
+          {
+            var jumpInstructionAddress = instruction.Literal;
+            if (jumpInstructionAddress < 0x8000 && !visitedAddresses.Contains(jumpInstructionAddress))
+            {
+              visitedAddresses.Add(jumpInstructionAddress);
+              addressesToVisit.Push(jumpInstructionAddress);
+            }
+          }
         }
         catch (Exception)
         {
-          break;
+
         }
 
       }
-      return instructions;
+      return instructions;//.OrderBy(i => i.Address);
+    }
+
+    private HashSet<ushort> GetDirectJumpInstructionsOpCodes()
+    {
+      var jumps = new HashSet<ushort>() { 0x18, 0x20, 0x28, 0x30, 0xC2, 0xC3, 0xC4, 0xCA, 0xCC, 0xCD, 0xD2, 0xD4, 0xDA, 0xDC };
+      return jumps;
     }
 
     /// <summary>
