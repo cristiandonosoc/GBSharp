@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using GBSharp.Utils;
 using GBSharp.CPUSpace.Dictionaries;
 using GBSharp.MemorySpace;
@@ -252,44 +253,89 @@ namespace GBSharp.CPUSpace
       var visitedAddresses = new HashSet<ushort>();
       var addressesToVisit = new Stack<ushort>();
       var directJumps = GetDirectJumpInstructionsOpCodes();
+      var unconditionalJumps = GetUnconditionalJumpInstructionsOpCodes();
+      var relativeJumps = GetRelativeJumpInstructionsOpCodes();
+      var restarts = GetRestartInstructionsOpCodes();
+      var returns = GetReturnsInstructionsOpCodes();
+      visitedAddresses.Add(0x0100);
       addressesToVisit.Push(0x0100);
       while (addressesToVisit.Count > 0)
       {
         ushort instructionAddress = addressesToVisit.Pop();
-        try
+        if (instructionClocks.ContainsKey((byte)this.memory.Read(instructionAddress)))
         {
-          var instruction = FetchAndDecode(instructionAddress);
-          instructions.Add(instruction);
+          try
+          {
 
-          var nextInstructionAddress = (ushort)(instructionAddress + instruction.Length);
-          if (nextInstructionAddress < 0x8000 && !visitedAddresses.Contains(nextInstructionAddress))
-          {
-            visitedAddresses.Add(nextInstructionAddress);
-            addressesToVisit.Push(nextInstructionAddress);
-          }
-          if (directJumps.Contains(instruction.OpCode))
-          {
-            var jumpInstructionAddress = instruction.Literal;
-            if (jumpInstructionAddress < 0x8000 && !visitedAddresses.Contains(jumpInstructionAddress))
+            var instruction = FetchAndDecode(instructionAddress);
+            instructions.Add(instruction);
+            var candidateNextInstructions = new List<ushort>();
+            if (!returns.Contains(instruction.OpCode) && !unconditionalJumps.Contains(instruction.OpCode))
+              candidateNextInstructions.Add((ushort)(instructionAddress + instruction.Length));
+            if (directJumps.Contains(instruction.OpCode))
+              candidateNextInstructions.Add(instruction.Literal);
+            else if (relativeJumps.Contains(instruction.OpCode))
             {
-              visitedAddresses.Add(jumpInstructionAddress);
-              addressesToVisit.Push(jumpInstructionAddress);
+              sbyte signedLiteral;
+              unchecked { signedLiteral = (sbyte)instruction.Literal; }
+              candidateNextInstructions.Add((ushort)(instruction.Address + signedLiteral + instruction.Length));
             }
-          }
-        }
-        catch (Exception)
-        {
+            foreach (var candidateNextInstruction in candidateNextInstructions)
+            {
+              if (candidateNextInstruction < 0x8000 && candidateNextInstruction >= 0x0100 && !visitedAddresses.Contains(candidateNextInstruction))
+              {
+                visitedAddresses.Add(candidateNextInstruction);
+                addressesToVisit.Push(candidateNextInstruction);
+              }
+            }
 
+          }
+          catch (Exception)
+          {
+           
+          }
         }
 
       }
-      return instructions;//.OrderBy(i => i.Address);
+      return instructions.OrderBy(i => i.Address);
     }
 
     private HashSet<ushort> GetDirectJumpInstructionsOpCodes()
     {
-      var jumps = new HashSet<ushort>() { 0x18, 0x20, 0x28, 0x30, 0xC2, 0xC3, 0xC4, 0xCA, 0xCC, 0xCD, 0xD2, 0xD4, 0xDA, 0xDC };
+      var jumps = new HashSet<ushort>() { 0xC2, 0xC3, 0xC4, 0xCA, 0xCC, 0xCD, 0xD2, 0xD4, 0xDA, 0xDC };
       return jumps;
+    }
+
+    private HashSet<ushort> GetUnconditionalJumpInstructionsOpCodes()
+    {
+      var jumps = new HashSet<ushort>() { 0xC3 };
+      return jumps;
+    }
+
+    private HashSet<ushort> GetRelativeJumpInstructionsOpCodes()
+    {
+      var jumps = new HashSet<ushort>() { 0x18, 0x20, 0x28, 0x30, 0x38 };
+      return jumps;
+    }
+
+    private HashSet<ushort> GetReturnsInstructionsOpCodes()
+    {
+      var returns = new HashSet<ushort>() { 0xC0, 0xD0, 0xC8, 0xD8, 0xC9, 0xD9 };
+      return returns;
+    }
+
+    private Dictionary<ushort, ushort> GetRestartInstructionsOpCodes()
+    {
+      var restarts = new Dictionary<ushort, ushort>();
+      restarts.Add(0xC7, 0x00);
+      restarts.Add(0xD7, 0x10);
+      restarts.Add(0xE7, 0x20);
+      restarts.Add(0xF7, 0x30);
+      restarts.Add(0xCF, 0x08);
+      restarts.Add(0xDF, 0x18);
+      restarts.Add(0xEF, 0x28);
+      restarts.Add(0xFF, 0x38);
+      return restarts;
     }
 
     /// <summary>
@@ -1937,7 +1983,7 @@ namespace GBSharp.CPUSpace
             {0xE3, (n)=>{throw new InvalidInstructionException("XX (0xE3)");}},
 
             // XX: Operation removed in this CPU
-            {0xE4, (n)=>{}},
+            {0xE4, (n)=>{throw new InvalidInstructionException("XX (0xE4)");}},
 
             // PUSH HL: Push 16-bit HL onto stack
             {0xE5, (n)=>{

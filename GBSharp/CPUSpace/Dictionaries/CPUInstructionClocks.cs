@@ -239,7 +239,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             {0xE1, 12}, // POP HL
             {0xE2, 8}, // LDH (C),A
             // {0xE3, }, // XX
-            {0xE4, 4}, // XX
+            //{0xE4, 4}, // XX
             {0xE5, 16}, // PUSH HL
             {0xE6, 8}, // AND n
             {0xE7, 16}, // RST 20
