@@ -64,7 +64,7 @@
       _interrupt = new InterruptViewModel(_gameBoy, _dispatcher);
       _display = new DisplayViewModel(_gameBoy.Display, _gameBoy.Memory, _dispatcher);
       _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher, _display);
-      _dissasemble = new DissasembleViewModel(_gameBoy.CPU);
+      _dissasemble = new DissasembleViewModel(_gameBoy);
     }
 
     private void StepHandler()

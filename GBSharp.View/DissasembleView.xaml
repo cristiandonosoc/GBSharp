@@ -26,16 +26,22 @@
       <RowDefinition Height="Auto"></RowDefinition>
     </Grid.RowDefinitions>
     <Grid Style="{StaticResource SpacingGrid}">
-      <ListView MaxHeight="400" ItemsSource ="{Binding Instructions}" >
+      <ListView MaxHeight="400" ItemsSource ="{Binding Instructions}" SelectedItem="{Binding SelectedInstruction}" >
         
       </ListView>
     </Grid>
     <Grid Margin="5" Grid.Row="1">
       <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"></ColumnDefinition>
+        <ColumnDefinition Width="Auto"></ColumnDefinition>
         <ColumnDefinition Width="*"></ColumnDefinition>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
+        <ColumnDefinition Width="Auto"></ColumnDefinition>
       </Grid.ColumnDefinitions>
-      <Button Grid.Column="1" Content="Dissasemble" Command="{Binding DissasembleCommand}"></Button>
+      <TextBlock Text="BreakPoint"/>
+      <TextBlock Grid.Column="1" Text="{Binding BreakPoint}"/>
+      <Button Grid.Column="3" Content="Set BreakPoint" Command="{Binding SetBreakPointCommand}"></Button>
+      <Button Grid.Column="4" Content="Dissasemble" Command="{Binding DissasembleCommand}"></Button>
     </Grid>
   </Grid>
 </UserControl>
