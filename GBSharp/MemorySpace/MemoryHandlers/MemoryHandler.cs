@@ -168,7 +168,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     internal virtual void Write(ushort address, ushort value)
     {
       Write(address, (byte)(value & 0x00FF));
-      Write(address, (byte)((value >> 8) & 0x00FF));
+      Write(++address, (byte)((value >> 8) & 0x00FF));
     }
 
     /// <summary>

@@ -155,6 +155,7 @@ namespace GBSharp
     /// </summary>
     public void Run()
     {
+      this.manualResetEvent.Set();
       // NOTE(cdonoso): If we're running, we shouldn't restart. Or should we?
       if(this.run) { return; }
       if (this.cartridge == null) { return; }
@@ -162,7 +163,6 @@ namespace GBSharp
       this.stepCounter = 0;
       this.tickCounter = 0;
       this.stopwatch.Restart();
-      this.manualResetEvent.Set();
       this.clockThread.Start();
     }
     

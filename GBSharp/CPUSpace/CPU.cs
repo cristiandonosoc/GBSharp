@@ -1783,8 +1783,8 @@ namespace GBSharp.CPUSpace
             {0xC0, (n)=>{
               if (registers.FZ != 0) { return; }
               // We load the program counter (high byte is in higher address)
-              this.nextPC = memory.Read(registers.SP++);
-              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
+              this.nextPC = memory.Read(++registers.SP);
+              this.nextPC += (ushort)(memory.Read(++registers.SP) << 8);
             }},
 
             // POP BC: Pop 16-bit value from stack into BC
@@ -1808,10 +1808,12 @@ namespace GBSharp.CPUSpace
             // CALL NZ,nn: Call routine at 16-bit location if last result was not zero
             {0xC4, (n)=>{
               if (registers.FZ != 0) { return; }
-              // We decrease the SP by 2
-              registers.SP -= 2;
+              // We decrease the SP by 1
+              registers.SP -= 1;
               // We but the nextPC in the stack (high byte first get the higher address)
               memory.Write(registers.SP, this.nextPC);
+              // We decrease the SP by 1, AGAIN
+              registers.SP -= 1;
               // We jump
               this.nextPC = n;
             }},
@@ -1833,15 +1835,15 @@ namespace GBSharp.CPUSpace
             {0xC8, (n)=>{
               if (registers.FZ == 0) { return; }
               // We load the program counter (high byte is in higher address)
-              this.nextPC = memory.Read(registers.SP++);
-              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
+              this.nextPC = memory.Read(++registers.SP);
+              this.nextPC += (ushort)(memory.Read(++registers.SP) << 8);
             }},
 
             // RET: Return to calling routine
             {0xC9, (n)=>{
               // We load the program counter (high byte is in higher address)
-              this.nextPC = memory.Read(registers.SP++);
-              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
+              this.nextPC = memory.Read(++registers.SP);
+              this.nextPC += (ushort)(memory.Read(++registers.SP) << 8);
             }},
 
             // JP Z,nn: Absolute jump to 16-bit location if last result was zero
@@ -1856,20 +1858,24 @@ namespace GBSharp.CPUSpace
             // CALL Z,nn: Call routine at 16-bit location if last result was zero
             {0xCC, (n)=>{
               if (registers.FZ == 0) { return; }
-              // We decrease the SP by 2
-              registers.SP -= 2;
+              // We decrease the SP by 1
+              registers.SP -= 1;
               // We but the nextPC in the stack (high byte first get the higher address)
               memory.Write(registers.SP, this.nextPC);
+              // We decrease the SP by 1, AGAIN
+              registers.SP -= 1;
               // We jump
               this.nextPC = n;
             }},
 
             // CALL nn: Call routine at 16-bit location
             {0xCD, (n)=>{
-              // We decrease the SP by 2
-              registers.SP -= 2;
+              // We decrease the SP by 1
+              registers.SP -= 1;
               // We but the nextPC in the stack (high byte first get the higher address)
               memory.Write(registers.SP, this.nextPC);
+              // We decrease the SP by 1, AGAIN
+              registers.SP -= 1;
               // We jump
               this.nextPC = n;
             }},
@@ -1895,8 +1901,8 @@ namespace GBSharp.CPUSpace
             {0xD0, (n)=>{
               if (registers.FC != 0) { return; }
               // We load the program counter (high byte is in higher address)
-              this.nextPC = memory.Read(registers.SP++);
-              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
+              this.nextPC = memory.Read(++registers.SP);
+              this.nextPC += (ushort)(memory.Read(++registers.SP) << 8);
             }},
 
             // POP DE: Pop 16-bit value from stack into DE
@@ -1918,10 +1924,12 @@ namespace GBSharp.CPUSpace
             // CALL NC,nn: Call routine at 16-bit location if last result caused no carry
             {0xD4, (n)=>{
               if (registers.FC != 0) { return; }
-              // We decrease the SP by 2
-              registers.SP -= 2;
+              // We decrease the SP by 1
+              registers.SP -= 1;
               // We but the nextPC in the stack (high byte first get the higher address)
               memory.Write(registers.SP, this.nextPC);
+              // We decrease the SP by 1, AGAIN
+              registers.SP -= 1;
               // We jump
               this.nextPC = n;
             }},
@@ -1943,12 +1951,18 @@ namespace GBSharp.CPUSpace
             {0xD8, (n)=>{
               if (registers.FC == 0) { return; }
               // We load the program counter (high byte is in higher address)
-              this.nextPC = memory.Read(registers.SP++);
-              this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
+              this.nextPC = memory.Read(++registers.SP);
+              this.nextPC += (ushort)(memory.Read(++registers.SP) << 8);
             }},
 
             // RETI: Enable interrupts and return to calling routine
-            {0xD9, (n)=>{throw new NotImplementedException("RETI (0xD9)");}},
+            {0xD9, (n)=>{
+              this.interruptController.InterruptMasterEnable = true;
+              
+              // We load the program counter (high byte is in higher address)
+              this.nextPC = memory.Read(++registers.SP);
+              this.nextPC += (ushort)(memory.Read(++registers.SP) << 8);
+            }},
 
             // JP C,nn: Absolute jump to 16-bit location if last result caused carry
             {0xDA, (n)=>{
@@ -1962,10 +1976,12 @@ namespace GBSharp.CPUSpace
             // CALL C,nn: Call routine at 16-bit location if last result caused carry
             {0xDC, (n)=>{
               if (registers.FC == 0) { return; }
-              // We decrease the SP by 2
-              registers.SP -= 2;
+              // We decrease the SP by 1
+              registers.SP -= 1;
               // We but the nextPC in the stack (high byte first get the higher address)
               memory.Write(registers.SP, this.nextPC);
+              // We decrease the SP by 1, AGAIN
+              registers.SP -= 1;
               // We jump
               this.nextPC = n;
             }},
