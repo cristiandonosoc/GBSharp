@@ -563,6 +563,8 @@ namespace GBSharp.VideoSpace
 
     internal void DrawTiming()
     {
+      // This probably means an empty step (breakpoint)
+      if(prevTickCount == currentLineTickCount) { return; }
       //  TODO(Cristian): Remember that the WY state changes over frame (after V-BLANK)
       //                  and not between lines (as changes with WX)
       BitmapData displayTimingBmpData = DisplayFunctions.LockBitmap(displayTiming,

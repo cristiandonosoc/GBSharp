@@ -481,7 +481,11 @@ namespace GBSharp.VideoSpace
         {
           // NOTE(Cristian): Sometimes the window is 7 pixels to the left (in the case of the windows)
           //                 We must draw on those cases
-          if(targetX < 0) { targetX++; } 
+          if(targetX < 0)
+          {
+            targetX++;
+            continue;
+          } 
           uint pixel = rowPixels[rowStart + i];
           if(!CopyZeroPixels && pixel == 0) { continue; }
           bmdPtr[i] = rowPixels[rowStart + i];

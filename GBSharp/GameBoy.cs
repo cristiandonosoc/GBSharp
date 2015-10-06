@@ -46,6 +46,9 @@ namespace GBSharp
       this.buttons = Keypad.None;
       this.manualResetEvent = new ManualResetEventSlim(false);
       this.clockThread = new Thread(new ThreadStart(this.ThreadedRun));
+
+      // Events
+      this.cpu.BreakpointFound += Pause;
     }
 
     public ICPU CPU
@@ -135,9 +138,9 @@ namespace GBSharp
     /// Runs the simulation for the smallest amount of time possible.
     /// This should be 1 whole instruction, arbitrary machine and clock cycles.
     /// </summary>
-    public void Step()
+    public void Step(bool ignoreBreakpoints)
     {
-      byte ticks = this.cpu.Step();
+      byte ticks = this.cpu.Step(ignoreBreakpoints); // We don't ignore breakpoints
       this.memory.Step(ticks);
       this.display.Step(ticks);
 
@@ -195,7 +198,7 @@ namespace GBSharp
       while (this.run)
       {
         this.manualResetEvent.Wait(); // Wait for pauses.
-        this.Step();
+        this.Step(false);
         NotifyStepFinished();
 
         // Check timing issues

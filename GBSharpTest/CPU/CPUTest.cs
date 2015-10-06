@@ -57,7 +57,7 @@ namespace GBSharpTest.CPUSpace
            i < steps;
            i++)
       {
-        cpu.Step();
+        cpu.Step(true);
       }
 
       // Assert
