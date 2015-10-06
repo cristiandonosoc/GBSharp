@@ -14,7 +14,7 @@ namespace GBSharp
     void Run();
     void Pause();
     void Stop();
-    void Step();
+    void Step(bool ignoreBreakpoints);
     void PressButton(Keypad button);
     void ReleaseButton(Keypad button);
     

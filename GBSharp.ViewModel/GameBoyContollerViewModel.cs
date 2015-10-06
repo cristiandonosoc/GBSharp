@@ -14,6 +14,8 @@ namespace GBSharp.ViewModel
 
     private string _filePath;
     private string _cartridgeTitle;
+    private string _breakpoint;
+    private string _currentBreakpoint;
 
     public string FilePath
     {
@@ -37,6 +39,32 @@ namespace GBSharp.ViewModel
         {
           _cartridgeTitle = value;
           OnPropertyChanged(() => CartridgeTitle);
+        }
+      }
+    }
+
+    public string Breakpoint
+    {
+      get { return _breakpoint; }
+      set
+      {
+        if(_breakpoint != value)
+        {
+          _breakpoint = value;
+          OnPropertyChanged(() => Breakpoint);
+        }
+      }
+    }
+
+    public string CurrentBreakpoint
+    {
+      get { return _currentBreakpoint; }
+      set
+      {
+        if(_currentBreakpoint != value)
+        {
+          _currentBreakpoint = value;
+          OnPropertyChanged(() => CurrentBreakpoint);
         }
       }
     }
@@ -67,6 +95,11 @@ namespace GBSharp.ViewModel
       get { return new DelegateCommand(Load); }
     }
 
+    public ICommand SetBreakpointCommand
+    {
+      get { return new DelegateCommand(SetBreakpoint); }
+    }
+
     public GameBoyContollerViewModel(IGameBoy gameBoy, IOpenFileDialogFactory fileDialogFactory)
     {
       _gameBoy = gameBoy;
@@ -91,7 +124,7 @@ namespace GBSharp.ViewModel
 
     private void Step()
     {
-      _gameBoy.Step();
+      _gameBoy.Step(true);
       NotifyStep();
     }
 
@@ -142,6 +175,13 @@ namespace GBSharp.ViewModel
       if (OnStep != null)
         OnStep();
     }
-    
+
+    private void SetBreakpoint()
+    {
+      // TODO(aaecheve): put love to this input check :)
+      ushort address = Convert.ToUInt16(Breakpoint, 16);
+      _gameBoy.CPU.Breakpoint = address;
+      CurrentBreakpoint = "0x" + address.ToString("x2");
+    }
   }
 }

@@ -16,6 +16,13 @@ namespace GBSharp.CPUSpace
     internal bool halted;
     internal bool stopped;
 
+    public event Action BreakpointFound;
+
+    public ushort Breakpoint
+    {
+      get; set;
+    }
+
     // NOTE(Cristian): This Instruction instance is no longer used to communicate
     //                 the current state to the CPUView. This is because it's always
     //                 one instruction behing because the PC advances after the Step.
@@ -136,14 +143,19 @@ namespace GBSharp.CPUSpace
       this.memory.LowLevelWrite(0xFF4A, 0x00); // WY
       this.memory.LowLevelWrite(0xFF4B, 0x00); // WX
       this.memory.LowLevelWrite(0xFFFF, 0x00); // IE
+
+      // NOTE(Cristian): This address is not writable as a program,
+      //                 so this breakpoint *should* be inactive
+      this.Breakpoint = 0xFFFF;
     }
 
     /// <summary>
     /// Executes one instruction, requiring arbitrary machine and clock cycles.
     /// </summary>
+    /// <param name="ignoreBreakpoints">If this step should check for breakpoints</param>
     /// <returns>The number of ticks that were required at the base clock frequency (2^22hz, ~4Mhz).
     /// This can be 0 in STOP mode or even 24 for CALL Z, nn and other long CALL instructions.</returns>
-    public byte Step()
+    public byte Step(bool ignoreBreakpoints)
     {
       // Instruction fetch and decode
       Interrupts? interrupt = InterruptRequired();
@@ -151,6 +163,14 @@ namespace GBSharp.CPUSpace
         _currentInstruction = InterruptHandler(interrupt.Value);
       else
         _currentInstruction = FetchAndDecode(this.registers.PC);
+
+      // We see if there is an breakpoint to this address
+      if(!ignoreBreakpoints && (_currentInstruction.Address == Breakpoint))
+      {
+        BreakpointFound();
+        return 0;
+      }
+
 
       // Prepare for program counter movement, but wait for instruction execution.
       // Overwrite nextPC in the instruction lambdas if you want to implement jumps.
