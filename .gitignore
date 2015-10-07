@@ -14,8 +14,9 @@
 # Vim
 *.swp
 *.un~
+*.bak
 
-# Emulator Ignore
+# Dono's BS 
 VBoy/*
-
 gb-disasm/*
+extras/*

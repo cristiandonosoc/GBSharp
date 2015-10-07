@@ -839,7 +839,7 @@ namespace GBSharp.CPUSpace
             {0x35, (n)=>{memory.Write(registers.HL, (byte)(memory.Read(registers.HL) - 1));}},
 
             // LD (HL),n: Load 8-bit immediate into address pointed by HL
-            {0x36, (n) => { memory.Write(registers.HL, n);}},
+            {0x36, (n) => { memory.Write(registers.HL, (byte)n);}},
 
             // SCF: Set carry flag
             {0x37, (n)=>{registers.F = UtilFuncs.SetBit(registers.F, (int)Flags.C);}},
@@ -2003,7 +2003,7 @@ namespace GBSharp.CPUSpace
             {0xDF, (n)=>{instructionLambdas[0xCD](0x18);}},
 
             // LDH (n),A: Save A at address pointed to by (FF00h + 8-bit immediate)
-            {0xE0, (n)=>{memory.Write((ushort)(0xFF00 | n), registers.A);}},
+            {0xE0, (n)=>{memory.Write((ushort)(0xFF00 | (byte)n), registers.A);}},
 
             // POP HL: Pop 16-bit value from stack into HL
             {0xE1, (n)=>{
@@ -2076,7 +2076,7 @@ namespace GBSharp.CPUSpace
             {0xEF, (n)=>{instructionLambdas[0xCD](0x28);}},
 
             // LDH A,(n): Load A from address pointed to by (FF00h + 8-bit immediate)
-            {0xF0, (n)=>{registers.A = memory.Read((ushort)(0xFF00 | n));}},
+            {0xF0, (n)=>{registers.A = memory.Read((ushort)(0xFF00 | (byte)n));}},
 
             // POP AF: Pop 16-bit value from stack into AF
             {0xF1, (n)=>{
