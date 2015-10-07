@@ -1600,7 +1600,9 @@ namespace GBSharp.CPUSpace
             {
               registers.A |= registers.B;
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.H = (byte)0;
+              registers.FH = (byte)0;
+              registers.FN = (byte)0;
+              registers.FC = (byte)0;
             }},
 
             // OR C: Logical OR C against A
@@ -1608,7 +1610,9 @@ namespace GBSharp.CPUSpace
             {
               registers.A |= registers.C;
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.H = (byte)0;
+              registers.FH = (byte)0;
+              registers.FN = (byte)0;
+              registers.FC = (byte)0;
             }},
 
             // OR D: Logical OR D against A
@@ -1616,7 +1620,9 @@ namespace GBSharp.CPUSpace
             {
               registers.A |= registers.D;
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.H = (byte)0;
+              registers.FH = (byte)0;
+              registers.FN = (byte)0;
+              registers.FC = (byte)0;
             }},
 
             // OR E: Logical OR E against A
@@ -1624,7 +1630,9 @@ namespace GBSharp.CPUSpace
             {
               registers.A |= registers.E;
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.H = (byte)0;
+              registers.FH = (byte)0;
+              registers.FN = (byte)0;
+              registers.FC = (byte)0;
             }},
 
             // OR H: Logical OR H against A
@@ -1632,7 +1640,9 @@ namespace GBSharp.CPUSpace
             {
               registers.A |= registers.H;
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.H = (byte)0;
+              registers.FH = (byte)0;
+              registers.FN = (byte)0;
+              registers.FC = (byte)0;
             }},
 
             // OR L: Logical OR L against A
@@ -1640,7 +1650,9 @@ namespace GBSharp.CPUSpace
             {
               registers.A |= registers.L;
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.H = (byte)0;
+              registers.FH = (byte)0;
+              registers.FN = (byte)0;
+              registers.FC = (byte)0;
             }},
 
             // OR (HL): Logical OR value pointed by HL against A
@@ -1648,7 +1660,9 @@ namespace GBSharp.CPUSpace
             {
               registers.A |= memory.Read(registers.HL);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.H = (byte)0;
+              registers.FH = (byte)0;
+              registers.FN = (byte)0;
+              registers.FC = (byte)0;
             }},
 
             // OR A: Logical OR A against A
@@ -1656,7 +1670,9 @@ namespace GBSharp.CPUSpace
             {
               registers.A |= registers.A;
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.H = (byte)0;
+              registers.FH = (byte)0;
+              registers.FN = (byte)0;
+              registers.FC = (byte)0;
             }},
 
             // CP B: Compare B against A
@@ -2146,7 +2162,13 @@ namespace GBSharp.CPUSpace
             }},
 
             // OR n: Logical OR 8-bit immediate against A
-            {0xF6, (n)=>{registers.A |= (byte)n;}},
+            {0xF6, (n)=>{
+              registers.A |= (byte)n;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)0;
+              registers.FN = (byte)0;
+              registers.FC = (byte)0;
+            }},
 
             // RST 30: Call routine at address 0030h
             {0xF7, (n)=>{instructionLambdas[0xCD](0x30);}},
