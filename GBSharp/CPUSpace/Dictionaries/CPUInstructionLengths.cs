@@ -236,7 +236,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             {0xDF, 1}, // RST 18
             {0xE0, 2}, // LDH (n),A
             {0xE1, 1}, // POP HL
-            {0xE2, 2}, // LDH (C),A
+            {0xE2, 1}, // LDH (C),A
             // {0xE3, }, // XX
             {0xE4, 1}, // XX
             {0xE5, 1}, // PUSH HL
