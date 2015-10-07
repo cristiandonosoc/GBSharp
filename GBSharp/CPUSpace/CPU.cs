@@ -1520,7 +1520,9 @@ namespace GBSharp.CPUSpace
             {
               registers.A ^= registers.B;
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.H = (byte)0;
+              registers.FH = (byte)0;
+              registers.FN = (byte)0;
+              registers.FC = (byte)0;
             }},
 
             // XOR C: Logical XOR C against A
@@ -1528,7 +1530,9 @@ namespace GBSharp.CPUSpace
             {
               registers.A ^= registers.C;
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.H = (byte)0;
+              registers.FH = (byte)0;
+              registers.FN = (byte)0;
+              registers.FC = (byte)0;
             }},
 
             // XOR D: Logical XOR D against A
@@ -1536,7 +1540,9 @@ namespace GBSharp.CPUSpace
             {
               registers.A ^= registers.D;
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.H = (byte)0;
+              registers.FH = (byte)0;
+              registers.FN = (byte)0;
+              registers.FC = (byte)0;
             }},
 
             // XOR E: Logical XOR E against A
@@ -1544,7 +1550,9 @@ namespace GBSharp.CPUSpace
             {
               registers.A ^= registers.E;
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.H = (byte)0;
+              registers.FH = (byte)0;
+              registers.FN = (byte)0;
+              registers.FC = (byte)0;
             }},
 
             // XOR H: Logical XOR H against A
@@ -1552,7 +1560,9 @@ namespace GBSharp.CPUSpace
             {
               registers.A ^= registers.H;
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.H = (byte)0;
+              registers.FH = (byte)0;
+              registers.FN = (byte)0;
+              registers.FC = (byte)0;
             }},
 
             // XOR L: Logical XOR L against A
@@ -1560,7 +1570,9 @@ namespace GBSharp.CPUSpace
             {
               registers.A ^= registers.L;
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.H = (byte)0;
+              registers.FH = (byte)0;
+              registers.FN = (byte)0;
+              registers.FC = (byte)0;
             }},
 
             // XOR (HL): Logical XOR value pointed by HL against A
@@ -1568,7 +1580,9 @@ namespace GBSharp.CPUSpace
             {
               registers.A ^= memory.Read(registers.HL);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.H = (byte)0;
+              registers.FH = (byte)0;
+              registers.FN = (byte)0;
+              registers.FC = (byte)0;
             }},
 
             // XOR A: Logical XOR A against A
@@ -1576,7 +1590,9 @@ namespace GBSharp.CPUSpace
             {
               registers.A ^= registers.A;
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.H = (byte)0;
+              registers.FH = (byte)0;
+              registers.FN = (byte)0;
+              registers.FC = (byte)0;
             }},
 
             // OR B: Logical OR B against A
@@ -2092,7 +2108,13 @@ namespace GBSharp.CPUSpace
             {0xED, (n)=>{throw new InvalidInstructionException("XX (0xED)");}},
 
             // XOR n: Logical XOR 8-bit immediate against A
-            {0xEE, (n)=>{registers.A ^= (byte)n;}},
+            {0xEE, (n)=>{
+              registers.A ^= (byte)n;
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FH = (byte)0;
+              registers.FN = (byte)0;
+              registers.FC = (byte)0;
+            }},
 
             // RST 28: Call routine at address 0028h
             {0xEF, (n)=>{instructionLambdas[0xCD](0x28);}},
