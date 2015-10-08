@@ -10,6 +10,10 @@ namespace GBSharp.MemorySpace
 {
   class Memory : IMemory
   {
+
+    public ushort LastChangedStart { get; private set; }
+    public ushort LastChangedEnd { get; private set; }
+
     /// <summary>
     /// This is what can be addressed.
     /// </summary>
@@ -26,6 +30,8 @@ namespace GBSharp.MemorySpace
     /// </summary>
     internal Memory()
     {
+      LastChangedStart = 0;
+      LastChangedEnd = 0;
       data = new byte[65536];
 
       this.dma = new DMA(this.data);

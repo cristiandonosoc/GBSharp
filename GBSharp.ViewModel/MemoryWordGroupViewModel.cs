@@ -35,9 +35,18 @@ namespace GBSharp.ViewModel
     {
       _firstAddress = firstAddress;
       _lastAddress = lastAddress;
+
+
+      ushort lastChangedStart = memory.LastChangedStart;
+      ushort lastChangedEnd = memory.LastChangedEnd;
       for (uint address = firstAddress; address <= lastAddress; address++)
       {
-        _memoryWords.Add(new MemoryWordViewModel(address, memory.Data[address]));
+        bool changed = false;
+        if((lastChangedStart<= address) && (address <= lastChangedEnd))
+        {
+          changed = true;
+        }
+        _memoryWords.Add(new MemoryWordViewModel(address, memory.Data[address], changed));
       }
     }
 

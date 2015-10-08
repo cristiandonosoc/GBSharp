@@ -6,5 +6,8 @@ namespace GBSharp
   {
     byte[] Data { get; }
     void Load(byte[] data);
+
+    ushort LastChangedStart { get; }
+    ushort LastChangedEnd { get; }
   }
 }

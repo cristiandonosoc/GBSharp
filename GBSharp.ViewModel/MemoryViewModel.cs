@@ -189,7 +189,9 @@ namespace GBSharp.ViewModel
     public void CopyFromDomain()
     {
       _memoryWordGroups.Clear();
-      for (uint address = _selectedSection.InitialAddress; address < _selectedSection.FinalAddress; address+= _numberOfWordsPerLine)
+      for (uint address = _selectedSection.InitialAddress; 
+           address < _selectedSection.FinalAddress; 
+           address+= _numberOfWordsPerLine)
       {
         _memoryWordGroups.Add(new MemoryWordGroupViewModel(address, address + _numberOfWordsPerLine - 1, _memory));
         

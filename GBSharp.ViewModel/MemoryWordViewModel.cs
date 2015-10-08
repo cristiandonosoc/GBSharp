@@ -8,11 +8,14 @@ namespace GBSharp.ViewModel
     private readonly uint _address;
     private readonly uint _value;
 
+    private readonly bool _changed;
+
     private string _addressFormatString;
     private string _valueFormatString;
 
     private Color _color2 = Color.FromRgb(15, 56, 15);
     private Color _color1 = Color.FromRgb(155, 188, 15);
+    private Color _changedColor = Color.FromRgb(255, 150, 0);
 
     public string Address
     {
@@ -35,6 +38,7 @@ namespace GBSharp.ViewModel
 
     private Color GetWordColor()
     {
+      if(_changed) { return _changedColor; }
       var floatValue = (float) (_value/255.0f);
       var color = _color1 * floatValue + _color2 * (1 - floatValue);
       return color;
@@ -56,8 +60,9 @@ namespace GBSharp.ViewModel
       return color;
     }
 
-    public MemoryWordViewModel(uint address, uint value)
+    public MemoryWordViewModel(uint address, uint value, bool changed)
     {
+      _changed = changed;
       _address = address;
       _addressFormatString = address.ToString();
       _value = value;
