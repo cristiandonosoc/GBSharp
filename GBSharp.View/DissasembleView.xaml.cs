@@ -24,5 +24,10 @@ namespace GBSharp.View
     {
       InitializeComponent();
     }
+
+    private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+      ((ListBox)sender).ScrollIntoView(e.AddedItems[0]);
+    }
   }
 }

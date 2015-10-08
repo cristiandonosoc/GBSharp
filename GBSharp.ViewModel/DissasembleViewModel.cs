@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Input;
@@ -10,6 +11,7 @@ namespace GBSharp.ViewModel
     private readonly IGameBoy _gameBoy;
     private readonly ICPU _cpu;
     private readonly ObservableCollection<InstructionViewModel> _instructions = new ObservableCollection<InstructionViewModel>();
+    private readonly Dictionary<ushort, InstructionViewModel> _addressToInstruction = new Dictionary<ushort, InstructionViewModel>();
     private InstructionViewModel _selectedInstruction;
 
     public string BreakPoint
@@ -51,6 +53,10 @@ namespace GBSharp.ViewModel
       _cpu = gameBoy.CPU;
     }
 
+    public void SetCurrentSelectedInstruction()
+    {
+      SelectedInstruction = _addressToInstruction[_cpu.Registers.PC];
+    }
 
     public void Dissasemble()
     {
@@ -58,7 +64,9 @@ namespace GBSharp.ViewModel
       _instructions.Clear();
       foreach (var dissasembledInstruction in dissasembledInstructions)
       {
-        _instructions.Add(new InstructionViewModel(dissasembledInstruction));
+        InstructionViewModel inst = new InstructionViewModel(dissasembledInstruction);
+        _instructions.Add(inst);
+        _addressToInstruction[dissasembledInstruction.Address] = inst;
       }
       SelectedInstruction = _instructions.First();
     }

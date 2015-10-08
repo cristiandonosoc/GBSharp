@@ -26,7 +26,10 @@
       <RowDefinition Height="Auto"></RowDefinition>
     </Grid.RowDefinitions>
     <Grid Style="{StaticResource SpacingGrid}">
-      <ListView MaxHeight="400" ItemsSource ="{Binding Instructions}" SelectedItem="{Binding SelectedInstruction}" >
+      <ListView MaxHeight="400" ItemsSource ="{Binding Instructions}" 
+                SelectedItem="{Binding SelectedInstruction}"
+                SelectionChanged="ListView_SelectionChanged">
+                
         
       </ListView>
     </Grid>

@@ -267,8 +267,6 @@ namespace GBSharp.ViewModel
 
       _gameBoy.Display.RefreshScreen += OnRefreshScreen;
       //_gameBoy.StepFinished += OnRefreshScreen;
-      // TODO(aaecheve): Should this be another function handling this?
-      _cpu.BreakpointFound += OnRefreshScreen; 
     }
 
     private void OnRefreshScreen()

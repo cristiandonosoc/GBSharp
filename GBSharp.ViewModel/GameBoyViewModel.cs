@@ -61,16 +61,27 @@
       _gameBoyController.OnStep += StepHandler;
       _memory = new MemoryViewModel(_gameBoy.Memory, "Memory View");
       _cpu = new CPUViewModel(_gameBoy, _dispatcher);
+
+      // TODO(aaecheve): Should this be another function handling this?
+      _gameBoy.CPU.BreakpointFound += BreakpointHandler;
+
       _interrupt = new InterruptViewModel(_gameBoy, _dispatcher);
       _display = new DisplayViewModel(_gameBoy.Display, _gameBoy.Memory, _dispatcher);
       _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher, _display);
       _dissasemble = new DissasembleViewModel(_gameBoy);
     }
 
+    private void BreakpointHandler()
+    {
+      _cpu.CopyFromDomain();
+      _dissasemble.SetCurrentSelectedInstruction();
+    }
+
     private void StepHandler()
     {
       _cpu.CopyFromDomain();
       _display.CopyFromDomain();
+      _dissasemble.SetCurrentSelectedInstruction();
     }
 
     private void FileLoadedHandler()
