@@ -160,7 +160,8 @@ namespace GBSharp.CPUSpace
     {
       // Instruction fetch and decode
       Interrupts? interrupt = InterruptRequired();
-      if (interrupt != null)
+      bool INTERRUPT_IN_PROGRESS = interrupt != null;
+      if (INTERRUPT_IN_PROGRESS)
         _currentInstruction = InterruptHandler(interrupt.Value);
       else
         _currentInstruction = FetchAndDecode(this.registers.PC);
@@ -175,7 +176,14 @@ namespace GBSharp.CPUSpace
 
       // Prepare for program counter movement, but wait for instruction execution.
       // Overwrite nextPC in the instruction lambdas if you want to implement jumps.
-      this.nextPC = (ushort)(this.registers.PC + _currentInstruction.Length);
+      // NOTE(Cristian): If we don't differentiate this case, the CALL instruction of the
+      //                 interrupt will be added to nextPC, which will in turn be written
+      //                 into the stack. This means that when we RET, we would have jumped
+      //                 into the address we *should* have jumped plus some meaningless offset!
+      if(!INTERRUPT_IN_PROGRESS)
+      {
+        this.nextPC = (ushort)(this.registers.PC + _currentInstruction.Length);
+      }
 
 
       // Execute instruction
