@@ -31,18 +31,16 @@ namespace GBSharp.ViewModel
       get { return _addressRangeFormatString; }
     }
 
-    public MemoryWordGroupViewModel(uint firstAddress, uint lastAddress, IMemory memory)
+    public MemoryWordGroupViewModel(uint firstAddress, uint lastAddress, IMemory memory,
+                                    uint hightlightStart, uint hightlightEnd)
     {
       _firstAddress = firstAddress;
       _lastAddress = lastAddress;
 
-
-      ushort lastChangedStart = memory.LastChangedStart;
-      ushort lastChangedEnd = memory.LastChangedEnd;
       for (uint address = firstAddress; address <= lastAddress; address++)
       {
         bool changed = false;
-        if((lastChangedStart<= address) && (address <= lastChangedEnd))
+        if((hightlightStart<= address) && (address <= hightlightEnd))
         {
           changed = true;
         }

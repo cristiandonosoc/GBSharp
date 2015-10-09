@@ -10,9 +10,7 @@ namespace GBSharp.MemorySpace
 {
   class Memory : IMemory
   {
-
-    public ushort LastChangedStart { get; private set; }
-    public ushort LastChangedEnd { get; private set; }
+    public event Action<ushort, ushort> MemoryWritten;
 
     /// <summary>
     /// This is what can be addressed.
@@ -30,8 +28,6 @@ namespace GBSharp.MemorySpace
     /// </summary>
     internal Memory()
     {
-      LastChangedStart = 0;
-      LastChangedEnd = 0;
       data = new byte[65536];
 
       this.dma = new DMA(this.data);
@@ -71,6 +67,7 @@ namespace GBSharp.MemorySpace
     internal void Write(ushort address, byte value)
     {
       this.memoryHandler.Write(address, value);
+      MemoryWritten(address, address);
     }
 
     /// <summary>
@@ -81,6 +78,7 @@ namespace GBSharp.MemorySpace
     internal void Write(ushort address, ushort value)
     {
       this.memoryHandler.Write(address, value);
+      MemoryWritten(address, ++address);
     }
 
     /// <summary>

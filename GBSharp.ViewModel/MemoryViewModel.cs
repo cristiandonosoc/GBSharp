@@ -21,7 +21,12 @@ namespace GBSharp.ViewModel
 
     private string _name;
     private uint _numberOfWordsPerLine = 16;
-    private readonly List<uint> _numberOfWordsOptions = new List<uint>(); 
+    private readonly List<uint> _numberOfWordsOptions = new List<uint>();
+
+    // NOTE(Cristian): the initial range doesn't highlight anything :)
+    private ushort _highlightAddressStart = 0xFFFF;
+    private ushort _highlightAddressEnd = 0x0000;
+    public bool HighlightUpdated { get; set; }
 
     public ObservableCollection<MemoryWordGroupViewModel> MemoryWordGroups
     {
@@ -165,6 +170,8 @@ namespace GBSharp.ViewModel
       _numberOfWordsOptions.Add(512);
       _numberOfWordsOptions.Add(1024);
       NumberOfWordsPerLine = 16;
+
+      HighlightUpdated = true;
     }
 
     private void UpdateMemoryWords()
@@ -185,6 +192,25 @@ namespace GBSharp.ViewModel
       CopyFromDomain();
     }
 
+    public void MemoryWrittenHandler(ushort addressStart, ushort addressEnd)
+    {
+      _highlightAddressStart = addressStart;
+      _highlightAddressEnd = addressEnd;
+
+      // We search for the correct section
+      foreach(MemorySectionViewModel section in _memorySections)
+      {
+        // NOTE(Cristian): We only change section if the *whole* of the highlight range
+        //                 is within the range of a section
+        if((section.InitialAddress <= _highlightAddressStart) &&
+           (_highlightAddressEnd <= section.FinalAddress))
+        {
+          SelectedSection = section;
+        }
+
+      }
+      HighlightUpdated = false;
+    }
 
     public void CopyFromDomain()
     {
@@ -193,8 +219,9 @@ namespace GBSharp.ViewModel
            address < _selectedSection.FinalAddress; 
            address+= _numberOfWordsPerLine)
       {
-        _memoryWordGroups.Add(new MemoryWordGroupViewModel(address, address + _numberOfWordsPerLine - 1, _memory));
-        
+        _memoryWordGroups.Add(new MemoryWordGroupViewModel(address, address + _numberOfWordsPerLine - 1, 
+                                                           _memory,
+                                                           _highlightAddressStart, _highlightAddressEnd));
       }
       UpdateMemoryWords();
     }

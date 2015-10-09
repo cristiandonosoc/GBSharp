@@ -60,6 +60,7 @@
       _gameBoyController.OnFileLoaded += FileLoadedHandler;
       _gameBoyController.OnStep += StepHandler;
       _memory = new MemoryViewModel(_gameBoy.Memory, "Memory View");
+      _gameBoy.Memory.MemoryWritten += _memory.MemoryWrittenHandler;
       _cpu = new CPUViewModel(_gameBoy, _dispatcher);
 
       // TODO(aaecheve): Should this be another function handling this?
@@ -82,6 +83,12 @@
       _cpu.CopyFromDomain();
       _display.CopyFromDomain();
       _dissasemble.SetCurrentSelectedInstruction();
+
+      if(_memory.HighlightUpdated == false)
+      {
+        _memory.CopyFromDomain();
+        _memory.HighlightUpdated = true;
+      }
     }
 
     private void FileLoadedHandler()

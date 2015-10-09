@@ -8,9 +8,7 @@ namespace GBSharp.Cartridge
 {
     public class Cartridge : ICartridge
     {
-        public ushort LastChangedStart { get; private set; }
-        public ushort LastChangedEnd { get; private set; }
-
+        public event Action<ushort, ushort> MemoryWritten;
 
         byte[] rom;
         int romSize;
