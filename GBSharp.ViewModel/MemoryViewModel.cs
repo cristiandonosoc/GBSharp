@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 namespace GBSharp.ViewModel
 {
- 
+
   public class MemoryViewModel : ViewModelBase
   {
     private IMemory _memory;
@@ -32,7 +32,7 @@ namespace GBSharp.ViewModel
     {
       get { return _memoryWordGroups; }
     }
-    
+
     public ObservableCollection<MemoryFormatViewModel> AddressFormats
     {
       get { return _addressFormats; }
@@ -89,10 +89,21 @@ namespace GBSharp.ViewModel
         }
       }
     }
-    
+
     public string Name
     {
       get { return _name; }
+    }
+
+    private MemoryWordGroupViewModel _currentMemoryWordGroup;
+    public MemoryWordGroupViewModel CurrentMemoryWordGroup
+    {
+      get { return _currentMemoryWordGroup; }
+      set
+      {
+        _currentMemoryWordGroup = value;
+        OnPropertyChanged(() => CurrentMemoryWordGroup);
+      }
     }
 
     public ICommand ReadCommand
@@ -207,7 +218,6 @@ namespace GBSharp.ViewModel
         {
           SelectedSection = section;
         }
-
       }
       HighlightUpdated = false;
     }
@@ -219,10 +229,27 @@ namespace GBSharp.ViewModel
            address < _selectedSection.FinalAddress; 
            address+= _numberOfWordsPerLine)
       {
-        _memoryWordGroups.Add(new MemoryWordGroupViewModel(address, address + _numberOfWordsPerLine - 1, 
-                                                           _memory,
-                                                           _highlightAddressStart, _highlightAddressEnd));
+        uint addressStart = address;
+        uint addressEnd = address + _numberOfWordsPerLine - 1;
+        var group = new MemoryWordGroupViewModel(addressStart, addressEnd,
+                                                 _memory,
+                                                 _highlightAddressStart, _highlightAddressEnd);
+        _memoryWordGroups.Add(group);
+        
+        // We see if we want to change the current word group
+        // NOTE(Cristian): The first check is the way to set that there is no range
+        //                 to highlight. Probably better to change to a flag...
+        if((_highlightAddressStart <= _highlightAddressEnd) &&
+           (addressStart <= _highlightAddressStart) &&
+           (_highlightAddressEnd <= addressEnd))
+        {
+          CurrentMemoryWordGroup = group;
+        }
       }
+
+      // TODO(aaecheve): When I use the CurrentMemoryWordGroup (event for changing the scrolling)
+      //                 the address words for the current visible addresses are not drawn
+      //                 IDK why... :(
       UpdateMemoryWords();
     }
 

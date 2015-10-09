@@ -86,7 +86,9 @@
             ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
             ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
       </Grid.LayoutTransform>
-      <ListView  ItemsSource ="{Binding MemoryWordGroups}" >
+      <ListView ItemsSource ="{Binding MemoryWordGroups}"
+                SelectedItem="{Binding CurrentMemoryWordGroup}"
+                SelectionChanged="ListView_SelectionChanged">
         <ListView.ItemContainerStyle>
           <Style TargetType="{x:Type ListBoxItem}">
             <Setter Property="Template">
