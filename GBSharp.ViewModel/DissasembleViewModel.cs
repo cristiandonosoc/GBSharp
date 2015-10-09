@@ -55,7 +55,14 @@ namespace GBSharp.ViewModel
 
     public void SetCurrentSelectedInstruction()
     {
-      SelectedInstruction = _addressToInstruction[_cpu.Registers.PC];
+      try
+      {
+        SelectedInstruction = _addressToInstruction[_cpu.Registers.PC];
+      }
+      catch(KeyNotFoundException e)
+      {
+        System.Console.Out.WriteLine("Address not disassembled: " + _cpu.Registers.PC);
+      }
     }
 
     public void Dissasemble()
