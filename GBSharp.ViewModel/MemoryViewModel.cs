@@ -207,7 +207,11 @@ namespace GBSharp.ViewModel
     {
       _highlightAddressStart = addressStart;
       _highlightAddressEnd = addressEnd;
+      HighlightUpdated = false;
+    }
 
+    public void CopyFromDomain()
+    {
       // We search for the correct section
       foreach(MemorySectionViewModel section in _memorySections)
       {
@@ -216,14 +220,12 @@ namespace GBSharp.ViewModel
         if((section.InitialAddress <= _highlightAddressStart) &&
            (_highlightAddressEnd <= section.FinalAddress))
         {
-          SelectedSection = section;
+          // NOTE(Cristian): We use the private member because the update
+          //                 would trigger the CopyFromDomain again!
+          _selectedSection = section;
         }
       }
-      HighlightUpdated = false;
-    }
 
-    public void CopyFromDomain()
-    {
       _memoryWordGroups.Clear();
       for (uint address = _selectedSection.InitialAddress; 
            address < _selectedSection.FinalAddress; 
