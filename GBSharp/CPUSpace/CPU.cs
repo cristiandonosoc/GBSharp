@@ -1876,9 +1876,12 @@ namespace GBSharp.CPUSpace
 
             // PUSH BC: Push 16-bit BC onto stack
             {0xC5, (n)=>{
-              registers.SP -= 2;
-              // We push the value in the stack (high byte gets the higher address)
+              // We decrease the SP by 1
+              registers.SP -= 1;
+              // We but the nextPC in the stack (high byte first get the higher address)
               memory.Write(registers.SP, registers.BC);
+              // We decrease the SP by 1, AGAIN
+              registers.SP -= 1;
             }},
 
             // ADD A,n: Add 8-bit immediate to A
@@ -1992,9 +1995,12 @@ namespace GBSharp.CPUSpace
 
             // PUSH DE: Push 16-bit DE onto stack
             {0xD5, (n)=>{
-              registers.SP -= 2;
-              // We push the value in the stack (high byte gets the higher address)
+              // We decrease the SP by 1
+              registers.SP -= 1;
+              // We but the nextPC in the stack (high byte first get the higher address)
               memory.Write(registers.SP, registers.DE);
+              // We decrease the SP by 1, AGAIN
+              registers.SP -= 1;
             }},
 
             // SUB A,n: Subtract 8-bit immediate from A
@@ -2079,9 +2085,12 @@ namespace GBSharp.CPUSpace
 
             // PUSH HL: Push 16-bit HL onto stack
             {0xE5, (n)=>{
-              registers.SP -= 2;
-              // We push the value in the stack (high byte gets the higher address)
+              // We decrease the SP by 1
+              registers.SP -= 1;
+              // We but the nextPC in the stack (high byte first get the higher address)
               memory.Write(registers.SP, registers.HL);
+              // We decrease the SP by 1, AGAIN
+              registers.SP -= 1;
             }},
 
             // AND n: Logical AND 8-bit immediate against A
@@ -2164,9 +2173,12 @@ namespace GBSharp.CPUSpace
 
             // PUSH AF: Push 16-bit AF onto stack
             {0xF5, (n)=>{
-              registers.SP -= 2;
-              // We push the value in the stack (high byte gets the higher address)
+              // We decrease the SP by 1
+              registers.SP -= 1;
+              // We but the nextPC in the stack (high byte first get the higher address)
               memory.Write(registers.SP, registers.AF);
+              // We decrease the SP by 1, AGAIN
+              registers.SP -= 1;
             }},
 
             // OR n: Logical OR 8-bit immediate against A
