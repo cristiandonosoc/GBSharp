@@ -64,6 +64,12 @@ jmp_1fd:
 [0x00000213]	LD HL,$FF02         // HL = 0xFF02
 [0x00000216]	LD [HL],$81         // (0xFF02) = 0x81: Start transfer with external clock (8192 Hz)
 
+/**
+ * Each CALL compares some internal ram values (notably 0xFFE3) against a constant
+ * If the CP fails it RET.
+ * All these CALLs basically handlers for some condition in the program
+ * I have NO IDEA of what each CALL does
+ */
 jmp_218:
 [0x00000218]	CALL sub_2240
 [0x0000021B]	CALL sub_242c

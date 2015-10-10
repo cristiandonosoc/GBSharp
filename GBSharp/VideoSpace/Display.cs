@@ -519,7 +519,8 @@ namespace GBSharp.VideoSpace
                 ChangeDisplayMode(DisplayModes.Mode01);
               }
 
-              UpdateDisplay();
+              bool refreshScreen = (currentLine == 144);
+              UpdateDisplay(refreshScreen);
             }
           }
         }
@@ -536,7 +537,7 @@ namespace GBSharp.VideoSpace
               currentLine = 0;
             }
 
-            UpdateDisplay(true);
+            UpdateDisplay();
           }
         }
       }
@@ -544,7 +545,7 @@ namespace GBSharp.VideoSpace
       // TODO(Cristian): Copying the bitmap to the View is EXTREMELY slow. 
       //                 We (will probably) need some kind of direct access
       //                 if we want to achieve 60 FPS
-      DrawTiming();
+      //DrawTiming();
 
       if(firstRun)
       {
@@ -554,9 +555,9 @@ namespace GBSharp.VideoSpace
 
     internal void UpdateDisplay(bool refresh = false)
     {
-      DrawDisplay(0, 144);
       if(refresh)
       {
+        DrawDisplay(0, 144);
         RefreshScreen();
       }
     }
