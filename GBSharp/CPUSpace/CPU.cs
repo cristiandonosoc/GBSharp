@@ -1881,8 +1881,8 @@ namespace GBSharp.CPUSpace
 
             // POP BC: Pop 16-bit value from stack into BC
             {0xC1, (n)=>{
-              ushort res = memory.Read(registers.SP++);
-              res += (ushort)(memory.Read(registers.SP++) << 8);
+              ushort res = memory.Read(++registers.SP);
+              res += (ushort)(memory.Read(++registers.SP) << 8);
               registers.BC = res;
             }},
 
@@ -2002,8 +2002,8 @@ namespace GBSharp.CPUSpace
 
             // POP DE: Pop 16-bit value from stack into DE
             {0xD1, (n)=>{
-              ushort res = memory.Read(registers.SP++);
-              res += (ushort)(memory.Read(registers.SP++) << 8);
+              ushort res = memory.Read(++registers.SP);
+              res += (ushort)(memory.Read(++registers.SP) << 8);
               registers.DE = res;
             }},
 
@@ -2105,8 +2105,8 @@ namespace GBSharp.CPUSpace
 
             // POP HL: Pop 16-bit value from stack into HL
             {0xE1, (n)=>{
-              ushort res = memory.Read(registers.SP++);
-              res += (ushort)(memory.Read(registers.SP++) << 8);
+              ushort res = memory.Read(++registers.SP);
+              res += (ushort)(memory.Read(++registers.SP) << 8);
               registers.HL = res;
             }},
 
@@ -2193,8 +2193,8 @@ namespace GBSharp.CPUSpace
 
             // POP AF: Pop 16-bit value from stack into AF
             {0xF1, (n)=>{
-              ushort res = memory.Read(registers.SP++);
-              res += (ushort)(memory.Read(registers.SP++) << 8);
+              ushort res = memory.Read(++registers.SP);
+              res += (ushort)(memory.Read(++registers.SP) << 8);
               registers.AF = res;
             }},
 
