@@ -746,7 +746,13 @@ namespace GBSharp.CPUSpace
             {0x24, (n)=>{registers.H++;}},
 
             // DEC H: Decrement H
-            {0x25, (n)=>{registers.H--;}},
+            {0x25, (n)=>{
+              registers.H--;
+
+              registers.FZ = (byte)(registers.H == 0 ? 1 : 0);
+              registers.FN = 1;
+              registers.FH = (byte)((registers.H & 0x0F) == 0x0F ? 1 : 0);
+            }},
 
             // LD H,n: Load 8-bit immediate into H
             {0x26, (n)=>{registers.H = (byte)n;}},
@@ -824,7 +830,13 @@ namespace GBSharp.CPUSpace
             {0x2C, (n)=>{registers.L++;}},
 
             // DEC L: Decrement L
-            {0x2D, (n)=>{registers.L--;}},
+            {0x2D, (n)=>{
+              registers.L--;
+
+              registers.FZ = (byte)(registers.L == 0 ? 1 : 0);
+              registers.FN = 1;
+              registers.FH = (byte)((registers.L & 0x0F) == 0x0F ? 1 : 0);
+            }},
 
             // LD L,n: Load 8-bit immediate into L
             {0x2E, (n)=>{registers.L = (byte)n;}},
@@ -854,7 +866,15 @@ namespace GBSharp.CPUSpace
             {0x34, (n)=>{memory.Write(registers.HL, (byte)(memory.Read(registers.HL) + 1));}},
 
             // DEC (HL): Decrement value pointed by HL
-            {0x35, (n)=>{memory.Write(registers.HL, (byte)(memory.Read(registers.HL) - 1));}},
+            {0x35, (n)=>{
+              byte value = memory.Read(registers.HL);
+              --value;
+              memory.Write(registers.HL, value);
+              
+              registers.FZ = (byte)(value == 0 ? 1 : 0);
+              registers.FN = 1;
+              registers.FH = (byte)((value & 0x0F) == 0x0F ? 1 : 0);
+            }},
 
             // LD (HL),n: Load 8-bit immediate into address pointed by HL
             {0x36, (n) => { memory.Write(registers.HL, (byte)n);}},
@@ -891,7 +911,13 @@ namespace GBSharp.CPUSpace
             {0x3C, (n)=>{registers.A++;}},
 
             // DEC A: Decrement A
-            {0x3D, (n)=>{registers.A--;}},
+            {0x3D, (n)=>{
+              registers.A--;
+
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FN = 1;
+              registers.FH = (byte)((registers.A & 0x0F) == 0x0F ? 1 : 0);
+            }},
 
             // LD A,n: Load 8-bit immediate into A
             {0x3E, (n)=>{registers.A = (byte)n;}},
