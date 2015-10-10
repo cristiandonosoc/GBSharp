@@ -40,22 +40,30 @@ sub_166:
 
 	INCBIN "..\..\Roms\tetris.gb",$17e,$1fd-$17e
 jmp_1fd:
+/**
+ * We save the whole CPU state
+ */
 [0x000001FD]	PUSH AF
 [0x000001FE]	PUSH BC
 [0x000001FF]	PUSH DE
 [0x00000200]	PUSH HL
-[0x00000201]	LDH A,[$CE]
-[0x00000203]	AND A
-[0x00000204]	JR Z,jmp_218
+/**
+ * After pushing the CPU state, the ROM checks if (0xFFCE) != 0 && (0xFFCB) == 0x29
+ * If that happens, the system transfers through serial the content of (0xFFCF)
+ */
+[0x00000201]	LDH A,[$CE]         // A = (0xFFCE), Some place in internal RAM
+[0x00000203]	AND A               // A & A = A...
+[0x00000204]	JR Z,jmp_218        // JP if FFCE == 0
 [0x00000206]	LDH A,[$CB]
 [0x00000208]	CP $29
-[0x0000020A]	JR NZ,jmp_218
-[0x0000020C]	XOR A
-[0x0000020D]	LDH [$CE],A
-[0x0000020F]	LDH A,[$CF]
-[0x00000211]	LDH [$01],A
-[0x00000213]	LD HL,$FF02
-[0x00000216]	LD [HL],$81
+[0x0000020A]	JR NZ,jmp_218       // JP if (0xFFCB) != 0x29
+[0x0000020C]	XOR A               // A = 0
+[0x0000020D]	LDH [$CE],A         // (0xFFCE) = 0
+[0x0000020F]	LDH A,[$CF]         // A = (0xFFCF)
+[0x00000211]	LDH [$01],A         // (0xFF01) = (0xFFCF): Data to be transfered in serial
+[0x00000213]	LD HL,$FF02         // HL = 0xFF02
+[0x00000216]	LD [HL],$81         // (0xFF02) = 0x81: Start transfer with external clock (8192 Hz)
+
 jmp_218:
 [0x00000218]	CALL sub_2240
 [0x0000021B]	CALL sub_242c
@@ -579,36 +587,46 @@ jmp_20c0:
 
 	INCBIN "..\..\Roms\tetris.gb",$20cc,$2240-$20cc
 sub_2240:
-[0x00002240]	LDH A,[$98]
+[0x00002240]	LDH A,[$98]         // A = (0xFF98): Internal RAM
 [0x00002242]	CP $03
-[0x00002244]	RET NZ
-[0x00002245]	LDH A,[$A6]
-[0x00002247]	AND A
-[0x00002248]	RET NZ
-[0x00002249]	LD DE,$C0A3
-[0x0000224C]	LDH A,[$9C]
+[0x00002244]	RET NZ              // RET if (0xFF98) != 0x03
+[0x00002245]	LDH A,[$A6]         // A = (0xFFA6): Internal RAM
+[0x00002247]	AND A               // A & A = A?
+[0x00002248]	RET NZ              // RET if (0xFFA6) != 0
+/**
+ * CONDITIONS FOR ENTERING HERE: (0xFF98) == 0x03 && (0xFFA6) == 0x00
+ */
+[0x00002249]	LD DE,$C0A3         // D = 0xC0, E = 0xA3
+[0x0000224C]	LDH A,[$9C]         // A = (0xFF9C)
 [0x0000224E]	BIT 0,A
-[0x00002250]	JR NZ,jmp_228e
-[0x00002252]	LD A,[DE]
+[0x00002250]	JR NZ,jmp_228e      // JR if BIT(0, (0xFF9C)) == 1
+[0x00002252]	LD A,[DE]           // A = (0xC0A3)
 [0x00002253]	AND A
-[0x00002254]	JR Z,jmp_22a8
+[0x00002254]	JR Z,jmp_22a8       // JP if (0xC0A3) == 0
+
 jmp_2256:
-[0x00002256]	SUB $30
-[0x00002258]	LD H,A
-[0x00002259]	INC DE
-[0x0000225A]	LD A,[DE]
-[0x0000225B]	LD L,A
-[0x0000225C]	LDH A,[$9C]
+[0x00002256]	SUB $30             // A = A - 0x30
+[0x00002258]	LD H,A              // H = A
+[0x00002259]	INC DE              // D = C0, E = A2
+[0x0000225A]	LD A,[DE]           // A = (0xC0A2)
+[0x0000225B]	LD L,A              // L = A
+[0x0000225C]	LDH A,[$9C]         // A = (0xFF9C)
 [0x0000225E]	CP $06
-[0x00002260]	LD A,$8C
-[0x00002262]	JR NZ,jmp_2266
-[0x00002264]	LD A,$2F
+[0x00002260]	LD A,$8C            // A = 0x8C
+[0x00002262]	JR NZ,jmp_2266      // JP if (0xFF9C) != 0x06
+[0x00002264]	LD A,$2F            // A = 0x2F
+
 jmp_2266:
-[0x00002266]	LD C,$0A
+[0x00002266]	LD C,$0A            // C = 0x0A
+
+/**
+ * Puts 2F in a random-ass address (0xC0A3 - 0x30)(0xC0A3 - 0x30)
+ */
 jmp_2268:
 [0x00002268]	LD [HLI],A
 [0x00002269]	DEC C
 [0x0000226A]	JR NZ,jmp_2268
+
 [0x0000226C]	INC DE
 [0x0000226D]	LD A,[DE]
 [0x0000226E]	AND A
