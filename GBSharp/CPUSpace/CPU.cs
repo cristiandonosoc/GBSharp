@@ -285,8 +285,18 @@ namespace GBSharp.CPUSpace
       var relativeJumps = GetRelativeJumpInstructionsOpCodes();
       var restarts = GetRestartInstructionsOpCodes();
       var returns = GetReturnsInstructionsOpCodes();
-      visitedAddresses.Add(0x0100);
-      addressesToVisit.Push(0x0100);
+
+      // We set the initial places where we want the disassembler to look
+      visitedAddresses.Add(0x0040);     // V-Blank interrupt
+      visitedAddresses.Add(0x0048);     // LCD Stat interrupt
+      visitedAddresses.Add(0x0050);     // Timer interrupt
+      visitedAddresses.Add(0x0058);     // Serial interrupt
+      visitedAddresses.Add(0x0060);     // Joypad interrupt
+      visitedAddresses.Add(0x0100);     // Initial address
+      foreach(ushort address in visitedAddresses)
+      {
+        addressesToVisit.Push(address);
+      }
       while (addressesToVisit.Count > 0)
       {
         ushort instructionAddress = addressesToVisit.Pop();
