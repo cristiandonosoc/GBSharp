@@ -63,7 +63,7 @@ namespace GBSharp.MemorySpace
       {
         // We copy the result of the DMA
         Buffer.BlockCopy(this.memoryData, startAddress,
-                         this.memoryData, 0xFF00,
+                         this.memoryData, 0xFE00,
                          0xA0);
         currentTickCount = 0;
         Active = false;
