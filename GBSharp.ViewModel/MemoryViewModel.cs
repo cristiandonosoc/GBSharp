@@ -207,11 +207,7 @@ namespace GBSharp.ViewModel
     {
       _highlightAddressStart = addressStart;
       _highlightAddressEnd = addressEnd;
-      HighlightUpdated = false;
-    }
 
-    public void CopyFromDomain()
-    {
       // We search for the correct section
       foreach(MemorySectionViewModel section in _memorySections)
       {
@@ -226,6 +222,11 @@ namespace GBSharp.ViewModel
         }
       }
 
+      HighlightUpdated = false;
+    }
+
+    public void CopyFromDomain()
+    {
       _memoryWordGroups.Clear();
       for (uint address = _selectedSection.InitialAddress; 
            address < _selectedSection.FinalAddress; 
