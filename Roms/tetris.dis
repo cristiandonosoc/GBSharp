@@ -1,61 +1,161 @@
 Warning: Unknown opcode (0xE4) at 0x000003A6
 SECTION "rom0", HOME[0]
 
+/**
+ * V-BLANK Interrupt Handler
+ */
+	INCBIN "..\..\Roms\tetris.gb",$0,$40-$0
+[0x00000040]	JP jmp_1fd
+
 	INCBIN "..\..\Roms\tetris.gb",$0,$100-$0
-	NOP
-	JP jmp_150
+[0x00000100]	NOP
+[0x00000101]	JP jmp_150
 
 	INCBIN "..\..\Roms\tetris.gb",$104,$150-$104
 jmp_150:
-	JP jmp_28b
+[0x00000150]	JP jmp_28b
+
+	INCBIN "..\..\Roms\tetris.gb",$43,$166-$43
+sub_166:
+[0x00000166]	LD A,E
+[0x00000167]	ADD A,[HL]
+[0x00000168]	DAA
+[0x00000169]	LD [HLI],A
+[0x0000016A]	LD A,D
+[0x0000016B]	ADC A,[HL]
+[0x0000016C]	DAA
+[0x0000016D]	LD [HLI],A
+[0x0000016E]	LD A,$00
+[0x00000170]	ADC A,[HL]
+[0x00000171]	DAA
+[0x00000172]	LD [HL],A
+[0x00000173]	LD A,$01
+[0x00000175]	LDH [$E0],A
+[0x00000177]	RET NC
+[0x00000178]	LD A,$99
+[0x0000017A]	LD [HLD],A
+[0x0000017B]	LD [HLD],A
+[0x0000017C]	LD [HL],A
+[0x0000017D]	RET
+
+	INCBIN "..\..\Roms\tetris.gb",$17e,$1fd-$17e
+jmp_1fd:
+[0x000001FD]	PUSH AF
+[0x000001FE]	PUSH BC
+[0x000001FF]	PUSH DE
+[0x00000200]	PUSH HL
+[0x00000201]	LDH A,[$CE]
+[0x00000203]	AND A
+[0x00000204]	JR Z,jmp_218
+[0x00000206]	LDH A,[$CB]
+[0x00000208]	CP $29
+[0x0000020A]	JR NZ,jmp_218
+[0x0000020C]	XOR A
+[0x0000020D]	LDH [$CE],A
+[0x0000020F]	LDH A,[$CF]
+[0x00000211]	LDH [$01],A
+[0x00000213]	LD HL,$FF02
+[0x00000216]	LD [HL],$81
+jmp_218:
+[0x00000218]	CALL sub_2240
+[0x0000021B]	CALL sub_242c
+[0x0000021E]	CALL sub_2417
+[0x00000221]	CALL sub_23fe
+[0x00000224]	CALL sub_23ec
+[0x00000227]	CALL sub_23dd
+[0x0000022A]	CALL sub_23ce
+[0x0000022D]	CALL sub_23bf
+[0x00000230]	CALL sub_23b0
+[0x00000233]	CALL sub_23a1
+[0x00000236]	CALL sub_2392
+[0x00000239]	CALL sub_2383
+[0x0000023C]	CALL sub_2358
+[0x0000023F]	CALL sub_2349
+[0x00000242]	CALL sub_233a
+[0x00000245]	CALL sub_232b
+[0x00000248]	CALL sub_231c
+[0x0000024B]	CALL sub_230d
+[0x0000024E]	CALL sub_22fe
+[0x00000251]	CALL sub_1f32
+[0x00000254]	CALL $FFB6
+[0x00000257]	CALL sub_192e
+[0x0000025A]	LD A,[$C0CE]
+[0x0000025D]	AND A
+[0x0000025E]	JR Z,jmp_27a
+[0x00000260]	LDH A,[$98]
+[0x00000262]	CP $03
+[0x00000264]	JR NZ,jmp_27a
+[0x00000266]	LD HL,$986D
+[0x00000269]	CALL sub_249b
+[0x0000026C]	LD A,$01
+[0x0000026E]	LDH [$E0],A
+[0x00000270]	LD HL,$9C6D
+[0x00000273]	CALL sub_249b
+[0x00000276]	XOR A
+[0x00000277]	LD [$C0CE],A
+jmp_27a:
+[0x0000027A]	LD HL,$FFE2
+[0x0000027D]	INC [HL]
+[0x0000027E]	XOR A
+[0x0000027F]	LDH [$43],A
+[0x00000281]	LDH [$42],A
+[0x00000283]	INC A
+[0x00000284]	LDH [$85],A
+[0x00000286]	POP HL
+[0x00000287]	POP DE
+[0x00000288]	POP BC
+[0x00000289]	POP AF
+[0x0000028A]	RETI
+
+
 
 	INCBIN "..\..\Roms\tetris.gb",$153,$28b-$153
 jmp_28b:
-	XOR A             // A = 0x00 (0)
-	LD HL,$DFFF       // HL = 0xDFFF
-	LD C,$10          // C = 0x10 (16)
-	LD B,$00          // B = 0x00 (0)
+[0x0000028B]	XOR A             // A = 0x00 (0)
+[0x0000028C]	LD HL,$DFFF       // HL = 0xDFFF
+[0x0000028F]	LD C,$10          // C = 0x10 (16)
+[0x00000291]	LD B,$00          // B = 0x00 (0)
 
 /**
  * This loop clears 0xD000-0xDFFF
  * This is part of the gameboy's internal RAM
  */
 jmp_293:
-	LD [HLD],A        // Insert A (0) into DFFF and lower
-	DEC B             // B = 0 at first
-	JR NZ,jmp_293     // If B = 0 pass (Every 256 it will pass)
-	DEC C             // C = 0x10 (16)
-	JR NZ,jmp_293     // Thus, 16 256 loops
+[0x00000293]	LD [HLD],A        // Insert A (0) into DFFF and lower
+[0x00000294]	DEC B             // B = 0 at first
+[0x00000295]	JR NZ,jmp_293     // If B = 0 pass (Every 256 it will pass)
+[0x00000297]	DEC C             // C = 0x10 (16)
+[0x00000298]	JR NZ,jmp_293     // Thus, 16 256 loops
 
 jmp_29a:
-	LD A,$01          // A = 0x01 (1)
-	DI                // Disable interrupts (IME = 0)
-	LDH [$0F],A       // 0xFF0F = 1 -> Only V-BLANK interrupt is requested
-	LDH [$FF],A       // 0xFFFF = 0 -> Only V-BLANK interrupt is enabled
-	XOR A             // A = 0
-	LDH [$42],A       // 0xFF42 = 0 -> SCY = 0
-	LDH [$43],A       // 0xFF43 = 0 -> SCX = 0
-	LDH [$A4],A       // 0xFFA4 = 0 -> IDK what dis is
-	LDH [$41],A       // 0xFF41 = 0 -> All LCDC interrumpts disabled
-	LDH [$01],A       // 0xFF01 = 0 -> 0 to be in serial transfe
-	LDH [$02],A       // 0xFF02 = 0 -> No serial transfer
-	LD A,$80          // A = 0x80 (128)
-	LDH [$40],A       // 0xFF40 = 0x80 -> DISPLAY ON (according to me, it was already enabled...)
+[0x0000029A]	LD A,$01          // A = 0x01 (1)
+[0x0000029C]	DI                // Disable interrupts (IME = 0)
+[0x0000029D]	LDH [$0F],A       // 0xFF0F = 1 -> Only V-BLANK interrupt is requested
+[0x0000029F]	LDH [$FF],A       // 0xFFFF = 0 -> Only V-BLANK interrupt is enabled
+[0x000002A1]	XOR A             // A = 0
+[0x000002A2]	LDH [$42],A       // 0xFF42 = 0 -> SCY = 0
+[0x000002A4]	LDH [$43],A       // 0xFF43 = 0 -> SCX = 0
+[0x000002A6]	LDH [$A4],A       // 0xFFA4 = 0 -> IDK what dis is
+[0x000002A8]	LDH [$41],A       // 0xFF41 = 0 -> All LCDC interrumpts disabled
+[0x000002AA]	LDH [$01],A       // 0xFF01 = 0 -> 0 to be in serial transfe
+[0x000002AC]	LDH [$02],A       // 0xFF02 = 0 -> No serial transfer
+[0x000002AE]	LD A,$80          // A = 0x80 (128)
+[0x000002B0]	LDH [$40],A       // 0xFF40 = 0x80 -> DISPLAY ON (according to me, it was already enabled...)
 
 /**
  * This loop waits for LY (display line) to be 0x94 (150).
  * This is well into V-BLANK territory
  */
-jmp_2b2:
-	LDH A,[$44]       // A = (0xFF44) -> Load LY into A
-	CP $94            // CP 0x96 (150) with LY
-	JR NZ,jmp_2b2     // If NZ (different), back to loop
+[0x000002B2]	LDH A,[$44]       // A = (0xFF44) -> Load LY into A
+[0x000002B4]	CP $94            // CP 0x96 (150) with LY
+[0x000002B6]	JR NZ,jmp_2b2     // If NZ (different), back to loop
 
-	LD A,$03          // A = 0x03 (3)
+[0x000002B8]	LD A,$03          // A = 0x03 (3)
+
   /**
    * This disabled the DISPLAY. This can only be made in V-BLANK, which the program does
    */
-	LDH [$40],A       // 0xFF40 = 0x03 -> BG display ON,
+[0x000002BA]	LDH [$40],A       // 0xFF40 = 0x03 -> BG display ON,
                                         Sprite display ON,
                                         Sprite Size 8x8,
                                         BG tilemap 0x9800-0x9BFF,
@@ -63,28 +163,27 @@ jmp_2b2:
                                         WINDOW OFF,
                                         WINDOW tilemap 0x9800-0x9BFF,
                                         DISPLAY OFF
-	LD A,$E4          // A = 0xE4 (228)
-	LDH [$47],A       // 0xFF47 = 0xE4 -> BG Tile pallete set
-	LDH [$48],A       // 0xFF48 = 0xE4 -> Sprite Pallete 0 set (same as BG)
-	LD A,$C4          // A = 0xC4 (196)
-	LDH [$49],A       // 0xFF49 = 0xC4 -> Sprite Pallete 1 set (Different)
-	LD HL,$FF26       // HL = 0xFF26
-	LD A,$80          // A = 0x80 (128)
-	LD [HLD],A        // 0xFF26 = 0x80 -> SOUND ON
-                    // HL = 0xFF25
-	LD A,$FF          // A = 0xFF (255)
-	LD [HLD],A        // 0xFF25 = 0xFF -> Output all 4 channels to both S01 and S02
-                    //                  (I imagine it's some kind of stereo thing)
-                    // HL = 0xFF24
-	LD [HL],$77       // 0xFF24 = 0x77 -> Both channels volume to max (7),
-                                        Both channels don't output Vin (IDK what this means yet)
-	LD A,$01          // A = 0x01 (1)
-	LD [$2000],A      // 0x2000 = 0x01 -> Could this be some of the MBC magic? This is strange,
-                                        because tetris is ROM ONLY...
-	LD SP,$CFFF       // SP = 0xCFFF
-	XOR A             // A = 0x00 (0)
-	LD HL,$DFFF       // HL = 0xDFFF
-	LD B,$00          // B = 0x00 (0)
+[0x000002BC]	LD A,$E4          // A = 0xE4 (228)
+[0x000002BE]	LDH [$47],A       // 0xFF47 = 0xE4 -> BG Tile pallete set
+[0x000002C0]	LDH [$48],A       // 0xFF48 = 0xE4 -> Sprite Pallete 0 set (same as BG)
+[0x000002C2]	LD A,$C4          // A = 0xC4 (196)
+[0x000002C4]	LDH [$49],A       // 0xFF49 = 0xC4 -> Sprite Pallete 1 set (Different)
+[0x000002C6]	LD HL,$FF26       // HL = 0xFF26
+[0x000002C9]	LD A,$80          // A = 0x80 (128)
+[0x000002CB]	LD [HLD],A        // 0xFF26 = 0x80 -> SOUND ON, HL = 0xFF25
+[0x000002CC]	LD A,$FF          // A = 0xFF (255)
+[0x000002CE]	LD [HLD],A        // 0xFF25 = 0xFF -> Output all 4 channels to both S01 and S02
+                                //                  (I imagine it's some kind of stereo thing)
+                                // HL = 0xFF24
+[0x000002CF]	LD [HL],$77       // 0xFF24 = 0x77 -> Both channels volume to max (7),
+                                                    Both channels don't output Vin (IDK what this means yet)
+[0x000002D1]	LD A,$01          // A = 0x01 (1)
+[0x000002D3]	LD [$2000],A      // 0x2000 = 0x01 -> Could this be some of the MBC magic? This is strange,
+                                                    because tetris is ROM ONLY...
+[0x000002D6]	LD SP,$CFFF       // SP = 0xCFFF
+[0x000002D9]	XOR A             // A = 0x00 (0)
+[0x000002DA]	LD HL,$DFFF       // HL = 0xDFFF
+[0x000002DD]	LD B,$00          // B = 0x00 (0)
 
 /**
  * This loop clears 0xDF00-0xDFFF
@@ -92,13 +191,13 @@ jmp_2b2:
  * This is part of the gameboy's internal RAM
  */
 jmp_2df:
-	LD [HLD],A        // 0xDFFF = 0x00
-	DEC B             // B is initially 0
-	JR NZ,jmp_2df     // This will trigger after 256 passes
+[0x000002DF]	LD [HLD],A        // 0xDFFF = 0x00
+[0x000002E0]	DEC B             // B is initially 0
+[0x000002E1]	JR NZ,jmp_2df     // This will trigger after 256 passes
 
-	LD HL,$CFFF       // HL = 0xCFFF
-	LD C,$10          // C = 0x10 (16)
-	LD B,$00          // B = 0x00 (0)
+[0x000002E3]	LD HL,$CFFF       // HL = 0xCFFF
+[0x000002E6]	LD C,$10          // C = 0x10 (16)
+[0x000002E8]	LD B,$00          // B = 0x00 (0)
 
 /**
  * This loop clears 0xC000-0xCFFF
@@ -106,31 +205,30 @@ jmp_2df:
  * This is part of the gameboy's internal RAM
  */
 jmp_2ea:
-	LD [HLD],A        // 0xCFFF = 0x00
-	DEC B             // B is initially 0
-	JR NZ,jmp_2ea     // This will trigger after 256 passes
-	DEC C             // C is initially 16
-	JR NZ,jmp_2ea
+[0x000002EA]	LD [HLD],A        // 0xCFFF = 0x00
+[0x000002EB]	DEC B             // B is initially 0
+[0x000002EC]	JR NZ,jmp_2ea     // This will trigger after 256 passes
+[0x000002EE]	DEC C             // C is initially 16
+[0x000002EF]	JR NZ,jmp_2ea
 
-
-	LD HL,$9FFF       // HL = 0x9FFF
-	LD C,$20          // C = 0x20 (32)
-	XOR A             // A = 0x00 (0)
-	LD B,$00          // B = 0x00 (0)
+[0x000002F1]	LD HL,$9FFF       // HL = 0x9FFF
+[0x000002F4]	LD C,$20          // C = 0x20 (32)
+[0x000002F6]	XOR A             // A = 0x00 (0)
+[0x000002F7]	LD B,$00          // B = 0x00 (0)
 
 /**
  * This loop clears 0x8000-0x9FFF
  * This is all of the VRAM
  */
 jmp_2f9:
-	LD [HLD],A
-	DEC B             // B is initially 0
-	JR NZ,jmp_2f9
-	DEC C             // C is initially 32
-	JR NZ,jmp_2f9
+[0x000002F9]	LD [HLD],A
+[0x000002FA]	DEC B             // B is initially 0
+[0x000002FB]	JR NZ,jmp_2f9
+[0x000002FD]	DEC C             // C is initially 32
+[0x000002FE]	JR NZ,jmp_2f9
 
-	LD HL,$FEFF       // HL = 0xFEFF
-	LD B,$00          // B = 0x00 (0)
+[0x00000300]	LD HL,$FEFF       // HL = 0xFEFF
+[0x00000303]	LD B,$00          // B = 0x00 (0)
 
 /**
  * This loop clears 0xFE00-0xFEFF
@@ -138,188 +236,1137 @@ jmp_2f9:
  * This clears the 96 "unusable" bytes (0xFEA0-0xFEFF)
  */
 jmp_305:
-	LD [HLD],A
-	DEC B             // B is initially 0
-	JR NZ,jmp_305
+[0x00000305]	LD [HLD],A
+[0x00000306]	DEC B             // B is initially 0
+[0x00000307]	JR NZ,jmp_305
 
-	LD HL,$FFFE       // HL = 0xFFFE
-	LD B,$80          // B = 0x80 (128)
-
+[0x00000309]	LD HL,$FFFE       // HL = 0xFFFE
+[0x0000030C]	LD B,$80          // B = 0x80 (128)
 
 /**
  * This loop clears 0xFF80-0xFFFE
  * This is the HRAM
  */
 jmp_30e:
-	LD [HLD],A
-	DEC B             // B initially is 128
-	JR NZ,jmp_30e
+[0x0000030E]	LD [HLD],A
+[0x0000030F]	DEC B             // B initially is 128
+[0x00000310]	JR NZ,jmp_30e
 
-
-	LD C,$B6          // C = 0xB6 (182)
-	LD B,$0C          // B = 0x0C (12)
-	LD HL,$2AC7       // HL = 0x2AC7
+[0x00000312]	LD C,$B6          // C = 0xB6 (182)
+[0x00000314]	LD B,$0C          // B = 0x0C (12)
+[0x00000316]	LD HL,$2AC7       // HL = 0x2AC7
 
 /**
  * This loop copies 0x2AC7-0x2AD3 into 0xB6-0xC2
  * That range is probably an interrupt handler
  */
 jmp_319:
-	LD A,[HLI]        // A = (0x2AC7), HL++
-	LD [C],A          // 0xB6 = (0x2AC7) -> This is probably some kind of interrupt handler
-	INC C
-	DEC B
-	JR NZ,jmp_319
+[0x00000319]	LD A,[HLI]        // A = (0x2AC7), HL++
+[0x0000031A]	LD [C],A          // 0xB6 = (0x2AC7) -> This is probably some kind of interrupt handler
+[0x0000031B]	INC C
+[0x0000031C]	DEC B
+[0x0000031D]	JR NZ,jmp_319
 
-	CALL sub_27e9     // This call writes very hackily into (hopefully only)
-                    // the OAM range 0x9800-0x9BFF
-	CALL sub_7ff3     // CALL into a JP that sets sound channel registers
+[0x0000031F]	CALL sub_27e9     // This call writes very hackily into (hopefully only)
+                                // the OAM range 0x9800-0x9BFF
 
-	LD A,$09          // A = 0x09 (9)
-	LDH [$FF],A       // 0xFFFF = 0x09 -> Enables Joypad and Serial interrupts
-	LD A,$37          // A = 0x37 (55)
-	LDH [$C0],A       // 0xFFC0 = 0x37 -> Internal RAM data set?
-	LD A,$1C          // A = 0x1C (28)
-	LDH [$C1],A       // 0xFFC1 = 0x1C -> Internal RAM data set?
-	LD A,$24          // A = 0x24 (36)
-	LDH [$E1],A       // 0xFFE1 -0x24 -> Internal RAM data set?
-	LD A,$80          // A = 0x80 (128)
-	LDH [$40],A       // 0xFF40 = 0x80 -> DISPLAY ON (All else disabled)
-	EI                // Enable interrupts
-	XOR A             // A = 0x00 (0)
-	LDH [$0F],A       // 0xFF0F = 0x00 -> Clears all interrupts (is this useful?)
-	LDH [$4A],A       // 0xFF4A = 0x00 -> WY = 0
-	LDH [$4B],A       // 0xFF4B = 0x00 -> WX = 0
-	LDH [$06],A       // 0xFF06 = 0x00 -> Sets time modulo to 0
+[0x00000322]	CALL sub_7ff3     // CALL into a JP that sets sound channel registers
+
+[0x00000325]	LD A,$09          // A = 0x09 (9)
+[0x00000327]	LDH [$FF],A       // 0xFFFF = 0x09 -> Enables Joypad and Serial interrupts
+[0x00000329]	LD A,$37          // A = 0x37 (55)
+[0x0000032B]	LDH [$C0],A       // 0xFFC0 = 0x37 -> Internal RAM data set?
+[0x0000032D]	LD A,$1C          // A = 0x1C (28)
+[0x0000032F]	LDH [$C1],A       // 0xFFC1 = 0x1C -> Internal RAM data set?
+[0x00000331]	LD A,$24          // A = 0x24 (36)
+[0x00000333]	LDH [$E1],A       // 0xFFE1 -0x24 -> Internal RAM data set?
+[0x00000335]	LD A,$80          // A = 0x80 (128)
+[0x00000337]	LDH [$40],A       // 0xFF40 = 0x80 -> DISPLAY ON (All else disabled)
+[0x00000339]	EI                // Enable interrupts
+[0x0000033A]	XOR A             // A = 0x00 (0)
+[0x0000033B]	LDH [$0F],A       // 0xFF0F = 0x00 -> Clears all interrupts (is this useful?)
+[0x0000033D]	LDH [$4A],A       // 0xFF4A = 0x00 -> WY = 0
+[0x0000033F]	LDH [$4B],A       // 0xFF4B = 0x00 -> WX = 0
+[0x00000341]	LDH [$06],A       // 0xFF06 = 0x00 -> Sets time modulo to 0
+
 jmp_343:
-	CALL sub_29fa     // Gets information from the joypad and stores it in 0xFF80
-	CALL sub_377
-	CALL sub_7ff0
-	LDH A,[$80]
-	AND $0F
-	CP $0F
-	JP Z,jmp_29a
-	LD HL,$FFA6
-	LD B,$02
+[0x00000343]	CALL sub_29fa     // Gets information from the joypad and stores it in 0xFF80
+
+[0x00000346]	CALL sub_377
+
+[0x00000349]	CALL sub_7ff0
+
+[0x0000034C]	LDH A,[$80]
+[0x0000034E]	AND $0F
+[0x00000350]	CP $0F
+[0x00000352]	JP Z,jmp_29a
+[0x00000355]	LD HL,$FFA6
+[0x00000358]	LD B,$02
 jmp_35a:
-	LD A,[HL]
-	AND A
-	JR Z,jmp_35f
-	DEC [HL]
+[0x0000035A]	LD A,[HL]
+[0x0000035B]	AND A
+[0x0000035C]	JR Z,jmp_35f
+[0x0000035E]	DEC [HL]
 jmp_35f:
-	INC L
-	DEC B
-	JR NZ,jmp_35a
-	LDH A,[$C5]
-	AND A
-	JR Z,jmp_36c
-	LD A,$09
-	LDH [$FF],A
+[0x0000035F]	INC L
+[0x00000360]	DEC B
+[0x00000361]	JR NZ,jmp_35a
+[0x00000363]	LDH A,[$C5]
+[0x00000365]	AND A
+[0x00000366]	JR Z,jmp_36c
+[0x00000368]	LD A,$09
+[0x0000036A]	LDH [$FF],A
 jmp_36c:
-	LDH A,[$85]
-	AND A
-	JR Z,jmp_36c
-	XOR A
-	LDH [$85],A
-	JP jmp_343
+[0x0000036C]	LDH A,[$85]
+[0x0000036E]	AND A
+[0x0000036F]	JR Z,jmp_36c
+[0x00000371]	XOR A
+[0x00000372]	LDH [$85],A
+[0x00000374]	JP jmp_343
 sub_377:
-	LDH A,[$E1]       // A = 0xE1 (225)
-	RST $28           // CALL 0x0028 -> Sadly this is not disassembled
-	ADD HL,HL
-	INC E
-	DEC A
-	DEC E
-	XOR B
-	LD [DE],A
-	RST $18
-	LD [DE],A
-	LD H,C
-	DEC E
-	ADD A,C
-	DEC E
-	ADD HL,DE
-	INC B
-	AND $04
-	XOR B
-	INC D
-	LDH A,[$14]
-	LD L,E
-	LD A,[DE]
-	DEC DE
-	LD E,$71
-	RRA
-	LD A,D
-	RRA
-	ADC A,C
-	DEC D
-	INC D
-	DEC D
-	RST $18
-	DEC D
-	INC HL
-	LD D,$8D
-	LD D,$DE
-	LD D,$4F
-	RLA
-	LD [HL],A
-	ADD HL,DE
-	-                 // ILLEGAL OPCODE
+[0x00000377]	LDH A,[$E1]
+[0x00000379]	RST $28
+[0x0000037A]	ADD HL,HL
+[0x0000037B]	INC E
+[0x0000037C]	DEC A
+[0x0000037D]	DEC E
+[0x0000037E]	XOR B
+[0x0000037F]	LD [DE],A
+[0x00000380]	RST $18
+[0x00000381]	LD [DE],A
+[0x00000382]	LD H,C
+[0x00000383]	DEC E
+[0x00000384]	ADD A,C
+[0x00000385]	DEC E
+[0x00000386]	ADD HL,DE
+[0x00000387]	INC B
+[0x00000388]	AND $04
+[0x0000038A]	XOR B
+[0x0000038B]	INC D
+[0x0000038C]	LDH A,[$14]
+[0x0000038E]	LD L,E
+[0x0000038F]	LD A,[DE]
+[0x00000390]	DEC DE
+[0x00000391]	LD E,$71
+[0x00000393]	RRA
+[0x00000394]	LD A,D
+[0x00000395]	RRA
+[0x00000396]	ADC A,C
+[0x00000397]	DEC D
+[0x00000398]	INC D
+[0x00000399]	DEC D
+[0x0000039A]	RST $18
+[0x0000039B]	DEC D
+[0x0000039C]	INC HL
+[0x0000039D]	LD D,$8D
+[0x0000039F]	LD D,$DE
+[0x000003A1]	LD D,$4F
+[0x000003A3]	RLA
+[0x000003A4]	LD [HL],A
+[0x000003A5]	ADD HL,DE
+[0x000003A6]	-
+
+	INCBIN "..\..\Roms\tetris.gb",$28b,$192e-$28b
+sub_192e:
+[0x0000192E]	LDH A,[$E8]
+[0x00001930]	AND A
+[0x00001931]	RET Z
+[0x00001932]	LD HL,$99A4
+[0x00001935]	LD DE,$C9A4
+[0x00001938]	LD C,$06
+jmp_193a:
+[0x0000193A]	PUSH HL
+jmp_193b:
+[0x0000193B]	LD B,$06
+jmp_193d:
+[0x0000193D]	LD A,[DE]
+[0x0000193E]	LD [HLI],A
+[0x0000193F]	INC E
+[0x00001940]	DEC B
+[0x00001941]	JR NZ,jmp_193d
+[0x00001943]	INC E
+[0x00001944]	INC L
+[0x00001945]	INC E
+[0x00001946]	INC L
+[0x00001947]	DEC C
+[0x00001948]	JR Z,jmp_195b
+[0x0000194A]	BIT 0,C
+[0x0000194C]	JR NZ,jmp_193b
+[0x0000194E]	POP HL
+[0x0000194F]	LD DE,$0020
+[0x00001952]	ADD HL,DE
+[0x00001953]	PUSH HL
+[0x00001954]	POP DE
+[0x00001955]	LD A,$30
+[0x00001957]	ADD A,D
+[0x00001958]	LD D,A
+[0x00001959]	JR jmp_193a
+jmp_195b:
+[0x0000195B]	POP HL
+[0x0000195C]	XOR A
+[0x0000195D]	LDH [$E8],A
+[0x0000195F]	RET
+
+
+	INCBIN "..\..\Roms\tetris.gb",$1960,$1b43-$1960
+sub_1b43:
+[0x00001B43]	LDH A,[$A9]
+[0x00001B45]	LD E,A
+[0x00001B46]	LDH A,[$F4]
+[0x00001B48]	AND A
+[0x00001B49]	JR Z,jmp_1b55
+[0x00001B4B]	LD A,$0A
+[0x00001B4D]	ADD A,E
+[0x00001B4E]	CP $15
+[0x00001B50]	JR C,jmp_1b54
+[0x00001B52]	LD A,$14
+jmp_1b54:
+[0x00001B54]	LD E,A
+jmp_1b55:
+[0x00001B55]	LD HL,$1B61
+[0x00001B58]	LD D,$00
+[0x00001B5A]	ADD HL,DE
+[0x00001B5B]	LD A,[HL]
+[0x00001B5C]	LDH [$99],A
+[0x00001B5E]	LDH [$9A],A
+[0x00001B60]	RET
+
+
+	INCBIN "..\..\Roms\tetris.gb",$1b61,$1ef0-$1b61
+jmp_1ef0:
+[0x00001EF0]	XOR A
+[0x00001EF1]	LD [$C0C6],A
+[0x00001EF4]	LD DE,$C0C0
+[0x00001EF7]	LD A,[DE]
+[0x00001EF8]	LD L,A
+[0x00001EF9]	INC DE
+[0x00001EFA]	LD A,[DE]
+[0x00001EFB]	LD H,A
+[0x00001EFC]	OR L
+[0x00001EFD]	JP Z,jmp_268e
+[0x00001F00]	DEC HL
+[0x00001F01]	LD A,H
+[0x00001F02]	LD [DE],A
+[0x00001F03]	DEC DE
+[0x00001F04]	LD A,L
+[0x00001F05]	LD [DE],A
+[0x00001F06]	LD DE,$0001
+[0x00001F09]	LD HL,$C0C2
+[0x00001F0C]	PUSH DE
+[0x00001F0D]	CALL sub_166
+[0x00001F10]	LD DE,$C0C4
+[0x00001F13]	LD HL,$99A5
+[0x00001F16]	CALL sub_2a7e
+[0x00001F19]	XOR A
+[0x00001F1A]	LDH [$A6],A
+[0x00001F1C]	POP DE
+[0x00001F1D]	LD HL,$C0A0
+[0x00001F20]	CALL sub_166
+[0x00001F23]	LD DE,$C0A2
+[0x00001F26]	LD HL,$9A25
+[0x00001F29]	CALL sub_2a82
+[0x00001F2C]	LD A,$02
+[0x00001F2E]	LD [$DFE0],A
+[0x00001F31]	RET
+
+sub_1f32:
+[0x00001F32]	LD A,[$C0C6]
+[0x00001F35]	AND A
+[0x00001F36]	RET Z
+[0x00001F37]	LD A,[$C0C5]
+[0x00001F3A]	CP $04
+[0x00001F3C]	JR Z,jmp_1ef0
+[0x00001F3E]	LD DE,$0040
+[0x00001F41]	LD BC,$9823
+[0x00001F44]	LD HL,$C0AC
+[0x00001F47]	AND A
+[0x00001F48]	JR Z,jmp_1f6d
+[0x00001F4A]	LD DE,$0100
+[0x00001F4D]	LD BC,$9883
+[0x00001F50]	LD HL,$C0B1
+[0x00001F53]	CP $01
+[0x00001F55]	JR Z,jmp_1f6d
+[0x00001F57]	LD DE,$0300
+[0x00001F5A]	LD BC,$98E3
+[0x00001F5D]	LD HL,$C0B6
+[0x00001F60]	CP $02
+[0x00001F62]	JR Z,jmp_1f6d
+[0x00001F64]	LD DE,$1200
+[0x00001F67]	LD BC,$9943
+[0x00001F6A]	LD HL,$C0BB
+jmp_1f6d:
+[0x00001F6D]	CALL sub_262d
+[0x00001F70]	RET
+
+
+	INCBIN "..\..\Roms\tetris.gb",$1f71,$2062-$1f71
+sub_2062:
+[0x00002062]	LD HL,$C200
+[0x00002065]	LD [HL],$00
+[0x00002067]	INC L
+[0x00002068]	LD [HL],$18
+[0x0000206A]	INC L
+[0x0000206B]	LD [HL],$3F
+[0x0000206D]	INC L
+[0x0000206E]	LD A,[$C213]
+[0x00002071]	LD [HL],A
+[0x00002072]	AND $FC
+[0x00002074]	LD C,A
+[0x00002075]	LDH A,[$E4]
+[0x00002077]	AND A
+[0x00002078]	JR NZ,jmp_207f
+[0x0000207A]	LDH A,[$C5]
+[0x0000207C]	AND A
+[0x0000207D]	JR Z,jmp_209c
+jmp_207f:
+[0x0000207F]	LD H,$C3
+[0x00002081]	LDH A,[$B0]
+[0x00002083]	LD L,A
+[0x00002084]	LD E,[HL]
+[0x00002085]	INC HL
+[0x00002086]	LD A,H
+[0x00002087]	CP $C4
+[0x00002089]	JR NZ,jmp_208e
+[0x0000208B]	LD HL,$C300
+jmp_208e:
+[0x0000208E]	LD A,L
+[0x0000208F]	LDH [$B0],A
+[0x00002091]	LDH A,[$D3]
+[0x00002093]	AND A
+[0x00002094]	JR Z,jmp_20c0
+[0x00002096]	OR $80
+[0x00002098]	LDH [$D3],A
+[0x0000209A]	JR jmp_20c0
+jmp_209c:
+[0x0000209C]	LD H,$03
+jmp_209e:
+[0x0000209E]	LDH A,[$04]
+[0x000020A0]	LD B,A
+jmp_20a1:
+[0x000020A1]	XOR A
+jmp_20a2:
+[0x000020A2]	DEC B
+[0x000020A3]	JR Z,jmp_20af
+[0x000020A5]	INC A
+[0x000020A6]	INC A
+[0x000020A7]	INC A
+[0x000020A8]	INC A
+[0x000020A9]	CP $1C
+[0x000020AB]	JR Z,jmp_20a1
+[0x000020AD]	JR jmp_20a2
+jmp_20af:
+[0x000020AF]	LD D,A
+[0x000020B0]	LDH A,[$AE]
+[0x000020B2]	LD E,A
+[0x000020B3]	DEC H
+[0x000020B4]	JR Z,jmp_20bd
+[0x000020B6]	OR D
+[0x000020B7]	OR C
+[0x000020B8]	AND $FC
+[0x000020BA]	CP C
+[0x000020BB]	JR Z,jmp_209e
+jmp_20bd:
+[0x000020BD]	LD A,D
+[0x000020BE]	LDH [$AE],A
+jmp_20c0:
+[0x000020C0]	LD A,E
+[0x000020C1]	LD [$C213],A
+[0x000020C4]	CALL sub_26ea
+[0x000020C7]	LDH A,[$9A]
+[0x000020C9]	LDH [$99],A
+[0x000020CB]	RET
+
+
+	INCBIN "..\..\Roms\tetris.gb",$20cc,$2240-$20cc
+sub_2240:
+[0x00002240]	LDH A,[$98]
+[0x00002242]	CP $03
+[0x00002244]	RET NZ
+[0x00002245]	LDH A,[$A6]
+[0x00002247]	AND A
+[0x00002248]	RET NZ
+[0x00002249]	LD DE,$C0A3
+[0x0000224C]	LDH A,[$9C]
+[0x0000224E]	BIT 0,A
+[0x00002250]	JR NZ,jmp_228e
+[0x00002252]	LD A,[DE]
+[0x00002253]	AND A
+[0x00002254]	JR Z,jmp_22a8
+jmp_2256:
+[0x00002256]	SUB $30
+[0x00002258]	LD H,A
+[0x00002259]	INC DE
+[0x0000225A]	LD A,[DE]
+[0x0000225B]	LD L,A
+[0x0000225C]	LDH A,[$9C]
+[0x0000225E]	CP $06
+[0x00002260]	LD A,$8C
+[0x00002262]	JR NZ,jmp_2266
+[0x00002264]	LD A,$2F
+jmp_2266:
+[0x00002266]	LD C,$0A
+jmp_2268:
+[0x00002268]	LD [HLI],A
+[0x00002269]	DEC C
+[0x0000226A]	JR NZ,jmp_2268
+[0x0000226C]	INC DE
+[0x0000226D]	LD A,[DE]
+[0x0000226E]	AND A
+[0x0000226F]	JR NZ,jmp_2256
+jmp_2271:
+[0x00002271]	LDH A,[$9C]
+[0x00002273]	INC A
+[0x00002274]	LDH [$9C],A
+[0x00002276]	CP $07
+[0x00002278]	JR Z,jmp_227f
+[0x0000227A]	LD A,$0A
+[0x0000227C]	LDH [$A6],A
+[0x0000227E]	RET
+
+jmp_227f:
+[0x0000227F]	XOR A
+[0x00002280]	LDH [$9C],A
+[0x00002282]	LD A,$0D
+[0x00002284]	LDH [$A6],A
+[0x00002286]	LD A,$01
+[0x00002288]	LDH [$E3],A
+jmp_228a:
+[0x0000228A]	XOR A
+[0x0000228B]	LDH [$98],A
+[0x0000228D]	RET
+
+jmp_228e:
+[0x0000228E]	LD A,[DE]
+[0x0000228F]	LD H,A
+[0x00002290]	SUB $30
+[0x00002292]	LD C,A
+[0x00002293]	INC DE
+[0x00002294]	LD A,[DE]
+[0x00002295]	LD L,A
+[0x00002296]	LD B,$0A
+jmp_2298:
+[0x00002298]	LD A,[HL]
+[0x00002299]	PUSH HL
+[0x0000229A]	LD H,C
+[0x0000229B]	LD [HL],A
+[0x0000229C]	POP HL
+[0x0000229D]	INC HL
+[0x0000229E]	DEC B
+[0x0000229F]	JR NZ,jmp_2298
+[0x000022A1]	INC DE
+[0x000022A2]	LD A,[DE]
+[0x000022A3]	AND A
+[0x000022A4]	JR NZ,jmp_228e
+[0x000022A6]	JR jmp_2271
+jmp_22a8:
+[0x000022A8]	CALL sub_2062
+[0x000022AB]	JR jmp_228a
+
+	INCBIN "..\..\Roms\tetris.gb",$22ad,$22fe-$22ad
+sub_22fe:
+[0x000022FE]	LDH A,[$E3]
+[0x00002300]	CP $02
+[0x00002302]	RET NZ
+[0x00002303]	LD HL,$9A22
+[0x00002306]	LD DE,$CA22
+[0x00002309]	CALL sub_2506
+[0x0000230C]	RET
+
+sub_230d:
+[0x0000230D]	LDH A,[$E3]
+[0x0000230F]	CP $03
+[0x00002311]	RET NZ
+[0x00002312]	LD HL,$9A02
+[0x00002315]	LD DE,$CA02
+[0x00002318]	CALL sub_2506
+[0x0000231B]	RET
+
+sub_231c:
+[0x0000231C]	LDH A,[$E3]
+[0x0000231E]	CP $04
+[0x00002320]	RET NZ
+[0x00002321]	LD HL,$99E2
+[0x00002324]	LD DE,$C9E2
+[0x00002327]	CALL sub_2506
+[0x0000232A]	RET
+
+sub_232b:
+[0x0000232B]	LDH A,[$E3]
+[0x0000232D]	CP $05
+[0x0000232F]	RET NZ
+[0x00002330]	LD HL,$99C2
+[0x00002333]	LD DE,$C9C2
+[0x00002336]	CALL sub_2506
+[0x00002339]	RET
+
+sub_233a:
+[0x0000233A]	LDH A,[$E3]
+[0x0000233C]	CP $06
+[0x0000233E]	RET NZ
+[0x0000233F]	LD HL,$99A2
+[0x00002342]	LD DE,$C9A2
+[0x00002345]	CALL sub_2506
+[0x00002348]	RET
+
+sub_2349:
+[0x00002349]	LDH A,[$E3]
+[0x0000234B]	CP $07
+[0x0000234D]	RET NZ
+[0x0000234E]	LD HL,$9982
+[0x00002351]	LD DE,$C982
+[0x00002354]	CALL sub_2506
+[0x00002357]	RET
+
+sub_2358:
+[0x00002358]	LDH A,[$E3]
+[0x0000235A]	CP $08
+[0x0000235C]	RET NZ
+[0x0000235D]	LD HL,$9962
+[0x00002360]	LD DE,$C962
+[0x00002363]	CALL sub_2506
+[0x00002366]	LDH A,[$C5]
+[0x00002368]	AND A
+[0x00002369]	LDH A,[$E1]
+[0x0000236B]	JR NZ,jmp_2375
+[0x0000236D]	AND A
+[0x0000236E]	RET NZ
+jmp_236f:
+[0x0000236F]	LD A,$01
+[0x00002371]	LD [$DFF8],A
+[0x00002374]	RET
+
+jmp_2375:
+[0x00002375]	CP $1A
+[0x00002377]	RET NZ
+[0x00002378]	LDH A,[$D4]
+[0x0000237A]	AND A
+[0x0000237B]	JR Z,jmp_236f
+[0x0000237D]	LD A,$05
+[0x0000237F]	LD [$DFE0],A
+[0x00002382]	RET
+
+sub_2383:
+[0x00002383]	LDH A,[$E3]
+[0x00002385]	CP $09
+[0x00002387]	RET NZ
+[0x00002388]	LD HL,$9942
+[0x0000238B]	LD DE,$C942
+[0x0000238E]	CALL sub_2506
+[0x00002391]	RET
+
+sub_2392:
+[0x00002392]	LDH A,[$E3]
+[0x00002394]	CP $0A
+[0x00002396]	RET NZ
+[0x00002397]	LD HL,$9922
+[0x0000239A]	LD DE,$C922
+[0x0000239D]	CALL sub_2506
+[0x000023A0]	RET
+
+sub_23a1:
+[0x000023A1]	LDH A,[$E3]
+[0x000023A3]	CP $0B
+[0x000023A5]	RET NZ
+[0x000023A6]	LD HL,$9902
+[0x000023A9]	LD DE,$C902
+[0x000023AC]	CALL sub_2506
+[0x000023AF]	RET
+
+sub_23b0:
+[0x000023B0]	LDH A,[$E3]
+[0x000023B2]	CP $0C
+[0x000023B4]	RET NZ
+[0x000023B5]	LD HL,$98E2
+[0x000023B8]	LD DE,$C8E2
+[0x000023BB]	CALL sub_2506
+[0x000023BE]	RET
+
+sub_23bf:
+[0x000023BF]	LDH A,[$E3]
+[0x000023C1]	CP $0D
+[0x000023C3]	RET NZ
+[0x000023C4]	LD HL,$98C2
+[0x000023C7]	LD DE,$C8C2
+[0x000023CA]	CALL sub_2506
+[0x000023CD]	RET
+
+sub_23ce:
+[0x000023CE]	LDH A,[$E3]
+[0x000023D0]	CP $0E
+[0x000023D2]	RET NZ
+[0x000023D3]	LD HL,$98A2
+[0x000023D6]	LD DE,$C8A2
+[0x000023D9]	CALL sub_2506
+[0x000023DC]	RET
+
+sub_23dd:
+[0x000023DD]	LDH A,[$E3]
+[0x000023DF]	CP $0F
+[0x000023E1]	RET NZ
+[0x000023E2]	LD HL,$9882
+[0x000023E5]	LD DE,$C882
+[0x000023E8]	CALL sub_2506
+[0x000023EB]	RET
+
+sub_23ec:
+[0x000023EC]	LDH A,[$E3]
+[0x000023EE]	CP $10
+[0x000023F0]	RET NZ
+[0x000023F1]	LD HL,$9862
+[0x000023F4]	LD DE,$C862
+[0x000023F7]	CALL sub_2506
+[0x000023FA]	CALL sub_24ab
+[0x000023FD]	RET
+
+sub_23fe:
+[0x000023FE]	LDH A,[$E3]
+[0x00002400]	CP $11
+[0x00002402]	RET NZ
+[0x00002403]	LD HL,$9842
+[0x00002406]	LD DE,$C842
+[0x00002409]	CALL sub_2506
+[0x0000240C]	LD HL,$9C6D
+[0x0000240F]	CALL sub_249b
+[0x00002412]	LD A,$01
+[0x00002414]	LDH [$E0],A
+[0x00002416]	RET
+
+sub_2417:
+[0x00002417]	LDH A,[$E3]
+[0x00002419]	CP $12
+[0x0000241B]	RET NZ
+[0x0000241C]	LD HL,$9822
+[0x0000241F]	LD DE,$C822
+[0x00002422]	CALL sub_2506
+[0x00002425]	LD HL,$986D
+[0x00002428]	CALL sub_249b
+[0x0000242B]	RET
+
+sub_242c:
+[0x0000242C]	LDH A,[$E3]
+[0x0000242E]	CP $13
+[0x00002430]	RET NZ
+[0x00002431]	LD [$C0C7],A
+[0x00002434]	LD HL,$9802
+[0x00002437]	LD DE,$C802
+[0x0000243A]	CALL sub_2506
+[0x0000243D]	XOR A
+[0x0000243E]	LDH [$E3],A
+[0x00002440]	LDH A,[$C5]
+[0x00002442]	AND A
+[0x00002443]	LDH A,[$E1]
+[0x00002445]	JR NZ,jmp_248f
+[0x00002447]	AND A
+[0x00002448]	RET NZ
+jmp_2449:
+[0x00002449]	LD HL,$994E
+[0x0000244C]	LD DE,$FF9F
+[0x0000244F]	LD C,$02
+[0x00002451]	LDH A,[$C0]
+[0x00002453]	CP $37
+[0x00002455]	JR Z,jmp_245f
+[0x00002457]	LD HL,$9950
+[0x0000245A]	LD DE,$FF9E
+[0x0000245D]	LD C,$01
+jmp_245f:
+[0x0000245F]	CALL sub_2a84
+[0x00002462]	LDH A,[$C0]
+[0x00002464]	CP $37
+[0x00002466]	JR Z,jmp_248b
+[0x00002468]	LDH A,[$9E]
+[0x0000246A]	AND A
+[0x0000246B]	JR NZ,jmp_248b
+[0x0000246D]	LD A,$64
+[0x0000246F]	LDH [$A6],A
+[0x00002471]	LD A,$02
+[0x00002473]	LD [$DFE8],A
+[0x00002476]	LDH A,[$C5]
+[0x00002478]	AND A
+[0x00002479]	JR Z,jmp_247e
+[0x0000247B]	LDH [$D5],A
+[0x0000247D]	RET
+
+jmp_247e:
+[0x0000247E]	LDH A,[$C3]
+[0x00002480]	CP $09
+[0x00002482]	LD A,$05
+[0x00002484]	JR NZ,jmp_2488
+[0x00002486]	LD A,$22
+jmp_2488:
+[0x00002488]	LDH [$E1],A
+[0x0000248A]	RET
+
+jmp_248b:
+[0x0000248B]	CALL sub_2062
+[0x0000248E]	RET
+
+jmp_248f:
+[0x0000248F]	CP $1A
+[0x00002491]	RET NZ
+[0x00002492]	LDH A,[$D4]
+[0x00002494]	AND A
+[0x00002495]	JR Z,jmp_2449
+[0x00002497]	XOR A
+[0x00002498]	LDH [$D4],A
+[0x0000249A]	RET
+
+sub_249b:
+[0x0000249B]	LDH A,[$E1]
+[0x0000249D]	AND A
+[0x0000249E]	RET NZ
+[0x0000249F]	LDH A,[$C0]
+[0x000024A1]	CP $37
+[0x000024A3]	RET NZ
+[0x000024A4]	LD DE,$C0A2
+[0x000024A7]	CALL sub_2a7e
+[0x000024AA]	RET
+
+sub_24ab:
+[0x000024AB]	LDH A,[$E1]
+[0x000024AD]	AND A
+[0x000024AE]	RET NZ
+[0x000024AF]	LDH A,[$C0]
+[0x000024B1]	CP $37
+[0x000024B3]	RET NZ
+[0x000024B4]	LD HL,$FFA9
+[0x000024B7]	LD A,[HL]
+[0x000024B8]	CP $09
+[0x000024BA]	JR NC,jmp_24fd
+[0x000024BC]	LDH A,[$E7]
+[0x000024BE]	CP $0A
+[0x000024C0]	RET C
+[0x000024C1]	SUB $0A
+jmp_24c3:
+[0x000024C3]	LDH [$E7],A
+[0x000024C5]	INC [HL]
+[0x000024C6]	LD A,[HL]
+[0x000024C7]	CP $15
+[0x000024C9]	JR NZ,jmp_24cd
+[0x000024CB]	LD [HL],$14
+jmp_24cd:
+[0x000024CD]	LD B,[HL]
+[0x000024CE]	XOR A
+jmp_24cf:
+[0x000024CF]	OR A
+[0x000024D0]	INC A
+[0x000024D1]	DAA
+[0x000024D2]	DEC B
+[0x000024D3]	JR Z,jmp_24d7
+[0x000024D5]	JR jmp_24cf
+jmp_24d7:
+[0x000024D7]	LD B,A
+[0x000024D8]	AND $0F
+[0x000024DA]	LD C,A
+[0x000024DB]	LD HL,$98F1
+jmp_24de:
+[0x000024DE]	LD [HL],C
+[0x000024DF]	LD H,$9C
+[0x000024E1]	LD [HL],C
+[0x000024E2]	LD A,B
+[0x000024E3]	AND $F0
+[0x000024E5]	JR Z,jmp_24f4
+[0x000024E7]	SWAP A
+[0x000024E9]	LD C,A
+[0x000024EA]	LD A,L
+[0x000024EB]	CP $F0
+[0x000024ED]	JR Z,jmp_24f4
+[0x000024EF]	LD HL,$98F0
+[0x000024F2]	JR jmp_24de
+jmp_24f4:
+[0x000024F4]	LD A,$02
+[0x000024F6]	LD [$DFE0],A
+[0x000024F9]	CALL sub_1b43
+[0x000024FC]	RET
+
+jmp_24fd:
+[0x000024FD]	LDH A,[$E7]
+[0x000024FF]	CP $14
+[0x00002501]	RET C
+[0x00002502]	SUB $14
+[0x00002504]	JR jmp_24c3
+sub_2506:
+[0x00002506]	LD B,$0A
+jmp_2508:
+[0x00002508]	LD A,[DE]
+[0x00002509]	LD [HL],A
+[0x0000250A]	INC L
+[0x0000250B]	INC E
+[0x0000250C]	DEC B
+[0x0000250D]	JR NZ,jmp_2508
+[0x0000250F]	LDH A,[$E3]
+[0x00002511]	INC A
+[0x00002512]	LDH [$E3],A
+[0x00002514]	RET
+
+
+	INCBIN "..\..\Roms\tetris.gb",$2515,$262d-$2515
+sub_262d:
+[0x0000262D]	LD A,[$C0C6]
+[0x00002630]	CP $02
+[0x00002632]	JR Z,jmp_267a
+[0x00002634]	PUSH DE
+[0x00002635]	LD A,[HL]
+[0x00002636]	OR A
+[0x00002637]	JR Z,jmp_268d
+[0x00002639]	DEC A
+[0x0000263A]	LD [HLI],A
+[0x0000263B]	LD A,[HL]
+[0x0000263C]	INC A
+[0x0000263D]	DAA
+[0x0000263E]	LD [HL],A
+[0x0000263F]	AND $0F
+[0x00002641]	LD [BC],A
+[0x00002642]	DEC C
+[0x00002643]	LD A,[HLI]
+[0x00002644]	SWAP A
+[0x00002646]	AND $0F
+[0x00002648]	JR Z,jmp_264b
+[0x0000264A]	LD [BC],A
+jmp_264b:
+[0x0000264B]	PUSH BC
+[0x0000264C]	LDH A,[$C3]
+[0x0000264E]	LD B,A
+[0x0000264F]	INC B
+jmp_2650:
+[0x00002650]	PUSH HL
+[0x00002651]	CALL sub_166
+[0x00002654]	POP HL
+[0x00002655]	DEC B
+[0x00002656]	JR NZ,jmp_2650
+[0x00002658]	POP BC
+[0x00002659]	INC HL
+[0x0000265A]	INC HL
+[0x0000265B]	PUSH HL
+[0x0000265C]	LD HL,$0023
+[0x0000265F]	ADD HL,BC
+[0x00002660]	POP DE
+[0x00002661]	CALL sub_2a82
+[0x00002664]	POP DE
+[0x00002665]	LDH A,[$C3]
+[0x00002667]	LD B,A
+[0x00002668]	INC B
+[0x00002669]	LD HL,$C0A0
+jmp_266c:
+[0x0000266C]	PUSH HL
+[0x0000266D]	CALL sub_166
+[0x00002670]	POP HL
+[0x00002671]	DEC B
+[0x00002672]	JR NZ,jmp_266c
+[0x00002674]	LD A,$02
+[0x00002676]	LD [$C0C6],A
+[0x00002679]	RET
+
+jmp_267a:
+[0x0000267A]	LD DE,$C0A2
+[0x0000267D]	LD HL,$9A25
+[0x00002680]	CALL sub_2a82
+[0x00002683]	LD A,$02
+[0x00002685]	LD [$DFE0],A
+[0x00002688]	XOR A
+[0x00002689]	LD [$C0C6],A
+[0x0000268C]	RET
+
+jmp_268d:
+[0x0000268D]	POP DE
+jmp_268e:
+[0x0000268E]	LD A,$21
+[0x00002690]	LDH [$A6],A
+[0x00002692]	XOR A
+[0x00002693]	LD [$C0C6],A
+[0x00002696]	LD A,[$C0C5]
+[0x00002699]	INC A
+[0x0000269A]	LD [$C0C5],A
+[0x0000269D]	CP $05
+[0x0000269F]	RET NZ
+[0x000026A0]	LD A,$04
+[0x000026A2]	LDH [$E1],A
+[0x000026A4]	RET
+
+
+	INCBIN "..\..\Roms\tetris.gb",$26a5,$26ea-$26a5
+sub_26ea:
+[0x000026EA]	LD A,$01
+[0x000026EC]	LDH [$8F],A
+[0x000026EE]	LD A,$20
+[0x000026F0]	LDH [$8E],A
+[0x000026F2]	LD A,$C0
+[0x000026F4]	LDH [$8D],A
+[0x000026F6]	LD HL,$C210
+[0x000026F9]	CALL sub_2ad1
+[0x000026FC]	RET
 
 	INCBIN "..\..\Roms\tetris.gb",$3a7,$27e9-$3a7
-/**
- * This is a very hacky way of writing into the BG tilemap
- */
 sub_27e9:
-	LD HL,$9BFF       // HL = 0x9BFF
-	LD BC,$0400       // BC = 0x400 (1024)
+[0x000027E9]	LD HL,$9BFF         // HL = 0x9BFF
+[0x000027EC]	LD BC,$0400         // BC = 0x400 (1024)
+
 jmp_27ef:
-	LD A,$2F          // A = 0x2F (47)
-	LD [HLD],A        // This decreases HL
-	DEC BC
-	LD A,B            // B is the high part of BC (starts at 0x04)
-	OR C              // A = A | C
-	JR NZ,jmp_27ef
-	RET
+[0x000027EF]	LD A,$2F            // A = 0x2F (47)
+[0x000027F1]	LD [HLD],A          // This decreases HL
+[0x000027F2]	DEC BC
+[0x000027F3]	LD A,B              // B is the high part of BC (starts at 0x04)
+[0x000027F4]	OR C                // A = A | C
+[0x000027F5]	JR NZ,jmp_27ef
+[0x000027F7]	RET
 
 
 	INCBIN "..\..\Roms\tetris.gb",$27f8,$29fa-$27f8
-/**
- * This whole subroutine is for reading into 0xFF80 (HRAM) the
- * result of reading the joypad. This information is separated by nibbles
- */
 sub_29fa:
-	LD A,$20          // A = 0x20 (32)
-	LDH [$00],A       // 0xFF00 = 0x20 -> Select both P14 and P15 for joypad
-	LDH A,[$00]       // A = (0xFF00) -> Read joypad
-	LDH A,[$00]       // A = (0xFF00) -> Read joypad
-  // This is some h4ck0r way of getting the info of the button pressed
-	CPL               // A = ~A             // In gameboy, 0 is pressed
-	AND $0F           // A = A & 0x0F       // Only select the buttons that are pressed
-	SWAP A            // Swap A's nibbles   // Move the pressed buttons to the top part
-	LD B,A            // B = A              // Store those buttons in the top part
-	LD A,$10          // A = 0x10 (16)
-	LDH [$00],A       // 0xFF00 = 0x10 -> Select only P15
-	LDH A,[$00]       // A = (0xFF00) -> Read joypad
-	LDH A,[$00]       // A = (0xFF00) -> Read joypad
-	LDH A,[$00]       // A = (0xFF00) -> Read joypad
-	LDH A,[$00]       // A = (0xFF00) -> Read joypad
-	LDH A,[$00]       // A = (0xFF00) -> Read joypad
-	LDH A,[$00]       // A = (0xFF00) -> Read joypad
-	CPL               // A = ~A             // In gameboy, 0 is pressed
-	AND $0F           // A = A & 0x0F       // Only select the buttons that are pressed
-	OR B              // A = A | B          // In B the top 4 bits where the other pressed buttons
-	LD C,A            // C = A              // In C the top nibble is one set of press
-                                          //      the bottom nibble is other set of press
-	LDH A,[$80]       // A = (0xFF80) -> Internal RAM load (should be 0)
-	XOR C             // A = A XOR C
-	AND C             // A = A AND C
-	LDH [$81],A       // 0xFF81 = A -> Internal RAM load
-	LD A,C            // A = C
-	LDH [$80],A       // 0xFF80 = A
-	LD A,$30          // A = 0x30 (48)
-	LDH [$00],A       // 0xFF00 = A -> Unselect P14 and P15
-	RET
+[0x000029FA]	LD A,$20            // A = 0x20 (32)
+[0x000029FC]	LDH [$00],A         // 0xFF00 = 0x20 -> Select both P14 and P15 for joypad
+[0x000029FE]	LDH A,[$00]         // A = (0xFF00) -> Read joypad
+[0x00002A00]	LDH A,[$00]         // A = (0xFF00) -> Read joypad
+  /**
+   *This is some h4ck0r way of getting the info of the button pressed
+   */
+[0x00002A02]	CPL                 // A = ~A             // In gameboy, 0 is pressed
+[0x00002A03]	AND $0F             // A = A & 0x0F       // Only select the buttons that are pressed
+[0x00002A05]	SWAP A              // Swap A's nibbles   // Move the pressed buttons to the top part
+[0x00002A07]	LD B,A              // B = A              // Store those buttons in the top part
+[0x00002A08]	LD A,$10            // A = 0x10 (16)
+[0x00002A0A]	LDH [$00],A         // 0xFF00 = 0x10 -> Select only P15
+[0x00002A0C]	LDH A,[$00]         // A = (0xFF00) -> Read joypad
+[0x00002A0E]	LDH A,[$00]         // A = (0xFF00) -> Read joypad
+[0x00002A10]	LDH A,[$00]         // A = (0xFF00) -> Read joypad
+[0x00002A12]	LDH A,[$00]         // A = (0xFF00) -> Read joypad
+[0x00002A14]	LDH A,[$00]         // A = (0xFF00) -> Read joypad
+[0x00002A16]	LDH A,[$00]         // A = (0xFF00) -> Read joypad
+[0x00002A18]	CPL                 // A = ~A             // In gameboy, 0 is pressed
+[0x00002A19]	AND $0F             // A = A & 0x0F       // Only select the buttons that are pressed
+[0x00002A1B]	OR B                // A = A | B          // In B the top 4 bits where the other press
+[0x00002A1C]	LD C,A              // C = A              // In C the top nibble is one set of press
+                                                        //      the bottom nibble is other set of press
+[0x00002A1D]	LDH A,[$80]         // A = (0xFF80) -> Internal RAM load (should be 0)
+[0x00002A1F]	XOR C               // A = A XOR C
+[0x00002A20]	AND C               // A = A AND C
+[0x00002A21]	LDH [$81],A         // 0xFF81 = A -> Internal RAM load
+[0x00002A23]	LD A,C              // A = C
+[0x00002A24]	LDH [$80],A         // 0xFF80 = A
+[0x00002A26]	LD A,$30            // A = 0x30 (48)
+[0x00002A28]	LDH [$00],A         // 0xFF00 = A -> Unselect P14 and P15
+[0x00002A2A]	RET
 
+	INCBIN "..\..\Roms\tetris.gb",$26fd,$2a7e-$26fd
+sub_2a7e:
+[0x00002A7E]	LDH A,[$E0]
+[0x00002A80]	AND A
+[0x00002A81]	RET Z
+sub_2a82:
+[0x00002A82]	LD C,$03
+sub_2a84:
+[0x00002A84]	XOR A
+[0x00002A85]	LDH [$E0],A
+jmp_2a87:
+[0x00002A87]	LD A,[DE]
+[0x00002A88]	LD B,A
+[0x00002A89]	SWAP A
+[0x00002A8B]	AND $0F
+[0x00002A8D]	JR NZ,jmp_2ab7
+[0x00002A8F]	LDH A,[$E0]
+[0x00002A91]	AND A
+[0x00002A92]	LD A,$00
+[0x00002A94]	JR NZ,jmp_2a98
+[0x00002A96]	LD A,$2F
+jmp_2a98:
+[0x00002A98]	LD [HLI],A
+[0x00002A99]	LD A,B
+[0x00002A9A]	AND $0F
+[0x00002A9C]	JR NZ,jmp_2abf
+[0x00002A9E]	LDH A,[$E0]
+[0x00002AA0]	AND A
+[0x00002AA1]	LD A,$00
+[0x00002AA3]	JR NZ,jmp_2aae
+[0x00002AA5]	LD A,$01
+[0x00002AA7]	CP C
+[0x00002AA8]	LD A,$00
+[0x00002AAA]	JR Z,jmp_2aae
+[0x00002AAC]	LD A,$2F
+jmp_2aae:
+[0x00002AAE]	LD [HLI],A
+[0x00002AAF]	DEC E
+[0x00002AB0]	DEC C
+[0x00002AB1]	JR NZ,jmp_2a87
+[0x00002AB3]	XOR A
+[0x00002AB4]	LDH [$E0],A
+[0x00002AB6]	RET
+
+jmp_2ab7:
+[0x00002AB7]	PUSH AF
+[0x00002AB8]	LD A,$01
+[0x00002ABA]	LDH [$E0],A
+[0x00002ABC]	POP AF
+[0x00002ABD]	JR jmp_2a98
+jmp_2abf:
+[0x00002ABF]	PUSH AF
+[0x00002AC0]	LD A,$01
+[0x00002AC2]	LDH [$E0],A
+[0x00002AC4]	POP AF
+[0x00002AC5]	JR jmp_2aae
+
+	INCBIN "..\..\Roms\tetris.gb",$2ac7,$2ad1-$2ac7
+jmp_2ad1:
+sub_2ad1:
+[0x00002AD1]	LD A,H
+[0x00002AD2]	LDH [$96],A
+[0x00002AD4]	LD A,L
+[0x00002AD5]	LDH [$97],A
+[0x00002AD7]	LD A,[HL]
+[0x00002AD8]	AND A
+[0x00002AD9]	JR Z,jmp_2af8
+[0x00002ADB]	CP $80
+[0x00002ADD]	JR Z,jmp_2af6
+jmp_2adf:
+[0x00002ADF]	LDH A,[$96]
+[0x00002AE1]	LD H,A
+[0x00002AE2]	LDH A,[$97]
+[0x00002AE4]	LD L,A
+[0x00002AE5]	LD DE,$0010
+[0x00002AE8]	ADD HL,DE
+[0x00002AE9]	LDH A,[$8F]
+[0x00002AEB]	DEC A
+[0x00002AEC]	LDH [$8F],A
+[0x00002AEE]	RET Z
+[0x00002AEF]	JR jmp_2ad1
+jmp_2af1:
+[0x00002AF1]	XOR A
+[0x00002AF2]	LDH [$95],A
+[0x00002AF4]	JR jmp_2adf
+jmp_2af6:
+[0x00002AF6]	LDH [$95],A
+jmp_2af8:
+[0x00002AF8]	LD B,$07
+[0x00002AFA]	LD DE,$FF86
+jmp_2afd:
+[0x00002AFD]	LD A,[HLI]
+[0x00002AFE]	LD [DE],A
+[0x00002AFF]	INC DE
+[0x00002B00]	DEC B
+[0x00002B01]	JR NZ,jmp_2afd
+[0x00002B03]	LDH A,[$89]
+[0x00002B05]	LD HL,$2BAC
+[0x00002B08]	RLCA
+[0x00002B09]	LD E,A
+[0x00002B0A]	LD D,$00
+[0x00002B0C]	ADD HL,DE
+[0x00002B0D]	LD E,[HL]
+[0x00002B0E]	INC HL
+[0x00002B0F]	LD D,[HL]
+[0x00002B10]	LD A,[DE]
+[0x00002B11]	LD L,A
+[0x00002B12]	INC DE
+[0x00002B13]	LD A,[DE]
+[0x00002B14]	LD H,A
+[0x00002B15]	INC DE
+[0x00002B16]	LD A,[DE]
+[0x00002B17]	LDH [$90],A
+[0x00002B19]	INC DE
+[0x00002B1A]	LD A,[DE]
+[0x00002B1B]	LDH [$91],A
+[0x00002B1D]	LD E,[HL]
+[0x00002B1E]	INC HL
+[0x00002B1F]	LD D,[HL]
+jmp_2b20:
+[0x00002B20]	INC HL
+[0x00002B21]	LDH A,[$8C]
+[0x00002B23]	LDH [$94],A
+[0x00002B25]	LD A,[HL]
+[0x00002B26]	CP $FF
+[0x00002B28]	JR Z,jmp_2af1
+[0x00002B2A]	CP $FD
+[0x00002B2C]	JR NZ,jmp_2b3c
+[0x00002B2E]	LDH A,[$8C]
+[0x00002B30]	XOR $20
+[0x00002B32]	LDH [$94],A
+[0x00002B34]	INC HL
+[0x00002B35]	LD A,[HL]
+[0x00002B36]	JR jmp_2b40
+jmp_2b38:
+[0x00002B38]	INC DE
+[0x00002B39]	INC DE
+[0x00002B3A]	JR jmp_2b20
+jmp_2b3c:
+[0x00002B3C]	CP $FE
+[0x00002B3E]	JR Z,jmp_2b38
+jmp_2b40:
+[0x00002B40]	LDH [$89],A
+[0x00002B42]	LDH A,[$87]
+[0x00002B44]	LD B,A
+[0x00002B45]	LD A,[DE]
+[0x00002B46]	LD C,A
+[0x00002B47]	LDH A,[$8B]
+[0x00002B49]	BIT 6,A
+[0x00002B4B]	JR NZ,jmp_2b53
+[0x00002B4D]	LDH A,[$90]
+[0x00002B4F]	ADD A,B
+[0x00002B50]	ADC A,C
+[0x00002B51]	JR jmp_2b5d
+jmp_2b53:
+[0x00002B53]	LD A,B
+[0x00002B54]	PUSH AF
+[0x00002B55]	LDH A,[$90]
+[0x00002B57]	LD B,A
+[0x00002B58]	POP AF
+[0x00002B59]	SUB B
+[0x00002B5A]	SBC A,C
+[0x00002B5B]	SBC A,$08
+jmp_2b5d:
+[0x00002B5D]	LDH [$93],A
+[0x00002B5F]	LDH A,[$88]
+[0x00002B61]	LD B,A
+[0x00002B62]	INC DE
+[0x00002B63]	LD A,[DE]
+[0x00002B64]	INC DE
+[0x00002B65]	LD C,A
+[0x00002B66]	LDH A,[$8B]
+[0x00002B68]	BIT 5,A
+[0x00002B6A]	JR NZ,jmp_2b72
+[0x00002B6C]	LDH A,[$91]
+[0x00002B6E]	ADD A,B
+[0x00002B6F]	ADC A,C
+[0x00002B70]	JR jmp_2b7c
+jmp_2b72:
+[0x00002B72]	LD A,B
+[0x00002B73]	PUSH AF
+[0x00002B74]	LDH A,[$91]
+[0x00002B76]	LD B,A
+[0x00002B77]	POP AF
+[0x00002B78]	SUB B
+[0x00002B79]	SBC A,C
+[0x00002B7A]	SBC A,$08
+jmp_2b7c:
+[0x00002B7C]	LDH [$92],A
+[0x00002B7E]	PUSH HL
+[0x00002B7F]	LDH A,[$8D]
+[0x00002B81]	LD H,A
+[0x00002B82]	LDH A,[$8E]
+[0x00002B84]	LD L,A
+[0x00002B85]	LDH A,[$95]
+[0x00002B87]	AND A
+[0x00002B88]	JR Z,jmp_2b8e
+[0x00002B8A]	LD A,$FF
+[0x00002B8C]	JR jmp_2b90
+jmp_2b8e:
+[0x00002B8E]	LDH A,[$93]
+jmp_2b90:
+[0x00002B90]	LD [HLI],A
+[0x00002B91]	LDH A,[$92]
+[0x00002B93]	LD [HLI],A
+[0x00002B94]	LDH A,[$89]
+[0x00002B96]	LD [HLI],A
+[0x00002B97]	LDH A,[$94]
+[0x00002B99]	LD B,A
+[0x00002B9A]	LDH A,[$8B]
+[0x00002B9C]	OR B
+[0x00002B9D]	LD B,A
+[0x00002B9E]	LDH A,[$8A]
+[0x00002BA0]	OR B
+[0x00002BA1]	LD [HLI],A
+[0x00002BA2]	LD A,H
+[0x00002BA3]	LDH [$8D],A
+[0x00002BA5]	LD A,L
+[0x00002BA6]	LDH [$8E],A
+[0x00002BA8]	POP HL
+[0x00002BA9]	JP jmp_2b20
 
 	INCBIN "..\..\Roms\tetris.gb",$2a2b,$4000-$2a2b
 
@@ -327,982 +1374,980 @@ SECTION "bank1",DATA,BANK[$1]
 
 	INCBIN "..\..\Roms\tetris.gb",$4000,$6552-$4000
 sub_6552:
-	RET
+[0x00006552]	RET
 
 jmp_6553:
-	PUSH AF
-	PUSH BC
-	PUSH DE
-	PUSH HL
-	LD A,[$DF7F]
-	CP $01
-	JR Z,jmp_65a4
-	CP $02
-	JR Z,jmp_65dd
-	LD A,[$DF7E]
-	AND A
-	JR NZ,jmp_65e3
+[0x00006553]	PUSH AF
+[0x00006554]	PUSH BC
+[0x00006555]	PUSH DE
+[0x00006556]	PUSH HL
+[0x00006557]	LD A,[$DF7F]
+[0x0000655A]	CP $01
+[0x0000655C]	JR Z,jmp_65a4
+[0x0000655E]	CP $02
+[0x00006560]	JR Z,jmp_65dd
+[0x00006562]	LD A,[$DF7E]
+[0x00006565]	AND A
+[0x00006566]	JR NZ,jmp_65e3
 jmp_6568:
-	LDH A,[$E4]
-	AND A
-	JR Z,jmp_657a
-	XOR A
-	LD [$DFE0],A
-	LD [$DFE8],A
-	LD [$DFF0],A
-	LD [$DFF8],A
+[0x00006568]	LDH A,[$E4]
+[0x0000656A]	AND A
+[0x0000656B]	JR Z,jmp_657a
+[0x0000656D]	XOR A
+[0x0000656E]	LD [$DFE0],A
+[0x00006571]	LD [$DFE8],A
+[0x00006574]	LD [$DFF0],A
+[0x00006577]	LD [$DFF8],A
 jmp_657a:
-	CALL sub_6552
-	CALL sub_6a0e
-	CALL sub_6a2e
-	CALL sub_6879
-	CALL sub_6a52
-	CALL sub_6c75
-	CALL sub_6a96
+[0x0000657A]	CALL sub_6552
+[0x0000657D]	CALL sub_6a0e
+[0x00006580]	CALL sub_6a2e
+[0x00006583]	CALL sub_6879
+[0x00006586]	CALL sub_6a52
+[0x00006589]	CALL sub_6c75
+[0x0000658C]	CALL sub_6a96
 jmp_658f:
-	XOR A
-	LD [$DFE0],A
-	LD [$DFE8],A
-	LD [$DFF0],A
-	LD [$DFF8],A
-	LD [$DF7F],A
-	POP HL
-	POP DE
-	POP BC
-	POP AF
-	RET
+[0x0000658F]	XOR A
+[0x00006590]	LD [$DFE0],A
+[0x00006593]	LD [$DFE8],A
+[0x00006596]	LD [$DFF0],A
+[0x00006599]	LD [$DFF8],A
+[0x0000659C]	LD [$DF7F],A
+[0x0000659F]	POP HL
+[0x000065A0]	POP DE
+[0x000065A1]	POP BC
+[0x000065A2]	POP AF
+[0x000065A3]	RET
 
 jmp_65a4:
-	CALL sub_69f8
-	XOR A
-	LD [$DFE1],A
-	LD [$DFF1],A
-	LD [$DFF9],A
-	LD HL,$DFBF
-	RES 7,[HL]
-	LD HL,$DF9F
-	RES 7,[HL]
-	LD HL,$DFAF
-	RES 7,[HL]
-	LD HL,$DFCF
-	RES 7,[HL]
-	LD HL,$6F1A
-	CALL sub_69c9
-	LD A,$30
-	LD [$DF7E],A
+[0x000065A4]	CALL sub_69f8
+[0x000065A7]	XOR A
+[0x000065A8]	LD [$DFE1],A
+[0x000065AB]	LD [$DFF1],A
+[0x000065AE]	LD [$DFF9],A
+[0x000065B1]	LD HL,$DFBF
+[0x000065B4]	RES 7,[HL]
+[0x000065B6]	LD HL,$DF9F
+[0x000065B9]	RES 7,[HL]
+[0x000065BB]	LD HL,$DFAF
+[0x000065BE]	RES 7,[HL]
+[0x000065C0]	LD HL,$DFCF
+[0x000065C3]	RES 7,[HL]
+[0x000065C5]	LD HL,$6F1A
+[0x000065C8]	CALL sub_69c9
+[0x000065CB]	LD A,$30
+[0x000065CD]	LD [$DF7E],A
 jmp_65d0:
-	LD HL,$65FB
+[0x000065D0]	LD HL,$65FB
 jmp_65d3:
-	CALL sub_698e
-	JR jmp_658f
+[0x000065D3]	CALL sub_698e
+[0x000065D6]	JR jmp_658f
 jmp_65d8:
-	LD HL,$65FF
-	JR jmp_65d3
+[0x000065D8]	LD HL,$65FF
+[0x000065DB]	JR jmp_65d3
 jmp_65dd:
-	XOR A
-	LD [$DF7E],A
-	JR jmp_6568
+[0x000065DD]	XOR A
+[0x000065DE]	LD [$DF7E],A
+[0x000065E1]	JR jmp_6568
 jmp_65e3:
-	LD HL,$DF7E
-	DEC [HL]
-	LD A,[HL]
-	CP $28
-	JR Z,jmp_65d8
-	CP $20
-	JR Z,jmp_65d0
-	CP $18
-	JR Z,jmp_65d8
-	CP $10
-	JR NZ,jmp_658f
-	INC [HL]
-	JR jmp_658f
+[0x000065E3]	LD HL,$DF7E
+[0x000065E6]	DEC [HL]
+[0x000065E7]	LD A,[HL]
+[0x000065E8]	CP $28
+[0x000065EA]	JR Z,jmp_65d8
+[0x000065EC]	CP $20
+[0x000065EE]	JR Z,jmp_65d0
+[0x000065F0]	CP $18
+[0x000065F2]	JR Z,jmp_65d8
+[0x000065F4]	CP $10
+[0x000065F6]	JR NZ,jmp_658f
+[0x000065F8]	INC [HL]
+[0x000065F9]	JR jmp_658f
 
 	INCBIN "..\..\Roms\tetris.gb",$65fb,$683d-$65fb
 jmp_683d:
-	LD HL,$6F0A
-	CALL sub_693e
-	LDH A,[$04]
-	AND $1F
-	LD B,A
-	LD A,$D0
-	ADD A,B
-	LD [$DFF5],A
-	LD HL,$6838
-	JP jmp_6995
+[0x0000683D]	LD HL,$6F0A
+[0x00006840]	CALL sub_693e
+[0x00006843]	LDH A,[$04]
+[0x00006845]	AND $1F
+[0x00006847]	LD B,A
+[0x00006848]	LD A,$D0
+[0x0000684A]	ADD A,B
+[0x0000684B]	LD [$DFF5],A
+[0x0000684E]	LD HL,$6838
+[0x00006851]	JP jmp_6995
 jmp_6854:
-	LDH A,[$04]
-	AND $0F
-	LD B,A
-	LD HL,$DFF4
-	INC [HL]
-	LD A,[HL]
-	LD HL,$DFF5
-	CP $0E
-	JR NC,jmp_686f
-	INC [HL]
-	INC [HL]
+[0x00006854]	LDH A,[$04]
+[0x00006856]	AND $0F
+[0x00006858]	LD B,A
+[0x00006859]	LD HL,$DFF4
+[0x0000685C]	INC [HL]
+[0x0000685D]	LD A,[HL]
+[0x0000685E]	LD HL,$DFF5
+[0x00006861]	CP $0E
+[0x00006863]	JR NC,jmp_686f
+[0x00006865]	INC [HL]
+[0x00006866]	INC [HL]
 jmp_6867:
-	LD A,[HL]
-	AND $F0
-	OR B
-	LD C,$1D
-	LD [C],A
-	RET
+[0x00006867]	LD A,[HL]
+[0x00006868]	AND $F0
+[0x0000686A]	OR B
+[0x0000686B]	LD C,$1D
+[0x0000686D]	LD [C],A
+[0x0000686E]	RET
 
 jmp_686f:
-	CP $1E
-	JP Z,jmp_691f
-	DEC [HL]
-	DEC [HL]
-	DEC [HL]
-	JR jmp_6867
+[0x0000686F]	CP $1E
+[0x00006871]	JP Z,jmp_691f
+[0x00006874]	DEC [HL]
+[0x00006875]	DEC [HL]
+[0x00006876]	DEC [HL]
+[0x00006877]	JR jmp_6867
 sub_6879:
-	LD A,[$DFF0]
-	CP $01
-	JP Z,jmp_68a8
-	CP $02
-	JP Z,jmp_683d
-	LD A,[$DFF1]
-	CP $01
-	JP Z,jmp_68f3
-	CP $02
-	JP Z,jmp_6854
-	RET
+[0x00006879]	LD A,[$DFF0]
+[0x0000687C]	CP $01
+[0x0000687E]	JP Z,jmp_68a8
+[0x00006881]	CP $02
+[0x00006883]	JP Z,jmp_683d
+[0x00006886]	LD A,[$DFF1]
+[0x00006889]	CP $01
+[0x0000688B]	JP Z,jmp_68f3
+[0x0000688E]	CP $02
+[0x00006890]	JP Z,jmp_6854
+[0x00006893]	RET
 
 
 	INCBIN "..\..\Roms\tetris.gb",$6894,$68a8-$6894
 jmp_68a8:
-	LD HL,$6EDA
-	CALL sub_693e
-	LD HL,$6897
-	LD A,[HL]
-	LD [$DFF6],A
-	LD A,$01
-	LD [$DFF5],A
-	LD HL,$6894
+[0x000068A8]	LD HL,$6EDA
+[0x000068AB]	CALL sub_693e
+[0x000068AE]	LD HL,$6897
+[0x000068B1]	LD A,[HL]
+[0x000068B2]	LD [$DFF6],A
+[0x000068B5]	LD A,$01
+[0x000068B7]	LD [$DFF5],A
+[0x000068BA]	LD HL,$6894
 jmp_68bd:
-	JP jmp_6995
+[0x000068BD]	JP jmp_6995
 jmp_68c0:
-	LD A,$00
-	LD [$DFF5],A
-	LD HL,$689C
-	LD A,[HL]
-	LD [$DFF6],A
-	LD HL,$6899
-	JR jmp_68bd
+[0x000068C0]	LD A,$00
+[0x000068C2]	LD [$DFF5],A
+[0x000068C5]	LD HL,$689C
+[0x000068C8]	LD A,[HL]
+[0x000068C9]	LD [$DFF6],A
+[0x000068CC]	LD HL,$6899
+[0x000068CF]	JR jmp_68bd
 jmp_68d1:
-	LD A,$01
-	LD [$DFF5],A
-	LD HL,$68A1
-	LD A,[HL]
-	LD [$DFF6],A
-	LD HL,$689E
-	JR jmp_68bd
+[0x000068D1]	LD A,$01
+[0x000068D3]	LD [$DFF5],A
+[0x000068D6]	LD HL,$68A1
+[0x000068D9]	LD A,[HL]
+[0x000068DA]	LD [$DFF6],A
+[0x000068DD]	LD HL,$689E
+[0x000068E0]	JR jmp_68bd
 jmp_68e2:
-	LD A,$02
-	LD [$DFF5],A
-	LD HL,$68A6
-	LD A,[HL]
-	LD [$DFF6],A
-	LD HL,$68A3
-	JR jmp_68bd
+[0x000068E2]	LD A,$02
+[0x000068E4]	LD [$DFF5],A
+[0x000068E7]	LD HL,$68A6
+[0x000068EA]	LD A,[HL]
+[0x000068EB]	LD [$DFF6],A
+[0x000068EE]	LD HL,$68A3
+[0x000068F1]	JR jmp_68bd
 jmp_68f3:
-	LD HL,$DFF4
-	INC [HL]
-	LD A,[HLI]
-	CP $09
-	JR Z,jmp_68c0
-	CP $13
-	JR Z,jmp_68d1
-	CP $17
-	JR Z,jmp_68e2
-	CP $20
-	JR Z,jmp_691f
-	LD A,[HLI]
-	CP $00
-	RET Z
-	CP $01
-	JR Z,jmp_6915
-	CP $02
-	JR Z,jmp_6919
-	RET
+[0x000068F3]	LD HL,$DFF4
+[0x000068F6]	INC [HL]
+[0x000068F7]	LD A,[HLI]
+[0x000068F8]	CP $09
+[0x000068FA]	JR Z,jmp_68c0
+[0x000068FC]	CP $13
+[0x000068FE]	JR Z,jmp_68d1
+[0x00006900]	CP $17
+[0x00006902]	JR Z,jmp_68e2
+[0x00006904]	CP $20
+[0x00006906]	JR Z,jmp_691f
+[0x00006908]	LD A,[HLI]
+[0x00006909]	CP $00
+[0x0000690B]	RET Z
+[0x0000690C]	CP $01
+[0x0000690E]	JR Z,jmp_6915
+[0x00006910]	CP $02
+[0x00006912]	JR Z,jmp_6919
+[0x00006914]	RET
 
 jmp_6915:
-	INC [HL]
-	INC [HL]
-	JR jmp_691b
+[0x00006915]	INC [HL]
+[0x00006916]	INC [HL]
+[0x00006917]	JR jmp_691b
 jmp_6919:
-	DEC [HL]
-	DEC [HL]
+[0x00006919]	DEC [HL]
+[0x0000691A]	DEC [HL]
 jmp_691b:
-	LD A,[HL]
-	LDH [$1D],A
-	RET
+[0x0000691B]	LD A,[HL]
+[0x0000691C]	LDH [$1D],A
+[0x0000691E]	RET
 
 jmp_691f:
-	XOR A
-	LD [$DFF1],A
-	LDH [$1A],A
-	LD HL,$DFBF
-	RES 7,[HL]
-	LD HL,$DF9F
-	RES 7,[HL]
-	LD HL,$DFAF
-	RES 7,[HL]
-	LD HL,$DFCF
-	RES 7,[HL]
-	LD HL,$6F1A
-	JR jmp_6963
+[0x0000691F]	XOR A
+[0x00006920]	LD [$DFF1],A
+[0x00006923]	LDH [$1A],A
+[0x00006925]	LD HL,$DFBF
+[0x00006928]	RES 7,[HL]
+[0x0000692A]	LD HL,$DF9F
+[0x0000692D]	RES 7,[HL]
+[0x0000692F]	LD HL,$DFAF
+[0x00006932]	RES 7,[HL]
+[0x00006934]	LD HL,$DFCF
+[0x00006937]	RES 7,[HL]
+[0x00006939]	LD HL,$6F1A
+[0x0000693C]	JR jmp_6963
 sub_693e:
-	PUSH HL
-	LD [$DFF1],A
-	LD HL,$DFBF
-	SET 7,[HL]
-	XOR A
-	LD [$DFF4],A
-	LD [$DFF5],A
-	LD [$DFF6],A
-	LDH [$1A],A
-	LD HL,$DF9F
-	SET 7,[HL]
-	LD HL,$DFAF
-	SET 7,[HL]
-	LD HL,$DFCF
-	SET 7,[HL]
-	POP HL
+[0x0000693E]	PUSH HL
+[0x0000693F]	LD [$DFF1],A
+[0x00006942]	LD HL,$DFBF
+[0x00006945]	SET 7,[HL]
+[0x00006947]	XOR A
+[0x00006948]	LD [$DFF4],A
+[0x0000694B]	LD [$DFF5],A
+[0x0000694E]	LD [$DFF6],A
+[0x00006951]	LDH [$1A],A
+[0x00006953]	LD HL,$DF9F
+[0x00006956]	SET 7,[HL]
+[0x00006958]	LD HL,$DFAF
+[0x0000695B]	SET 7,[HL]
+[0x0000695D]	LD HL,$DFCF
+[0x00006960]	SET 7,[HL]
+[0x00006962]	POP HL
 jmp_6963:
-	CALL sub_69c9
-	RET
+[0x00006963]	CALL sub_69c9
+[0x00006966]	RET
 
 
 	INCBIN "..\..\Roms\tetris.gb",$6967,$698e-$6967
 sub_698e:
-	PUSH BC
-	LD C,$16
-	LD B,$04
-	JR jmp_69a1
+[0x0000698E]	PUSH BC
+[0x0000698F]	LD C,$16
+[0x00006991]	LD B,$04
+[0x00006993]	JR jmp_69a1
 jmp_6995:
-	PUSH BC
-	LD C,$1A
-	LD B,$05
-	JR jmp_69a1
+[0x00006995]	PUSH BC
+[0x00006996]	LD C,$1A
+[0x00006998]	LD B,$05
+[0x0000699A]	JR jmp_69a1
 
 	INCBIN "..\..\Roms\tetris.gb",$699c,$69a1-$699c
 jmp_69a1:
-	LD A,[HLI]
-	LD [C],A
-	INC C
-	DEC B
-	JR NZ,jmp_69a1
-	POP BC
-	RET
+[0x000069A1]	LD A,[HLI]
+[0x000069A2]	LD [C],A
+[0x000069A3]	INC C
+[0x000069A4]	DEC B
+[0x000069A5]	JR NZ,jmp_69a1
+[0x000069A7]	POP BC
+[0x000069A8]	RET
 
 sub_69a9:
-	INC E
-	LD [$DF71],A
+[0x000069A9]	INC E
+[0x000069AA]	LD [$DF71],A
 sub_69ad:
-	INC E
-	DEC A
-	SLA A
-	LD C,A
-	LD B,$00
-	ADD HL,BC
-	LD C,[HL]
-	INC HL
-	LD B,[HL]
-	LD L,C
-	LD H,B
-	LD A,H
-	RET
+[0x000069AD]	INC E
+[0x000069AE]	DEC A
+[0x000069AF]	SLA A
+[0x000069B1]	LD C,A
+[0x000069B2]	LD B,$00
+[0x000069B4]	ADD HL,BC
+[0x000069B5]	LD C,[HL]
+[0x000069B6]	INC HL
+[0x000069B7]	LD B,[HL]
+[0x000069B8]	LD L,C
+[0x000069B9]	LD H,B
+[0x000069BA]	LD A,H
+[0x000069BB]	RET
 
 
 	INCBIN "..\..\Roms\tetris.gb",$69bc,$69c9-$69bc
 sub_69c9:
-	PUSH BC
-	LD C,$30
+[0x000069C9]	PUSH BC
+[0x000069CA]	LD C,$30
 jmp_69cc:
-	LD A,[HLI]
-	LD [C],A
-	INC C
-	LD A,C
-	CP $40
-	JR NZ,jmp_69cc
-	POP BC
-	RET
+[0x000069CC]	LD A,[HLI]
+[0x000069CD]	LD [C],A
+[0x000069CE]	INC C
+[0x000069CF]	LD A,C
+[0x000069D0]	CP $40
+[0x000069D2]	JR NZ,jmp_69cc
+[0x000069D4]	POP BC
+[0x000069D5]	RET
 
-/**
- * This loop setups sound channel stuff
- */
 jmp_69d6:
 sub_69d6:
-	XOR A             // A = 0x00 (0)
-	LD [$DFE1],A      // 0xDFE1 = 0x00
-	LD [$DFE9],A      // 0xDFE9 = 0x00
-	LD [$DFF1],A      // 0xDFF1 = 0x00
-	LD [$DFF9],A      // 0xDFF9 = 0x00
-	LD [$DF9F],A      // 0xDF9F = 0x00
-	LD [$DFAF],A      // 0xDFAF = 0x00
-	LD [$DFBF],A      // 0xDFBF = 0x00
-	LD [$DFCF],A      // 0xDFCF = 0x00
-	LD A,$FF          // A = 0xFF (255)
-	LDH [$25],A       // 0xFF25 = 0xFF -> Again all sound channels to both outputs
-	LD A,$03          // A = 0x03 (3)
-	LD [$DF78],A      // 0xDF78 = 0x03
+[0x000069D6]	XOR A             // A = 0x00 (0)
+[0x000069D7]	LD [$DFE1],A      // 0xDFE1 = 0x00
+[0x000069DA]	LD [$DFE9],A      // 0xDFE9 = 0x00
+[0x000069DD]	LD [$DFF1],A      // 0xDFF1 = 0x00
+[0x000069E0]	LD [$DFF9],A      // 0xDFF9 = 0x00
+[0x000069E3]	LD [$DF9F],A      // 0xDF9F = 0x00
+[0x000069E6]	LD [$DFAF],A      // 0xDFAF = 0x00
+[0x000069E9]	LD [$DFBF],A      // 0xDFBF = 0x00
+[0x000069EC]	LD [$DFCF],A      // 0xDFCF = 0x00
+[0x000069EF]	LD A,$FF          // A = 0xFF (255)
+[0x000069F1]	LDH [$25],A       // 0xFF25 = 0xFF -> Again all sound channels to both outputs
+[0x000069F3]	LD A,$03          // A = 0x03 (3)
+[0x000069F5]	LD [$DF78],A      // 0xDF78 = 0x03
 sub_69f8:
-	LD A,$08          // A = 0x08 (8)
-	LDH [$12],A       // 0xFF12 = 0x08 -> Sound Channel 1 setup
-	LDH [$17],A       // 0xFF17 = 0x08 -> Sound Channel 2 setup
-	LDH [$21],A       // 0xFF21 = 0x08 -> Sound Channel 4 setup
-	LD A,$80          // A = 0x80 (128)
-	LDH [$14],A       // 0xFF14 = 0x80 -> Sound Channel 1 freq setup
-	LDH [$19],A       // 0xFF19 = 0x80 -> Sound Channel 2 freq setup
-	LDH [$23],A       // 0xFF23 = 0x80 -> Sound Channel 4 freq setup
-	XOR A             // A = 0x00 (0)
-	LDH [$10],A       // 0xFF10 = 0x00 -> Sound Channel 1 sweep setup
-	LDH [$1A],A       // 0xFF1A = 0x00 -> Sound Channel 3 OFF
-	RET
+[0x000069F8]	LD A,$08          // A = 0x08 (8)
+[0x000069FA]	LDH [$12],A       // 0xFF12 = 0x08 -> Sound Channel 1 setup
+[0x000069FC]	LDH [$17],A       // 0xFF17 = 0x08 -> Sound Channel 2 setup
+[0x000069FE]	LDH [$21],A       // 0xFF21 = 0x08 -> Sound Channel 4 setup
+[0x00006A00]	LD A,$80          // A = 0x80 (128)
+[0x00006A02]	LDH [$14],A       // 0xFF14 = 0x80 -> Sound Channel 1 freq setup
+[0x00006A04]	LDH [$19],A       // 0xFF19 = 0x80 -> Sound Channel 2 freq setup
+[0x00006A06]	LDH [$23],A       // 0xFF23 = 0x80 -> Sound Channel 4 freq setup
+[0x00006A08]	XOR A             // A = 0x00 (0)
+[0x00006A09]	LDH [$10],A       // 0xFF10 = 0x00 -> Sound Channel 1 sweep setup
+[0x00006A0B]	LDH [$1A],A       // 0xFF1A = 0x00 -> Sound Channel 3 OFF
+[0x00006A0D]	RET
 
 sub_6a0e:
-	LD DE,$DFE0
-	LD A,[DE]
-	AND A
-	JR Z,jmp_6a21
-	LD HL,$DF9F
-	SET 7,[HL]
-	LD HL,$6500
-	CALL sub_69a9
-	JP [HL]
+[0x00006A0E]	LD DE,$DFE0
+[0x00006A11]	LD A,[DE]
+[0x00006A12]	AND A
+[0x00006A13]	JR Z,jmp_6a21
+[0x00006A15]	LD HL,$DF9F
+[0x00006A18]	SET 7,[HL]
+[0x00006A1A]	LD HL,$6500
+[0x00006A1D]	CALL sub_69a9
+[0x00006A20]	JP [HL]
 jmp_6a21:
-	INC E
-	LD A,[DE]
-	AND A
-	JR Z,jmp_6a2d
-	LD HL,$6510
-	CALL sub_69ad
-	JP [HL]
+[0x00006A21]	INC E
+[0x00006A22]	LD A,[DE]
+[0x00006A23]	AND A
+[0x00006A24]	JR Z,jmp_6a2d
+[0x00006A26]	LD HL,$6510
+[0x00006A29]	CALL sub_69ad
+[0x00006A2C]	JP [HL]
 jmp_6a2d:
-	RET
+[0x00006A2D]	RET
 
 sub_6a2e:
-	LD DE,$DFF8
-	LD A,[DE]
-	AND A
-	JR Z,jmp_6a41
-	LD HL,$DFCF
-	SET 7,[HL]
-	LD HL,$6520
-	CALL sub_69a9
-	JP [HL]
+[0x00006A2E]	LD DE,$DFF8
+[0x00006A31]	LD A,[DE]
+[0x00006A32]	AND A
+[0x00006A33]	JR Z,jmp_6a41
+[0x00006A35]	LD HL,$DFCF
+[0x00006A38]	SET 7,[HL]
+[0x00006A3A]	LD HL,$6520
+[0x00006A3D]	CALL sub_69a9
+[0x00006A40]	JP [HL]
 jmp_6a41:
-	INC E
-	LD A,[DE]
-	AND A
-	JR Z,jmp_6a4d
-	LD HL,$6528
-	CALL sub_69ad
-	JP [HL]
+[0x00006A41]	INC E
+[0x00006A42]	LD A,[DE]
+[0x00006A43]	AND A
+[0x00006A44]	JR Z,jmp_6a4d
+[0x00006A46]	LD HL,$6528
+[0x00006A49]	CALL sub_69ad
+[0x00006A4C]	JP [HL]
 jmp_6a4d:
-	RET
+[0x00006A4D]	RET
 
 jmp_6a4e:
-	CALL sub_69d6
-	RET
+[0x00006A4E]	CALL sub_69d6
+[0x00006A51]	RET
 
 sub_6a52:
-	LD HL,$DFE8
-	LD A,[HLI]
-	AND A
-	RET Z
-	CP $FF
-	JR Z,jmp_6a4e
-	LD [HL],A
-	LD B,A
-	LD HL,$6530
-	AND $1F
-	CALL sub_69ad
-	CALL sub_6b44
-	CALL sub_6a6d
-	RET
+[0x00006A52]	LD HL,$DFE8
+[0x00006A55]	LD A,[HLI]
+[0x00006A56]	AND A
+[0x00006A57]	RET Z
+[0x00006A58]	CP $FF
+[0x00006A5A]	JR Z,jmp_6a4e
+[0x00006A5C]	LD [HL],A
+[0x00006A5D]	LD B,A
+[0x00006A5E]	LD HL,$6530
+[0x00006A61]	AND $1F
+[0x00006A63]	CALL sub_69ad
+[0x00006A66]	CALL sub_6b44
+[0x00006A69]	CALL sub_6a6d
+[0x00006A6C]	RET
 
 sub_6a6d:
-	LD A,[$DFE9]
-	AND A
-	RET Z
-	LD HL,$6AEF
+[0x00006A6D]	LD A,[$DFE9]
+[0x00006A70]	AND A
+[0x00006A71]	RET Z
+[0x00006A72]	LD HL,$6AEF
 jmp_6a75:
-	DEC A
-	JR Z,jmp_6a7e
-	INC HL
-	INC HL
-	INC HL
-	INC HL
-	JR jmp_6a75
+[0x00006A75]	DEC A
+[0x00006A76]	JR Z,jmp_6a7e
+[0x00006A78]	INC HL
+[0x00006A79]	INC HL
+[0x00006A7A]	INC HL
+[0x00006A7B]	INC HL
+[0x00006A7C]	JR jmp_6a75
 jmp_6a7e:
-	LD A,[HLI]
-	LD [$DF78],A
-	LD A,[HLI]
-	LD [$DF76],A
-	LD A,[HLI]
-	LD [$DF79],A
-	LD A,[HLI]
-	LD [$DF7A],A
-	XOR A
-	LD [$DF75],A
-	LD [$DF77],A
-	RET
+[0x00006A7E]	LD A,[HLI]
+[0x00006A7F]	LD [$DF78],A
+[0x00006A82]	LD A,[HLI]
+[0x00006A83]	LD [$DF76],A
+[0x00006A86]	LD A,[HLI]
+[0x00006A87]	LD [$DF79],A
+[0x00006A8A]	LD A,[HLI]
+[0x00006A8B]	LD [$DF7A],A
+[0x00006A8E]	XOR A
+[0x00006A8F]	LD [$DF75],A
+[0x00006A92]	LD [$DF77],A
+[0x00006A95]	RET
 
 sub_6a96:
-	LD A,[$DFE9]
-	AND A
-	JR Z,jmp_6ad9
-	LD HL,$DF75
-	LD A,[$DF78]
-	CP $01
-	JR Z,jmp_6add
-	CP $03
-	JR Z,jmp_6ad9
-	INC [HL]
-	LD A,[HLI]
-	CP [HL]
-	JR NZ,jmp_6ae2
-	DEC L
-	LD [HL],$00
-	INC L
-	INC L
-	INC [HL]
-	LD A,[$DF79]
-	BIT 0,[HL]
-	JP Z,jmp_6ac0
-	LD A,[$DF7A]
+[0x00006A96]	LD A,[$DFE9]
+[0x00006A99]	AND A
+[0x00006A9A]	JR Z,jmp_6ad9
+[0x00006A9C]	LD HL,$DF75
+[0x00006A9F]	LD A,[$DF78]
+[0x00006AA2]	CP $01
+[0x00006AA4]	JR Z,jmp_6add
+[0x00006AA6]	CP $03
+[0x00006AA8]	JR Z,jmp_6ad9
+[0x00006AAA]	INC [HL]
+[0x00006AAB]	LD A,[HLI]
+[0x00006AAC]	CP [HL]
+[0x00006AAD]	JR NZ,jmp_6ae2
+[0x00006AAF]	DEC L
+[0x00006AB0]	LD [HL],$00
+[0x00006AB2]	INC L
+[0x00006AB3]	INC L
+[0x00006AB4]	INC [HL]
+[0x00006AB5]	LD A,[$DF79]
+[0x00006AB8]	BIT 0,[HL]
+[0x00006ABA]	JP Z,jmp_6ac0
+[0x00006ABD]	LD A,[$DF7A]
 jmp_6ac0:
-	LD B,A
-	LD A,[$DFF1]
-	AND A
-	JR Z,jmp_6acb
-	SET 2,B
-	SET 6,B
+[0x00006AC0]	LD B,A
+[0x00006AC1]	LD A,[$DFF1]
+[0x00006AC4]	AND A
+[0x00006AC5]	JR Z,jmp_6acb
+[0x00006AC7]	SET 2,B
+[0x00006AC9]	SET 6,B
 jmp_6acb:
-	LD A,[$DFF9]
-	AND A
-	JR Z,jmp_6ad5
-	SET 3,B
-	SET 7,B
+[0x00006ACB]	LD A,[$DFF9]
+[0x00006ACE]	AND A
+[0x00006ACF]	JR Z,jmp_6ad5
+[0x00006AD1]	SET 3,B
+[0x00006AD3]	SET 7,B
 jmp_6ad5:
-	LD A,B
+[0x00006AD5]	LD A,B
 jmp_6ad6:
-	LDH [$25],A
-	RET
+[0x00006AD6]	LDH [$25],A
+[0x00006AD8]	RET
 
 jmp_6ad9:
-	LD A,$FF
-	JR jmp_6ad6
+[0x00006AD9]	LD A,$FF
+[0x00006ADB]	JR jmp_6ad6
 jmp_6add:
-	LD A,[$DF79]
-	JR jmp_6ac0
+[0x00006ADD]	LD A,[$DF79]
+[0x00006AE0]	JR jmp_6ac0
 jmp_6ae2:
-	LD A,[$DFF9]
-	AND A
-	JR NZ,jmp_6ad9
-	LD A,[$DFF1]
-	AND A
-	JR NZ,jmp_6ad9
-	RET
+[0x00006AE2]	LD A,[$DFF9]
+[0x00006AE5]	AND A
+[0x00006AE6]	JR NZ,jmp_6ad9
+[0x00006AE8]	LD A,[$DFF1]
+[0x00006AEB]	AND A
+[0x00006AEC]	JR NZ,jmp_6ad9
+[0x00006AEE]	RET
 
 
 	INCBIN "..\..\Roms\tetris.gb",$6aef,$6b33-$6aef
 sub_6b33:
-	LD A,[HLI]
-	LD C,A
-	LD A,[HL]
-	LD B,A
-	LD A,[BC]
-	LD [DE],A
-	INC E
-	INC BC
-	LD A,[BC]
-	LD [DE],A
-	RET
+[0x00006B33]	LD A,[HLI]
+[0x00006B34]	LD C,A
+[0x00006B35]	LD A,[HL]
+[0x00006B36]	LD B,A
+[0x00006B37]	LD A,[BC]
+[0x00006B38]	LD [DE],A
+[0x00006B39]	INC E
+[0x00006B3A]	INC BC
+[0x00006B3B]	LD A,[BC]
+[0x00006B3C]	LD [DE],A
+[0x00006B3D]	RET
 
 sub_6b3e:
-	LD A,[HLI]
-	LD [DE],A
-	INC E
-	LD A,[HLI]
-	LD [DE],A
-	RET
+[0x00006B3E]	LD A,[HLI]
+[0x00006B3F]	LD [DE],A
+[0x00006B40]	INC E
+[0x00006B41]	LD A,[HLI]
+[0x00006B42]	LD [DE],A
+[0x00006B43]	RET
 
 sub_6b44:
-	CALL sub_69f8
-	XOR A
-	LD [$DF75],A
-	LD [$DF77],A
-	LD DE,$DF80
-	LD B,$00
-	LD A,[HLI]
-	LD [DE],A
-	INC E
-	CALL sub_6b3e
-	LD DE,$DF90
-	CALL sub_6b3e
-	LD DE,$DFA0
-	CALL sub_6b3e
-	LD DE,$DFB0
-	CALL sub_6b3e
-	LD DE,$DFC0
-	CALL sub_6b3e
-	LD HL,$DF90
-	LD DE,$DF94
-	CALL sub_6b33
-	LD HL,$DFA0
-	LD DE,$DFA4
-	CALL sub_6b33
-	LD HL,$DFB0
-	LD DE,$DFB4
-	CALL sub_6b33
-	LD HL,$DFC0
-	LD DE,$DFC4
-	CALL sub_6b33
-	LD BC,$0410
-	LD HL,$DF92
+[0x00006B44]	CALL sub_69f8
+[0x00006B47]	XOR A
+[0x00006B48]	LD [$DF75],A
+[0x00006B4B]	LD [$DF77],A
+[0x00006B4E]	LD DE,$DF80
+[0x00006B51]	LD B,$00
+[0x00006B53]	LD A,[HLI]
+[0x00006B54]	LD [DE],A
+[0x00006B55]	INC E
+[0x00006B56]	CALL sub_6b3e
+[0x00006B59]	LD DE,$DF90
+[0x00006B5C]	CALL sub_6b3e
+[0x00006B5F]	LD DE,$DFA0
+[0x00006B62]	CALL sub_6b3e
+[0x00006B65]	LD DE,$DFB0
+[0x00006B68]	CALL sub_6b3e
+[0x00006B6B]	LD DE,$DFC0
+[0x00006B6E]	CALL sub_6b3e
+[0x00006B71]	LD HL,$DF90
+[0x00006B74]	LD DE,$DF94
+[0x00006B77]	CALL sub_6b33
+[0x00006B7A]	LD HL,$DFA0
+[0x00006B7D]	LD DE,$DFA4
+[0x00006B80]	CALL sub_6b33
+[0x00006B83]	LD HL,$DFB0
+[0x00006B86]	LD DE,$DFB4
+[0x00006B89]	CALL sub_6b33
+[0x00006B8C]	LD HL,$DFC0
+[0x00006B8F]	LD DE,$DFC4
+[0x00006B92]	CALL sub_6b33
+[0x00006B95]	LD BC,$0410
+[0x00006B98]	LD HL,$DF92
 jmp_6b9b:
-	LD [HL],$01
-	LD A,C
-	ADD A,L
-	LD L,A
-	DEC B
-	JR NZ,jmp_6b9b
-	XOR A
-	LD [$DF9E],A
-	LD [$DFAE],A
-	LD [$DFBE],A
-	RET
+[0x00006B9B]	LD [HL],$01
+[0x00006B9D]	LD A,C
+[0x00006B9E]	ADD A,L
+[0x00006B9F]	LD L,A
+[0x00006BA0]	DEC B
+[0x00006BA1]	JR NZ,jmp_6b9b
+[0x00006BA3]	XOR A
+[0x00006BA4]	LD [$DF9E],A
+[0x00006BA7]	LD [$DFAE],A
+[0x00006BAA]	LD [$DFBE],A
+[0x00006BAD]	RET
 
 jmp_6bae:
-	PUSH HL
-	XOR A
-	LDH [$1A],A
-	LD L,E
-	LD H,D
-	CALL sub_69c9
-	POP HL
-	JR jmp_6be4
+[0x00006BAE]	PUSH HL
+[0x00006BAF]	XOR A
+[0x00006BB0]	LDH [$1A],A
+[0x00006BB2]	LD L,E
+[0x00006BB3]	LD H,D
+[0x00006BB4]	CALL sub_69c9
+[0x00006BB7]	POP HL
+[0x00006BB8]	JR jmp_6be4
 jmp_6bba:
-	CALL sub_6bea
-	CALL sub_6bff
-	LD E,A
-	CALL sub_6bea
-	CALL sub_6bff
-	LD D,A
-	CALL sub_6bea
-	CALL sub_6bff
-	LD C,A
-	INC L
-	INC L
-	LD [HL],E
-	INC L
-	LD [HL],D
-	INC L
-	LD [HL],C
-	DEC L
-	DEC L
-	DEC L
-	DEC L
-	PUSH HL
-	LD HL,$DF70
-	LD A,[HL]
-	POP HL
-	CP $03
-	JR Z,jmp_6bae
+[0x00006BBA]	CALL sub_6bea
+[0x00006BBD]	CALL sub_6bff
+[0x00006BC0]	LD E,A
+[0x00006BC1]	CALL sub_6bea
+[0x00006BC4]	CALL sub_6bff
+[0x00006BC7]	LD D,A
+[0x00006BC8]	CALL sub_6bea
+[0x00006BCB]	CALL sub_6bff
+[0x00006BCE]	LD C,A
+[0x00006BCF]	INC L
+[0x00006BD0]	INC L
+[0x00006BD1]	LD [HL],E
+[0x00006BD2]	INC L
+[0x00006BD3]	LD [HL],D
+[0x00006BD4]	INC L
+[0x00006BD5]	LD [HL],C
+[0x00006BD6]	DEC L
+[0x00006BD7]	DEC L
+[0x00006BD8]	DEC L
+[0x00006BD9]	DEC L
+[0x00006BDA]	PUSH HL
+[0x00006BDB]	LD HL,$DF70
+[0x00006BDE]	LD A,[HL]
+[0x00006BDF]	POP HL
+[0x00006BE0]	CP $03
+[0x00006BE2]	JR Z,jmp_6bae
 jmp_6be4:
-	CALL sub_6bea
-	JP jmp_6c8f
+[0x00006BE4]	CALL sub_6bea
+[0x00006BE7]	JP jmp_6c8f
 sub_6bea:
-	PUSH DE
-	LD A,[HLI]
-	LD E,A
-	LD A,[HLD]
-	LD D,A
-	INC DE
+[0x00006BEA]	PUSH DE
+[0x00006BEB]	LD A,[HLI]
+[0x00006BEC]	LD E,A
+[0x00006BED]	LD A,[HLD]
+[0x00006BEE]	LD D,A
+[0x00006BEF]	INC DE
 jmp_6bf0:
-	LD A,E
-	LD [HLI],A
-	LD A,D
-	LD [HLD],A
-	POP DE
-	RET
+[0x00006BF0]	LD A,E
+[0x00006BF1]	LD [HLI],A
+[0x00006BF2]	LD A,D
+[0x00006BF3]	LD [HLD],A
+[0x00006BF4]	POP DE
+[0x00006BF5]	RET
 
 sub_6bf6:
-	PUSH DE
-	LD A,[HLI]
-	LD E,A
-	LD A,[HLD]
-	LD D,A
-	INC DE
-	INC DE
-	JR jmp_6bf0
+[0x00006BF6]	PUSH DE
+[0x00006BF7]	LD A,[HLI]
+[0x00006BF8]	LD E,A
+[0x00006BF9]	LD A,[HLD]
+[0x00006BFA]	LD D,A
+[0x00006BFB]	INC DE
+[0x00006BFC]	INC DE
+[0x00006BFD]	JR jmp_6bf0
 sub_6bff:
-	LD A,[HLI]
-	LD C,A
-	LD A,[HLD]
-	LD B,A
-	LD A,[BC]
-	LD B,A
-	RET
+[0x00006BFF]	LD A,[HLI]
+[0x00006C00]	LD C,A
+[0x00006C01]	LD A,[HLD]
+[0x00006C02]	LD B,A
+[0x00006C03]	LD A,[BC]
+[0x00006C04]	LD B,A
+[0x00006C05]	RET
 
 jmp_6c06:
-	POP HL
-	JR jmp_6c35
+[0x00006C06]	POP HL
+[0x00006C07]	JR jmp_6c35
 jmp_6c09:
-	LD A,[$DF70]
-	CP $03
-	JR NZ,jmp_6c20
-	LD A,[$DFB8]
-	BIT 7,A
-	JR Z,jmp_6c20
-	LD A,[HL]
-	CP $06
-	JR NZ,jmp_6c20
-	LD A,$40
-	LDH [$1C],A
+[0x00006C09]	LD A,[$DF70]
+[0x00006C0C]	CP $03
+[0x00006C0E]	JR NZ,jmp_6c20
+[0x00006C10]	LD A,[$DFB8]
+[0x00006C13]	BIT 7,A
+[0x00006C15]	JR Z,jmp_6c20
+[0x00006C17]	LD A,[HL]
+[0x00006C18]	CP $06
+[0x00006C1A]	JR NZ,jmp_6c20
+[0x00006C1C]	LD A,$40
+[0x00006C1E]	LDH [$1C],A
 jmp_6c20:
-	PUSH HL
-	LD A,L
-	ADD A,$09
-	LD L,A
-	LD A,[HL]
-	AND A
-	JR NZ,jmp_6c06
-	LD A,L
-	ADD A,$04
-	LD L,A
-	BIT 7,[HL]
-	JR NZ,jmp_6c06
-	POP HL
-	CALL sub_6d98
+[0x00006C20]	PUSH HL
+[0x00006C21]	LD A,L
+[0x00006C22]	ADD A,$09
+[0x00006C24]	LD L,A
+[0x00006C25]	LD A,[HL]
+[0x00006C26]	AND A
+[0x00006C27]	JR NZ,jmp_6c06
+[0x00006C29]	LD A,L
+[0x00006C2A]	ADD A,$04
+[0x00006C2C]	LD L,A
+[0x00006C2D]	BIT 7,[HL]
+[0x00006C2F]	JR NZ,jmp_6c06
+[0x00006C31]	POP HL
+[0x00006C32]	CALL sub_6d98
 jmp_6c35:
-	DEC L
-	DEC L
-	JP jmp_6d6a
+[0x00006C35]	DEC L
+[0x00006C36]	DEC L
+[0x00006C37]	JP jmp_6d6a
 jmp_6c3a:
-	DEC L
-	DEC L
-	DEC L
-	DEC L
-	CALL sub_6bf6
+[0x00006C3A]	DEC L
+[0x00006C3B]	DEC L
+[0x00006C3C]	DEC L
+[0x00006C3D]	DEC L
+[0x00006C3E]	CALL sub_6bf6
 jmp_6c41:
-	LD A,L
-	ADD A,$04
-	LD E,A
-	LD D,H
-	CALL sub_6b33
-	CP $00
-	JR Z,jmp_6c6c
-	CP $FF
-	JR Z,jmp_6c55
-	INC L
-	JP jmp_6c8d
+[0x00006C41]	LD A,L
+[0x00006C42]	ADD A,$04
+[0x00006C44]	LD E,A
+[0x00006C45]	LD D,H
+[0x00006C46]	CALL sub_6b33
+[0x00006C49]	CP $00
+[0x00006C4B]	JR Z,jmp_6c6c
+[0x00006C4D]	CP $FF
+[0x00006C4F]	JR Z,jmp_6c55
+[0x00006C51]	INC L
+[0x00006C52]	JP jmp_6c8d
 jmp_6c55:
-	DEC L
-	PUSH HL
-	CALL sub_6bf6
-	CALL sub_6bff
-	LD E,A
-	CALL sub_6bea
-	CALL sub_6bff
-	LD D,A
-	POP HL
-	LD A,E
-	LD [HLI],A
-	LD A,D
-	LD [HLD],A
-	JR jmp_6c41
+[0x00006C55]	DEC L
+[0x00006C56]	PUSH HL
+[0x00006C57]	CALL sub_6bf6
+[0x00006C5A]	CALL sub_6bff
+[0x00006C5D]	LD E,A
+[0x00006C5E]	CALL sub_6bea
+[0x00006C61]	CALL sub_6bff
+[0x00006C64]	LD D,A
+[0x00006C65]	POP HL
+[0x00006C66]	LD A,E
+[0x00006C67]	LD [HLI],A
+[0x00006C68]	LD A,D
+[0x00006C69]	LD [HLD],A
+[0x00006C6A]	JR jmp_6c41
 jmp_6c6c:
-	LD HL,$DFE9
-	LD [HL],$00
-	CALL sub_69d6
-	RET
+[0x00006C6C]	LD HL,$DFE9
+[0x00006C6F]	LD [HL],$00
+[0x00006C71]	CALL sub_69d6
+[0x00006C74]	RET
 
 sub_6c75:
-	LD HL,$DFE9
-	LD A,[HL]
-	AND A
-	RET Z
-	LD A,$01
-	LD [$DF70],A
-	LD HL,$DF90
+[0x00006C75]	LD HL,$DFE9
+[0x00006C78]	LD A,[HL]
+[0x00006C79]	AND A
+[0x00006C7A]	RET Z
+[0x00006C7B]	LD A,$01
+[0x00006C7D]	LD [$DF70],A
+[0x00006C80]	LD HL,$DF90
 jmp_6c83:
-	INC L
-	LD A,[HLI]
-	AND A
-	JP Z,jmp_6c35
-	DEC [HL]
-	JP NZ,jmp_6c09
+[0x00006C83]	INC L
+[0x00006C84]	LD A,[HLI]
+[0x00006C85]	AND A
+[0x00006C86]	JP Z,jmp_6c35
+[0x00006C89]	DEC [HL]
+[0x00006C8A]	JP NZ,jmp_6c09
 jmp_6c8d:
-	INC L
-	INC L
+[0x00006C8D]	INC L
+[0x00006C8E]	INC L
 jmp_6c8f:
-	CALL sub_6bff
-	CP $00
-	JP Z,jmp_6c3a
-	CP $9D
-	JP Z,jmp_6bba
-	AND $F0
-	CP $A0
-	JR NZ,jmp_6cbc
-	LD A,B
-	AND $0F
-	LD C,A
-	LD B,$00
-	PUSH HL
-	LD DE,$DF81
-	LD A,[DE]
-	LD L,A
-	INC DE
-	LD A,[DE]
-	LD H,A
-	ADD HL,BC
-	LD A,[HL]
-	POP HL
-	DEC L
-	LD [HLI],A
-	CALL sub_6bea
-	CALL sub_6bff
+[0x00006C8F]	CALL sub_6bff
+[0x00006C92]	CP $00
+[0x00006C94]	JP Z,jmp_6c3a
+[0x00006C97]	CP $9D
+[0x00006C99]	JP Z,jmp_6bba
+[0x00006C9C]	AND $F0
+[0x00006C9E]	CP $A0
+[0x00006CA0]	JR NZ,jmp_6cbc
+[0x00006CA2]	LD A,B
+[0x00006CA3]	AND $0F
+[0x00006CA5]	LD C,A
+[0x00006CA6]	LD B,$00
+[0x00006CA8]	PUSH HL
+[0x00006CA9]	LD DE,$DF81
+[0x00006CAC]	LD A,[DE]
+[0x00006CAD]	LD L,A
+[0x00006CAE]	INC DE
+[0x00006CAF]	LD A,[DE]
+[0x00006CB0]	LD H,A
+[0x00006CB1]	ADD HL,BC
+[0x00006CB2]	LD A,[HL]
+[0x00006CB3]	POP HL
+[0x00006CB4]	DEC L
+[0x00006CB5]	LD [HLI],A
+[0x00006CB6]	CALL sub_6bea
+[0x00006CB9]	CALL sub_6bff
 jmp_6cbc:
-	LD A,B
-	LD C,A
-	LD B,$00
-	CALL sub_6bea
-	LD A,[$DF70]
-	CP $04
-	JP Z,jmp_6ced
-	PUSH HL
-	LD A,L
-	ADD A,$05
-	LD L,A
-	LD E,L
-	LD D,H
-	INC L
-	INC L
-	LD A,C
-	CP $01
-	JR Z,jmp_6ce8
-	LD [HL],$00
-	LD HL,$6E33
-	ADD HL,BC
-	LD A,[HLI]
-	LD [DE],A
-	INC E
-	LD A,[HL]
-	LD [DE],A
-	POP HL
-	JP jmp_6d04
+[0x00006CBC]	LD A,B
+[0x00006CBD]	LD C,A
+[0x00006CBE]	LD B,$00
+[0x00006CC0]	CALL sub_6bea
+[0x00006CC3]	LD A,[$DF70]
+[0x00006CC6]	CP $04
+[0x00006CC8]	JP Z,jmp_6ced
+[0x00006CCB]	PUSH HL
+[0x00006CCC]	LD A,L
+[0x00006CCD]	ADD A,$05
+[0x00006CCF]	LD L,A
+[0x00006CD0]	LD E,L
+[0x00006CD1]	LD D,H
+[0x00006CD2]	INC L
+[0x00006CD3]	INC L
+[0x00006CD4]	LD A,C
+[0x00006CD5]	CP $01
+[0x00006CD7]	JR Z,jmp_6ce8
+[0x00006CD9]	LD [HL],$00
+[0x00006CDB]	LD HL,$6E33
+[0x00006CDE]	ADD HL,BC
+[0x00006CDF]	LD A,[HLI]
+[0x00006CE0]	LD [DE],A
+[0x00006CE1]	INC E
+[0x00006CE2]	LD A,[HL]
+[0x00006CE3]	LD [DE],A
+[0x00006CE4]	POP HL
+[0x00006CE5]	JP jmp_6d04
 jmp_6ce8:
-	LD [HL],$01
-	POP HL
-	JR jmp_6d04
+[0x00006CE8]	LD [HL],$01
+[0x00006CEA]	POP HL
+[0x00006CEB]	JR jmp_6d04
 jmp_6ced:
-	PUSH HL
-	LD DE,$DFC6
-	LD HL,$6EC5
-	ADD HL,BC
+[0x00006CED]	PUSH HL
+[0x00006CEE]	LD DE,$DFC6
+[0x00006CF1]	LD HL,$6EC5
+[0x00006CF4]	ADD HL,BC
 jmp_6cf5:
-	LD A,[HLI]
-	LD [DE],A
-	INC E
-	LD A,E
-	CP $CB
-	JR NZ,jmp_6cf5
-	LD C,$20
-	LD HL,$DFC4
-	JR jmp_6d32
+[0x00006CF5]	LD A,[HLI]
+[0x00006CF6]	LD [DE],A
+[0x00006CF7]	INC E
+[0x00006CF8]	LD A,E
+[0x00006CF9]	CP $CB
+[0x00006CFB]	JR NZ,jmp_6cf5
+[0x00006CFD]	LD C,$20
+[0x00006CFF]	LD HL,$DFC4
+[0x00006D02]	JR jmp_6d32
 jmp_6d04:
-	PUSH HL
-	LD A,[$DF70]
-	CP $01
-	JR Z,jmp_6d2d
-	CP $02
-	JR Z,jmp_6d29
-	LD C,$1A
-	LD A,[$DFBF]
-	BIT 7,A
-	JR NZ,jmp_6d1e
-	XOR A
-	LD [C],A
-	LD A,$80
-	LD [C],A
+[0x00006D04]	PUSH HL
+[0x00006D05]	LD A,[$DF70]
+[0x00006D08]	CP $01
+[0x00006D0A]	JR Z,jmp_6d2d
+[0x00006D0C]	CP $02
+[0x00006D0E]	JR Z,jmp_6d29
+[0x00006D10]	LD C,$1A
+[0x00006D12]	LD A,[$DFBF]
+[0x00006D15]	BIT 7,A
+[0x00006D17]	JR NZ,jmp_6d1e
+[0x00006D19]	XOR A
+[0x00006D1A]	LD [C],A
+[0x00006D1B]	LD A,$80
+[0x00006D1D]	LD [C],A
 jmp_6d1e:
-	INC C
-	INC L
-	INC L
-	INC L
-	INC L
-	LD A,[HLI]
-	LD E,A
-	LD D,$00
-	JR jmp_6d3e
+[0x00006D1E]	INC C
+[0x00006D1F]	INC L
+[0x00006D20]	INC L
+[0x00006D21]	INC L
+[0x00006D22]	INC L
+[0x00006D23]	LD A,[HLI]
+[0x00006D24]	LD E,A
+[0x00006D25]	LD D,$00
+[0x00006D27]	JR jmp_6d3e
 jmp_6d29:
-	LD C,$16
-	JR jmp_6d32
+[0x00006D29]	LD C,$16
+[0x00006D2B]	JR jmp_6d32
 jmp_6d2d:
-	LD C,$10
-	LD A,$00
-	INC C
+[0x00006D2D]	LD C,$10
+[0x00006D2F]	LD A,$00
+[0x00006D31]	INC C
 jmp_6d32:
-	INC L
-	INC L
-	INC L
-	LD A,[HLD]
-	AND A
-	JR NZ,jmp_6d88
-	LD A,[HLI]
-	LD E,A
+[0x00006D32]	INC L
+[0x00006D33]	INC L
+[0x00006D34]	INC L
+[0x00006D35]	LD A,[HLD]
+[0x00006D36]	AND A
+[0x00006D37]	JR NZ,jmp_6d88
+[0x00006D39]	LD A,[HLI]
+[0x00006D3A]	LD E,A
 jmp_6d3b:
-	INC L
-	LD A,[HLI]
-	LD D,A
+[0x00006D3B]	INC L
+[0x00006D3C]	LD A,[HLI]
+[0x00006D3D]	LD D,A
 jmp_6d3e:
-	PUSH HL
-	INC L
-	INC L
-	LD A,[HLI]
-	AND A
-	JR Z,jmp_6d47
-	LD E,$01
+[0x00006D3E]	PUSH HL
+[0x00006D3F]	INC L
+[0x00006D40]	INC L
+[0x00006D41]	LD A,[HLI]
+[0x00006D42]	AND A
+[0x00006D43]	JR Z,jmp_6d47
+[0x00006D45]	LD E,$01
 jmp_6d47:
-	INC L
-	INC L
-	LD [HL],$00
-	INC L
-	LD A,[HL]
-	POP HL
-	BIT 7,A
-	JR NZ,jmp_6d65
-	LD A,D
-	LD [C],A
-	INC C
-	LD A,E
-	LD [C],A
-	INC C
-	LD A,[HLI]
-	LD [C],A
-	INC C
-	LD A,[HL]
-	OR $80
-	LD [C],A
-	LD A,L
-	OR $05
-	LD L,A
-	RES 0,[HL]
+[0x00006D47]	INC L
+[0x00006D48]	INC L
+[0x00006D49]	LD [HL],$00
+[0x00006D4B]	INC L
+[0x00006D4C]	LD A,[HL]
+[0x00006D4D]	POP HL
+[0x00006D4E]	BIT 7,A
+[0x00006D50]	JR NZ,jmp_6d65
+[0x00006D52]	LD A,D
+[0x00006D53]	LD [C],A
+[0x00006D54]	INC C
+[0x00006D55]	LD A,E
+[0x00006D56]	LD [C],A
+[0x00006D57]	INC C
+[0x00006D58]	LD A,[HLI]
+[0x00006D59]	LD [C],A
+[0x00006D5A]	INC C
+[0x00006D5B]	LD A,[HL]
+[0x00006D5C]	OR $80
+[0x00006D5E]	LD [C],A
+[0x00006D5F]	LD A,L
+[0x00006D60]	OR $05
+[0x00006D62]	LD L,A
+[0x00006D63]	RES 0,[HL]
 jmp_6d65:
-	POP HL
-	DEC L
-	LD A,[HLD]
-	LD [HLD],A
-	DEC L
+[0x00006D65]	POP HL
+[0x00006D66]	DEC L
+[0x00006D67]	LD A,[HLD]
+[0x00006D68]	LD [HLD],A
+[0x00006D69]	DEC L
 jmp_6d6a:
-	LD DE,$DF70
-	LD A,[DE]
-	CP $04
-	JR Z,jmp_6d7b
-	INC A
-	LD [DE],A
-	LD DE,$0010
-	ADD HL,DE
-	JP jmp_6c83
+[0x00006D6A]	LD DE,$DF70
+[0x00006D6D]	LD A,[DE]
+[0x00006D6E]	CP $04
+[0x00006D70]	JR Z,jmp_6d7b
+[0x00006D72]	INC A
+[0x00006D73]	LD [DE],A
+[0x00006D74]	LD DE,$0010
+[0x00006D77]	ADD HL,DE
+[0x00006D78]	JP jmp_6c83
 jmp_6d7b:
-	LD HL,$DF9E
-	INC [HL]
-	LD HL,$DFAE
-	INC [HL]
-	LD HL,$DFBE
-	INC [HL]
-	RET
+[0x00006D7B]	LD HL,$DF9E
+[0x00006D7E]	INC [HL]
+[0x00006D7F]	LD HL,$DFAE
+[0x00006D82]	INC [HL]
+[0x00006D83]	LD HL,$DFBE
+[0x00006D86]	INC [HL]
+[0x00006D87]	RET
 
 jmp_6d88:
-	LD B,$00
-	PUSH HL
-	POP HL
-	INC L
-	JR jmp_6d3b
+[0x00006D88]	LD B,$00
+[0x00006D8A]	PUSH HL
+[0x00006D8B]	POP HL
+[0x00006D8C]	INC L
+[0x00006D8D]	JR jmp_6d3b
 sub_6d8f:
-	LD A,B
-	SRL A
-	LD L,A
-	LD H,$00
-	ADD HL,DE
-	LD E,[HL]
-	RET
+[0x00006D8F]	LD A,B
+[0x00006D90]	SRL A
+[0x00006D92]	LD L,A
+[0x00006D93]	LD H,$00
+[0x00006D95]	ADD HL,DE
+[0x00006D96]	LD E,[HL]
+[0x00006D97]	RET
 
 sub_6d98:
-	PUSH HL
-	LD A,L
-	ADD A,$06
-	LD L,A
-	LD A,[HL]
-	AND $0F
-	JR Z,jmp_6dba
-	LD [$DF71],A
-	LD A,[$DF70]
-	LD C,$13
-	CP $01
-	JR Z,jmp_6dbc
-	LD C,$18
-	CP $02
-	JR Z,jmp_6dbc
-	LD C,$1D
-	CP $03
-	JR Z,jmp_6dbc
+[0x00006D98]	PUSH HL
+[0x00006D99]	LD A,L
+[0x00006D9A]	ADD A,$06
+[0x00006D9C]	LD L,A
+[0x00006D9D]	LD A,[HL]
+[0x00006D9E]	AND $0F
+[0x00006DA0]	JR Z,jmp_6dba
+[0x00006DA2]	LD [$DF71],A
+[0x00006DA5]	LD A,[$DF70]
+[0x00006DA8]	LD C,$13
+[0x00006DAA]	CP $01
+[0x00006DAC]	JR Z,jmp_6dbc
+[0x00006DAE]	LD C,$18
+[0x00006DB0]	CP $02
+[0x00006DB2]	JR Z,jmp_6dbc
+[0x00006DB4]	LD C,$1D
+[0x00006DB6]	CP $03
+[0x00006DB8]	JR Z,jmp_6dbc
 jmp_6dba:
-	POP HL
-	RET
+[0x00006DBA]	POP HL
+[0x00006DBB]	RET
 
 jmp_6dbc:
-	INC L
-	LD A,[HLI]
-	LD E,A
-	LD A,[HL]
-	LD D,A
-	PUSH DE
-	LD A,L
-	ADD A,$04
-	LD L,A
-	LD B,[HL]
-	LD A,[$DF71]
-	CP $01
-	JR jmp_6dd7
+[0x00006DBC]	INC L
+[0x00006DBD]	LD A,[HLI]
+[0x00006DBE]	LD E,A
+[0x00006DBF]	LD A,[HL]
+[0x00006DC0]	LD D,A
+[0x00006DC1]	PUSH DE
+[0x00006DC2]	LD A,L
+[0x00006DC3]	ADD A,$04
+[0x00006DC5]	LD L,A
+[0x00006DC6]	LD B,[HL]
+[0x00006DC7]	LD A,[$DF71]
+[0x00006DCA]	CP $01
+[0x00006DCC]	JR jmp_6dd7
 
 	INCBIN "..\..\Roms\tetris.gb",$6dce,$6dd7-$6dce
 jmp_6dd7:
-	LD DE,$6DFC
-	CALL sub_6d8f
-	BIT 0,B
-	JR NZ,jmp_6de3
-	SWAP E
+[0x00006DD7]	LD DE,$6DFC
+[0x00006DDA]	CALL sub_6d8f
+[0x00006DDD]	BIT 0,B
+[0x00006DDF]	JR NZ,jmp_6de3
+[0x00006DE1]	SWAP E
 jmp_6de3:
-	LD A,E
-	AND $0F
-	BIT 3,A
-	JR Z,jmp_6df0
-	LD H,$FF
-	OR $F0
-	JR jmp_6df2
+[0x00006DE3]	LD A,E
+[0x00006DE4]	AND $0F
+[0x00006DE6]	BIT 3,A
+[0x00006DE8]	JR Z,jmp_6df0
+[0x00006DEA]	LD H,$FF
+[0x00006DEC]	OR $F0
+[0x00006DEE]	JR jmp_6df2
 jmp_6df0:
-	LD H,$00
+[0x00006DF0]	LD H,$00
 jmp_6df2:
-	LD L,A
-	POP DE
-	ADD HL,DE
-	LD A,L
-	LD [C],A
-	INC C
-	LD A,H
-	LD [C],A
-	JR jmp_6dba
+[0x00006DF2]	LD L,A
+[0x00006DF3]	POP DE
+[0x00006DF4]	ADD HL,DE
+[0x00006DF5]	LD A,L
+[0x00006DF6]	LD [C],A
+[0x00006DF7]	INC C
+[0x00006DF8]	LD A,H
+[0x00006DF9]	LD [C],A
+[0x00006DFA]	JR jmp_6dba
 
 	INCBIN "..\..\Roms\tetris.gb",$6dfc,$7ff0-$6dfc
 sub_7ff0:
-	JP jmp_6553
+[0x00007FF0]	JP jmp_6553
 sub_7ff3:
-	JP jmp_69d6     // Jumps into sound setup (IDK why it needs the double jump)
+[0x00007FF3]	JP jmp_69d6      // Jumps into sound setup (IDK why it needs the double jump)
+
 
 	INCBIN "..\..\Roms\tetris.gb",$7ff6,$8000-$7ff6
