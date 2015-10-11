@@ -187,6 +187,8 @@ namespace GBSharp.CPUSpace
 
 
       // Execute instruction
+      // NOTE(Cristian): This lambda could modify some fields of _currentInstruction
+      //                 Most notably, change the ticks in the case of conditional jumps
       _currentInstruction.Lambda(_currentInstruction.Literal);
 
       // Push the next program counter value into the real program counter!
@@ -728,6 +730,7 @@ namespace GBSharp.CPUSpace
               short sn = 0;
               unchecked{sn = (sbyte)n; }
               this.nextPC = (ushort)(this.nextPC + sn);
+              _currentInstruction.Ticks = 12;
             }},
 
             // LD HL,nn: Load 16-bit immediate into HL
@@ -808,6 +811,7 @@ namespace GBSharp.CPUSpace
               short sn = 0;
               unchecked{sn = (sbyte)n; }
               this.nextPC = (ushort)(this.nextPC + sn);
+              _currentInstruction.Ticks = 12;
             }},
 
             // ADD HL,HL: Add 16-bit HL to HL
@@ -851,6 +855,7 @@ namespace GBSharp.CPUSpace
               short sn = 0;
               unchecked{sn = (sbyte)n; }
               this.nextPC = (ushort)(this.nextPC + sn);
+              _currentInstruction.Ticks = 12;
             }},
 
             // LD SP,nn: Load 16-bit immediate into SP
@@ -889,6 +894,7 @@ namespace GBSharp.CPUSpace
               short sn = 0;
               unchecked{sn = (sbyte)n; }
               this.nextPC = (ushort)(this.nextPC + sn);
+              _currentInstruction.Ticks = 12;
             }},
 
             // ADD HL,SP: Add 16-bit SP to HL
@@ -1877,6 +1883,7 @@ namespace GBSharp.CPUSpace
               // We load the program counter (high byte is in higher address)
               this.nextPC = memory.Read(++registers.SP);
               this.nextPC += (ushort)(memory.Read(++registers.SP) << 8);
+              _currentInstruction.Ticks = 20;
             }},
 
             // POP BC: Pop 16-bit value from stack into BC
@@ -1890,6 +1897,7 @@ namespace GBSharp.CPUSpace
             {0xC2, (n)=>{
               if (registers.FZ != 0) { return; }
               this.nextPC = n;
+              _currentInstruction.Ticks = 16;
             }},
 
             // JP nn: Absolute jump to 16-bit location
@@ -1908,6 +1916,7 @@ namespace GBSharp.CPUSpace
               registers.SP -= 1;
               // We jump
               this.nextPC = n;
+              _currentInstruction.Ticks = 24;
             }},
 
             // PUSH BC: Push 16-bit BC onto stack
@@ -1932,6 +1941,7 @@ namespace GBSharp.CPUSpace
               // We load the program counter (high byte is in higher address)
               this.nextPC = memory.Read(++registers.SP);
               this.nextPC += (ushort)(memory.Read(++registers.SP) << 8);
+              _currentInstruction.Ticks = 20;
             }},
 
             // RET: Return to calling routine
@@ -1945,6 +1955,7 @@ namespace GBSharp.CPUSpace
             {0xCA, (n)=>{
               if (registers.FZ == 0) { return; }
               this.nextPC = n;
+              _currentInstruction.Ticks = 16;
             }},
 
             // Ext ops: Extended operations (two-byte instruction code)
@@ -1961,6 +1972,7 @@ namespace GBSharp.CPUSpace
               registers.SP -= 1;
               // We jump
               this.nextPC = n;
+              _currentInstruction.Ticks = 24;
             }},
 
             // CALL nn: Call routine at 16-bit location
@@ -1998,6 +2010,7 @@ namespace GBSharp.CPUSpace
               // We load the program counter (high byte is in higher address)
               this.nextPC = memory.Read(++registers.SP);
               this.nextPC += (ushort)(memory.Read(++registers.SP) << 8);
+              _currentInstruction.Ticks = 20;
             }},
 
             // POP DE: Pop 16-bit value from stack into DE
@@ -2011,6 +2024,7 @@ namespace GBSharp.CPUSpace
             {0xD2, (n)=>{
               if (registers.FC != 0) { return; }
               this.nextPC = n;
+              _currentInstruction.Ticks = 16;
             }},
 
             // XX: Operation removed in this CPU
@@ -2027,6 +2041,7 @@ namespace GBSharp.CPUSpace
               registers.SP -= 1;
               // We jump
               this.nextPC = n;
+              _currentInstruction.Ticks = 24;
             }},
 
             // PUSH DE: Push 16-bit DE onto stack
@@ -2051,6 +2066,7 @@ namespace GBSharp.CPUSpace
               // We load the program counter (high byte is in higher address)
               this.nextPC = memory.Read(++registers.SP);
               this.nextPC += (ushort)(memory.Read(++registers.SP) << 8);
+              _currentInstruction.Ticks = 20;
             }},
 
             // RETI: Enable interrupts and return to calling routine
@@ -2066,6 +2082,7 @@ namespace GBSharp.CPUSpace
             {0xDA, (n)=>{
               if (registers.FC == 0) { return; }
               this.nextPC = n;
+              _currentInstruction.Ticks = 16;
             }},
 
             // XX: Operation removed in this CPU
@@ -2082,6 +2099,7 @@ namespace GBSharp.CPUSpace
               registers.SP -= 1;
               // We jump
               this.nextPC = n;
+              _currentInstruction.Ticks = 24;
             }},
 
             // XX: Operation removed in this CPU

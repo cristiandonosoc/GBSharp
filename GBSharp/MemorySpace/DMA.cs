@@ -58,6 +58,11 @@ namespace GBSharp.MemorySpace
     internal void Step(byte ticks)
     {
       if (!Active) { return; }
+
+      // NOTE(Cristian): Right now, the ticks of the write to the DMA address
+      //                 are being updated to this count.
+      //                 This is because this moves the timing closer to what
+      //                 the expected ticks are
       currentTickCount += ticks;
       if(currentTickCount >= targetTickCount)
       {
