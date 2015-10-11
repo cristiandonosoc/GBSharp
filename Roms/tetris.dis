@@ -91,6 +91,10 @@ jmp_218:
 [0x0000024B]	CALL sub_230d
 [0x0000024E]	CALL sub_22fe
 [0x00000251]	CALL sub_1f32
+/**
+ * This CALLs the DMA routine previously inserted DMA routine.
+ * It seems the first time it only inserts 0s
+ */
 [0x00000254]	CALL $FFB6
 [0x00000257]	CALL sub_192e
 [0x0000025A]	LD A,[$C0CE]
@@ -272,7 +276,7 @@ jmp_30e:
 
 /**
  * This loop copies 0x2AC7-0x2AD3 into 0xB6-0xC2
- * That range is probably an interrupt handler
+ * This is the DMA loop being copied to HRAM
  */
 jmp_319:
 [0x00000319]	LD A,[HLI]        // A = (0x2AC7), HL++
