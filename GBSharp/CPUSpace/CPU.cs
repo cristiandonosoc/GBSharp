@@ -746,7 +746,13 @@ namespace GBSharp.CPUSpace
             {0x23, (n)=>{registers.HL++;}},
 
             // INC H: Increment H
-            {0x24, (n)=>{registers.H++;}},
+            {0x24, (n)=>{
+              registers.H++;
+
+              registers.FZ = (byte)(registers.H == 0 ? 1 : 0);
+              registers.FN = 0;
+              registers.FH = (byte)((registers.H & 0x0F) == 0x00 ? 1 : 0);
+            }},
 
             // DEC H: Decrement H
             {0x25, (n)=>{
@@ -831,7 +837,13 @@ namespace GBSharp.CPUSpace
             {0x2B, (n)=>{registers.HL--;}},
 
             // INC L: Increment L
-            {0x2C, (n)=>{registers.L++;}},
+            {0x2C, (n)=>{
+              registers.L++;
+
+              registers.FZ = (byte)(registers.L == 0 ? 1 : 0);
+              registers.FN = 0;
+              registers.FH = (byte)((registers.L & 0x0F) == 0x00 ? 1 : 0);
+            }},
 
             // DEC L: Decrement L
             {0x2D, (n)=>{
@@ -868,7 +880,15 @@ namespace GBSharp.CPUSpace
             {0x33, (n)=>{registers.SP++;}},
 
             // INC (HL): Increment value pointed by HL
-            {0x34, (n)=>{memory.Write(registers.HL, (byte)(memory.Read(registers.HL) + 1));}},
+            {0x34, (n)=>{
+              byte value = memory.Read(registers.HL);
+              ++value;
+              memory.Write(registers.HL, value);
+
+              registers.FZ = (byte)(value == 0 ? 1 : 0);
+              registers.FN = 1;
+              registers.FH = (byte)((value & 0x0F) == 0x00 ? 1 : 0);
+            }},
 
             // DEC (HL): Decrement value pointed by HL
             {0x35, (n)=>{
@@ -914,7 +934,13 @@ namespace GBSharp.CPUSpace
             {0x3B, (n)=>{registers.SP--;}},
 
             // INC A: Increment A
-            {0x3C, (n)=>{registers.A++;}},
+            {0x3C, (n)=>{
+              registers.A++;
+  
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              registers.FN = 0;
+              registers.FH = (byte)((registers.A & 0x0F) == 0x00 ? 1 : 0);
+            }},
 
             // DEC A: Decrement A
             {0x3D, (n)=>{
