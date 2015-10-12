@@ -289,6 +289,14 @@ namespace GBSharp.CPUSpace
       var returns = GetReturnsInstructionsOpCodes();
 
       // We set the initial places where we want the disassembler to look
+      visitedAddresses.Add(0x0000);     // RST 0x00
+      visitedAddresses.Add(0x0008);     // RST 0x08
+      visitedAddresses.Add(0x0010);     // RST 0x10
+      visitedAddresses.Add(0x0018);     // RST 0x18
+      visitedAddresses.Add(0x0020);     // RST 0x20
+      visitedAddresses.Add(0x0028);     // RST 0x28
+      visitedAddresses.Add(0x0030);     // RST 0x30
+      visitedAddresses.Add(0x0038);     // RST 0x38
       visitedAddresses.Add(0x0040);     // V-Blank interrupt
       visitedAddresses.Add(0x0048);     // LCD Stat interrupt
       visitedAddresses.Add(0x0050);     // Timer interrupt
@@ -2205,7 +2213,7 @@ namespace GBSharp.CPUSpace
 
             // JP (HL): Jump to 16-bit value pointed by HL
             {0xE9, (n)=>{
-              this.nextPC = memory.Read(n);
+              this.nextPC = registers.HL;
             }},
 
             // LD (nn),A: Save A at given 16-bit address
