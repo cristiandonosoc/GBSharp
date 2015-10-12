@@ -111,12 +111,13 @@ jmp_218:
 [0x00000273]	CALL sub_249b
 [0x00000276]	XOR A
 [0x00000277]	LD [$C0CE],A
+
 jmp_27a:
 [0x0000027A]	LD HL,$FFE2
 [0x0000027D]	INC [HL]
 [0x0000027E]	XOR A
-[0x0000027F]	LDH [$43],A
-[0x00000281]	LDH [$42],A
+[0x0000027F]	LDH [$43],A           // SCX = A
+[0x00000281]	LDH [$42],A           // SCY = A
 [0x00000283]	INC A
 [0x00000284]	LDH [$85],A
 [0x00000286]	POP HL
@@ -1137,6 +1138,36 @@ jmp_27ef:
 [0x000027F5]	JR NZ,jmp_27ef
 [0x000027F7]	RET
 
+/**
+ * Routine that loads tiles from some memory in cartridge ROM into VRAM
+ * Called through a very hacky way of CALLs
+ */
+[0x000027F8] 0x2A           LD A,[HLI]
+[0x000027F9] 0x12           LD [DE],A
+[0x000027FA] 0x13           INC DE
+[0x000027FB] 0x0B           DEC BC
+[0x000027FC] 0x78           LD A,B
+[0x000027FD] 0xB1           OR C
+[0x000027FE] 0x20 0xF8      JR NZ,$F8 ; 0x27F8
+[0x00002800] 0xC9           RET
+[0x0000282E] 0x01 0xA0 0x0D LD BC,$0DA0
+[0x00002831] 0xCD 0xF8 0x27 CALL $27F8
+[0x00002834] 0xC9           RET
+
+/**
+ * Routine that loads tiles from some memory in cartridge ROM into VRAM
+ * Called through a very hacky way of CALLs
+ */
+[0x00002820] 0x2A           LD A,[HLI]
+[0x00002821] 0x12           LD [DE],A
+[0x00002822] 0x13           INC DE
+[0x00002823] 0x12           LD [DE],A
+[0x00002824] 0x13           INC DE
+[0x00002825] 0x0B           DEC BC
+[0x00002826] 0x78           LD A,B
+[0x00002827] 0xB1           OR C
+[0x00002828] 0x20 0xF6      JR NZ,$F6 ; 0x2820
+[0x0000282A] 0xC9           RET
 
 	INCBIN "..\..\Roms\tetris.gb",$27f8,$29fa-$27f8
 sub_29fa:
