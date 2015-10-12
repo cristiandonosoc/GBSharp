@@ -109,7 +109,7 @@
         <ColumnDefinition Width="Auto"></ColumnDefinition>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
       </Grid.ColumnDefinitions>
-      <Slider Grid.Column="0" x:Name="uiScaleSlider" Value="1" Minimum="0.01" Maximum="1"/>
+      <Slider Grid.Column="0" x:Name="uiScaleSlider" Value="1" Minimum="0.01" Maximum="2"/>
       <Button Grid.Column="2" Content="Read" Command="{Binding ReadCommand}"></Button>
       <Button Grid.Column="3" Content="Write" Command="{Binding WriteCommand}"></Button>
     </Grid>
