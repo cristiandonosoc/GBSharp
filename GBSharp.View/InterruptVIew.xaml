@@ -6,59 +6,97 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
   <Grid Style="{StaticResource SubContentGrid}">
-    <Grid.RowDefinitions>
-      <RowDefinition Height="*"/>
-      <RowDefinition Height="Auto"/>
-    </Grid.RowDefinitions>
-    <Grid Margin="5">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto"></RowDefinition>
-        <RowDefinition Height="*"></RowDefinition>
-      </Grid.RowDefinitions>
-      <TextBlock Text="Interrupt Flags:" Margin="2"/>
-      <Grid  Grid.Row="1">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="Auto"></ColumnDefinition>
-          <ColumnDefinition Width="Auto"></ColumnDefinition>
-          <ColumnDefinition Width="Auto"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
+    <ScrollViewer>
+      <TabControl>
+        <TabItem Header="Interrupts">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid Margin="5">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+              </Grid.RowDefinitions>
+              <TextBlock Text="Interrupt Flags:" Margin="2"/>
+              <Grid  Grid.Row="1">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"></ColumnDefinition>
+                  <ColumnDefinition Width="Auto"></ColumnDefinition>
+                  <ColumnDefinition Width="Auto"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
 
-        <TextBlock Text="Interrupt Master" Margin="2"/>
-        <CheckBox Content="enabled" IsChecked="{Binding InterruptMasterEnabled}" Margin="2" Grid.Column="1"/>
-        <TextBlock Text="Vertical Blank" Margin="2" Grid.Row="1"/>
-        <CheckBox Content="enabled" IsChecked="{Binding VerticalBlankInterruptEnabled}" Margin="2" Grid.Row="1" Grid.Column="1"/>
-        <CheckBox Content="requested" IsChecked="{Binding VerticalBlankInterruptRequested}" Margin="2" Grid.Row="1" Grid.Column="2"/>
-        <TextBlock Text="LCD Status" Margin="2" Grid.Row="2"/>
-        <CheckBox Content="enabled" IsChecked="{Binding LcdStatusInterruptEnabled}" Margin="2" Grid.Row="2" Grid.Column="1"/>
-        <CheckBox Content="requested" IsChecked="{Binding LcdStatusInterruptRequested}" Margin="2" Grid.Row="2" Grid.Column="2"/>
-        <TextBlock Text="Timer Overflow" Margin="2" Grid.Row="3"/>
-        <CheckBox Content="enabled" IsChecked="{Binding TimerOverflowInterruptEnabled}" Margin="2" Grid.Row="3" Grid.Column="1"/>
-        <CheckBox Content="requested" IsChecked="{Binding TimerOverflowInterruptRequested}" Margin="2" Grid.Row="3" Grid.Column="2"/>
-        <TextBlock Text="Serial Transfer" Margin="2" Grid.Row="4"/>
-        <CheckBox Content="enabled" IsChecked="{Binding SerialTransferCompletedInterruptEnabled}" Margin="2" Grid.Row="4" Grid.Column="1"/>
-        <CheckBox Content="requested" IsChecked="{Binding SerialTransferCompletedInterruptRequested}" Margin="2" Grid.Row="4" Grid.Column="2"/>
-        <TextBlock Text="Keypad Pressed" Margin="2" Grid.Row="5"/>
-        <CheckBox Content="enabled" IsChecked="{Binding KeyPadPressedInterruptEnabled}" Margin="2" Grid.Row="5" Grid.Column="1"/>
-        <CheckBox Content="requested" IsChecked="{Binding KeyPadPressedInterruptRequested}" Margin="2" Grid.Row="5" Grid.Column="2"/>
+                <TextBlock Text="Interrupt Master" Margin="2"/>
+                <CheckBox Content="enabled" IsChecked="{Binding InterruptMasterEnabled}" Margin="2" Grid.Column="1"/>
+                <TextBlock Text="Vertical Blank" Margin="2" Grid.Row="1"/>
+                <CheckBox Content="enabled" IsChecked="{Binding VerticalBlankInterruptEnabled}" Margin="2" Grid.Row="1" Grid.Column="1"/>
+                <CheckBox Content="requested" IsChecked="{Binding VerticalBlankInterruptRequested}" Margin="2" Grid.Row="1" Grid.Column="2"/>
+                <TextBlock Text="LCD Status" Margin="2" Grid.Row="2"/>
+                <CheckBox Content="enabled" IsChecked="{Binding LcdStatusInterruptEnabled}" Margin="2" Grid.Row="2" Grid.Column="1"/>
+                <CheckBox Content="requested" IsChecked="{Binding LcdStatusInterruptRequested}" Margin="2" Grid.Row="2" Grid.Column="2"/>
+                <TextBlock Text="Timer Overflow" Margin="2" Grid.Row="3"/>
+                <CheckBox Content="enabled" IsChecked="{Binding TimerOverflowInterruptEnabled}" Margin="2" Grid.Row="3" Grid.Column="1"/>
+                <CheckBox Content="requested" IsChecked="{Binding TimerOverflowInterruptRequested}" Margin="2" Grid.Row="3" Grid.Column="2"/>
+                <TextBlock Text="Serial Transfer" Margin="2" Grid.Row="4"/>
+                <CheckBox Content="enabled" IsChecked="{Binding SerialTransferCompletedInterruptEnabled}" Margin="2" Grid.Row="4" Grid.Column="1"/>
+                <CheckBox Content="requested" IsChecked="{Binding SerialTransferCompletedInterruptRequested}" Margin="2" Grid.Row="4" Grid.Column="2"/>
+                <TextBlock Text="Keypad Pressed" Margin="2" Grid.Row="5"/>
+                <CheckBox Content="enabled" IsChecked="{Binding KeyPadPressedInterruptEnabled}" Margin="2" Grid.Row="5" Grid.Column="1"/>
+                <CheckBox Content="requested" IsChecked="{Binding KeyPadPressedInterruptRequested}" Margin="2" Grid.Row="5" Grid.Column="2"/>
 
-      </Grid>
-    </Grid>
-    <Grid Margin="5" Grid.Row="1">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*"></ColumnDefinition>
-        <ColumnDefinition Width="Auto"></ColumnDefinition>
-        <ColumnDefinition Width="Auto"></ColumnDefinition>
-      </Grid.ColumnDefinitions>
-      <Button Grid.Column="1" Content="Read" Command="{Binding ReadCommand}"></Button>
-      <Button Grid.Column="2" Content="Write" Command="{Binding WriteCommand}"></Button>
-    </Grid>
+              </Grid>
+            </Grid>
+            <Grid Margin="5" Grid.Row="1">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+              </Grid.ColumnDefinitions>
+              <Button Grid.Column="1" Content="Read" Command="{Binding ReadCommand}"></Button>
+              <Button Grid.Column="2" Content="Write" Command="{Binding WriteCommand}"></Button>
+            </Grid>
+          </Grid>
+        </TabItem>
+        <TabItem Header="Registers">
+          <Grid Margin="5">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"></RowDefinition>
+              <RowDefinition Height="Auto"></RowDefinition>
+              <RowDefinition Height="Auto"></RowDefinition>
+              <RowDefinition Height="Auto"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"></ColumnDefinition>
+              <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+
+            <TextBlock Grid.Row="0" Grid.Column="0">
+              <Bold>DISPLAY</Bold>
+            </TextBlock>
+
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="FF42: SCY" />
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding rSCY, Mode=OneWay}" />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="FF43: SCX" />
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding rSCY, Mode=OneWay}" /> 
+
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="FF44: LY" />
+            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding rLY, Mode=OneWay}" /> 
+
+            
+          </Grid>
+        </TabItem>
+      </TabControl>
+    </ScrollViewer>
   </Grid>
 </UserControl>

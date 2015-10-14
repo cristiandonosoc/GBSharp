@@ -83,6 +83,7 @@
       _cpu.CopyFromDomain();
       _display.CopyFromDomain();
       _dissasemble.SetCurrentSelectedInstruction();
+      _interrupt.CopyFromDomain();
 
       if(_memory.HighlightUpdated == false)
       {

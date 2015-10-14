@@ -5,6 +5,7 @@ using GBSharp.MemorySpace;
 using System;
 using GBSharp.VideoSpace;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace GBSharp
 {
@@ -217,6 +218,16 @@ namespace GBSharp
       {
         StepFinished();
       }
+    }
+
+    public Dictionary<MemoryMappedRegisters, ushort> GetRegisterDic()
+    {
+      Dictionary<MemoryMappedRegisters, ushort> registerDic = new Dictionary<MemoryMappedRegisters,ushort>();
+      foreach(MemoryMappedRegisters registerEnum in Enum.GetValues(typeof(MemoryMappedRegisters)))
+      {
+        registerDic.Add(registerEnum, memory.LowLevelRead((ushort)registerEnum));
+      }
+      return registerDic;
     }
   }
 }

@@ -2,6 +2,7 @@
 using System.Windows.Input;
 using GBSharp.CPUSpace;
 using GBSharp.MemorySpace;
+using System.Collections.Generic;
 
 namespace GBSharp.ViewModel
 {
@@ -11,6 +12,7 @@ namespace GBSharp.ViewModel
     private readonly IDisplay _display;
     private readonly IDispatcher _dispatcher;
 
+    #region INTERRUPTS
     private bool _interruptMasterEnabled;
     private bool _verticalBlankInterruptEnabled;
     private bool _verticalBlankInterruptRequested;
@@ -166,6 +168,27 @@ namespace GBSharp.ViewModel
       }
     }
 
+    #endregion
+
+    #region REGISTERS
+
+    private Dictionary<MemoryMappedRegisters, ushort> _regsDic;
+    public string rSCY
+    {
+      get { return "0x" + _regsDic[MemoryMappedRegisters.SCY].ToString("x2"); }
+    }
+    public string rSCX
+    {
+      get { return "0x" + _regsDic[MemoryMappedRegisters.SCX].ToString("x2"); }
+    }
+
+    public string rLY
+    {
+      get { return "0x" + _regsDic[MemoryMappedRegisters.LY].ToString("x2"); }
+    }
+
+    #endregion
+
     public ICommand ReadCommand
     {
       get { return new DelegateCommand(CopyFromDomain); }
@@ -183,6 +206,7 @@ namespace GBSharp.ViewModel
       _display = gameBoy.Display;
       //_display.RefreshScreen += OnRefreshScreen;
       _gameBoy.StepFinished += OnRefreshScreen;
+      _regsDic = _gameBoy.GetRegisterDic();
     }
 
     private void OnRefreshScreen()
@@ -190,8 +214,9 @@ namespace GBSharp.ViewModel
       _dispatcher.Invoke(CopyFromDomain);
     }
 
-    private void CopyFromDomain()
+    public void CopyFromDomain()
     {
+      #region INTERRUPTS
       InterruptMasterEnabled = _gameBoy.CPU.InterruptMasterEnable;
 
       var interruptEnabledWord = _gameBoy.Memory.Data[(int)MemoryMappedRegisters.IE];
@@ -207,6 +232,18 @@ namespace GBSharp.ViewModel
       SerialTransferCompletedInterruptRequested = (interruptRequestedWord & (byte)Interrupts.SerialIOTransferCompleted) > 0;
       KeyPadPressedInterruptEnabled = (interruptEnabledWord & (byte)Interrupts.P10to13TerminalNegativeEdge) > 0;
       KeyPadPressedInterruptRequested = (interruptRequestedWord & (byte)Interrupts.P10to13TerminalNegativeEdge) > 0;
+      #endregion
+
+      // TODO(Cristian, aaecheve): See if we can simply copy the dictionary only and then
+      //                           only notify the view that all the values changed
+      var registerDic = _gameBoy.GetRegisterDic();
+      _regsDic[MemoryMappedRegisters.SCX] = registerDic[MemoryMappedRegisters.SCX];
+      OnPropertyChanged(rSCX);
+      _regsDic[MemoryMappedRegisters.SCY] = registerDic[MemoryMappedRegisters.SCY];
+      OnPropertyChanged(rSCY);
+
+      _regsDic[MemoryMappedRegisters.LY] = registerDic[MemoryMappedRegisters.LY];
+      OnPropertyChanged(rLY);
     }
 
     private void CopyToDomain()

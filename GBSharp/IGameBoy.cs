@@ -1,5 +1,6 @@
 ﻿using GBSharp.Cartridge;
 using System;
+using System.Collections.Generic;
 
 namespace GBSharp
 {
@@ -17,6 +18,7 @@ namespace GBSharp
     void Step(bool ignoreBreakpoints);
     void PressButton(Keypad button);
     void ReleaseButton(Keypad button);
-    
+
+    Dictionary<MemorySpace.MemoryMappedRegisters, ushort> GetRegisterDic();
   }
 }
