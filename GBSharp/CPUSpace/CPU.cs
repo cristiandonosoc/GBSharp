@@ -301,28 +301,40 @@ namespace GBSharp.CPUSpace
       var restarts = GetRestartInstructionsOpCodes();
       var returns = GetReturnsInstructionsOpCodes();
 
+      // TODO(Cristian): Complete the on-demand disassembly
+
       // We set the initial places where we want the disassembler to look
-      _disVisitedAddresses.Add(0x0000);     // RST 0x00
-      _disVisitedAddresses.Add(0x0008);     // RST 0x08
-      _disVisitedAddresses.Add(0x0010);     // RST 0x10
-      _disVisitedAddresses.Add(0x0018);     // RST 0x18
-      _disVisitedAddresses.Add(0x0020);     // RST 0x20
-      _disVisitedAddresses.Add(0x0028);     // RST 0x28
-      _disVisitedAddresses.Add(0x0030);     // RST 0x30
-      _disVisitedAddresses.Add(0x0038);     // RST 0x38
-      _disVisitedAddresses.Add(0x0040);     // V-Blank interrupt
-      _disVisitedAddresses.Add(0x0048);     // LCD Stat interrupt
-      _disVisitedAddresses.Add(0x0050);     // Timer interrupt
-      _disVisitedAddresses.Add(0x0058);     // Serial interrupt
-      _disVisitedAddresses.Add(0x0060);     // Joypad interrupt
-      _disVisitedAddresses.Add(0x0100);     // Initial address
-      foreach(ushort address in _disVisitedAddresses)
-      {
-        _disAddressToVisit.Push(address);
-      }
+      //_disAddressToVisit.Push(0x0000);     // RST 0x00
+      //_disAddressToVisit.Push(0x0008);     // RST 0x08
+      //_disAddressToVisit.Push(0x0010);     // RST 0x10
+      //_disAddressToVisit.Push(0x0018);     // RST 0x18
+      //_disAddressToVisit.Push(0x0020);     // RST 0x20
+      //_disAddressToVisit.Push(0x0028);     // RST 0x28
+      //_disAddressToVisit.Push(0x0030);     // RST 0x30
+      //_disAddressToVisit.Push(0x0038);     // RST 0x38
+      //_disAddressToVisit.Push(0x0040);     // V-Blank interrupt
+      //_disAddressToVisit.Push(0x0048);     // LCD Stat interrupt
+      //_disAddressToVisit.Push(0x0050);     // Timer interrupt
+      //_disAddressToVisit.Push(0x0058);     // Serial interrupt
+      //_disAddressToVisit.Push(0x0060);     // Joypad interrupt
+      //_disAddressToVisit.Push(0x0100);     // Initial address
+
+      _disAddressToVisit.Push(0x0000);     // Initial address
+
+
+      //foreach(ushort address in _disVisitedAddresses)
+      //{
+      //  _disAddressToVisit.Push(address);
+      //}
       while (_disAddressToVisit.Count > 0)
       {
         ushort instructionAddress = _disAddressToVisit.Pop();
+        // If we already saw this address, we move on
+        if (_disVisitedAddresses.Contains(instructionAddress)) { continue; }
+        _disVisitedAddresses.Add(instructionAddress);
+
+        // NOTE(Cristian): The 0xCB external opcodes all exists, so we just need to check
+        //                 that the first byte is 0xCB to know that the instruction is valid
         if (instructionClocks.ContainsKey((byte)this.memory.Read(instructionAddress)))
         {
           try
@@ -330,27 +342,44 @@ namespace GBSharp.CPUSpace
             // Get the instruction and added to the instruction list
             var instruction = FetchAndDecode(instructionAddress);
             _disInstructions.Add(instruction);
+
+            // We get a list of possible next addresses to check
             var candidateNextInstructions = new List<ushort>();
             
-            if (!returns.Contains(instruction.OpCode) && !unconditionalJumps.Contains(instruction.OpCode))
-              candidateNextInstructions.Add((ushort)(instructionAddress + instruction.Length));
-
-            if (directJumps.Contains(instruction.OpCode))
-              candidateNextInstructions.Add(instruction.Literal);
-
-            else if (relativeJumps.Contains(instruction.OpCode))
+            // IF
+            // (NOT JP nn (unconditional jump) AND
+            // (NOT RET *)
+            // We get the next instruction
+            if (
+                (!unconditionalJumps.Contains(instruction.OpCode)) &&
+                (!returns.Contains(instruction.OpCode))
+               )
             {
-              sbyte signedLiteral;
-              unchecked { signedLiteral = (sbyte)instruction.Literal; }
-              candidateNextInstructions.Add((ushort)(instruction.Address + signedLiteral + instruction.Length));
+              candidateNextInstructions.Add((ushort)(instructionAddress + instruction.Length));
             }
+
+            // IF
+            // (ANY KIND OF JUMP, WE ASSUME WE JUMP)
+            if (directJumps.Contains(instruction.OpCode))
+            {
+              candidateNextInstructions.Add(instruction.Literal);
+            }
+
+            // IF A RELATIVE JUMP, WE DO THE RELATIVE JUMP
+            //else if (relativeJumps.Contains(instruction.OpCode))
+            //{
+            //  sbyte signedLiteral;
+            //  unchecked { signedLiteral = (sbyte)instruction.Literal; }
+            //  ushort target = (ushort)(instruction.Address + signedLiteral + instruction.Length);
+            //  candidateNextInstructions.Add(target);
+            //}
+
+            // We add the candidate instructions into the list
             foreach (var candidateNextInstruction in candidateNextInstructions)
             {
-              if ((candidateNextInstruction < 0x8000) && 
-                  (candidateNextInstruction >= 0x0100) && 
-                  (!_disVisitedAddresses.Contains(candidateNextInstruction)))
+              // If any of the candidates was already visited, we do not visit it 
+              if(_disVisitedAddresses.Contains(candidateNextInstruction)) { continue; }
               {
-                _disVisitedAddresses.Add(candidateNextInstruction);
                 _disAddressToVisit.Push(candidateNextInstruction);
               }
             }
@@ -388,6 +417,20 @@ namespace GBSharp.CPUSpace
     {
       var returns = new HashSet<ushort>() { 0xC0, 0xD0, 0xC8, 0xD8, 0xC9, 0xD9 };
       return returns;
+    }
+
+    private HashSet<ushort> GetConditionalJumps()
+    {
+      var jumps = new HashSet<ushort>() { 0xC2, // JP NZ
+                                          0xC4, // CALL NZ
+                                          0xCA, // JP Z
+                                          0xCC, // CALL Z
+                                          0xD2, // JP NC
+                                          0xD4, // CALL NC
+                                          0xDA, // JP C
+                                          0xDC  // CALL C
+      };
+      return jumps;
     }
 
     private Dictionary<ushort, ushort> GetRestartInstructionsOpCodes()
