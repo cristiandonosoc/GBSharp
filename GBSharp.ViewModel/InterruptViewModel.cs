@@ -3,6 +3,7 @@ using System.Windows.Input;
 using GBSharp.CPUSpace;
 using GBSharp.MemorySpace;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GBSharp.ViewModel
 {
@@ -172,20 +173,24 @@ namespace GBSharp.ViewModel
 
     #region REGISTERS
 
-    private Dictionary<MemoryMappedRegisters, ushort> _regsDic;
-    public string rSCY
+    private string PrintRegister(MemoryMappedRegisters reg)
     {
-      get { return "0x" + _regsDic[MemoryMappedRegisters.SCY].ToString("x2"); }
-    }
-    public string rSCX
-    {
-      get { return "0x" + _regsDic[MemoryMappedRegisters.SCX].ToString("x2"); }
+      string regString = "0x" + _regsDic[reg].ToString("x2");
+      return regString;
     }
 
-    public string rLY
-    {
-      get { return "0x" + _regsDic[MemoryMappedRegisters.LY].ToString("x2"); }
-    }
+    private Dictionary<MemoryMappedRegisters, ushort> _regsDic;
+    public string regLCDC { get { return PrintRegister(MemoryMappedRegisters.LCDC); } }
+    public string regSTAT { get { return PrintRegister(MemoryMappedRegisters.STAT); } }
+    public string regSCY { get { return PrintRegister(MemoryMappedRegisters.SCY); } }
+    public string regSCX { get { return PrintRegister(MemoryMappedRegisters.SCX); } }
+    public string regLY { get { return PrintRegister(MemoryMappedRegisters.LY); } }
+    public string regLYC { get { return PrintRegister(MemoryMappedRegisters.LYC); } }
+    public string regBGP { get { return PrintRegister(MemoryMappedRegisters.BGP); } }
+    public string regOBP0 { get { return PrintRegister(MemoryMappedRegisters.OBP0); } }
+    public string regOBP1 { get { return PrintRegister(MemoryMappedRegisters.OBP1); } }
+    public string regWY { get { return PrintRegister(MemoryMappedRegisters.WY); } }
+    public string regWX { get { return PrintRegister(MemoryMappedRegisters.WX); } }
 
     #endregion
 
@@ -234,16 +239,34 @@ namespace GBSharp.ViewModel
       KeyPadPressedInterruptRequested = (interruptRequestedWord & (byte)Interrupts.P10to13TerminalNegativeEdge) > 0;
       #endregion
 
-      // TODO(Cristian, aaecheve): See if we can simply copy the dictionary only and then
-      //                           only notify the view that all the values changed
-      var registerDic = _gameBoy.GetRegisterDic();
-      _regsDic[MemoryMappedRegisters.SCX] = registerDic[MemoryMappedRegisters.SCX];
-      OnPropertyChanged(rSCX);
-      _regsDic[MemoryMappedRegisters.SCY] = registerDic[MemoryMappedRegisters.SCY];
-      OnPropertyChanged(rSCY);
+      _regsDic = _gameBoy.GetRegisterDic();
 
-      _regsDic[MemoryMappedRegisters.LY] = registerDic[MemoryMappedRegisters.LY];
-      OnPropertyChanged(rLY);
+      // TODO(Cristian, aaecheve): See if we can simply notify the view 
+      //                           that all the values changed
+      OnPropertyChanged(() => regLCDC);
+      OnPropertyChanged(() => regSTAT);
+      OnPropertyChanged(() => regSCY);
+      OnPropertyChanged(() => regSCX);
+      OnPropertyChanged(() => regLY);
+      OnPropertyChanged(() => regLYC);
+      OnPropertyChanged(() => regBGP);
+      OnPropertyChanged(() => regOBP0);
+      OnPropertyChanged(() => regOBP1);
+      OnPropertyChanged(() => regWY);
+      OnPropertyChanged(() => regWX);
+
+
+      // TODO(Cristian, aaecheve): I tried using reflection but failed
+      //                           C# masters halp
+      // Doesn't compile (some recursive compilation)
+      //Type type = typeof(InterruptViewModel);
+      //var properties = from property in type.GetProperties()
+      //                 where property.Name.StartsWith("reg")
+      //                 select property;
+      //foreach (var property in properties)
+      //{
+      //  OnPropertyChanged(() => property);
+      //}
     }
 
     private void CopyToDomain()
