@@ -9,6 +9,7 @@ namespace GBSharp.CPUSpace
 {
   class CPU : ICPU
   {
+
     internal CPURegisters registers;
     internal MemorySpace.Memory memory;
     internal InterruptController interruptController;
@@ -72,6 +73,16 @@ namespace GBSharp.CPUSpace
 
     #endregion
 
+
+    #region DISASSEMBLY
+
+    internal List<IInstruction> _disInstructions;
+    internal HashSet<ushort> _disVisitedAddresses;
+    internal Stack<ushort> _disAddressToVisit;
+    public List<IInstruction> Disassembly { get { return _disInstructions; } }
+
+    #endregion
+
     public CPU(MemorySpace.Memory memory)
     {
       //Create Instruction Lambdas
@@ -84,6 +95,11 @@ namespace GBSharp.CPUSpace
       CBinstructionDescriptions = CPUCBInstructionDescriptions.Setup();
 
       _currentInstruction = new Instruction();
+
+      // Disassembly initialization
+      _disInstructions = new List<IInstruction>();
+      _disVisitedAddresses = new HashSet<ushort>();
+      _disAddressToVisit = new Stack<ushort>();
 
       this.memory = memory;
       this.interruptController = new InterruptController(this.memory);
@@ -279,9 +295,6 @@ namespace GBSharp.CPUSpace
     /// <returns></returns>
     public IEnumerable<IInstruction> Dissamble()
     {
-      var instructions = new List<IInstruction>();
-      var visitedAddresses = new HashSet<ushort>();
-      var addressesToVisit = new Stack<ushort>();
       var directJumps = GetDirectJumpInstructionsOpCodes();
       var unconditionalJumps = GetUnconditionalJumpInstructionsOpCodes();
       var relativeJumps = GetRelativeJumpInstructionsOpCodes();
@@ -289,39 +302,42 @@ namespace GBSharp.CPUSpace
       var returns = GetReturnsInstructionsOpCodes();
 
       // We set the initial places where we want the disassembler to look
-      visitedAddresses.Add(0x0000);     // RST 0x00
-      visitedAddresses.Add(0x0008);     // RST 0x08
-      visitedAddresses.Add(0x0010);     // RST 0x10
-      visitedAddresses.Add(0x0018);     // RST 0x18
-      visitedAddresses.Add(0x0020);     // RST 0x20
-      visitedAddresses.Add(0x0028);     // RST 0x28
-      visitedAddresses.Add(0x0030);     // RST 0x30
-      visitedAddresses.Add(0x0038);     // RST 0x38
-      visitedAddresses.Add(0x0040);     // V-Blank interrupt
-      visitedAddresses.Add(0x0048);     // LCD Stat interrupt
-      visitedAddresses.Add(0x0050);     // Timer interrupt
-      visitedAddresses.Add(0x0058);     // Serial interrupt
-      visitedAddresses.Add(0x0060);     // Joypad interrupt
-      visitedAddresses.Add(0x0100);     // Initial address
-      foreach(ushort address in visitedAddresses)
+      _disVisitedAddresses.Add(0x0000);     // RST 0x00
+      _disVisitedAddresses.Add(0x0008);     // RST 0x08
+      _disVisitedAddresses.Add(0x0010);     // RST 0x10
+      _disVisitedAddresses.Add(0x0018);     // RST 0x18
+      _disVisitedAddresses.Add(0x0020);     // RST 0x20
+      _disVisitedAddresses.Add(0x0028);     // RST 0x28
+      _disVisitedAddresses.Add(0x0030);     // RST 0x30
+      _disVisitedAddresses.Add(0x0038);     // RST 0x38
+      _disVisitedAddresses.Add(0x0040);     // V-Blank interrupt
+      _disVisitedAddresses.Add(0x0048);     // LCD Stat interrupt
+      _disVisitedAddresses.Add(0x0050);     // Timer interrupt
+      _disVisitedAddresses.Add(0x0058);     // Serial interrupt
+      _disVisitedAddresses.Add(0x0060);     // Joypad interrupt
+      _disVisitedAddresses.Add(0x0100);     // Initial address
+      foreach(ushort address in _disVisitedAddresses)
       {
-        addressesToVisit.Push(address);
+        _disAddressToVisit.Push(address);
       }
-      while (addressesToVisit.Count > 0)
+      while (_disAddressToVisit.Count > 0)
       {
-        ushort instructionAddress = addressesToVisit.Pop();
+        ushort instructionAddress = _disAddressToVisit.Pop();
         if (instructionClocks.ContainsKey((byte)this.memory.Read(instructionAddress)))
         {
           try
           {
-
+            // Get the instruction and added to the instruction list
             var instruction = FetchAndDecode(instructionAddress);
-            instructions.Add(instruction);
+            _disInstructions.Add(instruction);
             var candidateNextInstructions = new List<ushort>();
+            
             if (!returns.Contains(instruction.OpCode) && !unconditionalJumps.Contains(instruction.OpCode))
               candidateNextInstructions.Add((ushort)(instructionAddress + instruction.Length));
+
             if (directJumps.Contains(instruction.OpCode))
               candidateNextInstructions.Add(instruction.Literal);
+
             else if (relativeJumps.Contains(instruction.OpCode))
             {
               sbyte signedLiteral;
@@ -330,10 +346,12 @@ namespace GBSharp.CPUSpace
             }
             foreach (var candidateNextInstruction in candidateNextInstructions)
             {
-              if (candidateNextInstruction < 0x8000 && candidateNextInstruction >= 0x0100 && !visitedAddresses.Contains(candidateNextInstruction))
+              if ((candidateNextInstruction < 0x8000) && 
+                  (candidateNextInstruction >= 0x0100) && 
+                  (!_disVisitedAddresses.Contains(candidateNextInstruction)))
               {
-                visitedAddresses.Add(candidateNextInstruction);
-                addressesToVisit.Push(candidateNextInstruction);
+                _disVisitedAddresses.Add(candidateNextInstruction);
+                _disAddressToVisit.Push(candidateNextInstruction);
               }
             }
 
@@ -345,7 +363,7 @@ namespace GBSharp.CPUSpace
         }
 
       }
-      return instructions.OrderBy(i => i.Address);
+      return _disInstructions.OrderBy(i => i.Address);
     }
 
     private HashSet<ushort> GetDirectJumpInstructionsOpCodes()
