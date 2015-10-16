@@ -293,7 +293,7 @@ namespace GBSharp.CPUSpace
     /// Poor man's dissambly (for now)
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<IInstruction> Dissamble(ushort startAddress, bool permissive = true)
+    public IEnumerable<IInstruction> Disassamble(ushort startAddress, bool permissive = true)
     {
       // TODO(Cristian): Complete the on-demand disassembly
       var stoppers = GetShowStoppers();

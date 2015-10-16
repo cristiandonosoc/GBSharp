@@ -61,8 +61,7 @@ namespace GBSharp.ViewModel
       }
       catch(KeyNotFoundException e)
       {
-        // TODO(Cristian): Use dispatcher to run this in the view's thread
-        //Dissasemble(_cpu.Registers.PC);
+        Dissasemble(_cpu.Registers.PC);
       }
     }
 
@@ -74,7 +73,7 @@ namespace GBSharp.ViewModel
 
     public void Dissasemble(ushort address)
     {
-      var dissasembledInstructions = _cpu.Dissamble(address);
+      var dissasembledInstructions = _cpu.Disassamble(address);
       _instructions.Clear();
       foreach (var dissasembledInstruction in dissasembledInstructions)
       {
@@ -82,7 +81,7 @@ namespace GBSharp.ViewModel
         _instructions.Add(inst);
         _addressToInstruction[dissasembledInstruction.Address] = inst;
       }
-      SelectedInstruction = _instructions.First();
+      SelectedInstruction = _addressToInstruction[address];
     }
 
     private void SetBreakpoint()

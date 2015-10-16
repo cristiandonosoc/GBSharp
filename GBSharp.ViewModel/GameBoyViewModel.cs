@@ -74,13 +74,10 @@
     
     private void BreakpointHandler()
     {
-      // TODO(Cristian, aaecheve): See how can we do to the complete StepHandler
-      //                           in this event. Right now we can't because
-      //                 					 the event runs in the gameboy's thread... so crash
-      //                 					 Maybe set some flag to update on the next view loop?
-      _cpu.CopyFromDomain();
-      _interrupt.CopyFromDomain();
-      _dissasemble.SetCurrentSelectedInstruction();
+      // NOTE(Cristian): This handler comes from an event from the _gameboy, thus
+      //                 it happens in the gameboy's thread. If we want to modify UI
+      //                 constructs, we need to run them in the UI thread
+      _dispatcher.Invoke(StepHandler);
     }
 
     private void StepHandler()

@@ -13,7 +13,7 @@ namespace GBSharp
     ushort Breakpoint { get; set; }
 
     byte Step(bool ignoreBreakpoints);
-    IEnumerable<IInstruction> Dissamble(ushort startAddress, 
-                                        bool permisive = true);
+    IEnumerable<IInstruction> Disassamble(ushort startAddress, 
+                                          bool permisive = true);
   }
 }
