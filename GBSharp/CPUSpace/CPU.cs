@@ -293,72 +293,86 @@ namespace GBSharp.CPUSpace
     /// Poor man's dissambly (for now)
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<IInstruction> Dissamble(ushort startAddress)
+    public IEnumerable<IInstruction> Dissamble(ushort startAddress, bool permissive = true)
     {
       // TODO(Cristian): Complete the on-demand disassembly
-      var showStoppers = GetShowStoppers();
-      var directJumps = GetDirectJumps();
-      var relativeJumps = GetRelativeJumps();
+      var stoppers = GetShowStoppers();
+      var dirJumps = GetDirectJumps();
+      var relJumps = GetRelativeJumps();
       var restarts = GetRestarts();
 
       _disAddressToVisit.Push(startAddress);     // Initial address
 
       while (_disAddressToVisit.Count > 0)
       {
-        ushort instructionAddress = _disAddressToVisit.Pop();
+        ushort address = _disAddressToVisit.Pop();
         // If we already saw this address, we move on
-        if (_disVisitedAddresses.Contains(instructionAddress)) { continue; }
-        _disVisitedAddresses.Add(instructionAddress);
+        if (_disVisitedAddresses.Contains(address)) { continue; }
+        _disVisitedAddresses.Add(address);
 
         // NOTE(Cristian): The 0xCB external opcodes all exists, so we just need to check
         //                 that the first byte is 0xCB to know that the instruction is valid
-        if (instructionClocks.ContainsKey((byte)this.memory.Read(instructionAddress)))
+        if (instructionClocks.ContainsKey((byte)this.memory.Read(address)))
         {
           try
           {
             // Get the instruction and added to the instruction list
-            var instruction = FetchAndDecode(instructionAddress);
-            _disInstructions.Add(instruction);
+            var inst = FetchAndDecode(address);
+            _disInstructions.Add(inst);
 
             // We get a list of possible next addresses to check
-            var candidateNextInstructions = new List<ushort>();
+            var candidates = new List<ushort>();
 
             // A show-stopper doesn't add any more instructions
-            if (showStoppers.Contains(instruction.OpCode)) { continue; }
+            if (stoppers.Contains(inst.OpCode)) { continue; }
 
-            if (directJumps.ContainsKey(instruction.OpCode))
+            if (dirJumps.ContainsKey(inst.OpCode))
             {
-              // TODO(Cristian): Do the permissive (non-absolute) mode
-              if(directJumps[instruction.OpCode])
+              if(dirJumps[inst.OpCode])
               {
-                candidateNextInstructions.Add(instruction.Literal);
+                candidates.Add(inst.Literal);
+              }
+              // If permissive, we also permit conditional jumps (ant the next inst)
+              else if(permissive)
+              {
+                candidates.Add(inst.Literal);
+                var next = (ushort)(address + inst.Length);
+                candidates.Add(next);
               }
             }
 
-            // IF A RELATIVE JUMP, WE DO THE RELATIVE JUMP
-            else if (relativeJumps.ContainsKey(instruction.OpCode))
+            else if (relJumps.ContainsKey(inst.OpCode))
             {
-              // TODO(Cristian): Do the permissive (non-absolute) mode
-              if(relativeJumps[instruction.OpCode])
+              if(relJumps[inst.OpCode])
               {
                 sbyte signedLiteral;
-                unchecked { signedLiteral = (sbyte)instruction.Literal; }
-                ushort target = (ushort)(instruction.Address + signedLiteral + instruction.Length);
-                candidateNextInstructions.Add(target);
+                unchecked { signedLiteral = (sbyte)inst.Literal; }
+                ushort target = (ushort)(inst.Address + signedLiteral + inst.Length);
+                candidates.Add(target);
+              }
+              else if(permissive)
+              {
+                sbyte signedLiteral;
+                unchecked { signedLiteral = (sbyte)inst.Literal; }
+                ushort target = (ushort)(inst.Address + signedLiteral + inst.Length);
+                candidates.Add(target);
+
+                var next = (ushort)(address + inst.Length);
+                candidates.Add(next);
               }
             }
-            else if(restarts.ContainsKey(instruction.OpCode))
+            else if(restarts.ContainsKey(inst.OpCode))
             {
-              candidateNextInstructions.Add(restarts[instruction.OpCode]);
+              candidates.Add(restarts[inst.OpCode]);
             }
             else // It's an instruction that continues
             {
-              ushort target = (ushort)(instructionAddress + instruction.Length);
-              candidateNextInstructions.Add(target);
+              ushort target = (ushort)(address + inst.Length);
+              candidates.Add(target);
             }
 
             // We add the candidate instructions into the list
-            foreach (var candidateNextInstruction in candidateNextInstructions)
+            foreach (var candidateNextInstruction in candidates)
             {
               // If any of the candidates was already visited, we do not visit it 
               if(_disVisitedAddresses.Contains(candidateNextInstruction)) 
@@ -379,13 +393,20 @@ namespace GBSharp.CPUSpace
       return _disInstructions.OrderBy(i => i.Address);
     }
 
+    /// <summary>
+    /// Return the jumps, classified by whether,
+    /// the next instruction should not be followed
+    /// (its an unconditional jump)
+    /// </summary>
+    /// <returns></returns>
     private Dictionary<ushort, bool> GetDirectJumps()
     {
       // Instructions in this set
       var jumps = new Dictionary<ushort, bool>();
-      // JP nn, CALL nn
+      // JP nn 
       jumps.Add(0xC3, true);
-      jumps.Add(0xCD, true);
+      // CALL nn
+      jumps.Add(0xCD, false);
       // JP NZ, JP Z, JP NC, JP C
       jumps.Add(0xC2, false);
       jumps.Add(0xCA, false);
@@ -401,7 +422,9 @@ namespace GBSharp.CPUSpace
     }
 
     /// <summary>
-    /// Return the relatives jump, classified if they're absolute or not
+    /// Return the relatives jump, classified by whether,
+    /// the next instruction should not be followed
+    /// (its an unconditional jump)
     /// </summary>
     /// <returns></returns>
     private Dictionary<ushort, bool> GetRelativeJumps()
