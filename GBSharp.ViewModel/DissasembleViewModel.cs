@@ -26,7 +26,7 @@ namespace GBSharp.ViewModel
 
     public ICommand DissasembleCommand
     {
-      get { return new DelegateCommand(Dissasemble); }
+      get { return new DelegateCommand(DissasembleCommandWrapper); }
     }
 
     public ICommand SetBreakPointCommand
@@ -61,13 +61,20 @@ namespace GBSharp.ViewModel
       }
       catch(KeyNotFoundException e)
       {
-        System.Console.Out.WriteLine("Address not disassembled: " + _cpu.Registers.PC);
+        // TODO(Cristian): Use dispatcher to run this in the view's thread
+        //Dissasemble(_cpu.Registers.PC);
       }
     }
 
-    public void Dissasemble()
+    public void DissasembleCommandWrapper()
     {
-      var dissasembledInstructions = _cpu.Dissamble();
+      Dissasemble(0x100);
+    }
+
+
+    public void Dissasemble(ushort address)
+    {
+      var dissasembledInstructions = _cpu.Dissamble(address);
       _instructions.Clear();
       foreach (var dissasembledInstruction in dissasembledInstructions)
       {

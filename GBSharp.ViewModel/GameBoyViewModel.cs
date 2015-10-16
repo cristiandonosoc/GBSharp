@@ -71,7 +71,7 @@
       _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher, _display);
       _dissasemble = new DissasembleViewModel(_gameBoy);
     }
-
+    
     private void BreakpointHandler()
     {
       // TODO(Cristian, aaecheve): See how can we do to the complete StepHandler
@@ -102,7 +102,7 @@
       _memory.CopyFromDomain();
       _display.CopyFromDomain();
       _cpu.CopyFromDomain();
-      _dissasemble.Dissasemble();
+      _dissasemble.DissasembleCommandWrapper();
     }
 
     private void HandleClosing()
