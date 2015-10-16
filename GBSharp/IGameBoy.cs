@@ -20,5 +20,8 @@ namespace GBSharp
     void ReleaseButton(Keypad button);
 
     Dictionary<MemorySpace.MemoryMappedRegisters, ushort> GetRegisterDic();
+
+    IEnumerable<IInstruction> Disassamble(ushort startAddress, 
+                                          bool permissive = true);
   }
 }

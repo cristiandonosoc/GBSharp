@@ -22,6 +22,7 @@ namespace GBSharp
     private Thread clockThread;
     private ManualResetEventSlim manualResetEvent;
     private Keypad buttons;
+    private Disassembler disassembler;
     
     private Stopwatch stopwatch;
     private long tickCounter;
@@ -43,6 +44,8 @@ namespace GBSharp
       this.cpu = new CPUSpace.CPU(this.memory);
       this.interruptController = this.cpu.interruptController;
       this.display = new Display(this.interruptController, this.memory);
+
+      this.disassembler = new Disassembler(cpu, memory);
 
       this.buttons = Keypad.None;
       this.manualResetEvent = new ManualResetEventSlim(false);
@@ -228,6 +231,12 @@ namespace GBSharp
         registerDic.Add(registerEnum, memory.LowLevelRead((ushort)registerEnum));
       }
       return registerDic;
+    }
+
+    public IEnumerable<IInstruction> 
+    Disassamble(ushort startAddress, bool permissive = true)
+    {
+      return disassembler.Disassamble(startAddress, permissive);
     }
   }
 }

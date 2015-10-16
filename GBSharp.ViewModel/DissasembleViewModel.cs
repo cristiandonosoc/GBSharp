@@ -73,7 +73,7 @@ namespace GBSharp.ViewModel
 
     public void Dissasemble(ushort address)
     {
-      var dissasembledInstructions = _cpu.Disassamble(address);
+      var dissasembledInstructions = _gameBoy.Disassamble(address);
       _instructions.Clear();
       foreach (var dissasembledInstruction in dissasembledInstructions)
       {
