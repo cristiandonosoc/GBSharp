@@ -545,7 +545,7 @@ namespace GBSharp.VideoSpace
       // TODO(Cristian): Copying the bitmap to the View is EXTREMELY slow. 
       //                 We (will probably) need some kind of direct access
       //                 if we want to achieve 60 FPS
-      //DrawTiming();
+      DrawTiming();
 
       if(firstRun)
       {
@@ -645,6 +645,12 @@ namespace GBSharp.VideoSpace
       STAT = (byte)((STAT & 0xFC) | byteDisplayMode);
       this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.STAT, STAT);
 
+      // We check if we have to trigger vertical blanking
+      if(this.displayMode == DisplayModes.Mode01) // We just change to V-BLANK Mode
+      {
+        interruptController.SetInterrupt(Interrupts.VerticalBlanking);
+      }
+
       // NOTE(Cristian): The bits that determine which interrupt is enabled
       //                 are ordered in the same numbers that the mode numbering
       //                 So basically we can shift by the mode numbering to get
@@ -656,6 +662,8 @@ namespace GBSharp.VideoSpace
       {
         interruptController.SetInterrupt(Interrupts.LCDCStatus);
       }
+
+
     }
 
     /// <summary>
