@@ -19,6 +19,7 @@ namespace GBSharp
     private Cartridge.Cartridge cartridge;
     private Display display;
     private bool run;
+    private bool inBreakpoint;
     private Thread clockThread;
     private ManualResetEventSlim manualResetEvent;
     private Keypad buttons;
@@ -52,7 +53,15 @@ namespace GBSharp
       this.clockThread = new Thread(new ThreadStart(this.ThreadedRun));
 
       // Events
-      this.cpu.BreakpointFound += Pause;
+      this.cpu.BreakpointFound += BreakpointHandler;
+
+      this.inBreakpoint = false;
+    }
+
+    private void BreakpointHandler()
+    {
+      inBreakpoint = true;
+      Pause();
     }
 
     public ICPU CPU
@@ -110,7 +119,16 @@ namespace GBSharp
     /// </summary>
     public void Step(bool ignoreBreakpoints)
     {
-      byte ticks = this.cpu.Step(ignoreBreakpoints); // We don't ignore breakpoints
+      // NOTE(Cristian): if inBreakpoint is true, this is the first step since a
+      //                 breakpoint. This next step must ignore the breakpoint
+      //                 or it will stop with itself.
+      bool ignoreNextStep = false;
+      if (inBreakpoint) 
+      { 
+        inBreakpoint = false;
+        ignoreNextStep = true;
+      }
+      byte ticks = this.cpu.Step(ignoreNextStep || ignoreBreakpoints);
       this.memory.Step(ticks);
       this.display.Step(ticks);
 
@@ -169,7 +187,7 @@ namespace GBSharp
       {
         this.manualResetEvent.Wait(); // Wait for pauses.
         this.Step(false);
-        NotifyStepFinished();
+        //NotifyStepFinished();
 
         // Check timing issues
         if (this.stepCounter % stepCheck == 0)
