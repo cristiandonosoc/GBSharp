@@ -1440,6 +1440,7 @@ jmp_6553:
 [0x00006554]	PUSH BC
 [0x00006555]	PUSH DE
 [0x00006556]	PUSH HL
+/* We compare A agains 1 or 2 and JR to some sub-routine */
 [0x00006557]	LD A,[$DF7F]
 [0x0000655A]	CP $01
 [0x0000655C]	JR Z,jmp_65a4
@@ -1458,7 +1459,7 @@ jmp_6568:
 [0x00006574]	LD [$DFF0],A
 [0x00006577]	LD [$DFF8],A
 jmp_657a:
-[0x0000657A]	CALL sub_6552
+[0x0000657A]	CALL sub_6552 // JP to a RET... wtf
 [0x0000657D]	CALL sub_6a0e
 [0x00006580]	CALL sub_6a2e
 [0x00006583]	CALL sub_6879

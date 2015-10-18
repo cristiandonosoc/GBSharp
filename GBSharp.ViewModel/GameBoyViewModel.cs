@@ -65,6 +65,7 @@
 
       // TODO(aaecheve): Should this be another function handling this?
       _gameBoy.CPU.BreakpointFound += BreakpointHandler;
+      _gameBoy.CPU.InterruptHappened += InterruptHandler;
 
       _interrupt = new InterruptViewModel(_gameBoy, _dispatcher);
       _display = new DisplayViewModel(_gameBoy.Display, _gameBoy.Memory, _dispatcher);
@@ -72,6 +73,12 @@
       _dissasemble = new DissasembleViewModel(_gameBoy);
     }
     
+    private void InterruptHandler(GBSharp.CPUSpace.Interrupts interrupt)
+    {
+      // TODO(Cristian, aaecheve): Do something special with each interrupt?
+      _dispatcher.Invoke(StepHandler);
+    }
+
     private void BreakpointHandler()
     {
       // NOTE(Cristian): This handler comes from an event from the _gameboy, thus

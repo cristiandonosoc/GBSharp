@@ -54,8 +54,15 @@ namespace GBSharp
 
       // Events
       this.cpu.BreakpointFound += BreakpointHandler;
+      this.cpu.InterruptHappened += InterruptHandler;
 
       this.inBreakpoint = false;
+    }
+
+    private void InterruptHandler(Interrupts interrupt)
+    {
+      inBreakpoint = true;
+      Pause();
     }
 
     private void BreakpointHandler()

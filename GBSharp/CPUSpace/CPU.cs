@@ -17,8 +17,11 @@ namespace GBSharp.CPUSpace
     internal ushort clock; // 16 bit oscillation counter at 4194304 Hz (2^22).
     internal bool halted;
     internal bool stopped;
+    // Whether the next step should trigger an interrupt event
+    internal Interrupts? interruptToTrigger;
 
     public event Action BreakpointFound;
+    public event Action<Interrupts> InterruptHappened;
 
     public ushort Breakpoint
     {
@@ -151,6 +154,8 @@ namespace GBSharp.CPUSpace
       // NOTE(Cristian): This address is not writable as a program,
       //                 so this breakpoint *should* be inactive
       this.Breakpoint = 0xFFFF;
+
+      this.interruptToTrigger = null;
     }
 
     /// <summary>
@@ -161,13 +166,30 @@ namespace GBSharp.CPUSpace
     /// This can be 0 in STOP mode or even 24 for CALL Z, nn and other long CALL instructions.</returns>
     public byte Step(bool ignoreBreakpoints)
     {
+      // If we have set an interupt to trigger, we break
+      if(interruptToTrigger != null)
+      {
+        InterruptHappened(interruptToTrigger.Value);
+        interruptToTrigger = null;
+        return 0;     // We don't advance the state because we're breaking
+      }
+
       // Instruction fetch and decode
       Interrupts? interrupt = InterruptRequired();
       bool INTERRUPT_IN_PROGRESS = interrupt != null;
       if (INTERRUPT_IN_PROGRESS)
+      {
+        // NOTE(Cristian): We store the interrupt so we break on the next
+        //                 step. This will enable that we're breaking on the
+        //                 first instruction of the interrupt handler, vs
+        //                 an invented CALL
+        interruptToTrigger = interrupt.Value;
         _currentInstruction = InterruptHandler(interrupt.Value);
+      }
       else
+      {
         _currentInstruction = FetchAndDecode(this.registers.PC);
+      }
 
       // We see if there is an breakpoint to this address
       if(!ignoreBreakpoints && (_currentInstruction.Address == Breakpoint))
