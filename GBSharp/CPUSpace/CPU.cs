@@ -19,14 +19,24 @@ namespace GBSharp.CPUSpace
     internal bool stopped;
     // Whether the next step should trigger an interrupt event
     internal Interrupts? interruptToTrigger;
+    internal Dictionary<Interrupts, bool> _breakableInterrupts = new Dictionary<Interrupts, bool>()
+    {
+      {Interrupts.VerticalBlanking, false},
+      {Interrupts.LCDCStatus, false},
+      {Interrupts.TimerOverflow, false},
+      {Interrupts.SerialIOTransferCompleted, false},
+      {Interrupts.P10to13TerminalNegativeEdge, false}
+    };
 
     public event Action BreakpointFound;
     public event Action<Interrupts> InterruptHappened;
 
     public ushort Breakpoint
     {
-      get; set;
+      get;
+      set;
     }
+
 
     // NOTE(Cristian): This Instruction instance is no longer used to communicate
     //                 the current state to the CPUView. This is because it's always
@@ -158,6 +168,11 @@ namespace GBSharp.CPUSpace
       this.interruptToTrigger = null;
     }
 
+    public void SetInterruptBreakable(Interrupts interrupt, bool isBreakable)
+    {
+      _breakableInterrupts[interrupt] = isBreakable;
+    }
+
     /// <summary>
     /// Executes one instruction, requiring arbitrary machine and clock cycles.
     /// </summary>
@@ -167,11 +182,14 @@ namespace GBSharp.CPUSpace
     public byte Step(bool ignoreBreakpoints)
     {
       // If we have set an interupt to trigger, we break
-      if(interruptToTrigger != null)
+      if (interruptToTrigger != null)
       {
-        InterruptHappened(interruptToTrigger.Value);
-        interruptToTrigger = null;
-        return 0;     // We don't advance the state because we're breaking
+        if (_breakableInterrupts[interruptToTrigger.Value])
+        {
+          InterruptHappened(interruptToTrigger.Value);
+          interruptToTrigger = null;
+          return 0; // We don't advance the state because we're breaking
+        }
       }
 
       // Instruction fetch and decode
@@ -192,7 +210,7 @@ namespace GBSharp.CPUSpace
       }
 
       // We see if there is an breakpoint to this address
-      if(!ignoreBreakpoints && (_currentInstruction.Address == Breakpoint))
+      if (!ignoreBreakpoints && (_currentInstruction.Address == Breakpoint))
       {
         BreakpointFound();
         return 0;
@@ -205,7 +223,7 @@ namespace GBSharp.CPUSpace
       //                 interrupt will be added to nextPC, which will in turn be written
       //                 into the stack. This means that when we RET, we would have jumped
       //                 into the address we *should* have jumped plus some meaningless offset!
-      if(!INTERRUPT_IN_PROGRESS)
+      if (!INTERRUPT_IN_PROGRESS)
       {
         this.nextPC = (ushort)(this.registers.PC + _currentInstruction.Length);
       }

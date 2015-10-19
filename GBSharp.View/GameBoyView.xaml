@@ -28,7 +28,7 @@
         </ScrollViewer>
       </Grid>
     </DataTemplate>
-    <DataTemplate DataType="{x:Type viewModel:InterruptViewModel}">
+    <DataTemplate DataType="{x:Type viewModel:InterruptManagerViewModel}">
       <Grid Style="{StaticResource SubContentGrid}">
         <ScrollViewer>
           <view:InterruptView></view:InterruptView>

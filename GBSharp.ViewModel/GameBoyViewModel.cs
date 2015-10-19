@@ -8,7 +8,7 @@
 
     private readonly MemoryViewModel _memory;
     private readonly CPUViewModel _cpu;
-    private readonly InterruptViewModel _interrupt;
+    private readonly InterruptManagerViewModel _interrupt;
     private readonly DisplayViewModel _display;
     private readonly GameBoyContollerViewModel _gameBoyController;
     private readonly GameBoyGamePadViewModel _gameBoyGamePad;
@@ -24,7 +24,7 @@
       get { return _cpu; }
     }
 
-    public InterruptViewModel Interrupt
+    public InterruptManagerViewModel Interrupt
     {
       get { return _interrupt; }
     }
@@ -67,7 +67,7 @@
       _gameBoy.CPU.BreakpointFound += BreakpointHandler;
       _gameBoy.CPU.InterruptHappened += InterruptHandler;
 
-      _interrupt = new InterruptViewModel(_gameBoy, _dispatcher);
+      _interrupt = new InterruptManagerViewModel(_gameBoy, _dispatcher);
       _display = new DisplayViewModel(_gameBoy.Display, _gameBoy.Memory, _dispatcher);
       _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher, _display);
       _dissasemble = new DissasembleViewModel(_gameBoy);

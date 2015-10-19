@@ -15,6 +15,8 @@ namespace GBSharp
     IInstruction CurrentInstruction { get; }
     ushort Breakpoint { get; set; }
 
+    void SetInterruptBreakable(Interrupts interrupt, bool isBreakable);
+
     byte Step(bool ignoreBreakpoints);
   }
 }

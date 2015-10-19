@@ -52,6 +52,7 @@
     <Compile Include="GameBoyViewModel.cs" />
     <Compile Include="IDispatcher.cs" />
     <Compile Include="InstructionViewModel.cs" />
+    <Compile Include="InterruptManagerViewModel.cs" />
     <Compile Include="InterruptViewModel.cs" />
     <Compile Include="IOpenFileDialog.cs" />
     <Compile Include="IOpenFileDialogFactory.cs" />
