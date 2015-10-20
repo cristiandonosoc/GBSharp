@@ -22,6 +22,17 @@
 
       </Grid>
     </DataTemplate>
+    <DataTemplate DataType="{x:Type viewModel:MemoryMappedRegisterViewModel}">
+      <Grid  >
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="100"></ColumnDefinition>
+          <ColumnDefinition Width="60"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <TextBlock Text="{Binding Name}" Margin="2"/>
+        <TextBox Grid.Column="1" Text="{Binding Value}" Margin="2"/>
+
+      </Grid>
+    </DataTemplate>
   </UserControl.Resources>
   <Grid Style="{StaticResource SubContentGrid}">
     <ScrollViewer>
@@ -54,66 +65,7 @@
         </TabItem>
         <TabItem Header="Registers">
           <Grid Margin="5">
-            <Grid.RowDefinitions>
-              <RowDefinition Height="Auto"></RowDefinition>
-              <RowDefinition Height="Auto"></RowDefinition>
-              <RowDefinition Height="Auto"></RowDefinition>
-              <RowDefinition Height="Auto"></RowDefinition>
-              <RowDefinition Height="Auto"></RowDefinition>
-
-              <RowDefinition Height="Auto"></RowDefinition>
-              <RowDefinition Height="Auto"></RowDefinition>
-              <RowDefinition Height="Auto"></RowDefinition>
-              <RowDefinition Height="Auto"></RowDefinition>
-              <RowDefinition Height="Auto"></RowDefinition>
-
-              <RowDefinition Height="Auto"></RowDefinition>
-              <RowDefinition Height="Auto"></RowDefinition>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto"></ColumnDefinition>
-              <ColumnDefinition Width="*"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
-
-
-            <TextBlock Grid.Row="0" Grid.Column="0">
-              <Bold>DISPLAY</Bold>
-            </TextBlock>
-
-            <TextBlock Grid.Row="1" Grid.Column="0" Text="FF40: LCDC" />
-            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding regLCDC, Mode=OneWay}" />
-
-            <TextBlock Grid.Row="2" Grid.Column="0" Text="FF41: STAT" />
-            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding regSTAT, Mode=OneWay}" />
-
-            <TextBlock Grid.Row="3" Grid.Column="0" Text="FF42: SCY" />
-            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding regSCY, Mode=OneWay}" />
-
-            <TextBlock Grid.Row="4" Grid.Column="0" Text="FF43: SCX" />
-            <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding regSCY, Mode=OneWay}" />
-
-            <TextBlock Grid.Row="5" Grid.Column="0" Text="FF44: LY" />
-            <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding regLY, Mode=OneWay}" />
-
-            <TextBlock Grid.Row="6" Grid.Column="0" Text="FF45: LYC" />
-            <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding regLYC, Mode=OneWay}" />
-
-            <TextBlock Grid.Row="7" Grid.Column="0" Text="FF47: BGP" />
-            <TextBox Grid.Row="7" Grid.Column="1" Text="{Binding regBGP, Mode=OneWay}" />
-
-            <TextBlock Grid.Row="8" Grid.Column="0" Text="FF48: OBP0" />
-            <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding regOBP0, Mode=OneWay}" />
-
-            <TextBlock Grid.Row="9" Grid.Column="0" Text="FF49: OBP1" />
-            <TextBox Grid.Row="9" Grid.Column="1" Text="{Binding regOBP1, Mode=OneWay}" />
-
-            <TextBlock Grid.Row="10" Grid.Column="0" Text="FF4A: WY" />
-            <TextBox Grid.Row="10" Grid.Column="1" Text="{Binding regWY, Mode=OneWay}" />
-
-            <TextBlock Grid.Row="11" Grid.Column="0" Text="FF4B: WX" />
-            <TextBox Grid.Row="11" Grid.Column="1" Text="{Binding regWX, Mode=OneWay}" />
-
-
+            <ItemsControl ItemsSource="{Binding MemoryMappedRegisterList}" ></ItemsControl>
           </Grid>
         </TabItem>
       </TabControl>

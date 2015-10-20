@@ -1,10 +1,8 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using GBSharp.CPUSpace;
 using GBSharp.MemorySpace;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace GBSharp.ViewModel
 {
@@ -13,8 +11,7 @@ namespace GBSharp.ViewModel
     private readonly IGameBoy _gameBoy;
     private readonly IDisplay _display;
     private readonly IDispatcher _dispatcher;
-
-    #region INTERRUPTS
+    
     
     private bool _interruptMasterEnabled;
 
@@ -31,33 +28,19 @@ namespace GBSharp.ViewModel
       }
     }
 
-    private ObservableCollection<InterruptViewModel> _interrupts = new ObservableCollection<InterruptViewModel>(); 
+    private readonly ObservableCollection<InterruptViewModel> _interrupts = new ObservableCollection<InterruptViewModel>();
+    private readonly ObservableCollection<MemoryMappedRegisterViewModel> _memoryMappedRegisters = new ObservableCollection<MemoryMappedRegisterViewModel>();
 
-   
-    #endregion
-
-    #region REGISTERS
-
-    private string PrintRegister(MemoryMappedRegisters reg)
+    public ObservableCollection<InterruptViewModel> InterruptList
     {
-      string regString = "0x" + _regsDic[reg].ToString("x2");
-      return regString;
+      get { return _interrupts; }
     }
 
-    private Dictionary<MemoryMappedRegisters, ushort> _regsDic;
-    public string regLCDC { get { return PrintRegister(MemoryMappedRegisters.LCDC); } }
-    public string regSTAT { get { return PrintRegister(MemoryMappedRegisters.STAT); } }
-    public string regSCY { get { return PrintRegister(MemoryMappedRegisters.SCY); } }
-    public string regSCX { get { return PrintRegister(MemoryMappedRegisters.SCX); } }
-    public string regLY { get { return PrintRegister(MemoryMappedRegisters.LY); } }
-    public string regLYC { get { return PrintRegister(MemoryMappedRegisters.LYC); } }
-    public string regBGP { get { return PrintRegister(MemoryMappedRegisters.BGP); } }
-    public string regOBP0 { get { return PrintRegister(MemoryMappedRegisters.OBP0); } }
-    public string regOBP1 { get { return PrintRegister(MemoryMappedRegisters.OBP1); } }
-    public string regWY { get { return PrintRegister(MemoryMappedRegisters.WY); } }
-    public string regWX { get { return PrintRegister(MemoryMappedRegisters.WX); } }
-
-    #endregion
+    public ObservableCollection<MemoryMappedRegisterViewModel> MemoryMappedRegisterList
+    {
+      get { return _memoryMappedRegisters; }
+    }
+   
 
     public ICommand ReadCommand
     {
@@ -69,25 +52,32 @@ namespace GBSharp.ViewModel
       get { return new DelegateCommand(CopyToDomain); }
     }
 
-    public ObservableCollection<InterruptViewModel> InterruptList
-    {
-      get { return _interrupts; }
-    }
-
 
     public InterruptManagerViewModel(IGameBoy gameBoy, IDispatcher dispatcher)
     {
       _dispatcher = dispatcher;
       _gameBoy = gameBoy;
       _display = gameBoy.Display;
-      //_display.RefreshScreen += OnRefreshScreen;
+      _display.RefreshScreen += OnRefreshScreen;
       //_gameBoy.StepFinished += OnRefreshScreen;
-      _regsDic = _gameBoy.GetRegisterDic();
+
       InterruptList.Add(new InterruptViewModel("Vertical Blank", Interrupts.VerticalBlanking, _gameBoy));
       InterruptList.Add(new InterruptViewModel("Timer Overflow", Interrupts.TimerOverflow, _gameBoy));
       InterruptList.Add(new InterruptViewModel("LCD Status", Interrupts.LCDCStatus, _gameBoy));
       InterruptList.Add(new InterruptViewModel("Button Pressed", Interrupts.P10to13TerminalNegativeEdge, _gameBoy));
       InterruptList.Add(new InterruptViewModel("Serial Transfer Completed", Interrupts.SerialIOTransferCompleted, _gameBoy));
+
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF40: LCDC", MemoryMappedRegisters.LCDC, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF41: STAT", MemoryMappedRegisters.STAT, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF42: SCY", MemoryMappedRegisters.SCY, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF43: SCX", MemoryMappedRegisters.SCX, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF44: LY", MemoryMappedRegisters.LY, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF45: LYC", MemoryMappedRegisters.LYC, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF47: BGP", MemoryMappedRegisters.BGP, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF48: OBP0", MemoryMappedRegisters.OBP0, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF49: OBP1", MemoryMappedRegisters.OBP1, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF4A: WY", MemoryMappedRegisters.WY, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF4B: WX", MemoryMappedRegisters.WX, _gameBoy));
     }
 
     private void OnRefreshScreen()
@@ -104,37 +94,14 @@ namespace GBSharp.ViewModel
         interrupt.CopyFromDomain();
       }
 
+      foreach (var memoryMappedRegister in _memoryMappedRegisters)
+      {
+        memoryMappedRegister.CopyFromDomain();
+      }
+
      
       #endregion
 
-      _regsDic = _gameBoy.GetRegisterDic();
-
-      // TODO(Cristian, aaecheve): See if we can simply notify the view 
-      //                           that all the values changed
-      OnPropertyChanged(() => regLCDC);
-      OnPropertyChanged(() => regSTAT);
-      OnPropertyChanged(() => regSCY);
-      OnPropertyChanged(() => regSCX);
-      OnPropertyChanged(() => regLY);
-      OnPropertyChanged(() => regLYC);
-      OnPropertyChanged(() => regBGP);
-      OnPropertyChanged(() => regOBP0);
-      OnPropertyChanged(() => regOBP1);
-      OnPropertyChanged(() => regWY);
-      OnPropertyChanged(() => regWX);
-
-
-      // TODO(Cristian, aaecheve): I tried using reflection but failed
-      //                           C# masters halp
-      // Doesn't compile (some recursive compilation)
-      //Type type = typeof(InterruptViewModel);
-      //var properties = from property in type.GetProperties()
-      //                 where property.Name.StartsWith("reg")
-      //                 select property;
-      //foreach (var property in properties)
-      //{
-      //  OnPropertyChanged(() => property);
-      //}
     }
 
     private void CopyToDomain()
@@ -144,7 +111,7 @@ namespace GBSharp.ViewModel
 
     public void Dispose()
     {
-      //_display.RefreshScreen -= OnRefreshScreen;
+      _display.RefreshScreen -= OnRefreshScreen;
       //_gameBoy.StepFinished -= OnRefreshScreen;
     }
   }
