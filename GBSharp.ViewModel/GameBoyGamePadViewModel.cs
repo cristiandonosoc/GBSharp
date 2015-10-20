@@ -13,6 +13,10 @@ namespace GBSharp.ViewModel
 
     private BitmapImage _screen;
 
+    private int _frameCount;
+    private double _fps;
+    private DateTime _previousTime = DateTime.Now;
+
     public BitmapImage Screen
     {
       get { return _screen; }
@@ -21,6 +25,11 @@ namespace GBSharp.ViewModel
         _screen = value;
         OnPropertyChanged(() => Screen);
       }
+    }
+
+    public string FPS
+    {
+      get { return _fps.ToString("0.00"); }
     }
 
     public ICommand ButtonACommand
@@ -81,7 +90,7 @@ namespace GBSharp.ViewModel
       _displayVm.UpdateDisplay += OnUpdateDisplay;
       _display.RefreshScreen += OnRefreshScreen;
     }
-    
+
     private void ButtonA()
     {
       _gameBoy.PressButton(Keypad.A);
@@ -128,9 +137,24 @@ namespace GBSharp.ViewModel
       Screen = Utils.BitmapToImageSource(_display.Screen);
     }
 
+    private void UpdateFPS()
+    {
+      _frameCount++;
+      if (_frameCount % 10 == 0)
+      {
+        var currentTime = DateTime.Now;
+        var deltaTime = currentTime - _previousTime;
+        _previousTime = currentTime;
+        _fps = (float)(_frameCount) / (deltaTime.TotalSeconds);
+        _frameCount = 0;
+        OnPropertyChanged(() => FPS);
+      }
+    }
+
     private void OnRefreshScreen()
     {
       _dispatcher.Invoke(CopyFromDomain);
+      _dispatcher.Invoke(UpdateFPS);
     }
 
     private void OnUpdateDisplay()
