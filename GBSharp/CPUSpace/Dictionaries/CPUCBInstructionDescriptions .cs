@@ -51,6 +51,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         {0x24, "SLA H: Shift H left preserving sign" },
         {0x25, "SLA L: Shift L left preserving sign" },
         {0x26, "SLA (HL): Shift value pointed by HL left preserving sign" },
+        {0x27, "SLA A: Shift A left preserving sign" },
         {0x28, "SRA B: Shift B right preserving sign" },
         {0x29, "SRA C: Shift C right preserving sign" },
         {0x2A, "SRA D: Shift D right preserving sign" },
