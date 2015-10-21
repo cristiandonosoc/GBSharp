@@ -15,6 +15,7 @@
       <Image Canvas.Top="0" Canvas.Left="0" Source="Images/Nintendo_Gameboy720.jpg"  Height="568" Width="345">
         
       </Image>
+      <CheckBox Canvas.Top="-40" Canvas.Left="-30" Content="Release Buttons" IsChecked="{Binding ReleaseButtons}" />
       <TextBlock Canvas.Top="-30" Canvas.Left="-30" Foreground="White" Text="{Binding FPS}"></TextBlock>
       <Button x:Name="A" Command="{Binding ButtonACommand}" Canvas.Top="345" Canvas.Left="274" HorizontalAlignment="Left" VerticalAlignment="Top" Width="40" Height="40">
         <Button.Template>

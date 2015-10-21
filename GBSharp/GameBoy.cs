@@ -32,6 +32,7 @@ namespace GBSharp
     private const double targetSecondsPerTick = 0.0000002384185791015625; // It is know that this is 2^-22.
     private const int minimumSleep = 5; // Used to avoid sleeping intervals that are too short.
 
+    public bool ReleaseButtons { get; set; }
 
     /// <summary>
     /// Class constructor.
@@ -57,6 +58,7 @@ namespace GBSharp
       this.cpu.InterruptHappened += InterruptHandler;
 
       this.inBreakpoint = false;
+      this.ReleaseButtons = true;
     }
 
     private void InterruptHandler(Interrupts interrupt)
@@ -233,8 +235,11 @@ namespace GBSharp
     /// <param name="button">The button that was released. It can be a combination of buttons too.</param>
     public void ReleaseButton(Keypad button)
     {
-      this.buttons &= ~button;
-      this.interruptController.UpdateKeypadState(this.buttons);
+      if(ReleaseButtons)
+      {
+        this.buttons &= ~button;
+        this.interruptController.UpdateKeypadState(this.buttons);
+      }
     }
 
     /// <summary>

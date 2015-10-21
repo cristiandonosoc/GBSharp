@@ -18,6 +18,7 @@ namespace GBSharp
     void Step(bool ignoreBreakpoints);
     void PressButton(Keypad button);
     void ReleaseButton(Keypad button);
+    bool ReleaseButtons { get; set; }
 
     Dictionary<MemorySpace.MemoryMappedRegisters, ushort> GetRegisterDic();
 

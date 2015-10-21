@@ -16,6 +16,7 @@ namespace GBSharp.ViewModel
     private int _frameCount;
     private double _fps;
     private DateTime _previousTime = DateTime.Now;
+    private bool _releaseButtons;
 
     public BitmapImage Screen
     {
@@ -24,6 +25,17 @@ namespace GBSharp.ViewModel
       {
         _screen = value;
         OnPropertyChanged(() => Screen);
+      }
+    }
+
+    public bool ReleaseButtons
+    {
+      get { return _releaseButtons; }
+      set
+      {
+        _releaseButtons = value;
+        _gameBoy.ReleaseButtons = value;
+        OnPropertyChanged(() => ReleaseButtons);
       }
     }
 
@@ -135,6 +147,7 @@ namespace GBSharp.ViewModel
     private void CopyFromDomain()
     {
       Screen = Utils.BitmapToImageSource(_display.Screen);
+      ReleaseButtons = _gameBoy.ReleaseButtons;
     }
 
     private void UpdateFPS()
