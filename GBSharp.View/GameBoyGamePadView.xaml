@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
   <Grid Style="{DynamicResource MedGrid}">
@@ -17,7 +18,15 @@
       </Image>
       <CheckBox Canvas.Top="-40" Canvas.Left="-30" Content="Release Buttons" IsChecked="{Binding ReleaseButtons}" />
       <TextBlock Canvas.Top="-30" Canvas.Left="-30" Foreground="White" Text="{Binding FPS}"></TextBlock>
-      <Button x:Name="A" Command="{Binding ButtonACommand}" Canvas.Top="345" Canvas.Left="274" HorizontalAlignment="Left" VerticalAlignment="Top" Width="40" Height="40">
+      <Button x:Name="A" Canvas.Top="345" Canvas.Left="274" HorizontalAlignment="Left" VerticalAlignment="Top" Width="40" Height="40">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+            <i:InvokeCommandAction Command="{Binding ButtonADownCommand}" />
+          </i:EventTrigger>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+            <i:InvokeCommandAction Command="{Binding ButtonAUpCommand}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
         <Button.Template>
           <ControlTemplate TargetType="Button">
             <Grid>
@@ -51,7 +60,15 @@
           </ControlTemplate>
         </Button.Template>
       </Button>
-      <Button x:Name="B" Command="{Binding ButtonBCommand}" Canvas.Top="370" Canvas.Left="219" HorizontalAlignment="Left" VerticalAlignment="Top" Width="42" Height="42">
+      <Button x:Name="B" Canvas.Top="370" Canvas.Left="219" HorizontalAlignment="Left" VerticalAlignment="Top" Width="42" Height="42">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+            <i:InvokeCommandAction Command="{Binding ButtonBDownCommand}" />
+          </i:EventTrigger>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+            <i:InvokeCommandAction Command="{Binding ButtonBUpCommand}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
         <Button.Template>
           <ControlTemplate TargetType="{x:Type Button}">
             <Grid>
@@ -84,7 +101,15 @@
           </ControlTemplate>
         </Button.Template>
       </Button>
-      <Button x:Name="L" Command="{Binding ButtonLeftCommand}" Canvas.Top="371" Canvas.Left="32" HorizontalAlignment="Left" VerticalAlignment="Top" Width="25" Height="25">
+      <Button x:Name="L" Canvas.Top="371" Canvas.Left="32" HorizontalAlignment="Left" VerticalAlignment="Top" Width="25" Height="25">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+            <i:InvokeCommandAction Command="{Binding ButtonLeftDownCommand}" />
+          </i:EventTrigger>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+            <i:InvokeCommandAction Command="{Binding ButtonLeftUpCommand}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
         <Button.Template>
           <ControlTemplate TargetType="{x:Type Button}">
             <Grid>
@@ -117,7 +142,15 @@
           </ControlTemplate>
         </Button.Template>
       </Button>
-      <Button x:Name="R" Command="{Binding ButtonRightCommand}" Canvas.Top="370" Canvas.Left="87" HorizontalAlignment="Left" VerticalAlignment="Top" Width="25" Height="25">
+      <Button x:Name="R" Canvas.Top="370" Canvas.Left="87" HorizontalAlignment="Left" VerticalAlignment="Top" Width="25" Height="25">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+            <i:InvokeCommandAction Command="{Binding ButtonRightDownCommand}" />
+          </i:EventTrigger>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+            <i:InvokeCommandAction Command="{Binding ButtonRightUpCommand}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
         <Button.Template>
           <ControlTemplate TargetType="{x:Type Button}">
             <Grid>
@@ -150,7 +183,15 @@
           </ControlTemplate>
         </Button.Template>
       </Button>
-      <Button x:Name="U" Command="{Binding ButtonUpCommand}" Canvas.Top="345" Canvas.Left="59" HorizontalAlignment="Left" VerticalAlignment="Top" Width="25" Height="25">
+      <Button x:Name="U" Canvas.Top="345" Canvas.Left="59" HorizontalAlignment="Left" VerticalAlignment="Top" Width="25" Height="25">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+            <i:InvokeCommandAction Command="{Binding ButtonUpDownCommand}" />
+          </i:EventTrigger>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+            <i:InvokeCommandAction Command="{Binding ButtonUpUpCommand}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
         <Button.Template>
           <ControlTemplate TargetType="{x:Type Button}">
             <Grid>
@@ -184,6 +225,14 @@
         </Button.Template>
       </Button>
       <Button x:Name="D" Command="{Binding ButtonDownCommand}" Canvas.Top="395" Canvas.Left="59" HorizontalAlignment="Left" VerticalAlignment="Top" Width="25" Height="25">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+            <i:InvokeCommandAction Command="{Binding ButtonDownDownCommand}" />
+          </i:EventTrigger>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+            <i:InvokeCommandAction Command="{Binding ButtonDownUpCommand}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
         <Button.Template>
           <ControlTemplate TargetType="{x:Type Button}">
             <Grid>
@@ -217,6 +266,14 @@
         </Button.Template>
       </Button>
       <Button x:Name="Start" Command="{Binding ButtonStartCommand}" Canvas.Top="456" Canvas.Left="159" HorizontalAlignment="Left" VerticalAlignment="Top" Width="48" Height="16" RenderTransformOrigin="0.559,-0.172">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+            <i:InvokeCommandAction Command="{Binding ButtonStartDownCommand}" />
+          </i:EventTrigger>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+            <i:InvokeCommandAction Command="{Binding ButtonStartUpCommand}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
         <Button.RenderTransform>
           <TransformGroup>
             <ScaleTransform/>
@@ -258,6 +315,14 @@
         </Button.Template>
       </Button>
       <Button x:Name="Select" Command="{Binding ButtonSelectCommand}" Canvas.Top="459" Canvas.Left="99" HorizontalAlignment="Left" VerticalAlignment="Top" Width="53" Height="17" RenderTransformOrigin="0.314,0.569">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+            <i:InvokeCommandAction Command="{Binding ButtonSelectDownCommand}" />
+          </i:EventTrigger>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+            <i:InvokeCommandAction Command="{Binding ButtonSelectUpCommand}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
         <Button.RenderTransform>
           <TransformGroup>
             <ScaleTransform/>

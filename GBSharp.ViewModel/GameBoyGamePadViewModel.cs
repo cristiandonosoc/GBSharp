@@ -44,54 +44,45 @@ namespace GBSharp.ViewModel
       get { return _fps.ToString("0.00"); }
     }
 
-    public ICommand ButtonACommand
-    {
-      get { return new DelegateCommand(ButtonA); }
-    }
+    public ICommand ButtonUpDownCommand { get { return new DelegateCommand(ButtonUpDown); } }
+    public ICommand ButtonUpUpCommand { get { return new DelegateCommand(ButtonUpUp); } }
+    private void ButtonUpDown() { _gameBoy.PressButton(Keypad.Up); }
+    private void ButtonUpUp() { _gameBoy.ReleaseButton(Keypad.Up); }
 
-    public ICommand ButtonBCommand
-    {
-      get { return new DelegateCommand(ButtonB); }
-    }
+    public ICommand ButtonDownDownCommand { get { return new DelegateCommand(ButtonDownDown); } }
+    public ICommand ButtonDownUpCommand { get { return new DelegateCommand(ButtonDownUp); } }
+    private void ButtonDownDown() { _gameBoy.PressButton(Keypad.Down); }
+    private void ButtonDownUp() { _gameBoy.ReleaseButton(Keypad.Down); }
 
+    public ICommand ButtonLeftDownCommand { get { return new DelegateCommand(ButtonLeftDown); } }
+    public ICommand ButtonLeftUpCommand { get { return new DelegateCommand(ButtonLeftUp); } }
+    private void ButtonLeftDown() { _gameBoy.PressButton(Keypad.Left); }
+    private void ButtonLeftUp() { _gameBoy.ReleaseButton(Keypad.Left); }
 
+    public ICommand ButtonRightDownCommand { get { return new DelegateCommand(ButtonRightDown); } }
+    public ICommand ButtonRightUpCommand { get { return new DelegateCommand(ButtonRightUp); } }
+    private void ButtonRightDown() { _gameBoy.PressButton(Keypad.Right); }
+    private void ButtonRightUp() { _gameBoy.ReleaseButton(Keypad.Right); }
 
-    public ICommand ButtonLeftCommand
-    {
-      get { return new DelegateCommand(ButtonLeft); }
-    }
+    public ICommand ButtonADownCommand { get { return new DelegateCommand(ButtonADown); } }
+    public ICommand ButtonAUpCommand { get { return new DelegateCommand(ButtonAUp); } }
+    private void ButtonADown() { _gameBoy.PressButton(Keypad.A); }
+    private void ButtonAUp() { _gameBoy.ReleaseButton(Keypad.A); }
 
+    public ICommand ButtonBDownCommand { get { return new DelegateCommand(ButtonBDown); } }
+    public ICommand ButtonBUpCommand { get { return new DelegateCommand(ButtonBUp); } }
+    private void ButtonBDown() { _gameBoy.PressButton(Keypad.B); }
+    private void ButtonBUp() { _gameBoy.ReleaseButton(Keypad.B); }
 
-    public ICommand ButtonUpCommand
-    {
-      get { return new DelegateCommand(ButtonUp); }
-    }
+    public ICommand ButtonSelectDownCommand { get { return new DelegateCommand(ButtonSelectDown); } }
+    public ICommand ButtonSelectUpCommand { get { return new DelegateCommand(ButtonSelectUp); } }
+    private void ButtonSelectDown() { _gameBoy.PressButton(Keypad.Select); }
+    private void ButtonSelectUp() { _gameBoy.ReleaseButton(Keypad.Select); }
 
-
-
-    public ICommand ButtonRightCommand
-    {
-      get { return new DelegateCommand(ButtonRight); }
-    }
-
-
-
-    public ICommand ButtonDownCommand
-    {
-      get { return new DelegateCommand(ButtonDown); }
-    }
-
-
-    public ICommand ButtonStartCommand
-    {
-      get { return new DelegateCommand(ButtonStart); }
-    }
-
-
-    public ICommand ButtonSelectCommand
-    {
-      get { return new DelegateCommand(ButtonSelect); }
-    }
+    public ICommand ButtonStartDownCommand { get { return new DelegateCommand(ButtonStartDown); } }
+    public ICommand ButtonStartUpCommand { get { return new DelegateCommand(ButtonStartUp); } }
+    private void ButtonStartDown() { _gameBoy.PressButton(Keypad.Start); }
+    private void ButtonStartUp() { _gameBoy.ReleaseButton(Keypad.Start); }
 
     public GameBoyGamePadViewModel(IGameBoy gameBoy, IDispatcher dispatcher, DisplayViewModel displayVM)
     {
@@ -101,47 +92,6 @@ namespace GBSharp.ViewModel
       _display = _gameBoy.Display;
       _displayVm.UpdateDisplay += OnUpdateDisplay;
       _display.RefreshScreen += OnRefreshScreen;
-    }
-
-    private void ButtonA()
-    {
-      _gameBoy.PressButton(Keypad.A);
-    }
-
-    private void ButtonB()
-    {
-      _gameBoy.PressButton(Keypad.B);
-    }
-
-    private void ButtonLeft()
-    {
-      _gameBoy.PressButton(Keypad.Left);
-    }
-
-    private void ButtonUp()
-    {
-      _gameBoy.PressButton(Keypad.Up);
-    }
-
-    private void ButtonRight()
-    {
-      _gameBoy.PressButton(Keypad.Right);
-    }
-
-    private void ButtonDown()
-    {
-      _gameBoy.PressButton(Keypad.Down);
-    }
-
-    private void ButtonStart()
-    {
-      _gameBoy.PressButton(Keypad.Start);
-    }
-
-
-    private void ButtonSelect()
-    {
-      _gameBoy.PressButton(Keypad.Select);
     }
 
     private void CopyFromDomain()
