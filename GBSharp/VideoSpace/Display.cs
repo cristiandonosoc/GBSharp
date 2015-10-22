@@ -279,6 +279,7 @@ namespace GBSharp.VideoSpace
       bool LCDCBit2 = Utils.UtilFuncs.TestBit(LCDC, 2) != 0;
       bool LCDCBit3 = Utils.UtilFuncs.TestBit(LCDC, 3) != 0;
       bool LCDCBit4 = Utils.UtilFuncs.TestBit(LCDC, 4) != 0;
+      bool LCDCBit6 = Utils.UtilFuncs.TestBit(LCDC, 6) != 0;
 
       DisplayFunctions.SetupTilePallete(disDef, memory);
       DisplayFunctions.SetupSpritePalletes(disDef, memory);
@@ -367,7 +368,7 @@ namespace GBSharp.VideoSpace
           // The offset indexes represent that the window is drawn from it's beggining
           // at (WX, WY)
           uint[] rowPixels = DisplayFunctions.GetRowPixels(disDef, memory, row - WY, 
-                                                           LCDCBit3, LCDCBit4);
+                                                           LCDCBit6, LCDCBit4);
           
           // Independent target
           DisplayFunctions.DrawLine(disDef, windowBmpData, rowPixels, 

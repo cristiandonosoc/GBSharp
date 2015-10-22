@@ -191,7 +191,7 @@ namespace GBSharp.VideoSpace
     }
 
     /// <summary>
-    /// Gets the pixel row from the sprites
+    /// Gets the OAMs for the a certain row
     /// </summary>
     /// <param name="spriteOAMs"></param>
     /// <param name="row"></param>
