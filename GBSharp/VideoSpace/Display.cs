@@ -404,7 +404,9 @@ namespace GBSharp.VideoSpace
       {
         // Independent target
         uint[] pixels = new uint[disDef.screenPixelCountX];
-        DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels, row, LCDCBit2);
+        DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels, 
+                                            row, LCDCBit2,
+                                            true);
         DisplayFunctions.DrawLine(disDef, spriteLayerBmp, pixels, 
                                   0, row, 
                                   0, disDef.screenPixelCountX);

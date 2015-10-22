@@ -235,7 +235,8 @@ namespace GBSharp.VideoSpace
     
     internal static void
     GetSpriteRowPixels(DisplayDefinition disDef, Memory memory, OAM[] spriteOAMs,
-                       uint[] targetPixels, int row, bool LCDCBit2)
+                       uint[] targetPixels, int row, bool LCDCBit2,
+                       bool ignoreBackgroundPriority = false)
     {
       // TODO(Cristian): Separate this step from the call and pass it as an argument
       OAM[] scanLineOAMs = GetScanLineOAMs(disDef, spriteOAMs, row, LCDCBit2);
@@ -260,7 +261,11 @@ namespace GBSharp.VideoSpace
         uint[] spritePixels = GetPixelsFromTileBytes(spritePallete,
                                                      disDef.pixelPerTileX,
                                                      tilePixels[2 * y], tilePixels[2 * y + 1]);
-        bool backgroundPriority = Utils.UtilFuncs.TestBit(oam.flags, 7) != 0;
+        bool backgroundPriority = (Utils.UtilFuncs.TestBit(oam.flags, 7) != 0);
+        if(ignoreBackgroundPriority)
+        {
+          backgroundPriority = false;
+        }
         for (int i = 0; i < 8; ++i)
         {
           int pX = x + i;
