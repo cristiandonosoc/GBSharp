@@ -132,6 +132,10 @@ namespace GBSharp.VideoSpace
 
     private Bitmap sprite;
 
+    private uint[] uintSpriteLayer;
+    public uint[] UintSpriteLayer { get { return uintSpriteLayer; } }
+
+
     private Bitmap spriteLayer;
     public Bitmap SpriteLayer { get { return spriteLayer; } }
 
@@ -204,6 +208,22 @@ namespace GBSharp.VideoSpace
       this.sprite = new Bitmap(8, 16, disDef.pixelFormat);
       this.spriteLayer = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
                                     disDef.pixelFormat);
+
+
+      // TEST CODE
+      this.uintSpriteLayer = new uint[160 * 144];
+      int index = 0;
+      for (uint i = 0; i < uintSpriteLayer.Length; ++i)
+      {
+        byte color = (byte)(i % 256);
+        uintSpriteLayer[i] = (uint)(color |
+                             color << 8 |
+                             color << 16 |
+                             color << 24);
+
+
+      }
+
 
       this.screen = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
                                disDef.pixelFormat);
@@ -391,38 +411,38 @@ namespace GBSharp.VideoSpace
 
       #region SPRITES
 
-      // *** SPRITES ***
-      BitmapData spriteLayerBmp = DisplayFunctions.LockBitmap(spriteLayer,
-                                                              ImageLockMode.ReadWrite,
-                                                              disDef.pixelFormat);
-      DisplayFunctions.DrawTransparency(disDef, spriteLayerBmp, 
-                                        0, 0, 
-                                        spriteLayerBmp.Width, spriteLayerBmp.Height);
+      //// *** SPRITES ***
+      //BitmapData spriteLayerBmp = DisplayFunctions.LockBitmap(spriteLayer,
+      //                                                        ImageLockMode.ReadWrite,
+      //                                                        disDef.pixelFormat);
+      //DisplayFunctions.DrawTransparency(disDef, spriteLayerBmp, 
+      //                                  0, 0, 
+      //                                  spriteLayerBmp.Width, spriteLayerBmp.Height);
 
-      bool drawSprites = Utils.UtilFuncs.TestBit(LCDC, 1) != 0;
-      for (int row = rowBegin; row < rowEnd; row++)
-      {
-        // Independent target
-        uint[] pixels = new uint[disDef.screenPixelCountX];
-        DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels, 
-                                            row, LCDCBit2,
-                                            true);
-        DisplayFunctions.DrawLine(disDef, spriteLayerBmp, pixels, 
-                                  0, row, 
-                                  0, disDef.screenPixelCountX);
+      //bool drawSprites = Utils.UtilFuncs.TestBit(LCDC, 1) != 0;
+      //for (int row = rowBegin; row < rowEnd; row++)
+      //{
+      //  // Independent target
+      //  uint[] pixels = new uint[disDef.screenPixelCountX];
+      //  DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels, 
+      //                                      row, LCDCBit2,
+      //                                      true);
+      //  DisplayFunctions.DrawLine(disDef, spriteLayerBmp, pixels, 
+      //                            0, row, 
+      //                            0, disDef.screenPixelCountX);
 
-        // Screen Target
-        if(drawSprites)
-        {
-          uint[] linePixels = DisplayFunctions.GetPixelRowFromBitmap(disDef, screenBmpData, row);
-          DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, linePixels, row, LCDCBit2);
-          DisplayFunctions.DrawLine(disDef, screenBmpData, linePixels, 
-                                    0, row, 
-                                    0, disDef.screenPixelCountX);
-        }
-      }
+      //  // Screen Target
+      //  if(drawSprites)
+      //  {
+      //    uint[] linePixels = DisplayFunctions.GetPixelRowFromBitmap(disDef, screenBmpData, row);
+      //    DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, linePixels, row, LCDCBit2);
+      //    DisplayFunctions.DrawLine(disDef, screenBmpData, linePixels, 
+      //                              0, row, 
+      //                              0, disDef.screenPixelCountX);
+      //  }
+      //}
 
-      spriteLayer.UnlockBits(spriteLayerBmp);
+      //spriteLayer.UnlockBits(spriteLayerBmp);
 
       #endregion
 

@@ -21,6 +21,8 @@ namespace GBSharp
     Bitmap Screen { get; }
     Bitmap GetSprite(int index);
 
+    uint[] UintSpriteLayer { get; }
+
     void DrawDisplay(int rowStart = 0, int rowEnd = 144);
   }
 }

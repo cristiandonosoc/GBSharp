@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using GBSharp.MemorySpace;
 using GBSharp.VideoSpace;
+using System.Windows.Media;
 
 namespace GBSharp.ViewModel
 {
@@ -22,14 +23,11 @@ namespace GBSharp.ViewModel
     private bool _codeAreaSelectionFlag;
     private bool _characterDataSelectionFlag;
 
-    private byte _scrollX;
-    private byte _scrollY;
-
     private BitmapImage _background;
     private BitmapImage _window;
     private SpriteViewModel _selectedSprite;
     private readonly ObservableCollection<SpriteViewModel> _sprites = new ObservableCollection<SpriteViewModel>();
-    private BitmapImage _spriteLayer;
+    private WriteableBitmap _spriteLayer;
     private BitmapImage _displayTiming;
     
     public BitmapImage Background
@@ -65,7 +63,7 @@ namespace GBSharp.ViewModel
       }
     }
     
-    public BitmapImage SpriteLayer
+    public WriteableBitmap SpriteLayer
     {
       get { return _spriteLayer; }
       set
@@ -164,17 +162,42 @@ namespace GBSharp.ViewModel
     public DisplayViewModel(IDisplay display, IMemory memory, IDispatcher dispatcher)
     {
       _display = display;
-      _display.RefreshScreen += OnRefreshScreen;
+      //_display.RefreshScreen += OnRefreshScreen;
       _memory = memory;
       _dispatcher = dispatcher;
+
+      _spriteLayer = new WriteableBitmap(160, 144, 96, 96, PixelFormats.Bgr32, null);
+    }
+
+    private void OnRefreshScreen()
+    {
+      _dispatcher.Invoke(CopyFromDomain);
     }
 
     public void CopyFromDomain()
     {
       Background = Utils.BitmapToImageSource(_display.Background);
       Window = Utils.BitmapToImageSource(_display.Window);
-      SpriteLayer = Utils.BitmapToImageSource(_display.SpriteLayer);
+      //SpriteLayer = Utils.BitmapToImageSource(_display.SpriteLayer);
       DisplayTiming = Utils.BitmapToImageSource(_display.DisplayTiming);
+
+
+      _spriteLayer.Lock();
+      unsafe
+      {
+        uint* bP = (uint*)_spriteLayer.BackBuffer;
+        uint[] pixels = _display.UintSpriteLayer;
+
+        foreach(uint pixel in pixels)
+        {
+          *bP++ = pixel;
+        }
+
+        _spriteLayer.AddDirtyRect(new System.Windows.Int32Rect(0, 0, 160, 144));
+      }
+
+      _spriteLayer.Unlock();
+      OnPropertyChanged(() => SpriteLayer);
 
       Sprites.Clear();
       for (int i = 0; i < 40; i++)
@@ -228,11 +251,6 @@ namespace GBSharp.ViewModel
       ushort access = (ushort)MemoryMappedRegisters.SCY;
       byte[] mem = _memory.Data;
       mem[access] = --mem[access];
-    }
-
-    private void OnRefreshScreen()
-    {
-      _dispatcher.Invoke(CopyFromDomain);
     }
 
     public void Dispose()
