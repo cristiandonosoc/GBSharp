@@ -1123,89 +1123,120 @@ namespace GBSharp.CPUSpace
             {0x80, (n) =>
             {
               byte initial = registers.A;
-              registers.A += registers.B;
+              byte toSum = registers.B;
+              int sum = initial + toSum;
+              registers.A += toSum;
               // Update flags
-              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FC = (byte)((sum > 255) ? 1 : 0);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.FH = (byte)(((registers.A ^ registers.B ^ initial) & 0x10) == 0 ? 0 : 1);
+              // TODO(ALL): Verify that this is is correct
+              registers.FH = (byte)(((registers.A ^ toSum ^ initial) & 0x10) == 0 ? 0 : 1);
+              registers.FN = 0;
             }},
 
             // ADD A,C: Add C to A
             {0x81, (n) =>
             {
               byte initial = registers.A;
-              registers.A += registers.C;
+              byte toSum = registers.C;
+              int sum = initial + toSum;
+              registers.A += toSum;
               // Update flags
-              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FC = (byte)((sum > 255) ? 1 : 0);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.FH = (byte)(((registers.A ^ registers.C ^ initial) & 0x10) == 0 ? 0 : 1);
+              // TODO(ALL): Verify that this is is correct
+              registers.FH = (byte)(((registers.A ^ toSum ^ initial) & 0x10) == 0 ? 0 : 1);
+              registers.FN = 0;
             }},
 
             // ADD A,D: Add D to A
             {0x82, (n) =>
             {
               byte initial = registers.A;
-              registers.A += registers.D;
+              byte toSum = registers.D;
+              int sum = initial + toSum;
+              registers.A += toSum;
               // Update flags
-              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FC = (byte)((sum > 255) ? 1 : 0);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.FH = (byte)(((registers.A ^ registers.D ^ initial) & 0x10) == 0 ? 0 : 1);
+              // TODO(ALL): Verify that this is is correct
+              registers.FH = (byte)(((registers.A ^ toSum ^ initial) & 0x10) == 0 ? 0 : 1);
+              registers.FN = 0;
             }},
 
             // ADD A,E: Add E to A
             {0x83, (n) =>
             {
               byte initial = registers.A;
-              registers.A += registers.E;
+              byte toSum = registers.E;
+              int sum = initial + toSum;
+              registers.A += toSum;
               // Update flags
-              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FC = (byte)((sum > 255) ? 1 : 0);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.FH = (byte)(((registers.A ^ registers.E ^ initial) & 0x10) == 0 ? 0 : 1);
+              // TODO(ALL): Verify that this is is correct
+              registers.FH = (byte)(((registers.A ^ toSum ^ initial) & 0x10) == 0 ? 0 : 1);
+              registers.FN = 0;
             }},
 
             // ADD A,H: Add H to A
             {0x84, (n) =>
             {
               byte initial = registers.A;
-              registers.A += registers.H;
+              byte toSum = registers.H;
+              int sum = initial + toSum;
+              registers.A += toSum;
               // Update flags
-              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FC = (byte)((sum > 255) ? 1 : 0);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.FH = (byte)(((registers.A ^ registers.H ^ initial) & 0x10) == 0 ? 0 : 1);
+              // TODO(ALL): Verify that this is is correct
+              registers.FH = (byte)(((registers.A ^ toSum ^ initial) & 0x10) == 0 ? 0 : 1);
+              registers.FN = 0;
             }},
 
             // ADD A,L: Add L to A
             {0x85, (n) =>
             {
               byte initial = registers.A;
-              registers.A += registers.L;
+              byte toSum = registers.L;
+              int sum = initial + toSum;
+              registers.A += toSum;
               // Update flags
-              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FC = (byte)((sum > 255) ? 1 : 0);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.FH = (byte)(((registers.A ^ registers.L ^ initial) & 0x10) == 0 ? 0 : 1);
+              // TODO(ALL): Verify that this is is correct
+              registers.FH = (byte)(((registers.A ^ toSum ^ initial) & 0x10) == 0 ? 0 : 1);
+              registers.FN = 0;
             }},
 
             // ADD A,(HL): Add value pointed by HL to A
             {0x86, (n) =>
             {
               byte initial = registers.A;
-              byte mem = memory.Read(registers.HL);
-              registers.A += mem;
+              byte toSum = memory.Read(registers.HL);
+              int sum = initial + toSum;
+              registers.A += toSum;
               // Update flags
-              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FC = (byte)((sum > 255) ? 1 : 0);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.FH = (byte)(((registers.A ^ mem ^ initial) & 0x10) == 0 ? 0 : 1);
+              // TODO(ALL): Verify that this is is correct
+              registers.FH = (byte)(((registers.A ^ toSum ^ initial) & 0x10) == 0 ? 0 : 1);
+              registers.FN = 0;
             }},
 
             // ADD A,A: Add A to A
             {0x87, (n) =>
             {
               byte initial = registers.A;
-              registers.A += registers.A;
+              byte toSum = registers.A;
+              int sum = initial + toSum;
+              registers.A += toSum;
               // Update flags
-              registers.FC = (byte)((registers.A > 255) ? 1 : 0);
+              registers.FC = (byte)((sum > 255) ? 1 : 0);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.FH = (byte)(((registers.A ^ registers.A ^ initial) & 0x10) == 0 ? 0 : 1);
+              // TODO(ALL): Verify that this is is correct
+              registers.FH = (byte)(((registers.A ^ toSum ^ initial) & 0x10) == 0 ? 0 : 1);
+              registers.FN = 0;
             }},
 
             // ADC A,B: Add B and carry flag to A
@@ -1894,7 +1925,18 @@ namespace GBSharp.CPUSpace
             }},
 
             // ADD A,n: Add 8-bit immediate to A
-            {0xC6, (n)=>{registers.A += (byte)n;}},
+            {0xC6, (n)=>{
+              byte initial = registers.A;
+              byte toSum = (byte)n;
+              int sum = initial + toSum;
+              registers.A += toSum;
+              // Update flags
+              registers.FC = (byte)((sum > 255) ? 1 : 0);
+              registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
+              // TODO(ALL): Verify that this is is correct
+              registers.FH = (byte)(((registers.A ^ toSum ^ initial) & 0x10) == 0 ? 0 : 1);
+              registers.FN = 0;
+            }},
 
             // RST 0: Call routine at address 0000h
             {0xC7, (n)=>{instructionLambdas[0xCD](0);}},
