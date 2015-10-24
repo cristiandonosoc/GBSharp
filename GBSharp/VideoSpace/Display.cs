@@ -44,27 +44,29 @@ namespace GBSharp.VideoSpace
 
   }
 
-  internal class DisplayDefinition
+  public class DisplayDefinition
   {
-    internal int framePixelCountX;
-    internal int framePixelCountY;
-    internal int screenPixelCountX;
-    internal int screenPixelCountY;
-    internal int frameTileCountX;
-    internal int frameTileCountY;
-    internal int screenTileCountX;
-    internal int screenTileCountY;
-    internal int bytesPerTileShort;
-    internal int bytesPerTileLong;
-    internal int pixelPerTileX;
-    internal int pixelPerTileY;
-    internal int bytesPerPixel;
-    internal PixelFormat pixelFormat;
-    internal uint[] tileColors;
-    internal uint[] spriteColors;
-    internal uint[] tilePallete;
-    internal uint[] spritePallete0;
-    internal uint[] spritePallete1;
+    public int framePixelCountX;
+    public int framePixelCountY;
+    public int screenPixelCountX;
+    public int screenPixelCountY;
+    public int timingPixelCountX;
+    public int timingPixelCountY;
+    public int frameTileCountX;
+    public int frameTileCountY;
+    public int screenTileCountX;
+    public int screenTileCountY;
+    public int bytesPerTileShort;
+    public int bytesPerTileLong;
+    public int pixelPerTileX;
+    public int pixelPerTileY;
+    public int bytesPerPixel;
+    public PixelFormat pixelFormat;
+    public uint[] tileColors;
+    public uint[] spriteColors;
+    public uint[] tilePallete;
+    public uint[] spritePallete0;
+    public uint[] spritePallete1;
   }
 
   class Display : IDisplay
@@ -82,6 +84,11 @@ namespace GBSharp.VideoSpace
     public OAM GetOAM(int index)
     {
       return spriteOAMs[index];
+    }
+
+    public DisplayDefinition GetDisplayDefinition()
+    {
+      return disDef;
     }
 
     internal void SetOAM(int index, byte x, byte y, byte spriteCode, byte flags)
@@ -116,39 +123,39 @@ namespace GBSharp.VideoSpace
     /// With this it should be THEORETICALLY have displays
     /// of different sizes without too much hazzle.
     /// </summary>
-    private Bitmap background;
-    public Bitmap Background { get { return background; } }
+    private uint[] background;
+    public uint[] Background { get { return background; } }
 
-    private Bitmap window;
-    public Bitmap Window { get { return window; } }
+    private uint[] window;
+    public uint[] Window { get { return window; } }
 
     /// <summary>
     /// The final composed frame from with the screen is calculated.
     /// It's the conbination of the background, window and sprites.
     /// </summary>
-    private Bitmap frame;
-    public Bitmap Frame { get { return frame; } }
+    private uint[] frame;
+    public uint[] Frame { get { return frame; } }
 
 
-    private Bitmap sprite;
+    private uint[] sprite;
 
     private uint[] uintSpriteLayer;
     public uint[] UintSpriteLayer { get { return uintSpriteLayer; } }
 
 
-    private Bitmap spriteLayer;
-    public Bitmap SpriteLayer { get { return spriteLayer; } }
+    private uint[] spriteLayer;
+    public uint[] SpriteLayer { get { return spriteLayer; } }
 
 
     /// <summary>
     /// The bitmap that represents the actual screen.
     /// It's a portial of the frame specified by the SCX and SCY registers.
     /// </summary>
-    private Bitmap screen;
-    public Bitmap Screen { get { return screen; } }
+    private uint[] screen;
+    public uint[] Screen { get { return screen; } }
 
-    private Bitmap displayTiming;
-    public Bitmap DisplayTiming { get { return displayTiming; } }
+    private uint[] displayTiming;
+    public uint[] DisplayTiming { get { return displayTiming; } }
 
     /// <summary>
     /// Display constructor.
@@ -165,6 +172,8 @@ namespace GBSharp.VideoSpace
       this.disDef.framePixelCountY = 256;
       this.disDef.screenPixelCountX = 160;
       this.disDef.screenPixelCountY = 144;
+      this.disDef.timingPixelCountX = 256;
+      this.disDef.timingPixelCountY = 154;
       this.disDef.frameTileCountX = 32;
       this.disDef.frameTileCountY = 32;
       this.disDef.screenTileCountX = 20;
@@ -201,18 +210,17 @@ namespace GBSharp.VideoSpace
 
 
       // We create the target bitmaps
-      this.background = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, 
-                                   disDef.pixelFormat);
-      this.window = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
-                               disDef.pixelFormat);
-      this.sprite = new Bitmap(8, 16, disDef.pixelFormat);
-      this.spriteLayer = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
-                                    disDef.pixelFormat);
+      this.background = new uint[disDef.framePixelCountX * disDef.framePixelCountY];
+      this.window = new uint[disDef.screenPixelCountX * disDef.screenPixelCountY];
+      this.sprite = new uint[8 * 16];
+      this.spriteLayer = new uint[disDef.screenPixelCountX * disDef.screenPixelCountY];
 
+      this.screen = new uint[disDef.screenPixelCountX * disDef.screenPixelCountY];
+      this.frame = new uint[disDef.framePixelCountX * disDef.framePixelCountY];
+      this.displayTiming = new uint[disDef.timingPixelCountX * disDef.timingPixelCountY];
 
       // TEST CODE
       this.uintSpriteLayer = new uint[160 * 144];
-      int index = 0;
       for (uint i = 0; i < uintSpriteLayer.Length; ++i)
       {
         byte color = (byte)(i % 256);
@@ -220,30 +228,15 @@ namespace GBSharp.VideoSpace
                              color << 8 |
                              color << 16 |
                              color << 24);
-
-
       }
-
-
-      this.screen = new Bitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
-                               disDef.pixelFormat);
-      this.frame = new Bitmap(disDef.framePixelCountX, disDef.framePixelCountY, 
-                              disDef.pixelFormat);
-      this.displayTiming = new Bitmap(256, 154, disDef.pixelFormat);
 
       this.spriteOAMs = new OAM[spriteCount];
-      for(int i = 0; i < spriteOAMs.Length; ++i)
+      for (int i = 0; i < spriteOAMs.Length; ++i)
       {
-        this.spriteOAMs[i] = new OAM(); 
+        this.spriteOAMs[i] = new OAM();
       }
 
-
       UpdateDisplayLineInfo(false);
-
-      // TODO(Cristian): Remove this call eventually, when testing is not needed!
-#if DEBUG
-      //UpdateScreen();
-#endif
     }
 
     internal void LoadSprites()
@@ -258,20 +251,16 @@ namespace GBSharp.VideoSpace
     }
 
 
-    public Bitmap GetSprite(int index)
+    public uint[] GetSprite(int index)
     {
-      BitmapData spriteBmd = DisplayFunctions.LockBitmap(sprite,
-                                                         ImageLockMode.WriteOnly,
-                                                         disDef.pixelFormat);
       OAM oam = GetOAM(index);
-      DrawSprite(spriteBmd, oam.spriteCode, 0, 0);
-      sprite.UnlockBits(spriteBmd);
+      DrawSprite(sprite, oam.spriteCode, 0, 0);
       return sprite;
     }
 
-    internal void DrawSprite(BitmapData spriteBmd, int spriteCode, int pX, int pY)
+    internal void DrawSprite(uint[] spriteData, int spriteCode, int pX, int pY)
     {
-      DisplayFunctions.DrawTransparency(disDef, spriteBmd, 0, 0, 8, 16);
+      DisplayFunctions.DrawTransparency(disDef, spriteData, 8, 0, 0, 8, 16);
 
       byte LCDC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
       bool LCDCBit2 = Utils.UtilFuncs.TestBit(LCDC, 2) != 0;
@@ -283,7 +272,7 @@ namespace GBSharp.VideoSpace
 
       // We draw the top part
       byte[] pixels = DisplayFunctions.GetTileData(disDef, memory, 0x8000, spriteCode, LCDCBit2);
-      DisplayFunctions.DrawTile(disDef, spriteBmd, pixels, pX, pY,
+      DisplayFunctions.DrawTile(disDef, spriteData, 8, pixels, pX, pY,
                                 disDef.screenPixelCountX, disDef.screenPixelCountY);
     }
 
@@ -304,21 +293,16 @@ namespace GBSharp.VideoSpace
       DisplayFunctions.SetupTilePallete(disDef, memory);
       DisplayFunctions.SetupSpritePalletes(disDef, memory);
 
-      BitmapData screenBmpData = DisplayFunctions.LockBitmap(screen,
-                                                             ImageLockMode.ReadWrite,
-                                                             disDef.pixelFormat);
-
       #region BACKGROUND
 
       int SCX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX);
       int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
-      BitmapData backgroundBmpData = DisplayFunctions.LockBitmap(background, 
-                                                                 ImageLockMode.ReadWrite, 
-                                                                 disDef.pixelFormat);
+
       for (int row = 0; row < disDef.framePixelCountY; row++)
       {
         uint[] rowPixels = DisplayFunctions.GetRowPixels(disDef, memory, row, LCDCBit3, LCDCBit4);
-        DisplayFunctions.DrawLine(disDef, backgroundBmpData, rowPixels, 
+        DisplayFunctions.DrawLine(disDef, background, disDef.framePixelCountX, 
+                                  rowPixels, 
                                   0, row, 
                                   0, disDef.framePixelCountX);
 
@@ -330,8 +314,6 @@ namespace GBSharp.VideoSpace
       if(drawBackground)
       {
         // We copy the information from the background tile to the effective screen
-        int backgroundUintStride = backgroundBmpData.Stride / disDef.bytesPerPixel;
-        int screenUintStride = screenBmpData.Stride / disDef.bytesPerPixel;
         for (int y = rowBegin; y < rowEnd; y++)
         {
           for (int x = 0; x < disDef.screenPixelCountX; x++)
@@ -339,12 +321,9 @@ namespace GBSharp.VideoSpace
             int pX = (x + SCX) % disDef.framePixelCountX;
             int pY = (y + SCY) % disDef.framePixelCountY;
 
-            unsafe
-            {
-              uint* bP = (uint*)backgroundBmpData.Scan0 + (pY * backgroundUintStride) + pX;
-              uint* sP = (uint*)screenBmpData.Scan0 + (y * screenUintStride) + x;
-              sP[0] = bP[0];
-            }
+            int backgroundIndex = pY * disDef.framePixelCountX + pX;
+            int screenIndex = y * disDef.screenPixelCountX + x;
+            screen[screenIndex] = background[backgroundIndex];
           }
         }
       }
@@ -353,13 +332,12 @@ namespace GBSharp.VideoSpace
       if(drawRectangle)
       {
         uint rectangleColor = 0xFFFF8822;
-        DisplayFunctions.DrawRectangle(disDef, backgroundBmpData, 
+        DisplayFunctions.DrawRectangle(disDef, background, disDef.framePixelCountX,
                                        SCX, SCY, 
                                        disDef.screenPixelCountX, disDef.screenPixelCountY, 
                                        rectangleColor);
       }
 
-      background.UnlockBits(backgroundBmpData);
 
       #endregion
 
@@ -369,13 +347,10 @@ namespace GBSharp.VideoSpace
       int rWX = WX - 7; // The window pos is (WX - 7, WY)
       int WY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WY);
 
-      BitmapData windowBmpData = DisplayFunctions.LockBitmap(window,
-                                                             ImageLockMode.ReadWrite,
-                                                             disDef.pixelFormat);
-      DisplayFunctions.DrawTransparency(disDef, windowBmpData, 
-                                        0, 0, 
+      DisplayFunctions.DrawTransparency(disDef, window, disDef.screenPixelCountX,
+                                        0, 0,
                                         disDef.screenPixelCountX, WY);
-      DisplayFunctions.DrawTransparency(disDef, windowBmpData, 
+      DisplayFunctions.DrawTransparency(disDef, window, disDef.screenPixelCountX,
                                         0, WY, 
                                         rWX, disDef.screenPixelCountY);
 
@@ -391,64 +366,59 @@ namespace GBSharp.VideoSpace
                                                            LCDCBit6, LCDCBit4);
           
           // Independent target
-          DisplayFunctions.DrawLine(disDef, windowBmpData, rowPixels, 
+          DisplayFunctions.DrawLine(disDef, window, disDef.screenPixelCountX,
+                                    rowPixels, 
                                     rWX, row, 
                                     0, disDef.screenPixelCountX - rWX);
 
           // Screen target
           if (drawWindow)
           {
-            DisplayFunctions.DrawLine(disDef, screenBmpData, rowPixels,
+            DisplayFunctions.DrawLine(disDef, screen, disDef.screenPixelCountX,
+                                      rowPixels,
                                       rWX, row,
                                       0, disDef.screenPixelCountX - rWX);
           }
         }
       }
 
-      window.UnlockBits(windowBmpData);
-
       #endregion
 
       #region SPRITES
 
-      //// *** SPRITES ***
-      //BitmapData spriteLayerBmp = DisplayFunctions.LockBitmap(spriteLayer,
-      //                                                        ImageLockMode.ReadWrite,
-      //                                                        disDef.pixelFormat);
-      //DisplayFunctions.DrawTransparency(disDef, spriteLayerBmp, 
-      //                                  0, 0, 
-      //                                  spriteLayerBmp.Width, spriteLayerBmp.Height);
+      // *** SPRITES ***
+      DisplayFunctions.DrawTransparency(disDef, spriteLayer, disDef.screenPixelCountX,
+                                        0, 0,
+                                        disDef.screenPixelCountX, disDef.screenPixelCountY);
 
-      //bool drawSprites = Utils.UtilFuncs.TestBit(LCDC, 1) != 0;
-      //for (int row = rowBegin; row < rowEnd; row++)
-      //{
-      //  // Independent target
-      //  uint[] pixels = new uint[disDef.screenPixelCountX];
-      //  DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels, 
-      //                                      row, LCDCBit2,
-      //                                      true);
-      //  DisplayFunctions.DrawLine(disDef, spriteLayerBmp, pixels, 
-      //                            0, row, 
-      //                            0, disDef.screenPixelCountX);
+      bool drawSprites = Utils.UtilFuncs.TestBit(LCDC, 1) != 0;
+      for (int row = rowBegin; row < rowEnd; row++)
+      {
+        // Independent target
+        uint[] pixels = new uint[disDef.screenPixelCountX];
+        DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels,
+                                            row, LCDCBit2,
+                                            true);
+        DisplayFunctions.DrawLine(disDef, spriteLayer, disDef.screenPixelCountX,
+                                  pixels,
+                                  0, row,
+                                  0, disDef.screenPixelCountX);
 
-      //  // Screen Target
-      //  if(drawSprites)
-      //  {
-      //    uint[] linePixels = DisplayFunctions.GetPixelRowFromBitmap(disDef, screenBmpData, row);
-      //    DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, linePixels, row, LCDCBit2);
-      //    DisplayFunctions.DrawLine(disDef, screenBmpData, linePixels, 
-      //                              0, row, 
-      //                              0, disDef.screenPixelCountX);
-      //  }
-      //}
-
-      //spriteLayer.UnlockBits(spriteLayerBmp);
+        // Screen Target
+        if (drawSprites)
+        {
+          uint[] linePixels = DisplayFunctions.GetPixelRowFromBitmap(disDef, screen, 
+                                                                     row, disDef.screenPixelCountX);
+          DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, linePixels, row, LCDCBit2);
+          DisplayFunctions.DrawLine(disDef, screen, disDef.screenPixelCountX,
+                                    linePixels,
+                                    0, row,
+                                    0, disDef.screenPixelCountX);
+        }
+      }
 
       #endregion
 
-      // *** SCREEN RECTANGLE ***
-
-      screen.UnlockBits(screenBmpData);
     }
 
     private const int screenStep = 96905; // Aprox. ~16.6687 ms
@@ -591,20 +561,15 @@ namespace GBSharp.VideoSpace
       if(prevTickCount == currentLineTickCount) { return; }
       //  TODO(Cristian): Remember that the WY state changes over frame (after V-BLANK)
       //                  and not between lines (as changes with WX)
-      BitmapData displayTimingBmpData = DisplayFunctions.LockBitmap(displayTiming,
-                                                                 ImageLockMode.WriteOnly,
-                                                                 disDef.pixelFormat);
 
-      int uintStride = displayTimingBmpData.Stride / disDef.bytesPerPixel;
       unsafe
       {
-        uint* row = (uint*)displayTimingBmpData.Scan0 + currentLine * uintStride;
+        int rowIndex = currentLine * disDef.timingPixelCountX;
 
         int beginX = (int)(pixelsPerTick * prevTickCount);
         int endX = (int)(pixelsPerTick * currentLineTickCount);
         if(beginX >= 256 || endX >= 256)
         {
-          displayTiming.UnlockBits(displayTimingBmpData);
           return;
         }
         
@@ -612,9 +577,9 @@ namespace GBSharp.VideoSpace
            ((endX <= beginX) || firstRun))
         {
           //DisplayFunctions.DrawTransparency(disDef, displayTimingBmpData, 0, 0, 256, 154);
-          DisplayFunctions.DrawRectangle(disDef, displayTimingBmpData,
+          DisplayFunctions.DrawRectangle(disDef, displayTiming, disDef.timingPixelCountX,
                                          0, 0,
-                                         displayTimingBmpData.Width, displayTimingBmpData.Height,
+                                         disDef.timingPixelCountX, disDef.timingPixelCountY,
                                          0xFF000000, true);
         }
 
@@ -628,10 +593,9 @@ namespace GBSharp.VideoSpace
 
         for(int i = beginX; i < endX; ++i)
         {
-          row[i] = color;
+          displayTiming[i] = color;
         }
       }
-      displayTiming.UnlockBits(displayTimingBmpData);
     }
 
     // Returns whether the tick count is enough to get to the target

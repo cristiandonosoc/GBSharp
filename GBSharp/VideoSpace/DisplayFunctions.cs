@@ -8,15 +8,6 @@ namespace GBSharp.VideoSpace
   internal static class DisplayFunctions
   {
 
-    internal static BitmapData 
-    LockBitmap(Bitmap bmp, ImageLockMode lockMode, PixelFormat pixelFormat)
-    {
-      BitmapData result = bmp.LockBits(
-        new Rectangle(0, 0, bmp.Width, bmp.Height),
-        lockMode, pixelFormat);
-      return result;
-    }
-
     /// <summary>
     /// Retreives a the contents on a tile depending on the coordinates and the accessing methods.
     /// </summary>
@@ -37,14 +28,14 @@ namespace GBSharp.VideoSpace
     /// </param>
     /// <param name="wrap">Whether the x, y tile coordinates should wrap or be clipped</param>
     /// <returns>A byte[] with the 16 bytes that create a tile</returns>
-    internal static byte[] 
-    GetTileData(DisplayDefinition disDef, Memory memory, 
-                int tileX, int tileY, 
-                bool LCDCBit2, bool LCDBit3, bool LCDBit4, 
+    internal static byte[]
+    GetTileData(DisplayDefinition disDef, Memory memory,
+                int tileX, int tileY,
+                bool LCDCBit2, bool LCDBit3, bool LCDBit4,
                 bool wrap)
     {
 
-      if(wrap)
+      if (wrap)
       {
         tileX %= disDef.frameTileCountX;
         tileY %= disDef.screenTileCountY;
@@ -52,8 +43,8 @@ namespace GBSharp.VideoSpace
       else
       {
         // TODO(Cristian): See if clipping is what we want
-        if(tileX >= disDef.frameTileCountX) { tileX = disDef.frameTileCountX - 1; }
-        if(tileY >= disDef.screenTileCountY) { tileY = disDef.screenTileCountY - 1; }
+        if (tileX >= disDef.frameTileCountX) { tileX = disDef.frameTileCountX - 1; }
+        if (tileY >= disDef.screenTileCountY) { tileY = disDef.screenTileCountY - 1; }
       }
 
       ushort tileMapBaseAddress = GetTileMapBaseAddress(LCDBit3);
@@ -136,7 +127,7 @@ namespace GBSharp.VideoSpace
     /// 1: 0x8000 - 0x8FFF | unsigned access
     /// </param>
     /// <returns>An array with the pixels to show for that row (color already calculated)</returns>
-    internal static uint[] 
+    internal static uint[]
     GetRowPixels(DisplayDefinition disDef, Memory memory,
                  int row, bool LCDBit3, bool LCDBit4)
     {
@@ -148,7 +139,7 @@ namespace GBSharp.VideoSpace
       ushort tileBaseAddress = GetTileBaseAddress(LCDBit4);
 
       uint[] pixels = new uint[disDef.framePixelCountX];
-      for(int tileX = 0; tileX < disDef.frameTileCountX; tileX++)
+      for (int tileX = 0; tileX < disDef.frameTileCountX; tileX++)
       {
         // We obtain the correct tile index
         int tileOffset = GetTileOffset(disDef, memory, tileMapBaseAddress, LCDBit4, tileX, tileY);
@@ -159,7 +150,7 @@ namespace GBSharp.VideoSpace
         byte bottom = memory.LowLevelRead((ushort)(currentTileBaseAddress + 2 * tileRemainder + 1));
 
         uint[] tilePixels = GetPixelsFromTileBytes(disDef.tilePallete,
-                                                   disDef.pixelPerTileX, 
+                                                   disDef.pixelPerTileX,
                                                    top, bottom);
         int currentTileIndex = tileX * disDef.pixelPerTileX;
         for (int i = 0; i < disDef.pixelPerTileX; i++)
@@ -172,19 +163,13 @@ namespace GBSharp.VideoSpace
     }
 
     internal static uint[]
-    GetPixelRowFromBitmap(DisplayDefinition disDef, BitmapData bmp, int row)
+    GetPixelRowFromBitmap(DisplayDefinition disDef, uint[] bitmapData, int row, int stride)
     {
-      uint[] pixels = new uint[bmp.Width];
-      unsafe
+      uint[] pixels = new uint[stride];
+      int index = row * stride;
+      for (int x = 0; x < stride; ++x)
       {
-        int uintStride = bmp.Stride / disDef.bytesPerPixel;
-        uint* rowPtr = (uint*)bmp.Scan0 + row * uintStride;
-
-
-        for (int x = 0; x < bmp.Width; ++x)
-        {
-          pixels[x] = *rowPtr++;
-        }
+        pixels[x] = bitmapData[index++];
       }
 
       return pixels;
@@ -207,20 +192,20 @@ namespace GBSharp.VideoSpace
                                       (a.index - b.index) : (a.x - b.x));
 
       int spriteSize = disDef.bytesPerTileShort / 2;
-      if(LCDCBit2) { spriteSize = disDef.bytesPerTileLong / 2; }
+      if (LCDCBit2) { spriteSize = disDef.bytesPerTileLong / 2; }
 
       // Then we select the 10 that correspond
       int scanLineSize = 0;
       int maxScanLineSize = 10;
       OAM[] scanLineOAMs = new OAM[maxScanLineSize];
-      foreach(OAM oam in oams)
+      foreach (OAM oam in oams)
       {
-          int y = oam.y - 16;
-          if ((y <= row) && (row < (y + spriteSize)))
-          {
-            scanLineOAMs[scanLineSize++] = oam;
-            if (scanLineSize == maxScanLineSize) { break; }
-          }
+        int y = oam.y - 16;
+        if ((y <= row) && (row < (y + spriteSize)))
+        {
+          scanLineOAMs[scanLineSize++] = oam;
+          if (scanLineSize == maxScanLineSize) { break; }
+        }
       }
 
       // NOTE(Cristian): This array "resize" will actually allocate a new
@@ -232,7 +217,7 @@ namespace GBSharp.VideoSpace
       return scanLineOAMs;
     }
 
-    
+
     internal static void
     GetSpriteRowPixels(DisplayDefinition disDef, Memory memory, OAM[] spriteOAMs,
                        uint[] targetPixels, int row, bool LCDCBit2,
@@ -249,7 +234,7 @@ namespace GBSharp.VideoSpace
 
         bool flipX = Utils.UtilFuncs.TestBit(oam.flags, 5) != 0;
         bool flipY = Utils.UtilFuncs.TestBit(oam.flags, 6) != 0;
-        byte[] tilePixels = GetTileData(disDef, memory, 0x8000, oam.spriteCode, 
+        byte[] tilePixels = GetTileData(disDef, memory, 0x8000, oam.spriteCode,
                                         LCDCBit2, flipX, flipY);
 
         int x = oam.x - 8;
@@ -262,7 +247,7 @@ namespace GBSharp.VideoSpace
                                                      disDef.pixelPerTileX,
                                                      tilePixels[2 * y], tilePixels[2 * y + 1]);
         bool backgroundPriority = (Utils.UtilFuncs.TestBit(oam.flags, 7) != 0);
-        if(ignoreBackgroundPriority)
+        if (ignoreBackgroundPriority)
         {
           backgroundPriority = false;
         }
@@ -285,23 +270,23 @@ namespace GBSharp.VideoSpace
     }
 
     internal static int
-    GetTileOffset(DisplayDefinition disDef, Memory memory, 
+    GetTileOffset(DisplayDefinition disDef, Memory memory,
                   ushort tileMapBaseAddress, bool LCDBit4,
                   int tileX, int tileY)
     {
       int tileOffset;
-      if(LCDBit4)
+      if (LCDBit4)
       {
-        tileOffset = memory.LowLevelRead((ushort)(tileMapBaseAddress + 
-                                                 (disDef.frameTileCountX * tileY) + 
+        tileOffset = memory.LowLevelRead((ushort)(tileMapBaseAddress +
+                                                 (disDef.frameTileCountX * tileY) +
                                                  tileX));
       }
       else
       {
         unchecked
         {
-          byte t = memory.LowLevelRead((ushort)(tileMapBaseAddress + 
-                                                (disDef.frameTileCountX * tileY) + 
+          byte t = memory.LowLevelRead((ushort)(tileMapBaseAddress +
+                                                (disDef.frameTileCountX * tileY) +
                                                 tileX));
           sbyte tR = (sbyte)t;
           tileOffset = tR;
@@ -318,7 +303,7 @@ namespace GBSharp.VideoSpace
       ushort result = (ushort)(LCDBit4 ? 0x8000 : 0x9000);
       return result;
     }
-    
+
     internal static ushort
     GetTileMapBaseAddress(bool LCDBit3)
     {
@@ -332,7 +317,7 @@ namespace GBSharp.VideoSpace
       // We extract the BGP (BG Pallete Data)
       byte bgp = memory.LowLevelRead((ushort)MemoryMappedRegisters.BGP);
 
-      for(int color = 0; color < 4; ++color)
+      for (int color = 0; color < 4; ++color)
       {
         int down = (bgp >> (2 * color)) & 1;
         int up = (bgp >> (2 * color + 1)) & 1;
@@ -346,7 +331,7 @@ namespace GBSharp.VideoSpace
     {
       byte obp0 = memory.LowLevelRead((ushort)MemoryMappedRegisters.OBP0);
       disDef.spritePallete0[0] = 0x00000000; // Sprite colors are trasparent
-      for(int color = 1; color < 4; ++color)
+      for (int color = 1; color < 4; ++color)
       {
         int down = (obp0 >> (2 * color)) & 1;
         int up = (obp0 >> (2 * color + 1)) & 1;
@@ -356,7 +341,7 @@ namespace GBSharp.VideoSpace
 
       byte obp1 = memory.LowLevelRead((ushort)MemoryMappedRegisters.OBP1);
       disDef.spritePallete1[1] = 0x00000000; // Sprite colors are trasparent
-      for(int color = 1; color < 4; ++color)
+      for (int color = 1; color < 4; ++color)
       {
         int down = (obp1 >> (2 * color)) & 1;
         int up = (obp1 >> (2 * color + 1)) & 1;
@@ -366,11 +351,11 @@ namespace GBSharp.VideoSpace
     }
 
 
-    internal static uint[] 
+    internal static uint[]
     GetPixelsFromTileBytes(uint[] pallete, int pixelPerTileX, byte top, byte bottom)
     {
       uint[] pixels = new uint[pixelPerTileX];
-      for(int i = 0; i < pixelPerTileX; i++)
+      for (int i = 0; i < pixelPerTileX; i++)
       {
         int up = (bottom >> (7 - i)) & 1;
         int down = (top >> (7 - i)) & 1;
@@ -391,110 +376,95 @@ namespace GBSharp.VideoSpace
     /// <param name="pX">x coord of the pixel where to start drawing the tile</param>
     /// <param name="pY">y coord of the pixel where to start drawing the tile</param>
     internal static void
-    DrawTile(DisplayDefinition disDef, BitmapData bmd, byte[] tileData,
+    DrawTile(DisplayDefinition disDef, uint[] bitmapData, int stride,
+             byte[] tileData,
              int pX, int pY, int maxPx, int maxPy)
     {
-      unsafe
+      // We iterate for the actual bytes
+      for (int j = 0; j < tileData.Length; j += 2)
       {
-        int uintStride = bmd.Stride / disDef.bytesPerPixel;
-        uint* start = (uint*)bmd.Scan0;
+        int pixelY = pY + (j / 2);
+        if (pixelY < 0) { continue; }
+        if (pixelY >= maxPy) { break; } // We can continue no further
 
-        // We iterate for the actual bytes
-        for (int j = 0; j < tileData.Length; j += 2)
+        int index = pixelY * stride; // Only add every 2 bytes
+        uint[] pixels = GetPixelsFromTileBytes(disDef.tilePallete,
+                                               disDef.pixelPerTileX,
+                                               tileData[j], tileData[j + 1]);
+        for (int i = 0; i < 8; i++)
         {
-          int pixelY = pY + (j / 2);
-          if(pixelY < 0) { continue; }
-          if(pixelY >= maxPy) { break; } // We can continue no further
-
-          uint* row = start + pixelY * uintStride; // Only add every 2 bytes
-          uint[] pixels = GetPixelsFromTileBytes(disDef.tilePallete, 
-                                                 disDef.pixelPerTileX,
-                                                 tileData[j], tileData[j + 1]);
-          for (int i = 0; i < 8; i++)
-          {
-            int pixelX = pX + i;
-            if(pixelX < 0) { continue; }
-            if(pixelX >= maxPx) { break; }
-            uint* cPtr = row + pixelX;
-            cPtr[0] = pixels[i];
-          }
+          int pixelX = pX + i;
+          if (pixelX < 0) { continue; }
+          if (pixelX >= maxPx) { break; }
+          int pIndex = index + pixelX;
+          bitmapData[pIndex] = pixels[i];
         }
       }
     }
 
-    internal static void 
-    DrawTransparency(DisplayDefinition disDef, BitmapData bmd, int minX, int minY, int maxX, int maxY)
+    internal static void
+    DrawTransparency(DisplayDefinition disDef, uint[] bitmapData, int stride,
+                    int minX, int minY, int maxX, int maxY)
     {
       uint[] colors = { 0xF0F0F0F0, 0xF0CDCDCD };
       int squareSize = 5;
-      unsafe
+      for (int y = minY; y < maxY; y++)
       {
-        int uintStride = bmd.Stride / disDef.bytesPerPixel;
-        uint* start = (uint*)bmd.Scan0;
-
-        for(int y = minY; y < maxY; y++)
+        int rowIndex = y * stride;
+        for (int x = minX; x < maxX; x++)
         {
-          uint* rowStart = start + y * uintStride;
-          for(int x = minX; x < maxX; x++)
-          {
-            int sX = x / squareSize;
-            int sY = y / squareSize;
-            int index = (sX + (sY % 2)) % 2;
-            uint* pixel = rowStart + x;
-            pixel[0] = colors[index];
-          }
+          int sX = x / squareSize;
+          int sY = y / squareSize;
+          int colorIndex = (sX + (sY % 2)) % 2;
+          int pIndex = rowIndex + x;
+          bitmapData[0] = colors[colorIndex];
         }
       }
     }
-    
-    internal static void 
-    DrawRectangle(DisplayDefinition disDef, BitmapData bmd, 
-                  int rX, int rY, int rWidth, int rHeight, uint color, bool fill = false)
+
+    internal static void
+    DrawRectangle(DisplayDefinition disDef, uint[] bitmapData, int stride,
+                  int rX, int rY, int rWidth, int rHeight,
+                  uint color, bool fill = false)
     {
-      unsafe
+      for (int y = 0; y < rHeight; y++)
       {
-        int uintStride = bmd.Stride / disDef.bytesPerPixel;
-        for(int y = 0; y < rHeight; y++)
+        for (int x = 0; x < rWidth; x++)
         {
-          for (int x = 0; x < rWidth; x++)
+          int pX = (rX + x) % disDef.framePixelCountX;
+          int pY = (rY + y) % disDef.framePixelCountY;
+          if (fill ||
+             x == 0 || x == (rWidth - 1) ||
+             y == 0 || y == (rHeight - 1))
           {
-            int pX = (rX + x) % disDef.framePixelCountX;
-            int pY = (rY + y) % disDef.framePixelCountY;
-            if(fill ||
-               x == 0 || x == (rWidth - 1) ||
-               y == 0 || y == (rHeight - 1))
-            {
-              uint* p = (uint*)bmd.Scan0 + pY * uintStride + pX;
-              p[0] = color;
-            }
+            int index = pY * stride + pX;
+            bitmapData[index] = color;
           }
         }
       }
     }
 
-    internal static void 
-    DrawLine(DisplayDefinition disDef, BitmapData bmd, uint[] rowPixels,
+    internal static void
+    DrawLine(DisplayDefinition disDef, uint[] bitmapData, int stride,
+             uint[] rowPixels,
              int targetX, int targetY, int rowStart, int rowSpan,
              bool CopyZeroPixels = false)
     {
       // We obtain the data 
-      unsafe
+      int baseIndex = targetY * stride + targetX;
+      // NOTE(Cristian): rowMax is included
+      for (int i = 0; i < rowSpan; i++)
       {
-        uint* bmdPtr = (uint*)bmd.Scan0 + (targetY * bmd.Stride / disDef.bytesPerPixel) + targetX;
-        // NOTE(Cristian): rowMax is included
-        for (int i = 0; i < rowSpan; i++)
+        // NOTE(Cristian): Sometimes the window is 7 pixels to the left (in the case of the windows)
+        //                 We must draw on those cases
+        if (targetX < 0)
         {
-          // NOTE(Cristian): Sometimes the window is 7 pixels to the left (in the case of the windows)
-          //                 We must draw on those cases
-          if(targetX < 0)
-          {
-            targetX++;
-            continue;
-          } 
-          uint pixel = rowPixels[rowStart + i];
-          if(!CopyZeroPixels && pixel == 0) { continue; }
-          bmdPtr[i] = rowPixels[rowStart + i];
+          targetX++;
+          continue;
         }
+        uint pixel = rowPixels[rowStart + i];
+        if (!CopyZeroPixels && pixel == 0) { continue; }
+        bitmapData[baseIndex + i] = rowPixels[rowStart + i];
       }
     }
   }

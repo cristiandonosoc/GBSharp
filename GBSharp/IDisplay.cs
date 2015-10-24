@@ -11,17 +11,19 @@ namespace GBSharp
     OAM GetOAM(int index);
 
     // Intermediate targets
-    Bitmap Background { get; }
-    Bitmap Window { get; }
-    Bitmap SpriteLayer { get; }
-    Bitmap DisplayTiming { get; }
+    uint[] Background { get; }
+    uint[] Window { get; }
+    uint[] SpriteLayer { get; }
+    uint[] DisplayTiming { get; }
     
     // Composed targets
-    Bitmap Frame { get; }
-    Bitmap Screen { get; }
-    Bitmap GetSprite(int index);
+    uint[] Frame { get; }
+    uint[] Screen { get; }
+    uint[] GetSprite(int index);
 
     uint[] UintSpriteLayer { get; }
+
+    DisplayDefinition GetDisplayDefinition();
 
     void DrawDisplay(int rowStart = 0, int rowEnd = 144);
   }
