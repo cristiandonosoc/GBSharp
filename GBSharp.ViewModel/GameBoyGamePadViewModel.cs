@@ -11,14 +11,14 @@ namespace GBSharp.ViewModel
     private readonly IDispatcher _dispatcher;
     private readonly DisplayViewModel _displayVm;
 
-    private BitmapImage _screen;
+    private WriteableBitmap _screen;
 
     private int _frameCount;
     private double _fps;
     private DateTime _previousTime = DateTime.Now;
     private bool _releaseButtons;
 
-    public BitmapImage Screen
+    public WriteableBitmap Screen
     {
       get { return _screen; }
       set
@@ -92,11 +92,18 @@ namespace GBSharp.ViewModel
       _display = _gameBoy.Display;
       _displayVm.UpdateDisplay += OnUpdateDisplay;
       _display.RefreshScreen += OnRefreshScreen;
+
+      VideoSpace.DisplayDefinition disDef = _display.GetDisplayDefinition();
+      _screen = new WriteableBitmap(disDef.screenPixelCountX, disDef.screenPixelCountY,
+                                    96, 96,
+                                    System.Windows.Media.PixelFormats.Bgra32, null);
     }
 
     private void CopyFromDomain()
     {
-      Screen = Utils.BitmapToImageSource(_display.Screen);
+      Utils.TransferBytesToWriteableBitmap(_screen, _display.Screen);
+      OnPropertyChanged(() => Screen);
+
       ReleaseButtons = _gameBoy.ReleaseButtons;
     }
 

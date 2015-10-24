@@ -1,28 +1,35 @@
 ﻿using System.Windows.Media.Imaging;
 using GBSharp.VideoSpace;
+using System.Windows.Media;
 
 namespace GBSharp.ViewModel
 {
   public class SpriteViewModel : ViewModelBase
   {
-    private readonly BitmapImage _spriteImage;
-    private readonly OAM _spriteData;
-
-
-    public BitmapImage SpriteImage
+    private WriteableBitmap _spriteImage;
+    public WriteableBitmap SpriteImage
     {
       get { return _spriteImage; }
     }
 
+    private OAM _spriteData;
     public OAM SpriteData
     {
       get { return _spriteData; }
     }
 
-    public SpriteViewModel(BitmapImage spriteImage, OAM spriteData)
+    internal void RefreshSprite(uint[] pixels, OAM oam)
     {
-      _spriteImage = spriteImage;
-      _spriteData = spriteData;
+      Utils.TransferBytesToWriteableBitmap(_spriteImage, pixels);
+      OnPropertyChanged(() => SpriteImage);
+
+      _spriteData = oam;
+      OnPropertyChanged(() => SpriteData);
+    }
+
+    public SpriteViewModel()
+    {
+      _spriteImage = new WriteableBitmap(8, 16, 96, 96, PixelFormats.Bgra32, null);
     }
   }
 }

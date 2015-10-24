@@ -23,14 +23,10 @@ namespace GBSharp.ViewModel
     private bool _codeAreaSelectionFlag;
     private bool _characterDataSelectionFlag;
 
-    private BitmapImage _background;
-    private BitmapImage _window;
-    private SpriteViewModel _selectedSprite;
     private readonly ObservableCollection<SpriteViewModel> _sprites = new ObservableCollection<SpriteViewModel>();
-    private WriteableBitmap _spriteLayer;
-    private BitmapImage _displayTiming;
     
-    public BitmapImage Background
+    private WriteableBitmap _background;
+    public WriteableBitmap Background
     {
       get { return _background; }
       set
@@ -40,7 +36,8 @@ namespace GBSharp.ViewModel
       }
     }
 
-    public BitmapImage Window
+    private WriteableBitmap _window;
+    public WriteableBitmap Window
     {
       get { return _window; }
       set
@@ -50,6 +47,7 @@ namespace GBSharp.ViewModel
       }
     }
 
+    private SpriteViewModel _selectedSprite;
     public SpriteViewModel SelectedSprite 
     {
       get { return _selectedSprite; }
@@ -63,6 +61,7 @@ namespace GBSharp.ViewModel
       }
     }
     
+    private WriteableBitmap _spriteLayer;
     public WriteableBitmap SpriteLayer
     {
       get { return _spriteLayer; }
@@ -73,7 +72,8 @@ namespace GBSharp.ViewModel
       }
     }
 
-    public BitmapImage DisplayTiming
+    private WriteableBitmap _displayTiming;
+    public WriteableBitmap DisplayTiming
     {
       get { return _displayTiming; }
       set
@@ -166,7 +166,22 @@ namespace GBSharp.ViewModel
       _memory = memory;
       _dispatcher = dispatcher;
 
-      _spriteLayer = new WriteableBitmap(160, 144, 96, 96, PixelFormats.Bgr32, null);
+      var disDef = _display.GetDisplayDefinition();
+
+      _background = new WriteableBitmap(disDef.framePixelCountX, disDef.framePixelCountY, 
+                                        96, 96, PixelFormats.Bgra32, null);
+      _window = new WriteableBitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
+                                    96, 96, PixelFormats.Bgra32, null);
+      _spriteLayer = new WriteableBitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
+                                         96, 96, PixelFormats.Bgra32, null);
+      _displayTiming = new WriteableBitmap(disDef.timingPixelCountX, disDef.timingPixelCountY, 
+                                           96, 96, PixelFormats.Bgra32, null);
+
+      for (int i = 0; i < 40; i++)
+      {
+        Sprites.Add(new SpriteViewModel());
+      }
+      SelectedSprite = Sprites.First();
     }
 
     private void OnRefreshScreen()
@@ -176,35 +191,22 @@ namespace GBSharp.ViewModel
 
     public void CopyFromDomain()
     {
-      Background = Utils.BitmapToImageSource(_display.Background);
-      Window = Utils.BitmapToImageSource(_display.Window);
-      //SpriteLayer = Utils.BitmapToImageSource(_display.SpriteLayer);
-      DisplayTiming = Utils.BitmapToImageSource(_display.DisplayTiming);
+      Utils.TransferBytesToWriteableBitmap(_background, _display.Background);
+      OnPropertyChanged(() => Background);
 
+      Utils.TransferBytesToWriteableBitmap(_window, _display.Window);
+      OnPropertyChanged(() => Window);
 
-      _spriteLayer.Lock();
-      unsafe
-      {
-        uint* bP = (uint*)_spriteLayer.BackBuffer;
-        uint[] pixels = _display.UintSpriteLayer;
-
-        foreach(uint pixel in pixels)
-        {
-          *bP++ = pixel;
-        }
-
-        _spriteLayer.AddDirtyRect(new System.Windows.Int32Rect(0, 0, 160, 144));
-      }
-
-      _spriteLayer.Unlock();
+      Utils.TransferBytesToWriteableBitmap(_spriteLayer, _display.SpriteLayer);
       OnPropertyChanged(() => SpriteLayer);
+ 
+      Utils.TransferBytesToWriteableBitmap(_displayTiming, _display.DisplayTiming);
+      OnPropertyChanged(() => DisplayTiming);
 
-      Sprites.Clear();
       for (int i = 0; i < 40; i++)
       {
-        Sprites.Add(new SpriteViewModel(Utils.BitmapToImageSource(_display.GetSprite(i)), _display.GetOAM(i)));
+        Sprites[i].RefreshSprite(_display.GetSprite(i), _display.GetOAM(i));
       }
-      SelectedSprite = Sprites.First();
 
       var lcdControl = _memory.Data[(int)MemoryMappedRegisters.LCDC];
       BlockSelectionFlag = (lcdControl & (byte)LCDControlFlags.OBJBlockCompositionSelection) > 0;
