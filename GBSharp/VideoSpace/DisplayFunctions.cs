@@ -254,6 +254,7 @@ namespace GBSharp.VideoSpace
         for (int i = 0; i < 8; ++i)
         {
           int pX = x + i;
+          if(pX < 0) { continue; }
           if (pX >= disDef.screenPixelCountX) { break; }
           uint color = spritePixels[i];
           if (color == 0) { continue; } // transparent pixel
