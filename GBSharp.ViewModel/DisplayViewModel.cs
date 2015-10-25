@@ -65,6 +65,61 @@ namespace GBSharp.ViewModel
       }
     }
 
+    private bool _enabled;
+    public bool Enabled
+    {
+      get { return _enabled; }
+      set
+      {
+        _enabled = value;
+        OnPropertyChanged(() => Enabled);
+      }
+    }
+
+    private int _displayCurrentLine;
+    public int CurrentLine
+    {
+      get { return _displayCurrentLine; }
+      set
+      {
+        _displayCurrentLine = value;
+        OnPropertyChanged(() => CurrentLine);
+      }
+    }
+
+    private DisplayModes _displayMode;
+    public DisplayModes DisplayMode
+    {
+      get { return _displayMode; }
+      set
+      {
+        _displayMode = value;
+        OnPropertyChanged(() => DisplayMode);
+      }
+    }
+
+    private int _prevTickCount;
+    public int PrevTickCount
+    {
+      get { return _prevTickCount; }
+      set
+      {
+        _prevTickCount = value;
+        OnPropertyChanged(() => PrevTickCount);
+      }
+    }
+
+    private int _currentTickCount;
+    public int CurrentTickCount
+    {
+      get { return _currentTickCount; }
+      set
+      {
+        _currentTickCount = value;
+        OnPropertyChanged(() => CurrentTickCount);
+      }
+    }
+
     private readonly ObservableCollection<SpriteViewModel> _sprites = new ObservableCollection<SpriteViewModel>();
 
     private WriteableBitmap _displayTiming;
@@ -163,6 +218,13 @@ namespace GBSharp.ViewModel
       {
         Sprites[i].RefreshSprite(_display.GetSprite(i), _display.GetOAM(i));
       }
+
+      DisplayStatus disStat = _display.GetDisplayStatus();
+      Enabled = disStat.enabled;
+      CurrentLine = disStat.currentLine;
+      DisplayMode = disStat.displayMode;
+      PrevTickCount = disStat.prevTickCount;
+      CurrentTickCount = disStat.currentLineTickCount;
 
       NotifyUpdateDisplay();
     }
