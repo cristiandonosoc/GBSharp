@@ -8,7 +8,7 @@ using System.Drawing.Imaging;
 namespace GBSharp.VideoSpace
 {
 
-  internal enum DisplayModes : byte
+  public enum DisplayModes : byte
   {
     /// <summary>
     /// H-Blank. CPU can access all VRAM
@@ -69,38 +69,41 @@ namespace GBSharp.VideoSpace
     public uint[] spritePallete1;
   }
 
+  public class DisplayStatus
+  {
+    public int prevTickCount;
+    public int currentLineTickCount; // We trigger OAM search at the start
+    public byte currentLine;
+    public int OAMSearchTickCount;
+    public int dataTransferTickCount;
+    public int totalLineTickCount;
+    public bool enabled;
+    public DisplayModes displayMode;
+  }
+
   class Display : IDisplay
   {
+
     public event Action RefreshScreen;
 
     private InterruptController interruptController;
     private Memory memory;
 
-    private DisplayDefinition disDef;
-
     private int spriteCount = 40;
     private OAM[] spriteOAMs;
-
     public OAM GetOAM(int index)
     {
       return spriteOAMs[index];
     }
-
-    public DisplayDefinition GetDisplayDefinition()
-    {
-      return disDef;
-    }
-
     internal void SetOAM(int index, byte x, byte y, byte spriteCode, byte flags)
     {
       spriteOAMs[index].index = index;
       spriteOAMs[index].x = x;
       spriteOAMs[index].y = y;
       spriteOAMs[index].spriteCode = spriteCode;
+
       spriteOAMs[index].flags = flags;
     }
-
-
     /// <summary>
     /// Load an OAM from direct byte data. NOTE THE ARRAY FORMAT
     /// </summary>
@@ -116,6 +119,18 @@ namespace GBSharp.VideoSpace
     internal void SetOAM(int index, byte[] data)
     {
       SetOAM(index, data[1], data[0], data[2], data[3]);
+    }
+
+    private DisplayDefinition disDef;
+    public DisplayDefinition GetDisplayDefinition()
+    {
+      return disDef;
+    }
+
+    private DisplayStatus disStat;
+    public DisplayStatus GetDisplayStatus()
+    {
+      return disStat;
     }
 
     /// <summary>
@@ -136,16 +151,10 @@ namespace GBSharp.VideoSpace
     private uint[] frame;
     public uint[] Frame { get { return frame; } }
 
-
     private uint[] sprite;
-
-    private uint[] uintSpriteLayer;
-    public uint[] UintSpriteLayer { get { return uintSpriteLayer; } }
-
 
     private uint[] spriteLayer;
     public uint[] SpriteLayer { get { return spriteLayer; } }
-
 
     /// <summary>
     /// The bitmap that represents the actual screen.
@@ -166,6 +175,8 @@ namespace GBSharp.VideoSpace
     {
       this.interruptController = interruptController;
       this.memory = memory;
+
+      /*** DISPLAY DEFINITION ***/
 
       this.disDef = new DisplayDefinition();
       this.disDef.framePixelCountX = 256;
@@ -193,7 +204,6 @@ namespace GBSharp.VideoSpace
         0xFF000000
       };
       this.disDef.tilePallete = new uint[4];
-
       // TODO(Cristian): Output the color to the view for custom setting
       this.disDef.spriteColors = new uint[4]
       {
@@ -205,9 +215,22 @@ namespace GBSharp.VideoSpace
       this.disDef.spritePallete0 = new uint[4];
       this.disDef.spritePallete1 = new uint[4];
 
-      // TODO(Cristian): Find out at what state the display starts!
-      this.displayMode = DisplayModes.Mode10;
+      /*** DISPLAY STATUS ***/
 
+      this.disStat = new DisplayStatus();
+      this.disStat.prevTickCount = 0;
+      this.disStat.currentLineTickCount = 0;
+      this.disStat.currentLine = 0;
+      // NOTE(Cristian): This are default values when there are no sprites
+      //                 They should change on runtime
+      this.disStat.OAMSearchTickCount = 83;
+      this.disStat.dataTransferTickCount = 83 + 175;
+      this.disStat.totalLineTickCount = 456;
+      this.disStat.enabled = true;
+      // TODO(Cristian): Find out at what state the display starts!
+      this.disStat.displayMode = DisplayModes.Mode10;
+
+      /*** DRAW TARGETS ***/
 
       // We create the target bitmaps
       this.background = new uint[disDef.framePixelCountX * disDef.framePixelCountY];
@@ -219,23 +242,13 @@ namespace GBSharp.VideoSpace
       this.frame = new uint[disDef.framePixelCountX * disDef.framePixelCountY];
       this.displayTiming = new uint[disDef.timingPixelCountX * disDef.timingPixelCountY];
 
-      // TEST CODE
-      this.uintSpriteLayer = new uint[160 * 144];
-      for (uint i = 0; i < uintSpriteLayer.Length; ++i)
-      {
-        byte color = (byte)(i % 256);
-        uintSpriteLayer[i] = (uint)(color |
-                             color << 8 |
-                             color << 16 |
-                             color << 24);
-      }
-
       this.spriteOAMs = new OAM[spriteCount];
       for (int i = 0; i < spriteOAMs.Length; ++i)
       {
         this.spriteOAMs[i] = new OAM();
       }
 
+      // We update the display status info
       UpdateDisplayLineInfo(false);
     }
 
@@ -260,7 +273,7 @@ namespace GBSharp.VideoSpace
 
     internal void DrawSprite(uint[] spriteData, int spriteCode, int pX, int pY)
     {
-      DisplayFunctions.DrawTransparency(disDef, spriteData, 8, 0, 0, 8, 16);
+      DisFuncs.DrawTransparency(disDef, spriteData, 8, 0, 0, 8, 16);
 
       byte LCDC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
       bool LCDCBit2 = Utils.UtilFuncs.TestBit(LCDC, 2) != 0;
@@ -271,9 +284,9 @@ namespace GBSharp.VideoSpace
       }
 
       // We draw the top part
-      byte[] pixels = DisplayFunctions.GetTileData(disDef, memory, 0x8000, spriteCode, LCDCBit2);
-      DisplayFunctions.DrawTile(disDef, spriteData, 8, pixels, pX, pY,
-                                disDef.screenPixelCountX, disDef.screenPixelCountY);
+      byte[] pixels = DisFuncs.GetTileData(disDef, memory, 0x8000, spriteCode, LCDCBit2);
+      DisFuncs.DrawTile(disDef, spriteData, 8, pixels, pX, pY,
+                        disDef.screenPixelCountX, disDef.screenPixelCountY);
     }
 
     public void DrawDisplay(int rowBegin, int rowEnd)
@@ -290,8 +303,8 @@ namespace GBSharp.VideoSpace
       bool LCDCBit4 = Utils.UtilFuncs.TestBit(LCDC, 4) != 0;
       bool LCDCBit6 = Utils.UtilFuncs.TestBit(LCDC, 6) != 0;
 
-      DisplayFunctions.SetupTilePallete(disDef, memory);
-      DisplayFunctions.SetupSpritePalletes(disDef, memory);
+      DisFuncs.SetupTilePallete(disDef, memory);
+      DisFuncs.SetupSpritePalletes(disDef, memory);
 
       #region BACKGROUND
 
@@ -300,11 +313,11 @@ namespace GBSharp.VideoSpace
 
       for (int row = 0; row < disDef.framePixelCountY; row++)
       {
-        uint[] rowPixels = DisplayFunctions.GetRowPixels(disDef, memory, row, LCDCBit3, LCDCBit4);
-        DisplayFunctions.DrawLine(disDef, background, disDef.framePixelCountX, 
-                                  rowPixels, 
-                                  0, row, 
-                                  0, disDef.framePixelCountX);
+        uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, row, LCDCBit3, LCDCBit4);
+        DisFuncs.DrawLine(disDef, background, disDef.framePixelCountX, 
+                          rowPixels, 
+                          0, row, 
+                          0, disDef.framePixelCountX);
 
         // TODO(Cristian): Move the background render to a DrawLine call instead of copying
         //                 from one bitmap to another
@@ -332,10 +345,10 @@ namespace GBSharp.VideoSpace
       if(drawRectangle)
       {
         uint rectangleColor = 0xFFFF8822;
-        DisplayFunctions.DrawRectangle(disDef, background, disDef.framePixelCountX,
-                                       SCX, SCY, 
-                                       disDef.screenPixelCountX, disDef.screenPixelCountY, 
-                                       rectangleColor);
+        DisFuncs.DrawRectangle(disDef, background, disDef.framePixelCountX,
+                               SCX, SCY, 
+                               disDef.screenPixelCountX, disDef.screenPixelCountY, 
+                               rectangleColor);
       }
 
 
@@ -347,12 +360,12 @@ namespace GBSharp.VideoSpace
       int rWX = WX - 7; // The window pos is (WX - 7, WY)
       int WY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WY);
 
-      DisplayFunctions.DrawTransparency(disDef, window, disDef.screenPixelCountX,
-                                        0, 0,
-                                        disDef.screenPixelCountX, WY);
-      DisplayFunctions.DrawTransparency(disDef, window, disDef.screenPixelCountX,
-                                        0, WY, 
-                                        rWX, disDef.screenPixelCountY);
+      DisFuncs.DrawTransparency(disDef, window, disDef.screenPixelCountX,
+                                0, 0,
+                                disDef.screenPixelCountX, WY);
+      DisFuncs.DrawTransparency(disDef, window, disDef.screenPixelCountX,
+                                0, WY, 
+                                rWX, disDef.screenPixelCountY);
 
       // TODO(Cristian): If BG display is off, it actually prints white
       bool drawWindow = Utils.UtilFuncs.TestBit(LCDC, 5) != 0;
@@ -362,22 +375,22 @@ namespace GBSharp.VideoSpace
         {
           // The offset indexes represent that the window is drawn from it's beggining
           // at (WX, WY)
-          uint[] rowPixels = DisplayFunctions.GetRowPixels(disDef, memory, row - WY, 
-                                                           LCDCBit6, LCDCBit4);
+          uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, row - WY, 
+                                                   LCDCBit6, LCDCBit4);
           
           // Independent target
-          DisplayFunctions.DrawLine(disDef, window, disDef.screenPixelCountX,
-                                    rowPixels, 
-                                    rWX, row, 
-                                    0, disDef.screenPixelCountX - rWX);
+          DisFuncs.DrawLine(disDef, window, disDef.screenPixelCountX,
+                            rowPixels, 
+                            rWX, row, 
+                            0, disDef.screenPixelCountX - rWX);
 
           // Screen target
           if (drawWindow)
           {
-            DisplayFunctions.DrawLine(disDef, screen, disDef.screenPixelCountX,
-                                      rowPixels,
-                                      rWX, row,
-                                      0, disDef.screenPixelCountX - rWX);
+            DisFuncs.DrawLine(disDef, screen, disDef.screenPixelCountX,
+                              rowPixels,
+                              rWX, row,
+                              0, disDef.screenPixelCountX - rWX);
           }
         }
       }
@@ -387,33 +400,33 @@ namespace GBSharp.VideoSpace
       #region SPRITES
 
       // *** SPRITES ***
-      DisplayFunctions.DrawTransparency(disDef, spriteLayer, disDef.screenPixelCountX,
-                                        0, 0,
-                                        disDef.screenPixelCountX, disDef.screenPixelCountY);
+      DisFuncs.DrawTransparency(disDef, spriteLayer, disDef.screenPixelCountX,
+                                0, 0,
+                                disDef.screenPixelCountX, disDef.screenPixelCountY);
 
       bool drawSprites = Utils.UtilFuncs.TestBit(LCDC, 1) != 0;
       for (int row = rowBegin; row < rowEnd; row++)
       {
         // Independent target
         uint[] pixels = new uint[disDef.screenPixelCountX];
-        DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels,
-                                            row, LCDCBit2,
-                                            true);
-        DisplayFunctions.DrawLine(disDef, spriteLayer, disDef.screenPixelCountX,
-                                  pixels,
-                                  0, row,
-                                  0, disDef.screenPixelCountX);
+        DisFuncs.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels,
+                                    row, LCDCBit2,
+                                    true);
+        DisFuncs.DrawLine(disDef, spriteLayer, disDef.screenPixelCountX,
+                          pixels,
+                          0, row,
+                          0, disDef.screenPixelCountX);
 
         // Screen Target
         if (drawSprites)
         {
-          uint[] linePixels = DisplayFunctions.GetPixelRowFromBitmap(disDef, screen, 
-                                                                     row, disDef.screenPixelCountX);
-          DisplayFunctions.GetSpriteRowPixels(disDef, memory, spriteOAMs, linePixels, row, LCDCBit2);
-          DisplayFunctions.DrawLine(disDef, screen, disDef.screenPixelCountX,
-                                    linePixels,
-                                    0, row,
-                                    0, disDef.screenPixelCountX);
+          uint[] linePixels = DisFuncs.GetPixelRowFromBitmap(disDef, screen, 
+                                                             row, disDef.screenPixelCountX);
+          DisFuncs.GetSpriteRowPixels(disDef, memory, spriteOAMs, linePixels, row, LCDCBit2);
+          DisFuncs.DrawLine(disDef, screen, disDef.screenPixelCountX,
+                            linePixels,
+                            0, row,
+                            0, disDef.screenPixelCountX);
         }
       }
 
@@ -421,23 +434,11 @@ namespace GBSharp.VideoSpace
 
     }
 
-    private const int screenStep = 96905; // Aprox. ~16.6687 ms
-    private int screenSum = 0;
-
-    private int prevTickCount = 0;
-    private int currentLineTickCount = 0; // We trigger OAM search at the start
-
-    private int OAMSearchTickCount = 83;
-    private int DataTransferTickCount = 83+175;
-    private const int totalLineTickCount = 456;
-
-    private byte currentLine = 0; // The first run will fix this numberooh
-    private DisplayModes displayMode;
-
     private double pixelsPerTick = (double)256 / (double)456;
 
+
+
     private bool firstRun = true;
-    private bool enabled = true;
 
     /// <summary>
     /// Simulates the update of the display for a period of time of a given number of ticks.
@@ -450,24 +451,24 @@ namespace GBSharp.VideoSpace
       byte LCDC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
       bool activate = (Utils.UtilFuncs.TestBit(LCDC, 7) != 0);
 
-      if(activate && !enabled) // We need to turn on the LCD
+      if(activate && !disStat.enabled) // We need to turn on the LCD
       {
-        enabled = true;
+        disStat.enabled = true;
       }
-      if(!activate && enabled) // We need to turn off the LCD
+      if(!activate && disStat.enabled) // We need to turn off the LCD
       {
-        if(currentLine < 144)
+        if(disStat.currentLine < 144)
         {
           // NOTE(Cristian): Turning off the gameboy *should* be made only during V-BLANK.
           //                 Apparently it damages the hardware otherwise.
           // TODO(Cristian): See if this should be an assertion
           throw new InvalidOperationException("Stopping LCD should be made during V-BLANK");
         }
-        enabled = false;
+        disStat.enabled = false;
       }
 
       // If the LCD is not enabled, no need to simulate anything
-      if(!enabled) { return; }
+      if(!disStat.enabled) { return; }
 
       // TODO(Cristian): Check that the LY=LYC is correct when the display starts
 
@@ -476,34 +477,34 @@ namespace GBSharp.VideoSpace
        * So the simulation is to decrease the tick count and simulating
        * the display accordingly
        **/
-      prevTickCount = currentLineTickCount;
+      disStat.prevTickCount = disStat.currentLineTickCount;
       while(ticks > 0)
       {
         // We try to advance to the next state
         // The display behaves differently if it's on V-BLANK or not
-        if(displayMode != DisplayModes.Mode01)
+        if(disStat.displayMode != DisplayModes.Mode01)
         {
-          if(displayMode == DisplayModes.Mode10)
+          if(disStat.displayMode == DisplayModes.Mode10)
           {
-            if(CalculateTickChange(OAMSearchTickCount, ref ticks))
+            if(CalculateTickChange(disStat.OAMSearchTickCount, ref ticks))
             {
               ChangeDisplayMode(DisplayModes.Mode11);
             }
           }
-          else if(displayMode == DisplayModes.Mode11)
+          else if(disStat.displayMode == DisplayModes.Mode11)
           {
-            if(CalculateTickChange(DataTransferTickCount, ref ticks))
+            if(CalculateTickChange(disStat.dataTransferTickCount, ref ticks))
             {
               ChangeDisplayMode(DisplayModes.Mode00);
             }
           }
-          else if(displayMode == DisplayModes.Mode00)
+          else if(disStat.displayMode == DisplayModes.Mode00)
           {
-            if(CalculateTickChange(totalLineTickCount, ref ticks))
+            if(CalculateTickChange(disStat.totalLineTickCount, ref ticks))
             {
               // We start a new line
               UpdateDisplayLineInfo();
-              if(currentLine < 144) // We continue on normal mode
+              if(disStat.currentLine < 144) // We continue on normal mode
               {
                 ChangeDisplayMode(DisplayModes.Mode10);
               }
@@ -512,7 +513,7 @@ namespace GBSharp.VideoSpace
                 ChangeDisplayMode(DisplayModes.Mode01);
               }
 
-              bool refreshScreen = (currentLine == 144);
+              bool refreshScreen = (disStat.currentLine == 144);
               UpdateDisplay(refreshScreen);
             }
           }
@@ -521,13 +522,13 @@ namespace GBSharp.VideoSpace
         {
           // TODO(Cristian): Find out if the display triggers H-BLANK
           //                 events during V-BLANK
-          if (CalculateTickChange(totalLineTickCount, ref ticks))
+          if (CalculateTickChange(disStat.totalLineTickCount, ref ticks))
           {
             UpdateDisplayLineInfo();
-            if (currentLine >= 154)
+            if (disStat.currentLine >= 154)
             {
               ChangeDisplayMode(DisplayModes.Mode10);
-              currentLine = 0;
+              disStat.currentLine = 0;
             }
 
             UpdateDisplay();
@@ -558,65 +559,62 @@ namespace GBSharp.VideoSpace
     internal void DrawTiming()
     {
       // This probably means an empty step (breakpoint)
-      if(prevTickCount == currentLineTickCount) { return; }
+      if (disStat.prevTickCount == disStat.currentLineTickCount) { return; }
       //  TODO(Cristian): Remember that the WY state changes over frame (after V-BLANK)
       //                  and not between lines (as changes with WX)
 
-      unsafe
+      int rowIndex = disStat.currentLine * disDef.timingPixelCountX;
+
+      int beginX = (int)(pixelsPerTick * disStat.prevTickCount);
+      int endX = (int)(pixelsPerTick * disStat.currentLineTickCount);
+      if (beginX >= 256 || endX >= 256)
       {
-        int rowIndex = currentLine * disDef.timingPixelCountX;
+        return;
+      }
 
-        int beginX = (int)(pixelsPerTick * prevTickCount);
-        int endX = (int)(pixelsPerTick * currentLineTickCount);
-        if(beginX >= 256 || endX >= 256)
-        {
-          return;
-        }
-        
-        if((currentLine == 0) && 
-           ((endX <= beginX) || firstRun))
-        {
-          //DisplayFunctions.DrawTransparency(disDef, displayTimingBmpData, 0, 0, 256, 154);
-          DisplayFunctions.DrawRectangle(disDef, displayTiming, disDef.timingPixelCountX,
-                                         0, 0,
-                                         disDef.timingPixelCountX, disDef.timingPixelCountY,
-                                         0xFF000000, true);
-        }
+      if ((disStat.currentLine == 0) &&
+         ((endX <= beginX) || firstRun))
+      {
+        //DisplayFunctions.DrawTransparency(disDef, displayTimingBmpData, 0, 0, 256, 154);
+        DisFuncs.DrawRectangle(disDef, displayTiming, disDef.timingPixelCountX,
+                               0, 0,
+                               disDef.timingPixelCountX, disDef.timingPixelCountY,
+                               0xFF000000, true);
+      }
 
 
 
-        byte mode = (byte)displayMode;
-        uint color = 0xFFFFFF00;
-        if(mode == 1) { color = 0xFFFF0000; }
-        if(mode == 2) { color = 0xFF00FF00; }
-        if(mode == 3) { color = 0xFF0000FF; }
+      byte mode = (byte)disStat.displayMode;
+      uint color = 0xFFFFFF00;
+      if (mode == 1) { color = 0xFFFF0000; }
+      if (mode == 2) { color = 0xFF00FF00; }
+      if (mode == 3) { color = 0xFF0000FF; }
 
-        for(int i = beginX; i < endX; ++i)
-        {
-          displayTiming[i] = color;
-        }
+      for (int i = beginX; i < endX; ++i)
+      {
+        displayTiming[i] = color;
       }
     }
 
     // Returns whether the tick count is enough to get to the target
     private bool CalculateTickChange(int target, ref int ticks)
     {
-      if (currentLineTickCount > target)
+      if (disStat.currentLineTickCount > target)
       {
         throw new ArgumentOutOfRangeException("currentLineTickCount in invalid state");
       }
 
-      int remainder = target - currentLineTickCount;
+      int remainder = target - disStat.currentLineTickCount;
       if(ticks >= remainder)
       {
         // We got to the target
-        currentLineTickCount += remainder;
+        disStat.currentLineTickCount += remainder;
         ticks -= remainder;
         return true;
       }
       else
       {
-        currentLineTickCount += ticks;
+        disStat.currentLineTickCount += ticks;
         ticks = 0;
         return false;
       }
@@ -624,8 +622,8 @@ namespace GBSharp.VideoSpace
 
     private void ChangeDisplayMode(DisplayModes newDisplayMode)
     {
-      this.displayMode = newDisplayMode;
-      byte byteDisplayMode = (byte)this.displayMode;
+      disStat.displayMode = newDisplayMode;
+      byte byteDisplayMode = (byte)disStat.displayMode;
 
       byte STAT = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.STAT);
       // We strip the last 2 bits of STAT and replace them with the mode
@@ -633,7 +631,7 @@ namespace GBSharp.VideoSpace
       this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.STAT, STAT);
 
       // We check if we have to trigger vertical blanking
-      if(this.displayMode == DisplayModes.Mode01) // We just change to V-BLANK Mode
+      if(disStat.displayMode == DisplayModes.Mode01) // We just change to V-BLANK Mode
       {
         interruptController.SetInterrupt(Interrupts.VerticalBlanking);
       }
@@ -649,8 +647,6 @@ namespace GBSharp.VideoSpace
       {
         interruptController.SetInterrupt(Interrupts.LCDCStatus);
       }
-
-
     }
 
     /// <summary>
@@ -666,16 +662,16 @@ namespace GBSharp.VideoSpace
     {
       if (updateLineCount)
       {
-        currentLineTickCount = 0;
-        ++currentLine;
+        disStat.currentLineTickCount = 0;
+        ++disStat.currentLine;
       }
 
-      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.LY, currentLine);
+      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.LY, disStat.currentLine);
       byte LYC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LYC);
 
       byte STAT = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.STAT);
       // We update the STAT corresponding to the LY=LYC coincidence
-      if (LYC == currentLine)
+      if (LYC == disStat.currentLine)
       {
         byte STATMask = 0x04; // Bit 2 is set 1
         STAT = (byte)(STAT | STATMask);

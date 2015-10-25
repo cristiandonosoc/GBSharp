@@ -5,7 +5,7 @@ using System.Drawing.Imaging;
 
 namespace GBSharp.VideoSpace
 {
-  internal static class DisplayFunctions
+  internal static class DisFuncs
   {
 
     /// <summary>

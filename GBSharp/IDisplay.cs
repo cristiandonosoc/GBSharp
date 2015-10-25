@@ -21,9 +21,8 @@ namespace GBSharp
     uint[] Screen { get; }
     uint[] GetSprite(int index);
 
-    uint[] UintSpriteLayer { get; }
-
     DisplayDefinition GetDisplayDefinition();
+    DisplayStatus GetDisplayStatus();
 
     void DrawDisplay(int rowStart = 0, int rowEnd = 144);
   }
