@@ -18,13 +18,6 @@ namespace GBSharp.ViewModel
     private readonly IDisplay _display;
     private readonly IMemory _memory;
 
-
-    private bool _blockSelectionFlag;
-    private bool _codeAreaSelectionFlag;
-    private bool _characterDataSelectionFlag;
-
-    private readonly ObservableCollection<SpriteViewModel> _sprites = new ObservableCollection<SpriteViewModel>();
-    
     private WriteableBitmap _background;
     public WriteableBitmap Background
     {
@@ -72,6 +65,8 @@ namespace GBSharp.ViewModel
       }
     }
 
+    private readonly ObservableCollection<SpriteViewModel> _sprites = new ObservableCollection<SpriteViewModel>();
+
     private WriteableBitmap _displayTiming;
     public WriteableBitmap DisplayTiming
     {
@@ -80,45 +75,6 @@ namespace GBSharp.ViewModel
       {
         _displayTiming = value;
         OnPropertyChanged(() => DisplayTiming);
-      }
-    }
-
-    public bool BlockSelectionFlag
-    {
-      get { return _blockSelectionFlag; }
-      set
-      {
-        if (_blockSelectionFlag != value)
-        {
-          _blockSelectionFlag = value;
-          OnPropertyChanged(() => BlockSelectionFlag);
-        }
-      }
-    }
-
-    public bool CodeAreaSelectionFlag
-    {
-      get { return _codeAreaSelectionFlag; }
-      set
-      {
-        if (_codeAreaSelectionFlag != value)
-        {
-          _codeAreaSelectionFlag = value;
-          OnPropertyChanged(() => CodeAreaSelectionFlag);
-        }
-      }
-    }
-
-    public bool CharacterDataSelectionFlag
-    {
-      get { return _characterDataSelectionFlag; }
-      set
-      {
-        if (_characterDataSelectionFlag != value)
-        {
-          _characterDataSelectionFlag = value;
-          OnPropertyChanged(() => CharacterDataSelectionFlag);
-        }
       }
     }
 
@@ -207,11 +163,6 @@ namespace GBSharp.ViewModel
       {
         Sprites[i].RefreshSprite(_display.GetSprite(i), _display.GetOAM(i));
       }
-
-      var lcdControl = _memory.Data[(int)MemoryMappedRegisters.LCDC];
-      BlockSelectionFlag = (lcdControl & (byte)LCDControlFlags.OBJBlockCompositionSelection) > 0;
-      CodeAreaSelectionFlag = (lcdControl & (byte)LCDControlFlags.BGCodeAreaSelection) > 0;
-      CharacterDataSelectionFlag = (lcdControl & (byte)LCDControlFlags.BGCharacterDataSelection) > 0;
 
       NotifyUpdateDisplay();
     }

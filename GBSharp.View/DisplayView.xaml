@@ -76,15 +76,8 @@
               <Grid>
                 <Grid.RowDefinitions>
                   <RowDefinition Height="Auto"/>
-                  <RowDefinition Height="Auto"/>
-                  <RowDefinition Height="Auto"/>
-                  <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <CheckBox Content="8x8 Blocks" IsChecked="{Binding BlockSelectionFlag}" Margin="2" />
-                <CheckBox Grid.Row="1" Content="Code Area 0" IsChecked="{Binding CodeAreaSelectionFlag}" Margin="2" />
-                <CheckBox Grid.Row="2" Content="Signed Mode" IsChecked="{Binding CharacterDataSelectionFlag}" Margin="2" />
                 <DockPanel Grid.Row="3">
-
                   <Button DockPanel.Dock="Left" Content="&lt;" Command="{Binding ScrollXDecreaseCommand}"></Button>
                   <Button DockPanel.Dock="Right" Content="&gt;" Command="{Binding ScrollXIncreaseCommand}"></Button>
                   <Button DockPanel.Dock="Top" Content="^" Command="{Binding ScrollYIncreaseCommand}"></Button>
@@ -113,13 +106,7 @@
             <Grid>
               <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
               </Grid.RowDefinitions>
-              <CheckBox Content="8x8 Blocks" IsChecked="{Binding BlockSelectionFlag}" Margin="2" />
-              <CheckBox Grid.Row="1" Content="Code Area 0" IsChecked="{Binding CodeAreaSelectionFlag}" Margin="2" />
-              <CheckBox Grid.Row="2" Content="Signed Mode" IsChecked="{Binding CharacterDataSelectionFlag}" Margin="2" />
               <DockPanel Grid.Row="3">
                 <Button DockPanel.Dock="Left" Content="&lt;" Command="{Binding ScrollXDecreaseCommand}"></Button>
                 <Button DockPanel.Dock="Right" Content="&gt;" Command="{Binding ScrollXIncreaseCommand}"></Button>
