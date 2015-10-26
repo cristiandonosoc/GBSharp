@@ -18,6 +18,8 @@ namespace GBSharp.ViewModel
     private DateTime _previousTime = DateTime.Now;
     private bool _releaseButtons;
 
+    private bool _screenOnly;
+
     public WriteableBitmap Screen
     {
       get { return _screen; }
@@ -81,6 +83,17 @@ namespace GBSharp.ViewModel
 
     public ICommand ButtonStartDownCommand { get { return new DelegateCommand(ButtonStartDown); } }
     public ICommand ButtonStartUpCommand { get { return new DelegateCommand(ButtonStartUp); } }
+
+    public bool ScreenOnly
+    {
+      get { return _screenOnly; }
+      set
+      {
+        _screenOnly = value;
+        OnPropertyChanged(() => ScreenOnly);
+      }
+    }
+
     private void ButtonStartDown() { _gameBoy.PressButton(Keypad.Start); }
     private void ButtonStartUp() { _gameBoy.ReleaseButton(Keypad.Start); }
 
