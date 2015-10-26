@@ -138,5 +138,45 @@ namespace GBSharp.ViewModel
       _displayVm.UpdateDisplay -= OnUpdateDisplay;
     }
 
+    public void KeyUp(KeyEventArgs args)
+    {
+      if (args.Key == Key.Enter)
+        _gameBoy.ReleaseButton(Keypad.Start);
+      else if (args.Key == Key.Space)
+        _gameBoy.ReleaseButton(Keypad.Select);
+      else if (args.Key == Key.O)
+        _gameBoy.ReleaseButton(Keypad.A);
+      else if (args.Key == Key.P)
+        _gameBoy.ReleaseButton(Keypad.B);
+      else if (args.Key == Key.A)
+        _gameBoy.ReleaseButton(Keypad.Left);
+      else if (args.Key == Key.D)
+        _gameBoy.ReleaseButton(Keypad.Right);
+      else if (args.Key == Key.W)
+        _gameBoy.ReleaseButton(Keypad.Up);
+      else if (args.Key == Key.S)
+        _gameBoy.ReleaseButton(Keypad.Down); 
+    }
+
+    public void KeyDown(KeyEventArgs args)
+    {
+      if (args.Key == Key.Enter)
+        _gameBoy.PressButton(Keypad.Start);
+      else if (args.Key == Key.Space)
+        _gameBoy.PressButton(Keypad.Select);
+      else if (args.Key == Key.O)
+        _gameBoy.PressButton(Keypad.A);
+      else if (args.Key == Key.P)
+        _gameBoy.PressButton(Keypad.B);
+      else if (args.Key == Key.A)
+        _gameBoy.PressButton(Keypad.Left);
+      else if (args.Key == Key.D)
+        _gameBoy.PressButton(Keypad.Right);
+      else if (args.Key == Key.W)
+        _gameBoy.PressButton(Keypad.Up);
+      else if (args.Key == Key.S)
+        _gameBoy.PressButton(Keypad.Down); 
+      
+    }
   }
 }

@@ -1,9 +1,12 @@
-﻿namespace GBSharp.ViewModel
+﻿using System.Windows.Input;
+
+namespace GBSharp.ViewModel
 {
   public class GameBoyViewModel : ViewModelBase
   {
     private IDispatcher _dispatcher;
     private readonly IWindow _window;
+    private readonly IKeyboardHandler _keyboardHandler;
     private readonly IGameBoy _gameBoy;
 
     private readonly MemoryViewModel _memory;
@@ -50,11 +53,14 @@
     }
 
 
-    public GameBoyViewModel(IGameBoy gameBoy, IDispatcher dispatcher, IWindow window, IOpenFileDialogFactory fileDialogFactory)
+    public GameBoyViewModel(IGameBoy gameBoy, IDispatcher dispatcher, IWindow window, IOpenFileDialogFactory fileDialogFactory, IKeyboardHandler keyboardHandler)
     {
       _gameBoy = gameBoy;
       _dispatcher = dispatcher;
       _window = window;
+      _keyboardHandler = keyboardHandler;
+      _keyboardHandler.KeyDown += OnKeyDown;
+      _keyboardHandler.KeyUp += OnKeyUp;
       _window.OnClosing += HandleClosing;
       _gameBoyController = new GameBoyContollerViewModel(_gameBoy, fileDialogFactory);
       _gameBoyController.OnFileLoaded += FileLoadedHandler;
@@ -72,7 +78,17 @@
       _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher, _display);
       _dissasemble = new DissasembleViewModel(_gameBoy);
     }
-    
+
+    private void OnKeyUp(KeyEventArgs args)
+    {
+      _gameBoyGamePad.KeyUp(args);
+    }
+
+    private void OnKeyDown(KeyEventArgs args)
+    {
+      _gameBoyGamePad.KeyDown(args);
+    }
+
     private void InterruptHandler(GBSharp.CPUSpace.Interrupts interrupt)
     {
       // TODO(Cristian, aaecheve): Do something special with each interrupt?

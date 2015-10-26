@@ -6,6 +6,9 @@
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
+  <UserControl.InputBindings>
+    <KeyBinding Key="G" Command="{Binding GenerateVolumeCommand}" />
+  </UserControl.InputBindings>
   <Grid Style="{DynamicResource MedGrid}">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="*" ></ColumnDefinition>
