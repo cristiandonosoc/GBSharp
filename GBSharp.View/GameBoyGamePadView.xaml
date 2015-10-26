@@ -13,11 +13,16 @@
   </UserControl.Resources>
   <Grid Style="{DynamicResource MedGrid}">
     <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"></RowDefinition>
+      <RowDefinition Height="Auto"></RowDefinition>
       <RowDefinition Height="*"></RowDefinition>
       <RowDefinition Height="Auto"></RowDefinition>
     </Grid.RowDefinitions>
-    <Image Visibility="{Binding ScreenOnly, Converter={StaticResource BoolToVis}}" Source="{Binding Screen}"/>
-    <Grid Visibility="{Binding ScreenOnly, Converter={StaticResource BoolToHid}}" >
+    <CheckBox Grid.Row="0" Content="Release Buttons"  Foreground="White" Visibility="Hidden"  IsChecked="{Binding ReleaseButtons}" />
+    <TextBlock Grid.Row="1" Foreground="White" Text="{Binding FPS}"></TextBlock>
+
+    <Image Grid.Row="2" Visibility="{Binding ScreenOnly, Converter={StaticResource BoolToVis}}" Source="{Binding Screen}"/>
+    <Grid Grid.Row="2" Visibility="{Binding ScreenOnly, Converter={StaticResource BoolToHid}}" >
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" ></ColumnDefinition>
         <ColumnDefinition Width="Auto" ></ColumnDefinition>
@@ -27,8 +32,6 @@
         <Image Canvas.Top="0" Canvas.Left="0" Source="Images/Nintendo_Gameboy720.jpg"  Height="568" Width="345">
 
         </Image>
-        <CheckBox Canvas.Top="-40" Canvas.Left="-30" Content="Release Buttons" IsChecked="{Binding ReleaseButtons}" />
-        <TextBlock Canvas.Top="-30" Canvas.Left="-30" Foreground="White" Text="{Binding FPS}"></TextBlock>
         <Button x:Name="A" Canvas.Top="345" Canvas.Left="274" HorizontalAlignment="Left" VerticalAlignment="Top" Width="40" Height="40">
           <i:Interaction.Triggers>
             <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
@@ -378,6 +381,6 @@
 
       </Canvas>
     </Grid>
-    <ToggleButton Grid.Row="1" Content="Screen Only" IsChecked="{Binding ScreenOnly}"></ToggleButton>
+    <ToggleButton Grid.Row="3" Content="Screen Only" IsChecked="{Binding ScreenOnly}"></ToggleButton>
   </Grid>
 </UserControl>
