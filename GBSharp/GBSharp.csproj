@@ -70,6 +70,7 @@
     <Compile Include="MemorySpace\Memory.cs" />
     <Compile Include="MemorySpace\MemoryHandlers\MemoryHandler.cs" />
     <Compile Include="MemorySpace\MemoryHandlers\MemoryHandlerFactory.cs" />
+    <Compile Include="MemorySpace\MemoryHandlers\MBC1MemoryHandler.cs" />
     <Compile Include="MemorySpace\MemoryHandlers\RomOnlyMemoryHandler.cs" />
     <Compile Include="MemorySpace\MemoryMappedRegisters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

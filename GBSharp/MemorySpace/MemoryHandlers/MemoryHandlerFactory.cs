@@ -16,9 +16,14 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     /// <returns>A MemoryHandler instance</returns>
     internal static MemoryHandler CreateMemoryHandler(GameBoy gameboy)
     {
-      if (gameboy.Cartridge.Type == CartridgeType.ROM_ONLY)
+      switch (gameboy.Cartridge.Type)
       {
-        return new RomOnlyMemoryHandler(gameboy);
+        case CartridgeType.ROM_ONLY:
+        case CartridgeType.ROM_RAM:
+          return new RomOnlyMemoryHandler(gameboy);
+        case CartridgeType.ROM_MBC1:
+        case CartridgeType.ROM_MBC1_RAM:
+          return new MBC1MemoryHandler(gameboy);
       }
 
       // TODO(Cristián): Implement logic for different CartridgeType
