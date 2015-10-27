@@ -194,8 +194,8 @@ namespace GBSharp.CPUSpace
 
       // Instruction fetch and decode
       Interrupts? interrupt = InterruptRequired();
-      bool INTERRUPT_IN_PROGRESS = interrupt != null;
-      if (INTERRUPT_IN_PROGRESS)
+      bool interruptInProgress = interrupt != null;
+      if (interruptInProgress)
       {
         // NOTE(Cristian): We store the interrupt so we break on the next
         //                 step. This will enable that we're breaking on the
@@ -216,14 +216,13 @@ namespace GBSharp.CPUSpace
         return 0;
       }
 
-
       // Prepare for program counter movement, but wait for instruction execution.
       // Overwrite nextPC in the instruction lambdas if you want to implement jumps.
       // NOTE(Cristian): If we don't differentiate this case, the CALL instruction of the
       //                 interrupt will be added to nextPC, which will in turn be written
       //                 into the stack. This means that when we RET, we would have jumped
       //                 into the address we *should* have jumped plus some meaningless offset!
-      if (!INTERRUPT_IN_PROGRESS)
+      if (!interruptInProgress)
       {
         this.nextPC = (ushort)(this.registers.PC + _currentInstruction.Length);
       }
@@ -361,32 +360,16 @@ namespace GBSharp.CPUSpace
     /// execution times obtained from CPUInstructionClocks and CPUCBInstructionClocks dictionaries.</returns>
     private byte UpdateClockAndTimers(ushort initialClock, byte ticks)
     {
-      // Update clock adding only base ticks. Conditional instructions times are already added at this point.
+      // Update clock adding only base ticks. 
+      // NOTE(Cristian): Conditional instructions times are already added at this point.
+      //                 The instruction modifies the currentInstruction ticks
       this.clock += ticks;
-
-      // Timing functions
-
-      /* We need to update the value in ticks variable since conditional CALL or JUMP instruction may
-       * add additional time to the base clock if their conditions are met.
-       * Since this.clock overflows every 65536 ticks, a substraction is not enough and an overflow
-       * condition must be checked first.
-       */
-      if (this.clock < initialClock)
-      {
-        // Clock overflow condition!
-        ticks = (byte)(0x10000 + this.clock - initialClock);
-      }
-      else
-      {
-        // Normal scenario
-        ticks = (byte)(this.clock - initialClock);
-      }
 
       // Upper 8 bits of the clock should be accessible through DIV register.
       this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.DIV, (byte)(this.clock >> 8));
 
       // Configurable timer TIMA/TMA/TAC system:
-      byte TAC = this.memory.Read((ushort)MemoryMappedRegisters.TAC);
+      byte TAC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.TAC);
 
       byte clockSelect = (byte)(TAC & 0x03); // Clock select is the bits 0 and 1 of the TAC register
       bool runTimer = (TAC & 0x04) == 0x04; // Run timer is the bit 2 of the TAC register

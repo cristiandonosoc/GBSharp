@@ -563,7 +563,6 @@ namespace GBSharp.VideoSpace
       //  TODO(Cristian): Remember that the WY state changes over frame (after V-BLANK)
       //                  and not between lines (as changes with WX)
 
-      int rowIndex = disStat.currentLine * disDef.timingPixelCountX;
 
       int beginX = (int)(pixelsPerTick * disStat.prevTickCount);
       int endX = (int)(pixelsPerTick * disStat.currentLineTickCount);
@@ -590,9 +589,10 @@ namespace GBSharp.VideoSpace
       if (mode == 2) { color = 0xFF00FF00; }
       if (mode == 3) { color = 0xFF0000FF; }
 
+      int rowIndex = disStat.currentLine * disDef.timingPixelCountX;
       for (int i = beginX; i < endX; ++i)
       {
-        displayTiming[i] = color;
+        displayTiming[rowIndex + i] = color;
       }
     }
 
