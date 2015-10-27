@@ -643,7 +643,8 @@ namespace GBSharp.VideoSpace
       //                 Bit 5: Mode 10
       // 								 Bit 4: Mode 01
       // 								 Bit 3: Mode 00
-      if (((STAT >> (byteDisplayMode + 3)) & 1) == 1)
+      if ((newDisplayMode != DisplayModes.Mode11) &&
+          ((STAT >> (byteDisplayMode + 3)) & 1) == 1)
       {
         interruptController.SetInterrupt(Interrupts.LCDCStatus);
       }

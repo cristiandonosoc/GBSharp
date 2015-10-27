@@ -324,9 +324,11 @@ namespace GBSharp.CPUSpace
       if (this.interruptController.InterruptMasterEnable)
       {
         // Read interrupt flags
-        int interrupt = this.memory.Read((ushort)MemoryMappedRegisters.IF);
+        int interruptRequest = this.memory.Read((ushort)MemoryMappedRegisters.IF);
         // Mask enabled interrupts
-        interrupt &= this.memory.Read((ushort)MemoryMappedRegisters.IE);
+        int interruptEnable = this.memory.Read((ushort)MemoryMappedRegisters.IE);
+
+        int interrupt = interruptEnable & interruptRequest;
 
         if ((interrupt & 0x1F) == 0x00) // 0x1F masks the useful bits of IE and IF, there is only 5 interrupts.
         {
