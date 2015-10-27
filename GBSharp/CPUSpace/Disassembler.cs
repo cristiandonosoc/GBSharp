@@ -67,38 +67,38 @@ namespace GBSharp.CPUSpace
 
             if (dirJumps.ContainsKey(inst.OpCode))
             {
-              if(dirJumps[inst.OpCode])
-              {
-                candidates.Add(inst.Literal);
-              }
-              // If permissive, we also permit conditional jumps (ant the next inst)
-              else if(permissive)
-              {
-                candidates.Add(inst.Literal);
-                var next = (ushort)(address + inst.Length);
-                candidates.Add(next);
-              }
+              //if(dirJumps[inst.OpCode])
+              //{
+              //  candidates.Add(inst.Literal);
+              //}
+              //// If permissive, we also permit conditional jumps (ant the next inst)
+              //else if(permissive)
+              //{
+              //  candidates.Add(inst.Literal);
+              //  var next = (ushort)(address + inst.Length);
+              //  candidates.Add(next);
+              //}
             }
 
             else if (relJumps.ContainsKey(inst.OpCode))
             {
-              if(relJumps[inst.OpCode])
-              {
-                sbyte signedLiteral;
-                unchecked { signedLiteral = (sbyte)inst.Literal; }
-                ushort target = (ushort)(inst.Address + signedLiteral + inst.Length);
-                candidates.Add(target);
-              }
-              else if(permissive)
-              {
-                sbyte signedLiteral;
-                unchecked { signedLiteral = (sbyte)inst.Literal; }
-                ushort target = (ushort)(inst.Address + signedLiteral + inst.Length);
-                candidates.Add(target);
+              //if(relJumps[inst.OpCode])
+              //{
+              //  sbyte signedLiteral;
+              //  unchecked { signedLiteral = (sbyte)inst.Literal; }
+              //  ushort target = (ushort)(inst.Address + signedLiteral + inst.Length);
+              //  candidates.Add(target);
+              //}
+              //else if(permissive)
+              //{
+              //  sbyte signedLiteral;
+              //  unchecked { signedLiteral = (sbyte)inst.Literal; }
+              //  ushort target = (ushort)(inst.Address + signedLiteral + inst.Length);
+              //  candidates.Add(target);
 
-                var next = (ushort)(address + inst.Length);
-                candidates.Add(next);
-              }
+              //  var next = (ushort)(address + inst.Length);
+              //  candidates.Add(next);
+              //}
             }
             else if(restarts.ContainsKey(inst.OpCode))
             {
