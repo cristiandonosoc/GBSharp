@@ -12,7 +12,7 @@ namespace GBSharp
   {
     // 1 byte registers
     [FieldOffset(0)]
-    public byte F;
+    private byte _F;
     [FieldOffset(1)]
     public byte A;
     [FieldOffset(2)]
@@ -41,13 +41,34 @@ namespace GBSharp
 
     // 2 byte "union" registers
     [FieldOffset(0)]
-    public ushort AF;
+    private ushort _AF;
     [FieldOffset(2)]
     public ushort BC;
     [FieldOffset(4)]
     public ushort DE;
     [FieldOffset(6)]
     public ushort HL;
+
+    public byte F
+    {
+      get { return _F; }
+      set
+      {
+        // NOTE(Cristian): The lowest nibble of F is always 0
+        _F = (byte)(value & 0xF0);
+      }
+    }
+
+    public ushort AF
+    {
+      get { return _AF; }
+      set
+      {
+        _AF = value;
+        // NOTE(Cristian): The lowest nibble of F is always 0
+        _F = (byte)(_F & 0xF0);
+      }
+    }
 
     public byte FZ
     {
