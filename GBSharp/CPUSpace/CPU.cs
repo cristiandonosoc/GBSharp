@@ -1236,6 +1236,7 @@ namespace GBSharp.CPUSpace
               registers.FC = (byte)((A > 255) ? 1 : 0);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
               registers.FH = (byte)(((registers.A ^ registers.B ^ initial) & 0x10) == 0 ? 0 : 1);
+              registers.FN = 0;
             }},
 
             // ADC A,C: Add C and carry flag to A
@@ -1250,6 +1251,7 @@ namespace GBSharp.CPUSpace
               registers.FC = (byte)((A > 255) ? 1 : 0);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
               registers.FH = (byte)(((registers.A ^ registers.C ^ initial) & 0x10) == 0 ? 0 : 1);
+              registers.FN = 0;
             }},
 
             // ADC A,D: Add D and carry flag to A
@@ -1264,6 +1266,7 @@ namespace GBSharp.CPUSpace
               registers.FC = (byte)((A > 255) ? 1 : 0);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
               registers.FH = (byte)(((registers.A ^ registers.D ^ initial) & 0x10) == 0 ? 0 : 1);
+              registers.FN = 0;
             }},
 
             // ADC A,E: Add E and carry flag to A
@@ -1278,6 +1281,7 @@ namespace GBSharp.CPUSpace
               registers.FC = (byte)((A > 255) ? 1 : 0);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
               registers.FH = (byte)(((registers.A ^ registers.E ^ initial) & 0x10) == 0 ? 0 : 1);
+              registers.FN = 0;
             }},
 
             // ADC A,H: Add H and carry flag to A
@@ -1292,6 +1296,7 @@ namespace GBSharp.CPUSpace
               registers.FC = (byte)((A > 255) ? 1 : 0);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
               registers.FH = (byte)(((registers.A ^ registers.H ^ initial) & 0x10) == 0 ? 0 : 1);
+              registers.FN = 0;
             }},
 
             // ADC A,L: Add and carry flag L to A
@@ -1306,6 +1311,7 @@ namespace GBSharp.CPUSpace
               registers.FC = (byte)((A > 255) ? 1 : 0);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
               registers.FH = (byte)(((registers.A ^ registers.L ^ initial) & 0x10) == 0 ? 0 : 1);
+              registers.FN = 0;
             }},
 
             // ADC A,(HL): Add value pointed by HL and carry flag to A
@@ -1321,6 +1327,7 @@ namespace GBSharp.CPUSpace
               registers.FC = (byte)((A > 255) ? 1 : 0);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
               registers.FH = (byte)(((registers.A ^ m ^ initial) & 0x10) == 0 ? 0 : 1);
+              registers.FN = 0;
             }},
 
             // ADC A,A: Add A and carry flag to A
@@ -1335,6 +1342,7 @@ namespace GBSharp.CPUSpace
               registers.FC = (byte)((A > 255) ? 1 : 0);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
               registers.FH = (byte)(((registers.A ^ registers.A ^ initial) & 0x10) == 0 ? 0 : 1);
+              registers.FN = 0;
             }},
 
             // SUB A,B: Subtract B from A
@@ -1979,6 +1987,7 @@ namespace GBSharp.CPUSpace
               registers.FC = (byte)((A > 255) ? 1 : 0);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
               registers.FH = (byte)(((registers.A ^ n ^ initial) & 0x10) == 0 ? 0 : 1);
+              registers.FN = 0;
             }},
 
             // RST 8: Call routine at address 0008h
