@@ -2046,7 +2046,13 @@ namespace GBSharp.CPUSpace
             }},
 
             // SUB A,n: Subtract 8-bit immediate from A
-            {0xD6, (n)=>{registers.A -= (byte)n;}},
+            {0xD6, (n)=>{
+              byte subtractor = (byte)n;
+              UtilFuncs.SBC(ref registers,
+                            ref registers.A,
+                            subtractor,
+                            0);
+            }},
 
             // RST 10: Call routine at address 0010h
             {0xD7, (n)=>{instructionLambdas[0xCD](0x10);}},
