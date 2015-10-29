@@ -2845,51 +2845,91 @@ namespace GBSharp.CPUSpace
         {0x37, (n) => { registers.A = UtilFuncs.SwapNibbles(registers.A); }},
 
         // SRL B: Shift B right
-        {0x38, (n) => { var shiftCarry = UtilFuncs.ShiftRightLogic(registers.B);
-                        registers.B = shiftCarry.Item1;
-                        registers.FC = shiftCarry.Item2;
+        {0x38, (n) => {
+          var shiftCarry = UtilFuncs.ShiftRightLogic(registers.B);
+          registers.B = shiftCarry.Item1;
+
+          registers.FC = shiftCarry.Item2;
+          registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
         // SRL C: Shift C right
-        {0x39, (n) => { var shiftCarry = UtilFuncs.ShiftRightLogic(registers.C);
-                        registers.C = shiftCarry.Item1;
-                        registers.FC = shiftCarry.Item2;
+        {0x39, (n) => {
+          var shiftCarry = UtilFuncs.ShiftRightLogic(registers.C);
+          registers.C = shiftCarry.Item1;
+
+          registers.FC = shiftCarry.Item2;
+          registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
         // SRL D: Shift D right
-        {0x3A, (n) => { var shiftCarry = UtilFuncs.ShiftRightLogic(registers.D);
-                        registers.D = shiftCarry.Item1;
-                        registers.FC = shiftCarry.Item2;
+        {0x3A, (n) => {
+          var shiftCarry = UtilFuncs.ShiftRightLogic(registers.D);
+          registers.D = shiftCarry.Item1;
+
+          registers.FC = shiftCarry.Item2;
+          registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
         // SRL E: Shift E right
-        {0x3B, (n) => { var shiftCarry = UtilFuncs.ShiftRightLogic(registers.E);
-                        registers.E = shiftCarry.Item1;
-                        registers.FC = shiftCarry.Item2;
+        {0x3B, (n) => {
+          var shiftCarry = UtilFuncs.ShiftRightLogic(registers.E);
+          registers.E = shiftCarry.Item1;
+
+          registers.FC = shiftCarry.Item2;
+          registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
         // SRL H: Shift H right
-        {0x3C, (n) => { var shiftCarry = UtilFuncs.ShiftRightLogic(registers.H);
-                        registers.H = shiftCarry.Item1;
-                        registers.FC = shiftCarry.Item2;
+        {0x3C, (n) => {
+          var shiftCarry = UtilFuncs.ShiftRightLogic(registers.H);
+          registers.H = shiftCarry.Item1;
+
+          registers.FC = shiftCarry.Item2;
+          registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
         // SRL L: Shift L right
-        {0x3D, (n) => { var shiftCarry = UtilFuncs.ShiftRightLogic(registers.L);
-                        registers.L = shiftCarry.Item1;
-                        registers.FC = shiftCarry.Item2;
+        {0x3D, (n) => {
+          var shiftCarry = UtilFuncs.ShiftRightLogic(registers.L);
+          registers.L = shiftCarry.Item1;
+
+          registers.FC = shiftCarry.Item2;
+          registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
         // SRL (HL): Shift value pointed by HL right
-        {0x3E, (n) => { var shiftCarry = UtilFuncs.ShiftRightLogic(memory.Read(registers.HL));
-                        memory.Write(registers.HL, shiftCarry.Item1);
-                        registers.FC = shiftCarry.Item2;
+        {0x3E, (n) => {
+          var shiftCarry = UtilFuncs.ShiftRightLogic(memory.Read(registers.HL));
+          memory.Write(registers.HL, shiftCarry.Item1);
+
+          registers.FC = shiftCarry.Item2;
+          registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
         // SRL A: Shift A right
-        {0x3F, (n) => { var shiftCarry = UtilFuncs.ShiftRightLogic(registers.A);
-                        registers.A = shiftCarry.Item1;
-                        registers.FC = shiftCarry.Item2;
+        {0x3F, (n) => {
+          var shiftCarry = UtilFuncs.ShiftRightLogic(registers.A);
+          registers.A = shiftCarry.Item1;
+
+          registers.FC = shiftCarry.Item2;
+          registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
         // BIT 0,B: Test bit 0 of B
