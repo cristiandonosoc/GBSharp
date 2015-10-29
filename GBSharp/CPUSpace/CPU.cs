@@ -2821,28 +2821,92 @@ namespace GBSharp.CPUSpace
         }},
 
         // SWAP B: Swap nybbles in B
-        {0x30, (n) => { registers.B = UtilFuncs.SwapNibbles(registers.B); }},
+        {0x30, (n) => {
+          byte result = UtilFuncs.SwapNibbles(registers.B);
+          registers.B = result;
+
+          registers.FZ = (byte)(result == 0 ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
+          registers.FC = 0;
+        }},
 
         // SWAP C: Swap nybbles in C
-        {0x31, (n) => { registers.C = UtilFuncs.SwapNibbles(registers.C); }},
+        {0x31, (n) => {
+          byte result = UtilFuncs.SwapNibbles(registers.C);
+          registers.C = result;
+
+          registers.FZ = (byte)(result == 0 ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
+          registers.FC = 0;
+        }},
 
         // SWAP D: Swap nybbles in D
-        {0x32, (n) => { registers.D = UtilFuncs.SwapNibbles(registers.D); }},
+        {0x32, (n) => {
+          byte result = UtilFuncs.SwapNibbles(registers.D);
+          registers.D = result;
+
+          registers.FZ = (byte)(result == 0 ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
+          registers.FC = 0;
+        }},
 
         // SWAP E: Swap nybbles in E
-        {0x33, (n) => { registers.E = UtilFuncs.SwapNibbles(registers.E); }},
+        {0x33, (n) => {
+          byte result = UtilFuncs.SwapNibbles(registers.E);
+          registers.E = result;
+
+          registers.FZ = (byte)(result == 0 ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
+          registers.FC = 0;
+        }},
 
         // SWAP H: Swap nybbles in H
-        {0x34, (n) => { registers.H = UtilFuncs.SwapNibbles(registers.H); }},
+        {0x34, (n) => {
+          byte result = UtilFuncs.SwapNibbles(registers.H);
+          registers.H = result;
+
+          registers.FZ = (byte)(result == 0 ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
+          registers.FC = 0;
+        }},
 
         // SWAP L: Swap nybbles in L
-        {0x35, (n) => {registers.L = UtilFuncs.SwapNibbles(registers.L); }},
+        {0x35, (n) => {
+          byte result = UtilFuncs.SwapNibbles(registers.L);
+          registers.L = result;
+
+          registers.FZ = (byte)(result == 0 ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
+          registers.FC = 0;
+        }},
 
         // SWAP (HL): Swap nybbles in value pointed by HL
-        {0x36, (n) => { memory.Write(registers.HL, UtilFuncs.SwapNibbles(memory.Read(registers.HL))); }},
+        {0x36, (n) => {
+          byte result = UtilFuncs.SwapNibbles(memory.Read(registers.HL));
+          memory.Write(registers.HL, result);
+
+          registers.FZ = (byte)(result == 0 ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
+          registers.FC = 0;
+        }},
 
         // SWAP A: Swap nybbles in A
-        {0x37, (n) => { registers.A = UtilFuncs.SwapNibbles(registers.A); }},
+        {0x37, (n) => {
+          byte result = UtilFuncs.SwapNibbles(registers.A);
+          registers.A = result;
+
+          registers.FZ = (byte)(result == 0 ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
+          registers.FC = 0;
+        }},
 
         // SRL B: Shift B right
         {0x38, (n) => {
