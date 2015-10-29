@@ -488,7 +488,7 @@ namespace GBSharp.CPUSpace
               registers.A = rotateCarry.Item1;
 
           		registers.FC = rotateCarry.Item2;
-          		registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
+              registers.FZ = 0;
           		registers.FN = 0;
           		registers.FH = 0;
             }},
@@ -541,7 +541,7 @@ namespace GBSharp.CPUSpace
           		registers.A = rotateCarry.Item1;
 
           		registers.FC = rotateCarry.Item2;
-          		registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
+              registers.FZ = 0;
           		registers.FN = 0;
           		registers.FH = 0;
             }},
@@ -585,7 +585,7 @@ namespace GBSharp.CPUSpace
           		registers.A = rotateCarry.Item1;
 
           		registers.FC = rotateCarry.Item2;
-          		registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
+              registers.FZ = 0;
           		registers.FN = 0;
           		registers.FH = 0;
             }},
@@ -642,7 +642,7 @@ namespace GBSharp.CPUSpace
           		registers.A = rotateCarry.Item1;
 
           		registers.FC = rotateCarry.Item2;
-          		registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
+              registers.FZ = 0;
           		registers.FN = 0;
           		registers.FH = 0;
             }},
