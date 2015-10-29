@@ -2646,51 +2646,91 @@ namespace GBSharp.CPUSpace
         }},
 
         // SLA B: Shift B left preserving sign
-        {0x20, (n) => { var shiftCarry = UtilFuncs.ShiftLeft(registers.B);
-                        registers.B = shiftCarry.Item1;
-                        registers.FC = shiftCarry.Item2;
+        {0x20, (n) => {
+          var shiftCarry = UtilFuncs.ShiftLeft(registers.B);
+          registers.B = shiftCarry.Item1;
+
+          registers.FC = shiftCarry.Item2;
+          registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
         // SLA C: Shift C left preserving sign
-        {0x21, (n) => { var shiftCarry = UtilFuncs.ShiftLeft(registers.C);
-                        registers.C = shiftCarry.Item1;
-                        registers.FC = shiftCarry.Item2;
+        {0x21, (n) => {
+          var shiftCarry = UtilFuncs.ShiftLeft(registers.C);
+          registers.C = shiftCarry.Item1;
+
+          registers.FC = shiftCarry.Item2;
+          registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
         // SLA D: Shift D left preserving sign
-        {0x22, (n) => { var shiftCarry = UtilFuncs.ShiftLeft(registers.D);
-                        registers.D = shiftCarry.Item1;
-                        registers.FC = shiftCarry.Item2;
+        {0x22, (n) => {
+          var shiftCarry = UtilFuncs.ShiftLeft(registers.D);
+          registers.D = shiftCarry.Item1;
+
+          registers.FC = shiftCarry.Item2;
+          registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
         // SLA E: Shift E left preserving sign
-        {0x23, (n) => { var shiftCarry = UtilFuncs.ShiftLeft(registers.E);
-                        registers.E = shiftCarry.Item1;
-                        registers.FC = shiftCarry.Item2;
+        {0x23, (n) => {
+          var shiftCarry = UtilFuncs.ShiftLeft(registers.E);
+          registers.E = shiftCarry.Item1;
+
+          registers.FC = shiftCarry.Item2;
+          registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
         // SLA H: Shift H left preserving sign
-        {0x24, (n) => { var shiftCarry = UtilFuncs.ShiftLeft(registers.H);
-                        registers.H = shiftCarry.Item1;
-                        registers.FC = shiftCarry.Item2;
+        {0x24, (n) => {
+          var shiftCarry = UtilFuncs.ShiftLeft(registers.H);
+          registers.H = shiftCarry.Item1;
+
+          registers.FC = shiftCarry.Item2;
+          registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
         // SLA L: Shift L left preserving sign
-        {0x25, (n) => { var shiftCarry = UtilFuncs.ShiftLeft(registers.L);
-                        registers.L = shiftCarry.Item1;
-                        registers.FC = shiftCarry.Item2;
+        {0x25, (n) => {
+          var shiftCarry = UtilFuncs.ShiftLeft(registers.L);
+          registers.L = shiftCarry.Item1;
+
+          registers.FC = shiftCarry.Item2;
+          registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
         // SLA (HL): Shift value pointed by HL left preserving sign
-        {0x26, (n) => { var shiftCarry = UtilFuncs.ShiftLeft(memory.Read(registers.HL));
-                        memory.Write(registers.HL, shiftCarry.Item1);
-                        registers.FC = shiftCarry.Item2;
+        {0x26, (n) => {
+          var shiftCarry = UtilFuncs.ShiftLeft(memory.Read(registers.HL));
+          memory.Write(registers.HL, shiftCarry.Item1);
+
+          registers.FC = shiftCarry.Item2;
+          registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
         // SLA A: Shift A left preserving sign
-        {0x27, (n) => { var shiftCarry = UtilFuncs.ShiftLeft(registers.A);
-                        registers.A = shiftCarry.Item1;
-                        registers.FC = shiftCarry.Item2;
+        {0x27, (n) => {
+          var shiftCarry = UtilFuncs.ShiftLeft(registers.A);
+          registers.A = shiftCarry.Item1;
+
+          registers.FC = shiftCarry.Item2;
+          registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
         // SRA B: Shift B right preserving sign
         {0x28, (n) => { var shiftCarry = UtilFuncs.ShiftRightArithmetic(registers.B);
