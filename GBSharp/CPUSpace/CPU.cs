@@ -535,14 +535,13 @@ namespace GBSharp.CPUSpace
 
             // RRC A: Rotate A right with carry
             {0x0F, (n)=>{
-              byte bit0 = (byte)(registers.A & 0x01);
-              registers.A >>= 1;
-              registers.A += (byte)(bit0 << 7);
+              var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.A);
+          		registers.A = rotateCarry.Item1;
 
-              registers.FZ = (byte)(registers.A == 0 ? 1 : 0); // TODO: CHECK THIS, 2 sources say it's 0, 1 n/a, 1 conditional.
-              registers.FN = 0;
-              registers.FH = 0;
-              registers.FC = bit0;
+          		registers.FC = rotateCarry.Item2;
+          		registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
+          		registers.FN = 0;
+          		registers.FH = 0;
             }},
 
             // STOP: Stop processor
@@ -2379,56 +2378,95 @@ namespace GBSharp.CPUSpace
         }},
 
         // RRC B: Rotate B right with carry
-        {0x08, (n) => { var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.B);
-                        registers.B = rotateCarry.Item1;
-                        registers.FC = rotateCarry.Item2;
+        {0x08, (n) => {
+          var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.B);
+          registers.B = rotateCarry.Item1;
+
+          registers.FC = rotateCarry.Item2;
+          registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
         // RRC C: Rotate C right with carry
-        {0x09, (n) => { var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.C);
-                        registers.C = rotateCarry.Item1;
-                        registers.FC = rotateCarry.Item2;
+        {0x09, (n) => {
+          var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.C);
+          registers.C = rotateCarry.Item1;
+
+          registers.FC = rotateCarry.Item2;
+          registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
         // RRC D: Rotate D right with carry
-        {0x0A, (n) => { var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.D);
-                        registers.D = rotateCarry.Item1;
-                        registers.FC = rotateCarry.Item2;
+        {0x0A, (n) => {
+          var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.D);
+          registers.D = rotateCarry.Item1;
+
+          registers.FC = rotateCarry.Item2;
+          registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
         // RRC E: Rotate E right with carry
-        {0x0B, (n) => { var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.E);
-                        registers.E = rotateCarry.Item1;
-                        registers.FC = rotateCarry.Item2;
+        {0x0B, (n) => {
+          var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.E);
+          registers.E = rotateCarry.Item1;
+
+          registers.FC = rotateCarry.Item2;
+          registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
 
         // RRC H: Rotate H right with carry
-        {0x0C, (n) => { var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.H);
-                        registers.H = rotateCarry.Item1;
-                        registers.FC = rotateCarry.Item2;
+        {0x0C, (n) => {
+          var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.H);
+          registers.H = rotateCarry.Item1;
+
+          registers.FC = rotateCarry.Item2;
+          registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
 
         // RRC L: Rotate L right with carry
-        {0x0D, (n) => { var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.L);
-                        registers.L = rotateCarry.Item1;
-                        registers.FC = rotateCarry.Item2;
+        {0x0D, (n) => {
+          var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.L);
+          registers.L = rotateCarry.Item1;
+
+          registers.FC = rotateCarry.Item2;
+          registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
 
         // RRC (HL): Rotate value pointed by HL right with carry
-        {0x0E, (n) => { var rotateCarry = UtilFuncs.RotateRightAndCarry(memory.Read(registers.HL));
-                        memory.Write(registers.HL, rotateCarry.Item1);
-                        registers.FC = rotateCarry.Item2;
+        {0x0E, (n) => {
+          var rotateCarry = UtilFuncs.RotateRightAndCarry(memory.Read(registers.HL));
+          memory.Write(registers.HL, rotateCarry.Item1);
+
+          registers.FC = rotateCarry.Item2;
+          registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
 
         // RRC A: Rotate A right with carry
-        {0x0F, (n) =>{ var rotateCarry = UtilFuncs.RotateRightAndCarry
-          (registers.A);
-                        registers.A = rotateCarry.Item1;
-                        registers.FC = rotateCarry.Item2;
+        {0x0F, (n) =>{
+          var rotateCarry = UtilFuncs.RotateRightAndCarry(registers.A);
+          registers.A = rotateCarry.Item1;
+
+          registers.FC = rotateCarry.Item2;
+          registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
+          registers.FN = 0;
+          registers.FH = 0;
         }},
 
         // RL B: Rotate B left
