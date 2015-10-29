@@ -843,11 +843,13 @@ namespace GBSharp.CPUSpace
             // ADD HL,SP: Add 16-bit SP to HL
             {0x39, (n)=>{
               var initialH = registers.H;
+              int res = registers.HL + registers.SP;
+
               registers.HL += registers.SP;
 
               registers.FN = 0;
               registers.FH = (byte)(((registers.H ^ (registers.SP >> 8) ^ initialH) & 0x10) == 0 ? 0 : 1);
-              registers.FC = (byte)(initialH > registers.H ? 1 : 0);
+              registers.FC = (byte)((res > 0xFFFF) ? 1 : 0);
             }},
 
             // LDD A,(HL): Load A from address pointed to by HL, and decrement HL
@@ -2146,12 +2148,13 @@ namespace GBSharp.CPUSpace
             // ADD SP,d: Add signed 8-bit immediate to SP
             {0xE8, (n)=>{
               // We determine the short offset
-              short sn = 0;
-              unchecked { sn = (short)n; }
+              sbyte sn = 0;
+              unchecked { sn = (sbyte)n; }
 
               // We set the registers
-             registers.FZ = 0;
+              registers.FZ = 0;
               registers.FN = 0;
+
               registers.FH = (byte)
                 (((registers.SP & 0x0F) + (sn & 0x0F) > 0x0F) ? 1 : 0);
               registers.FC = (byte)
@@ -2230,8 +2233,8 @@ namespace GBSharp.CPUSpace
             // LDHL SP,d: Add signed 8-bit immediate to SP and save result in HL
             {0xF8, (n)=>{
               // We determine the short offset
-              short sn = 0;
-              unchecked { sn = (short)n; }
+              sbyte sn = 0;
+              unchecked { sn = (sbyte)n; }
 
               // We set the registers
               registers.FZ = 0;
