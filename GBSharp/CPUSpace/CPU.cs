@@ -705,12 +705,14 @@ namespace GBSharp.CPUSpace
                 if(registers.FC != 0) {value -= 0x60; }
               }
               
+              registers.FH = 0;
+
+              registers.FC = 0;
               if((value & 0x100) == 0x100) { registers.FC = 1; }
 
               value &= 0xFF;
 
               registers.FZ = (byte)(value == 0 ? 1 : 0);
-              registers.FH = 0;
 
               registers.A = (byte)value;
             }},
@@ -765,7 +767,12 @@ namespace GBSharp.CPUSpace
             {0x2E, (n)=>{registers.L = (byte)n;}},
 
             // CPL: Complement (logical NOT) on A
-            {0x2F, (n)=>{registers.A = (byte)~registers.A;}},
+            {0x2F, (n)=>{
+              registers.A = (byte)~registers.A;
+
+              registers.FN = 1;
+              registers.FH = 1;
+            }},
 
             // JR NC,n: Relative jump by signed immediate if last result caused no carry
             {0x30, (n)=>{
@@ -812,7 +819,11 @@ namespace GBSharp.CPUSpace
             {0x36, (n) => { memory.Write(registers.HL, (byte)n);}},
 
             // SCF: Set carry flag
-            {0x37, (n)=>{registers.F = UtilFuncs.SetBit(registers.F, (int)Flags.C);}},
+            {0x37, (n)=>{
+              registers.FC = 1;
+              registers.FN = 0;
+              registers.FH = 0;
+            }},
 
             // JR C,n: Relative jump by signed immediate if last result caused carry
             {0x38, (n)=>{
@@ -1322,12 +1333,12 @@ namespace GBSharp.CPUSpace
               byte initial = registers.A;
               A += registers.A;
               A += registers.FC;
-              registers.A = (byte)A;
+              registers.A = (byte)(A & 0xFF);
 
               // Update flags
               registers.FC = (byte)((A > 255) ? 1 : 0);
               registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-              registers.FH = (byte)(((registers.A ^ registers.A ^ initial) & 0x10) == 0 ? 0 : 1);
+              registers.FH = (byte)(((registers.A ^ initial ^ initial) & 0x10) == 0 ? 0 : 1);
               registers.FN = 0;
             }},
 
