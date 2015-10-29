@@ -499,11 +499,13 @@ namespace GBSharp.CPUSpace
             // ADD HL,BC: Add 16-bit BC to HL
             {0x09, (n)=>{
               var initialH = registers.H;
+              int res = registers.HL + registers.BC;
+
               registers.HL += registers.BC;
 
               registers.FN = 0;
               registers.FH = (byte)(((registers.H ^ registers.B ^ initialH) & 0x10) == 0 ? 0 : 1);
-              registers.FC = (byte)(initialH > registers.H ? 1 : 0);
+              registers.FC = (byte)((res > 0xFFFF) ? 1 : 0);
             }},
 
             // LD A,(BC): Load A from address pointed to by BC
@@ -599,11 +601,12 @@ namespace GBSharp.CPUSpace
             // ADD HL,DE: Add 16-bit DE to HL
             {0x19, (n)=>{
               var initialH = registers.H;
+              int res = registers.HL + registers.DE;
               registers.HL += registers.DE;
 
               registers.FN = 0;
               registers.FH = (byte)(((registers.H ^ registers.D ^ initialH) & 0x10) == 0 ? 0 : 1);
-              registers.FC = (byte)(initialH > registers.H ? 1 : 0);
+              registers.FC = (byte)((res > 0xFFFF) ? 1 : 0);
             }},
 
             // LD A,(DE): Load A from address pointed to by DE
@@ -725,11 +728,13 @@ namespace GBSharp.CPUSpace
             // ADD HL,HL: Add 16-bit HL to HL
             {0x29, (n)=>{
               var initialH = registers.H;
+              int res = registers.HL + registers.HL;
+
               registers.HL += registers.HL;
 
               registers.FN = 0;
-              registers.FH = (byte)(((registers.H ^ registers.H ^ initialH) & 0x10) == 0 ? 0 : 1);
-              registers.FC = (byte)(initialH > registers.H ? 1 : 0);
+              registers.FH = (byte)(((registers.H ^ initialH ^ initialH) & 0x10) == 0 ? 0 : 1);
+              registers.FC = (byte)((res > 0xFFFF) ? 1 : 0);
             }},
 
             // LDI A,(HL): Load A from address pointed to by HL, and increment HL
