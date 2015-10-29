@@ -125,13 +125,14 @@ namespace GBSharp.Utils
       registers.FN = 1;
       // We use += so we don't cast to byte with unchecked
       registers.FH = (byte)(
-        ((substractee & 0x0F) < (substractor & 0x0F) + extraSub)
-        ? 1 : 0);
+        ((substractee & 0x0F) < ((substractor & 0x0F) + extraSub)) ? 1 : 0);
+
       int res = substractee - substractor - extraSub;
+
       registers.FC = (byte)((res < 0) ? 1 : 0);
       registers.FZ = (byte)((res == 0) ? 1 : 0);
 
-      unchecked { registers.A = (byte)res; } // unchecked so it wraps
+      substractee = (byte)(res & 0xFF);
     }
 
     public static int

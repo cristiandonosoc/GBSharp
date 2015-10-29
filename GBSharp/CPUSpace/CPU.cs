@@ -2102,7 +2102,7 @@ namespace GBSharp.CPUSpace
               UtilFuncs.SBC(ref registers,
                             ref registers.A,
                             substractor,
-                            0);
+                            registers.FC);
             }},
 
             // RST 18: Call routine at address 0018h
