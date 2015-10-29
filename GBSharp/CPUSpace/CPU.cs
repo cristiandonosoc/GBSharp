@@ -809,7 +809,7 @@ namespace GBSharp.CPUSpace
               memory.Write(registers.HL, value);
 
               registers.FZ = (byte)(value == 0 ? 1 : 0);
-              registers.FN = 1;
+              registers.FN = 0;
               registers.FH = (byte)((value & 0x0F) == 0x00 ? 1 : 0);
             }},
 
