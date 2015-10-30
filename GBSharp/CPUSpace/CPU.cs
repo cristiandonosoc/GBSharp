@@ -692,22 +692,22 @@ namespace GBSharp.CPUSpace
 
             // DAA: Adjust A for BCD addition
             {0x27, (n)=>{
-              ushort value = registers.A;
+              int value = registers.A;
 
-              if (registers.FN == 0) // ADD, ADC, INC
+              if (registers.FN != 0) // ADD, ADC, INC
+              {
+                if(registers.FH != 0) { value = (value - 0x06) & 0xFF; }
+                if(registers.FC != 0) { value -= 0x60; }
+              }
+              else // SUB, SBC, DEC, NEG
               {
                 if((registers.FH != 0) || ((value & 0x0F) > 0x09)) { value += 0x06; }
                 if((registers.FC != 0) || (value > 0x9F)) { value += 0x60; }
               }
-              else // SUB, SBC, DEC, NEG
-              {
-                if(registers.FH != 0) { value = (byte)((value - 0x06) & 0xFF); }
-                if(registers.FC != 0) {value -= 0x60; }
-              }
               
               registers.FH = 0;
 
-              registers.FC = 0;
+              //registers.FC = 0;
               if((value & 0x100) == 0x100) { registers.FC = 1; }
 
               value &= 0xFF;

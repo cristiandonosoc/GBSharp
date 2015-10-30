@@ -121,18 +121,19 @@ namespace GBSharp.Utils
                                     byte substractor,
                                     byte extraSub)
     {
-      // Some flags have to be calculated before
+      // Need more range for flags
+      int _A = substractee;
+      int _B = substractor;
+      int _C = extraSub;
+
+      registers.FH = (byte)(((_A & 0x0F) < ((_B & 0x0F) + _C)) ? 1 : 0);
+      registers.FC = (byte)((_A < (_B + _C)) ? 1 : 0);
+
+      substractee -= substractor;
+      substractee -= extraSub;
+
+      registers.FZ = (byte)((registers.A == 0) ? 1 : 0);
       registers.FN = 1;
-      // We use += so we don't cast to byte with unchecked
-      registers.FH = (byte)(
-        ((substractee & 0x0F) < ((substractor & 0x0F) + extraSub)) ? 1 : 0);
-
-      int res = substractee - substractor - extraSub;
-
-      registers.FC = (byte)((res < 0) ? 1 : 0);
-      registers.FZ = (byte)((res == 0) ? 1 : 0);
-
-      substractee = (byte)(res & 0xFF);
     }
 
     public static int
