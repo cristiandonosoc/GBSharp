@@ -138,6 +138,9 @@ namespace GBSharp
         ignoreNextStep = true;
       }
       byte ticks = this.cpu.Step(ignoreNextStep || ignoreBreakpoints);
+
+      // NOTE(Cristian): If the CPU is halted, the hardware carry on
+      if(cpu.halted) { ticks = 4; } 
       this.memory.Step(ticks);
       this.display.Step(ticks);
 

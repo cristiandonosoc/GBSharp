@@ -16,6 +16,7 @@ namespace GBSharp.CPUSpace
     internal ushort nextPC;
     internal ushort clock; // 16 bit oscillation counter at 4194304 Hz (2^22).
     internal bool halted;
+    internal bool haltLoad;
     internal bool stopped;
     // Whether the next step should trigger an interrupt event
     internal Interrupts? interruptToTrigger;
@@ -118,6 +119,7 @@ namespace GBSharp.CPUSpace
       this.clock = 0;
 
       this.halted = false;
+      this.haltLoad = false;
       this.stopped = false;
 
       // Magic CPU initial values (after bios execution).
@@ -181,20 +183,24 @@ namespace GBSharp.CPUSpace
     /// This can be 0 in STOP mode or even 24 for CALL Z, nn and other long CALL instructions.</returns>
     public byte Step(bool ignoreBreakpoints)
     {
-      // If we have set an interupt to trigger, we break
-      if (interruptToTrigger != null)
-      {
-        if (_breakableInterrupts[interruptToTrigger.Value])
-        {
-          InterruptHappened(interruptToTrigger.Value);
-          interruptToTrigger = null;
-          return 0; // We don't advance the state because we're breaking
-        }
-      }
-
       // Instruction fetch and decode
       Interrupts? interrupt = InterruptRequired();
       bool interruptInProgress = interrupt != null;
+
+      if(halted)
+      {
+        if(interruptInProgress)
+        {
+          // An interrupt unhalts the CPU
+          halted = false;
+        }
+        else
+        {
+          // The CPU is halted, so it shouldn't decode
+          return 0;
+        }
+      }
+
       if (interruptInProgress)
       {
         // NOTE(Cristian): We store the interrupt so we break on the next
@@ -206,7 +212,20 @@ namespace GBSharp.CPUSpace
       }
       else
       {
-        _currentInstruction = FetchAndDecode(this.registers.PC);
+        // If we have set an interupt to trigger a breakpoint, we break
+        if (interruptToTrigger != null)
+        {
+          if (_breakableInterrupts[interruptToTrigger.Value])
+          {
+            InterruptHappened(interruptToTrigger.Value);
+            return 0; // We don't advance the state because we're breaking
+          }
+
+          interruptToTrigger = null;
+        }
+
+        // Otherwise we fetch as usual
+        _currentInstruction = FetchAndDecode(this.registers.PC, haltLoad);
       }
 
       // We see if there is an breakpoint to this address
@@ -225,13 +244,17 @@ namespace GBSharp.CPUSpace
       if (!interruptInProgress)
       {
         this.nextPC = (ushort)(this.registers.PC + _currentInstruction.Length);
+        if (haltLoad) { this.nextPC--; }
       }
 
+      // We stop behaving on the haltBug
+      if (haltLoad) { haltLoad = false; }
 
       // Execute instruction
       // NOTE(Cristian): This lambda could modify some fields of _currentInstruction
       //                 Most notably, change the ticks in the case of conditional jumps
       _currentInstruction.Lambda(_currentInstruction.Literal);
+
 
       // Push the next program counter value into the real program counter!
       this.registers.PC = this.nextPC;
@@ -262,11 +285,18 @@ namespace GBSharp.CPUSpace
       return instruction;
     }
 
-    internal Instruction FetchAndDecode(ushort instructionAddress)
+    /// <summary>
+    /// Fetches and Decodes an instruction
+    /// </summary>
+    /// <param name="instructionAddress"></param>
+    /// <param name="haltLoad"></param>
+    /// <returns></returns>
+    internal Instruction FetchAndDecode(ushort instructionAddress, bool haltLoad = false)
     {
       Instruction instruction = new Instruction();
       instruction.Address = instructionAddress;
-      instruction.OpCode = this.memory.Read(instructionAddress);
+      byte opcode = this.memory.Read(instructionAddress);
+      instruction.OpCode = opcode;
 
       if (instruction.OpCode != 0xCB)
       {
@@ -277,21 +307,27 @@ namespace GBSharp.CPUSpace
         if (instruction.Length == 2)
         {
           // 8 bit literal
-          byte op1 = this.memory.Read((ushort)(instructionAddress + 1));
-          instruction.Operands[0] = op1;
-          instruction.Literal = op1;
+          instruction.Operands[0] = this.memory.Read((ushort)(instructionAddress + 1));
+          if(haltLoad)
+          {
+            instruction.Operands[0] = opcode;
+          }
+          instruction.Literal = (byte)instruction.Operands[0];
         }
         else if (instruction.Length == 3)
         {
           // 16 bit literal, little endian
-          byte op1 = this.memory.Read((ushort)(instructionAddress + 2));
-          byte op2 = this.memory.Read((ushort)(instructionAddress + 1));
+          instruction.Operands[0] = this.memory.Read((ushort)(instructionAddress + 2));
+          instruction.Operands[1] = this.memory.Read((ushort)(instructionAddress + 1));
 
-          instruction.Operands[0] = op1;
-          instruction.Operands[1] = op2;
+          if(haltLoad)
+          {
+            instruction.Operands[1] = instruction.Operands[0];
+            instruction.Operands[0] = opcode;
+          }
 
-          instruction.Literal = op2;
-          instruction.Literal += (ushort)(op1 << 8);
+          instruction.Literal = (byte)instruction.Operands[1];
+          instruction.Literal += (ushort)(instruction.Operands[0] << 8);
         }
 
         instruction.Lambda = this.instructionLambdas[(byte)instruction.OpCode];
@@ -303,7 +339,14 @@ namespace GBSharp.CPUSpace
       {
         // CB instructions block
         instruction.OpCode <<= 8;
-        instruction.OpCode += this.memory.Read((ushort)(instructionAddress + 1));
+        if(!haltLoad)
+        {
+          instruction.OpCode += this.memory.Read((ushort)(instructionAddress + 1));
+        }
+        else
+        {
+          instruction.OpCode += 0xCB; // The first byte is duplicated
+        }
         instruction.Length = this.CBInstructionLengths[(byte)instruction.OpCode];
         // There is no literal in CB instructions!
 
@@ -312,6 +355,9 @@ namespace GBSharp.CPUSpace
         instruction.Name = CBinstructionNames[(byte)instruction.OpCode];
         instruction.Description = CBinstructionDescriptions[(byte)instruction.OpCode];
       }
+
+
+
       return instruction;
     }
 
@@ -1068,7 +1114,17 @@ namespace GBSharp.CPUSpace
             {0x75, (n)=>{memory.Write(registers.HL, registers.L);}},
 
             // HALT: Halt processor
-            {0x76, (n)=>{throw new NotImplementedException("HALT (0x76)");}},
+            {0x76, (n)=>{
+              if(interruptController.InterruptMasterEnable)
+              {
+                halted = true;
+              }
+              else
+              {
+                // TODO(Cristian): See the double halt load
+                haltLoad = true;
+              }
+            }},
 
             // LD (HL),A: Copy A to address pointed by HL
             {0x77, (n)=>{memory.Write(registers.HL, registers.A);}},
