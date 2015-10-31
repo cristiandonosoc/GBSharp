@@ -183,6 +183,8 @@ namespace GBSharp.CPUSpace
     /// This can be 0 in STOP mode or even 24 for CALL Z, nn and other long CALL instructions.</returns>
     public byte Step(bool ignoreBreakpoints)
     {
+      if(stopped) { return 0; }
+
       // Instruction fetch and decode
       bool interruptExists = false;
       Interrupts? interruptRequested = InterruptRequired(ref interruptExists);
@@ -594,7 +596,9 @@ namespace GBSharp.CPUSpace
             }},
 
             // STOP: Stop processor
-            {0x10, (n)=>{throw new NotImplementedException("STOP (0x10)");}},
+            {0x10, (n)=>{
+              this.stopped = true;
+            }},
 
             // LD DE,nn: Load 16-bit immediate into DE
             {0x11, (n)=>{registers.DE = n;}},

@@ -202,6 +202,7 @@ namespace GBSharp
         this.Step(false);
         //NotifyStepFinished();
 
+        // TODO(Cristian, Wooo): Check what happens with the tickCounter upon STOP
         // Check timing issues
         if (this.stepCounter % stepCheck == 0)
         {
@@ -231,6 +232,7 @@ namespace GBSharp
     {
       this.buttons |= button;
       this.interruptController.UpdateKeypadState(this.buttons);
+      if(cpu.stopped) { cpu.stopped = false; }
     }
 
     /// <summary>
