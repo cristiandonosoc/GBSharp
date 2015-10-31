@@ -184,12 +184,13 @@ namespace GBSharp.CPUSpace
     public byte Step(bool ignoreBreakpoints)
     {
       // Instruction fetch and decode
-      Interrupts? interrupt = InterruptRequired();
-      bool interruptInProgress = interrupt != null;
+      bool interruptExists = false;
+      Interrupts? interruptRequested = InterruptRequired(ref interruptExists);
+      bool interruptInProgress = interruptRequested != null;
 
-      if(halted)
+      if (halted)
       {
-        if(interruptInProgress)
+        if (interruptInProgress || interruptExists)
         {
           // An interrupt unhalts the CPU
           halted = false;
@@ -207,8 +208,8 @@ namespace GBSharp.CPUSpace
         //                 step. This will enable that we're breaking on the
         //                 first instruction of the interrupt handler, vs
         //                 an invented CALL
-        interruptToTrigger = interrupt.Value;
-        _currentInstruction = InterruptHandler(interrupt.Value);
+        interruptToTrigger = interruptRequested.Value;
+        _currentInstruction = InterruptHandler(interruptRequested.Value);
       }
       else
       {
@@ -226,6 +227,7 @@ namespace GBSharp.CPUSpace
 
         // Otherwise we fetch as usual
         _currentInstruction = FetchAndDecode(this.registers.PC, haltLoad);
+        haltLoad = false;
       }
 
       // We see if there is an breakpoint to this address
@@ -244,11 +246,7 @@ namespace GBSharp.CPUSpace
       if (!interruptInProgress)
       {
         this.nextPC = (ushort)(this.registers.PC + _currentInstruction.Length);
-        if (haltLoad) { this.nextPC--; }
       }
-
-      // We stop behaving on the haltBug
-      if (haltLoad) { haltLoad = false; }
 
       // Execute instruction
       // NOTE(Cristian): This lambda could modify some fields of _currentInstruction
@@ -354,7 +352,12 @@ namespace GBSharp.CPUSpace
         instruction.Description = CBinstructionDescriptions[(byte)instruction.OpCode];
       }
 
-
+      // NOTE(Cristian): On haltLoad (HALT with IME disabled), the next byte after the HALT opcode
+      //                 is "duplicated". This is a hardware bug.
+      if(haltLoad)
+      {
+        instruction.Length--;
+      }
 
       return instruction;
     }
@@ -363,23 +366,26 @@ namespace GBSharp.CPUSpace
     /// Returns the address of the interrupt handler 
     /// </summary>
     /// <returns></returns>
-    private Interrupts? InterruptRequired()
+    private Interrupts? InterruptRequired(ref bool interruptRequired)
     {
+      // Read interrupt flags
+      int interruptRequest = this.memory.Read((ushort)MemoryMappedRegisters.IF);
+      // Mask enabled interrupts
+      int interruptEnable = this.memory.Read((ushort)MemoryMappedRegisters.IE);
+
+      int interrupt = interruptEnable & interruptRequest;
+
+      if ((interrupt & 0x1F) == 0x00) // 0x1F masks the useful bits of IE and IF, there is only 5 interrupts.
+      {
+        // Nothing, or disabled, who cares
+        return null;
+      }
+
+      // There is an interrupt waiting
+      interruptRequired = true;
+
       if (this.interruptController.InterruptMasterEnable)
       {
-        // Read interrupt flags
-        int interruptRequest = this.memory.Read((ushort)MemoryMappedRegisters.IF);
-        // Mask enabled interrupts
-        int interruptEnable = this.memory.Read((ushort)MemoryMappedRegisters.IE);
-
-        int interrupt = interruptEnable & interruptRequest;
-
-        if ((interrupt & 0x1F) == 0x00) // 0x1F masks the useful bits of IE and IF, there is only 5 interrupts.
-        {
-          // Nothing, or disabled, who cares
-          return null;
-        }
-
         // Ok, find the interrupt with the highest priority, check the first bit set
         interrupt &= -interrupt; // Magics ;)
 
@@ -1117,6 +1123,7 @@ namespace GBSharp.CPUSpace
               else
               {
                 // TODO(Cristian): See the double halt load
+                halted = true;
                 haltLoad = true;
               }
             }},
