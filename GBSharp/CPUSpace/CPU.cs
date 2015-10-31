@@ -259,10 +259,8 @@ namespace GBSharp.CPUSpace
       // Push the next program counter value into the real program counter!
       this.registers.PC = this.nextPC;
 
-      // Perform timing operations and adjust the real number of ellapsed ticks
-      var initialClock = this.clock;
-      var ticks = UpdateClockAndTimers(initialClock, _currentInstruction.Ticks);
-      return ticks;
+      // We return the ticks that the instruction took
+      return _currentInstruction.Ticks;
     }
 
     private Instruction InterruptHandler(Interrupts interrupt)
@@ -399,15 +397,15 @@ namespace GBSharp.CPUSpace
     /// the code-controlled timer system TIMA/TMA/TAC, setting the right flags if an overflow interrupt is required.
     /// Updates the interrupt controller and the memory mapped registers related to timing.
     /// </summary>
-    /// <param name="initialClock">The clock value before the instructions where executed.</param>
     /// <param name="ticks">Base number of clock cycles required by the executed instruction.
     /// This number is obtained from the instruction clocks dictionaries and does not include additional time
     /// required for conditional CALL or JUMP instructions that is directly added into this.clock counter.</param>
     /// <returns>The total real number of clock oscillations at 4194304 Hz that occurred during a Step execution.
     /// This value includes the changes in the clock made directly by some instructions (conditionals) and the base
     /// execution times obtained from CPUInstructionClocks and CPUCBInstructionClocks dictionaries.</returns>
-    private byte UpdateClockAndTimers(ushort initialClock, byte ticks)
+    internal void UpdateClockAndTimers(byte ticks)
     {
+      var initialClock = this.clock;
       // Update clock adding only base ticks. 
       // NOTE(Cristian): Conditional instructions times are already added at this point.
       //                 The instruction modifies the currentInstruction ticks
@@ -469,9 +467,6 @@ namespace GBSharp.CPUSpace
           }
         }
       }
-
-      // Return the real total number of ellapsed ticks (base instruction ticks + direct instruction addition to this.clock)
-      return ticks;
     }
 
     public override string ToString()
