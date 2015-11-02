@@ -291,7 +291,9 @@ namespace GBSharp.VideoSpace
 
     public void DrawDisplay(int rowBegin, int rowEnd)
     {
-      if(rowBegin >= 143) { return; }
+      if(rowBegin > 143) {
+        return;
+      }
 
 
       // Necesary, sprites could have changed during H-BLANK
@@ -311,17 +313,17 @@ namespace GBSharp.VideoSpace
       int SCX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX);
       int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
 
-      for (int row = 0; row < disDef.framePixelCountY; row++)
-      {
-        uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, row, LCDCBit3, LCDCBit4);
-        DisFuncs.DrawLine(disDef, background, disDef.framePixelCountX, 
-                          rowPixels, 
-                          0, row, 
-                          0, disDef.framePixelCountX);
+      //for (int row = 0; row < disDef.framePixelCountY; row++)
+      //{
+      //  uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, row, LCDCBit3, LCDCBit4);
+      //  DisFuncs.DrawLine(disDef, background, disDef.framePixelCountX, 
+      //                    rowPixels, 
+      //                    0, row, 
+      //                    0, disDef.framePixelCountX);
 
-        // TODO(Cristian): Move the background render to a DrawLine call instead of copying
-        //                 from one bitmap to another
-      }
+      //  // TODO(Cristian): Move the background render to a DrawLine call instead of copying
+      //  //                 from one bitmap to another
+      //}
 
       bool drawBackground = Utils.UtilFuncs.TestBit(LCDC, 0) != 0;
       if(drawBackground)
@@ -329,28 +331,27 @@ namespace GBSharp.VideoSpace
         // We copy the information from the background tile to the effective screen
         for (int y = rowBegin; y < rowEnd; y++)
         {
-          for (int x = 0; x < disDef.screenPixelCountX; x++)
-          {
-            int pX = (x + SCX) % disDef.framePixelCountX;
-            int pY = (y + SCY) % disDef.framePixelCountY;
 
-            int backgroundIndex = pY * disDef.framePixelCountX + pX;
-            int screenIndex = y * disDef.screenPixelCountX + x;
-            screen[screenIndex] = background[backgroundIndex];
-          }
+          // We obtain the correct row
+          int bY = (y + SCY) % disDef.framePixelCountY;
+          uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, bY, LCDCBit3, LCDCBit4);
+          DisFuncs.DrawLine(disDef, screen, disDef.screenPixelCountX, rowPixels,
+                            0, y,
+                            SCX, disDef.framePixelCountX,
+                            false, true);
+
         }
       }
 
-      bool drawRectangle = true;
-      if(drawRectangle)
-      {
-        uint rectangleColor = 0xFFFF8822;
-        DisFuncs.DrawRectangle(disDef, background, disDef.framePixelCountX,
-                               SCX, SCY, 
-                               disDef.screenPixelCountX, disDef.screenPixelCountY, 
-                               rectangleColor);
-      }
-
+      //bool drawRectangle = true;
+      //if(drawRectangle)
+      //{
+      //  uint rectangleColor = 0xFFFF8822;
+      //  DisFuncs.DrawRectangle(disDef, background, disDef.framePixelCountX,
+      //                         SCX, SCY, 
+      //                         disDef.screenPixelCountX, disDef.screenPixelCountY, 
+      //                         rectangleColor);
+      //}
 
       #endregion
 
@@ -360,12 +361,12 @@ namespace GBSharp.VideoSpace
       int rWX = WX - 7; // The window pos is (WX - 7, WY)
       int WY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WY);
 
-      DisFuncs.DrawTransparency(disDef, window, disDef.screenPixelCountX,
-                                0, 0,
-                                disDef.screenPixelCountX, WY);
-      DisFuncs.DrawTransparency(disDef, window, disDef.screenPixelCountX,
-                                0, WY, 
-                                rWX, disDef.screenPixelCountY);
+      //DisFuncs.DrawTransparency(disDef, window, disDef.screenPixelCountX,
+      //                          0, 0,
+      //                          disDef.screenPixelCountX, WY);
+      //DisFuncs.DrawTransparency(disDef, window, disDef.screenPixelCountX,
+      //                          0, WY, 
+      //                          rWX, disDef.screenPixelCountY);
 
       // TODO(Cristian): If BG display is off, it actually prints white
       bool drawWindow = Utils.UtilFuncs.TestBit(LCDC, 5) != 0;
@@ -378,11 +379,11 @@ namespace GBSharp.VideoSpace
           uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, row - WY, 
                                                    LCDCBit6, LCDCBit4);
           
-          // Independent target
-          DisFuncs.DrawLine(disDef, window, disDef.screenPixelCountX,
-                            rowPixels, 
-                            rWX, row, 
-                            0, disDef.screenPixelCountX - rWX);
+          //// Independent target
+          //DisFuncs.DrawLine(disDef, window, disDef.screenPixelCountX,
+          //                  rowPixels, 
+          //                  rWX, row, 
+          //                  0, disDef.screenPixelCountX - rWX);
 
           // Screen target
           if (drawWindow)
@@ -399,23 +400,23 @@ namespace GBSharp.VideoSpace
 
       #region SPRITES
 
-      // *** SPRITES ***
-      DisFuncs.DrawTransparency(disDef, spriteLayer, disDef.screenPixelCountX,
-                                0, 0,
-                                disDef.screenPixelCountX, disDef.screenPixelCountY);
+      //// *** SPRITES ***
+      //DisFuncs.DrawTransparency(disDef, spriteLayer, disDef.screenPixelCountX,
+      //                          0, 0,
+      //                          disDef.screenPixelCountX, disDef.screenPixelCountY);
 
       bool drawSprites = Utils.UtilFuncs.TestBit(LCDC, 1) != 0;
       for (int row = rowBegin; row < rowEnd; row++)
       {
-        // Independent target
-        uint[] pixels = new uint[disDef.screenPixelCountX];
-        DisFuncs.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels,
-                                    row, LCDCBit2,
-                                    true);
-        DisFuncs.DrawLine(disDef, spriteLayer, disDef.screenPixelCountX,
-                          pixels,
-                          0, row,
-                          0, disDef.screenPixelCountX);
+        //// Independent target
+        //uint[] pixels = new uint[disDef.screenPixelCountX];
+        //DisFuncs.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels,
+        //                            row, LCDCBit2,
+        //                            true);
+        //DisFuncs.DrawLine(disDef, spriteLayer, disDef.screenPixelCountX,
+        //                  pixels,
+        //                  0, row,
+        //                  0, disDef.screenPixelCountX);
 
         // Screen Target
         if (drawSprites)

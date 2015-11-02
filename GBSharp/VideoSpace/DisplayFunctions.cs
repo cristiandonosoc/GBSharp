@@ -448,13 +448,15 @@ namespace GBSharp.VideoSpace
     internal static void
     DrawLine(DisplayDefinition disDef, uint[] bitmapData, int stride,
              uint[] rowPixels,
-             int targetX, int targetY, int rowStart, int rowSpan,
-             bool CopyZeroPixels = false)
+             int targetX, int targetY, 
+             int rowStart, int rowSpan,
+             bool CopyZeroPixels = false,
+             bool wrap = false)
     {
       // We obtain the data 
       int baseIndex = targetY * stride + targetX;
       // NOTE(Cristian): rowMax is included
-      for (int i = 0; i < rowSpan; i++)
+      for (int i = 0; i < stride; i++)
       {
         // NOTE(Cristian): Sometimes the window is 7 pixels to the left (in the case of the windows)
         //                 We must draw on those cases
@@ -463,9 +465,15 @@ namespace GBSharp.VideoSpace
           targetX++;
           continue;
         }
-        uint pixel = rowPixels[rowStart + i];
+
+        int rowIndex = rowStart + i;
+        if (wrap && (rowIndex >= rowSpan))
+        {
+          rowIndex %= rowSpan; 
+        }
+        uint pixel = rowPixels[rowIndex];
         if (!CopyZeroPixels && pixel == 0) { continue; }
-        bitmapData[baseIndex + i] = rowPixels[rowStart + i];
+        bitmapData[baseIndex + i] = rowPixels[rowIndex];
       }
     }
   }
