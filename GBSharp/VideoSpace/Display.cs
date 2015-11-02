@@ -496,6 +496,7 @@ namespace GBSharp.VideoSpace
             if(CalculateTickChange(disStat.dataTransferTickCount, ref ticks))
             {
               ChangeDisplayMode(DisplayModes.Mode00);
+              DrawDisplay(disStat.currentLine, disStat.currentLine + 1);
             }
           }
           else if(disStat.displayMode == DisplayModes.Mode00)
@@ -511,10 +512,8 @@ namespace GBSharp.VideoSpace
               else // V-BLANK
               {
                 ChangeDisplayMode(DisplayModes.Mode01);
+                RefreshScreen();
               }
-
-              bool refreshScreen = (disStat.currentLine == 144);
-              UpdateDisplay(refreshScreen);
             }
           }
         }
@@ -530,8 +529,6 @@ namespace GBSharp.VideoSpace
               ChangeDisplayMode(DisplayModes.Mode10);
               disStat.currentLine = 0;
             }
-
-            UpdateDisplay();
           }
         }
       }
@@ -544,15 +541,6 @@ namespace GBSharp.VideoSpace
       if(firstRun)
       {
         firstRun = false;
-      }
-    }
-
-    internal void UpdateDisplay(bool refresh = false)
-    {
-      if(refresh)
-      {
-        DrawDisplay(0, 144);
-        RefreshScreen();
       }
     }
 
