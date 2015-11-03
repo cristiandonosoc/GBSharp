@@ -74,6 +74,7 @@ namespace GBSharp.VideoSpace
     public int prevTickCount;
     public int currentLineTickCount; // We trigger OAM search at the start
     public byte currentLine;
+    public int currentWY; 
     public int OAMSearchTickCount;
     public int dataTransferTickCount;
     public int totalLineTickCount;
@@ -359,7 +360,7 @@ namespace GBSharp.VideoSpace
 
       int WX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WX);
       int rWX = WX - 7; // The window pos is (WX - 7, WY)
-      int WY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WY);
+      int WY = disStat.currentWY;
 
       //DisFuncs.DrawTransparency(disDef, window, disDef.screenPixelCountX,
       //                          0, 0,
@@ -529,6 +530,7 @@ namespace GBSharp.VideoSpace
             {
               ChangeDisplayMode(DisplayModes.Mode10);
               disStat.currentLine = 0;
+              disStat.currentWY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WY);
             }
           }
         }
@@ -542,6 +544,7 @@ namespace GBSharp.VideoSpace
       if(firstRun)
       {
         firstRun = false;
+        disStat.currentWY = 0;
       }
     }
 
