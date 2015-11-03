@@ -92,8 +92,8 @@ namespace GBSharp.MemorySpace.MemoryHandlers
 
             // Copy the new one
             currentRamBank = newRamBank;
-            Buffer.BlockCopy(this.ramBanksData, ramBank0Start, this.memoryData,
-                             currentRamBank * ramBankLength, ramBankLength);
+            Buffer.BlockCopy(this.ramBanksData, currentRamBank * ramBankLength,
+                             this.memoryData, ramBank0Start, ramBankLength);
           }
           else
           // RTC access
@@ -104,7 +104,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
         /* [0x6000 - 0x7FFF]: RTC registers latch */
         else
         {
-          throw new NotImplementedException("MBC3+RTC Real time clock latch not implemented.");
+          // throw new NotImplementedException("MBC3+RTC Real time clock latch not implemented.");
         }
       } // < 0x8000
       else

@@ -121,8 +121,8 @@ namespace GBSharp.MemorySpace.MemoryHandlers
 
             // Copy the new one
             currentRamBank = newRamBank;
-            Buffer.BlockCopy(this.ramBanksData, ramBank0Start, this.memoryData,
-                             currentRamBank * ramBankLength, ramBankLength);
+            Buffer.BlockCopy(this.ramBanksData, currentRamBank * ramBankLength,
+                             this.memoryData, ramBank0Start, ramBankLength);
           }
         }
         /* [0x6000 - 0x7FFF]: Mode select */
