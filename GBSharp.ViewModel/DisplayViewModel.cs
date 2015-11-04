@@ -202,7 +202,7 @@ namespace GBSharp.ViewModel
 
     public void CopyFromDomain()
     {
-      Utils.TransferBytesToWriteableBitmap(_background, _display.Background);
+      Utils.TransferBytesToWriteableBitmap(_background, _display.Tiles);
       OnPropertyChanged(() => Background);
 
       Utils.TransferBytesToWriteableBitmap(_window, _display.Window);

@@ -103,7 +103,7 @@ namespace GBSharp.ViewModel
       _displayVm = displayVM;
       _gameBoy = gameBoy;
       _display = _gameBoy.Display;
-      _displayVm.UpdateDisplay += OnUpdateDisplay;
+      //_displayVm.UpdateDisplay += OnUpdateDisplay;
       _display.RefreshScreen += OnRefreshScreen;
 
       VideoSpace.DisplayDefinition disDef = _display.GetDisplayDefinition();

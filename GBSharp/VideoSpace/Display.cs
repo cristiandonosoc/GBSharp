@@ -168,6 +168,9 @@ namespace GBSharp.VideoSpace
     private uint[] displayTiming;
     public uint[] DisplayTiming { get { return displayTiming; } }
 
+    private uint[] tiles;
+    public uint[] Tiles { get { return tiles; } }
+
     /// <summary>
     /// Display constructor.
     /// </summary>
@@ -244,6 +247,9 @@ namespace GBSharp.VideoSpace
       this.screen = new uint[disDef.screenPixelCountX * disDef.screenPixelCountY];
       this.frame = new uint[disDef.framePixelCountX * disDef.framePixelCountY];
       this.displayTiming = new uint[disDef.timingPixelCountX * disDef.timingPixelCountY];
+
+      // Tile stargets
+      this.tiles = new uint[disDef.framePixelCountX * disDef.framePixelCountY];
 
       this.spriteOAMs = new OAM[spriteCount];
       for (int i = 0; i < spriteOAMs.Length; ++i)
@@ -451,6 +457,28 @@ namespace GBSharp.VideoSpace
                                SCX, SCY,
                                disDef.screenPixelCountX, disDef.screenPixelCountY,
                                rectangleColor);
+
+        byte LCDC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
+        bool LCDCBit2 = Utils.UtilFuncs.TestBit(LCDC, 2) != 0;
+        bool LCDCBit3 = Utils.UtilFuncs.TestBit(LCDC, 3) != 0;
+        bool LCDCBit4 = Utils.UtilFuncs.TestBit(LCDC, 4) != 0;
+        bool LCDCBit6 = Utils.UtilFuncs.TestBit(LCDC, 6) != 0;
+
+        ushort tileBaseAddress = DisFuncs.GetTileBaseAddress(LCDCBit4);
+        for (int y = 0; y < 16; ++y)
+        {
+          for (int x = 0; x < 16; ++x)
+          {
+            int tileOffset = DisFuncs.GetTileOffset(disDef, memory, tileBaseAddress, LCDCBit4, x, y);
+            byte[] tileData = DisFuncs.GetTileData(disDef, memory, tileBaseAddress, tileOffset, false);
+
+            DisFuncs.DrawTile(disDef, tiles, disDef.framePixelCountX, tileData, 
+                              8 * x, 8 * y, 256, 256);
+
+          }
+        }
+
+
       }
 
       RefreshScreen();
