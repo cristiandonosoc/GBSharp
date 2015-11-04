@@ -24,6 +24,6 @@ namespace GBSharp
     DisplayDefinition GetDisplayDefinition();
     DisplayStatus GetDisplayStatus();
 
-    void DrawDisplay(int rowStart = 0, int rowEnd = 144);
+    void DrawFrame(int rowStart = 0, int rowEnd = 144);
   }
 }

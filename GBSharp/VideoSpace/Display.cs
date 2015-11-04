@@ -80,6 +80,7 @@ namespace GBSharp.VideoSpace
     public int totalLineTickCount;
     public bool enabled;
     public DisplayModes displayMode;
+    public bool drawDebugTargets;
   }
 
   class Display : IDisplay
@@ -230,6 +231,7 @@ namespace GBSharp.VideoSpace
       this.disStat.enabled = true;
       // TODO(Cristian): Find out at what state the display starts!
       this.disStat.displayMode = DisplayModes.Mode10;
+      this.disStat.drawDebugTargets = true;
 
       /*** DRAW TARGETS ***/
 
@@ -290,12 +292,30 @@ namespace GBSharp.VideoSpace
                         disDef.screenPixelCountX, disDef.screenPixelCountY);
     }
 
-    public void DrawDisplay(int rowBegin, int rowEnd)
+    private void StartFrame()
+    {
+      disStat.currentLine = 0;
+      disStat.currentWY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WY);
+
+      if(disStat.drawDebugTargets)
+      {
+        // WINDOW TRANSPARENCY
+        DisFuncs.DrawTransparency(disDef, window, disDef.screenPixelCountX,
+                                  0, 0,
+                                  disDef.screenPixelCountX, disDef.screenPixelCountY);
+
+        // SPRITES TRANSPARENCY
+        DisFuncs.DrawTransparency(disDef, spriteLayer, disDef.screenPixelCountX,
+                                  0, 0,
+                                  disDef.screenPixelCountX, disDef.screenPixelCountY);
+      }
+    }
+
+    public void DrawFrame(int rowBegin, int rowEnd)
     {
       if(rowBegin > 143) {
         return;
       }
-
 
       // Necesary, sprites could have changed during H-BLANK
       LoadSprites();
@@ -311,48 +331,37 @@ namespace GBSharp.VideoSpace
 
       #region BACKGROUND
 
+      // TODO(Cristian): Move this to disStat
       int SCX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX);
       int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
 
-      //for (int row = 0; row < disDef.framePixelCountY; row++)
-      //{
-      //  uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, row, LCDCBit3, LCDCBit4);
-      //  DisFuncs.DrawLine(disDef, background, disDef.framePixelCountX, 
-      //                    rowPixels, 
-      //                    0, row, 
-      //                    0, disDef.framePixelCountX);
-
-      //  // TODO(Cristian): Move the background render to a DrawLine call instead of copying
-      //  //                 from one bitmap to another
-      //}
-
       bool drawBackground = Utils.UtilFuncs.TestBit(LCDC, 0) != 0;
-      if(drawBackground)
+      // We copy the information from the background tile to the effective screen
+      for (int y = rowBegin; y < rowEnd; y++)
       {
-        // We copy the information from the background tile to the effective screen
-        for (int y = rowBegin; y < rowEnd; y++)
-        {
 
-          // We obtain the correct row
-          int bY = (y + SCY) % disDef.framePixelCountY;
-          uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, bY, LCDCBit3, LCDCBit4);
+        // We obtain the correct row
+        int bY = (y + SCY) % disDef.framePixelCountY;
+        uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, bY, LCDCBit3, LCDCBit4);
+
+        if(disStat.drawDebugTargets)
+        {
+          DisFuncs.DrawLine(disDef, background, disDef.framePixelCountX,
+                            rowPixels,
+                            0, bY,
+                            0, disDef.framePixelCountX);
+        }
+
+        if (drawBackground)
+        {
           DisFuncs.DrawLine(disDef, screen, disDef.screenPixelCountX, rowPixels,
                             0, y,
                             SCX, disDef.framePixelCountX,
                             false, true);
 
+
         }
       }
-
-      //bool drawRectangle = true;
-      //if(drawRectangle)
-      //{
-      //  uint rectangleColor = 0xFFFF8822;
-      //  DisFuncs.DrawRectangle(disDef, background, disDef.framePixelCountX,
-      //                         SCX, SCY, 
-      //                         disDef.screenPixelCountX, disDef.screenPixelCountY, 
-      //                         rectangleColor);
-      //}
 
       #endregion
 
@@ -361,13 +370,6 @@ namespace GBSharp.VideoSpace
       int WX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WX);
       int rWX = WX - 7; // The window pos is (WX - 7, WY)
       int WY = disStat.currentWY;
-
-      //DisFuncs.DrawTransparency(disDef, window, disDef.screenPixelCountX,
-      //                          0, 0,
-      //                          disDef.screenPixelCountX, WY);
-      //DisFuncs.DrawTransparency(disDef, window, disDef.screenPixelCountX,
-      //                          0, WY, 
-      //                          rWX, disDef.screenPixelCountY);
 
       // TODO(Cristian): If BG display is off, it actually prints white
       bool drawWindow = Utils.UtilFuncs.TestBit(LCDC, 5) != 0;
@@ -379,12 +381,15 @@ namespace GBSharp.VideoSpace
           // at (WX, WY)
           uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, row - WY, 
                                                    LCDCBit6, LCDCBit4);
-          
-          //// Independent target
-          //DisFuncs.DrawLine(disDef, window, disDef.screenPixelCountX,
-          //                  rowPixels, 
-          //                  rWX, row, 
-          //                  0, disDef.screenPixelCountX - rWX);
+
+          // Independent target
+          if(disStat.drawDebugTargets)
+          {
+            DisFuncs.DrawLine(disDef, window, disDef.screenPixelCountX,
+                              rowPixels,
+                              rWX, row,
+                              0, disDef.screenPixelCountX - rWX);
+          }
 
           // Screen target
           if (drawWindow)
@@ -398,26 +403,23 @@ namespace GBSharp.VideoSpace
       }
 
       #endregion
-
       #region SPRITES
-
-      //// *** SPRITES ***
-      //DisFuncs.DrawTransparency(disDef, spriteLayer, disDef.screenPixelCountX,
-      //                          0, 0,
-      //                          disDef.screenPixelCountX, disDef.screenPixelCountY);
 
       bool drawSprites = Utils.UtilFuncs.TestBit(LCDC, 1) != 0;
       for (int row = rowBegin; row < rowEnd; row++)
       {
-        //// Independent target
-        //uint[] pixels = new uint[disDef.screenPixelCountX];
-        //DisFuncs.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels,
-        //                            row, LCDCBit2,
-        //                            true);
-        //DisFuncs.DrawLine(disDef, spriteLayer, disDef.screenPixelCountX,
-        //                  pixels,
-        //                  0, row,
-        //                  0, disDef.screenPixelCountX);
+       if(disStat.drawDebugTargets)
+        {
+          // Independent target
+          uint[] pixels = new uint[disDef.screenPixelCountX];
+          DisFuncs.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels,
+                                      row, LCDCBit2,
+                                      true);
+          DisFuncs.DrawLine(disDef, spriteLayer, disDef.screenPixelCountX,
+                            pixels,
+                            0, row,
+                            0, disDef.screenPixelCountX);
+        }
 
         // Screen Target
         if (drawSprites)
@@ -433,13 +435,28 @@ namespace GBSharp.VideoSpace
       }
 
       #endregion
+    }
 
+    private void EndFrame()
+    {
+
+      // TODO(Cristian): Move this to disStat
+      int SCX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX);
+      int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
+
+      if (disStat.drawDebugTargets)
+      {
+        uint rectangleColor = 0xFFFF8822;
+        DisFuncs.DrawRectangle(disDef, background, disDef.framePixelCountX,
+                               SCX, SCY,
+                               disDef.screenPixelCountX, disDef.screenPixelCountY,
+                               rectangleColor);
+      }
+
+      RefreshScreen();
     }
 
     private double pixelsPerTick = (double)256 / (double)456;
-
-
-
     private bool firstRun = true;
 
     /// <summary>
@@ -498,7 +515,7 @@ namespace GBSharp.VideoSpace
             if(CalculateTickChange(disStat.dataTransferTickCount, ref ticks))
             {
               ChangeDisplayMode(DisplayModes.Mode00);
-              DrawDisplay(disStat.currentLine, disStat.currentLine + 1);
+              DrawFrame(disStat.currentLine, disStat.currentLine + 1);
             }
           }
           else if(disStat.displayMode == DisplayModes.Mode00)
@@ -514,7 +531,7 @@ namespace GBSharp.VideoSpace
               else // V-BLANK
               {
                 ChangeDisplayMode(DisplayModes.Mode01);
-                RefreshScreen();
+                EndFrame();
               }
             }
           }
@@ -529,8 +546,9 @@ namespace GBSharp.VideoSpace
             if (disStat.currentLine >= 154)
             {
               ChangeDisplayMode(DisplayModes.Mode10);
-              disStat.currentLine = 0;
-              disStat.currentWY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WY);
+
+              StartFrame();
+
             }
           }
         }
