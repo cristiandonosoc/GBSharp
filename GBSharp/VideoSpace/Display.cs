@@ -464,12 +464,13 @@ namespace GBSharp.VideoSpace
         bool LCDCBit4 = Utils.UtilFuncs.TestBit(LCDC, 4) != 0;
         bool LCDCBit6 = Utils.UtilFuncs.TestBit(LCDC, 6) != 0;
 
-        ushort tileBaseAddress = DisFuncs.GetTileBaseAddress(LCDCBit4);
+        ushort tileBaseAddress = 0x8000;
         for (int y = 0; y < 16; ++y)
         {
           for (int x = 0; x < 16; ++x)
           {
-            int tileOffset = DisFuncs.GetTileOffset(disDef, memory, tileBaseAddress, LCDCBit4, x, y);
+            //int tileOffset = DisFuncs.GetTileOffset(disDef, memory, tileBaseAddress, LCDCBit4, x, y);
+            int tileOffset = 16 * y + x;
             byte[] tileData = DisFuncs.GetTileData(disDef, memory, tileBaseAddress, tileOffset, false);
 
             DisFuncs.DrawTile(disDef, tiles, disDef.framePixelCountX, tileData, 
