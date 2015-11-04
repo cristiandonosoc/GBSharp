@@ -160,7 +160,7 @@ namespace GBSharp.ViewModel
       FilePath = filePath;
       var data = File.ReadAllBytes(filePath);
       _gameBoy.Memory.Load(data);
-      _gameBoy.Display.DrawDisplay();
+      _gameBoy.Display.DrawFrame();
      
     }
 

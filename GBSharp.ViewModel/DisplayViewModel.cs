@@ -173,7 +173,7 @@ namespace GBSharp.ViewModel
     public DisplayViewModel(IDisplay display, IMemory memory, IDispatcher dispatcher)
     {
       _display = display;
-      //_display.RefreshScreen += OnRefreshScreen;
+      _display.RefreshScreen += OnRefreshScreen;
       _memory = memory;
       _dispatcher = dispatcher;
 
