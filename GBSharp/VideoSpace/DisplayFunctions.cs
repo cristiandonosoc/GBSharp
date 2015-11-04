@@ -418,7 +418,7 @@ namespace GBSharp.VideoSpace
           int sY = y / squareSize;
           int colorIndex = (sX + (sY % 2)) % 2;
           int pIndex = rowIndex + x;
-          bitmapData[0] = colors[colorIndex];
+          bitmapData[pIndex] = colors[colorIndex];
         }
       }
     }
