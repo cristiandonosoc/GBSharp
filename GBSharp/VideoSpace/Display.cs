@@ -249,7 +249,7 @@ namespace GBSharp.VideoSpace
       this.displayTiming = new uint[disDef.timingPixelCountX * disDef.timingPixelCountY];
 
       // Tile stargets
-      this.tiles = new uint[disDef.framePixelCountX * disDef.framePixelCountY];
+      this.tiles = new uint[disDef.screenPixelCountX * disDef.screenPixelCountY];
 
       this.spriteOAMs = new OAM[spriteCount];
       for (int i = 0; i < spriteOAMs.Length; ++i)
@@ -473,7 +473,7 @@ namespace GBSharp.VideoSpace
             int tileOffset = 16 * y + x;
             byte[] tileData = DisFuncs.GetTileData(disDef, memory, tileBaseAddress, tileOffset, false);
 
-            DisFuncs.DrawTile(disDef, tiles, disDef.framePixelCountX, tileData, 
+            DisFuncs.DrawTile(disDef, tiles, disDef.screenPixelCountX, tileData, 
                               8 * x, 8 * y, 256, 256);
 
           }

@@ -29,6 +29,17 @@ namespace GBSharp.ViewModel
       }
     }
 
+    private WriteableBitmap _tiles;
+    public WriteableBitmap Tiles
+    {
+      get { return _tiles; }
+      set
+      {
+        _tiles = value;
+        OnPropertyChanged(() => Tiles);
+      }
+    }
+
     private WriteableBitmap _window;
     public WriteableBitmap Window
     {
@@ -188,6 +199,9 @@ namespace GBSharp.ViewModel
       _displayTiming = new WriteableBitmap(disDef.timingPixelCountX, disDef.timingPixelCountY, 
                                            96, 96, PixelFormats.Bgra32, null);
 
+      _tiles = new WriteableBitmap(disDef.screenPixelCountX, disDef.screenPixelCountY,
+                                   96, 96, PixelFormats.Bgra32, null);
+
       for (int i = 0; i < 40; i++)
       {
         Sprites.Add(new SpriteViewModel());
@@ -202,7 +216,7 @@ namespace GBSharp.ViewModel
 
     public void CopyFromDomain()
     {
-      Utils.TransferBytesToWriteableBitmap(_background, _display.Tiles);
+      Utils.TransferBytesToWriteableBitmap(_background, _display.Background);
       OnPropertyChanged(() => Background);
 
       Utils.TransferBytesToWriteableBitmap(_window, _display.Window);
@@ -213,6 +227,9 @@ namespace GBSharp.ViewModel
  
       Utils.TransferBytesToWriteableBitmap(_displayTiming, _display.DisplayTiming);
       OnPropertyChanged(() => DisplayTiming);
+
+      Utils.TransferBytesToWriteableBitmap(_tiles, _display.Tiles);
+      OnPropertyChanged(() => Tiles);
 
       for (int i = 0; i < 40; i++)
       {
