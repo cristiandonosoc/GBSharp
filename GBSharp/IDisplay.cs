@@ -16,6 +16,9 @@ namespace GBSharp
     uint[] SpriteLayer { get; }
     uint[] DisplayTiming { get; }
     uint[] Tiles { get; }
+
+    bool TileBase { get; set; }
+    bool TileMap { get; set; }
     
     // Composed targets
     uint[] Frame { get; }

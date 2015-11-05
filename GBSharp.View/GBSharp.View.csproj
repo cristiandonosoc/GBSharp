@@ -64,6 +64,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="BoolToVisibilityConverter.cs" />
+    <Compile Include="BoolInverterConverter.cs" />
     <Compile Include="DissasembleView.xaml.cs">
       <DependentUpon>DissasembleView.xaml</DependentUpon>
     </Compile>

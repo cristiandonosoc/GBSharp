@@ -4,9 +4,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModel="clr-namespace:GBSharp.ViewModel;assembly=GBSharp.ViewModel"
+             xmlns:view="clr-namespace:GBSharp.View"
              mc:Ignorable="d" Height="500"
              d:DesignHeight="300" d:DesignWidth="300">
+
   <UserControl.Resources>
+    <view:BoolInverterConverter x:Key="BoolInverterConverter" />
     <DataTemplate DataType="{x:Type viewModel:SpriteViewModel}">
       <Grid>
         <Grid.RowDefinitions>
@@ -106,16 +109,42 @@
             <Grid>
               <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
               </Grid.RowDefinitions>
-              <Grid Height="256" Width="256">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+              <Grid>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="TileBase"/>
+                <RadioButton Grid.Row="1" Grid.Column="0" GroupName="TileBase" 
+                             Content="0x8000" 
+                             IsChecked="{Binding TileBase}"/>
+                <RadioButton Grid.Row="2" Grid.Column="0" GroupName="TileBase" 
+                             Content="0x8800" 
+                             IsChecked="{Binding TileBase, Converter={StaticResource BoolInverterConverter}}"/>
+
+                <TextBlock Grid.Row="0" Grid.Column="1" Text="TileMap"/>
+                <RadioButton Grid.Row="1" Grid.Column="1" GroupName="TileMap" 
+                             Content="0x9800-0x9BFF" 
+                             IsChecked="{Binding TileMap, Converter={StaticResource BoolInverterConverter}}"/>
+                <RadioButton Grid.Row="2" Grid.Column="1" GroupName="TileMap" 
+                             Content="0x9C00-0x9FFF"
+                             IsChecked="{Binding TileMap}"/>
+              </Grid>
+              <Grid Grid.Row="1" Height="256" Width="256">
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                   <Image Height="256" Width="256" Source="{Binding Tiles}"
-                 RenderOptions.BitmapScalingMode="NearestNeighbor">
+                    RenderOptions.BitmapScalingMode="NearestNeighbor">
                     <Image.LayoutTransform>
-                      <ScaleTransform 
-                    CenterX="0" CenterY="0"
-                    ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
-                    ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
+                      <ScaleTransform CenterX="0" CenterY="0"
+                        ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
+                    		ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
                     </Image.LayoutTransform>
                   </Image>
                 </ScrollViewer>

@@ -81,6 +81,10 @@ namespace GBSharp.VideoSpace
     public bool enabled;
     public DisplayModes displayMode;
     public bool drawDebugTargets;
+
+    // Debug targets
+    public bool tileBase;
+    public bool tileMap;
   }
 
   class Display : IDisplay
@@ -171,6 +175,17 @@ namespace GBSharp.VideoSpace
     private uint[] tiles;
     public uint[] Tiles { get { return tiles; } }
 
+    public bool TileBase
+    {
+      get { return disStat.tileBase; }
+      set { disStat.tileBase = value; }
+    }
+    public bool TileMap
+    {
+      get { return disStat.tileMap; }
+      set { disStat.tileMap = value; }
+    }
+
     /// <summary>
     /// Display constructor.
     /// </summary>
@@ -235,6 +250,9 @@ namespace GBSharp.VideoSpace
       // TODO(Cristian): Find out at what state the display starts!
       this.disStat.displayMode = DisplayModes.Mode10;
       this.disStat.drawDebugTargets = true;
+
+      this.disStat.tileBase = true;
+      this.disStat.tileMap = false;
 
       /*** DRAW TARGETS ***/
 
@@ -464,22 +482,20 @@ namespace GBSharp.VideoSpace
         bool LCDCBit4 = Utils.UtilFuncs.TestBit(LCDC, 4) != 0;
         bool LCDCBit6 = Utils.UtilFuncs.TestBit(LCDC, 6) != 0;
 
-        ushort tileBaseAddress = 0x8000;
-        for (int y = 0; y < 16; ++y)
+        ushort tileBaseAddress = DisFuncs.GetTileBaseAddress(disStat.tileBase);
+        for (int y = 0; y < 18; ++y)
         {
-          for (int x = 0; x < 16; ++x)
+          for (int x = 0; x < 20; ++x)
           {
-            //int tileOffset = DisFuncs.GetTileOffset(disDef, memory, tileBaseAddress, LCDCBit4, x, y);
-            int tileOffset = 16 * y + x;
+            int tileOffset = DisFuncs.GetTileOffset(disDef, memory, tileBaseAddress, 
+                                                    disStat.tileMap, x, y);
+            //int tileOffset = 16 * y + x;
             byte[] tileData = DisFuncs.GetTileData(disDef, memory, tileBaseAddress, tileOffset, false);
 
             DisFuncs.DrawTile(disDef, tiles, disDef.screenPixelCountX, tileData, 
                               8 * x, 8 * y, 256, 256);
-
           }
         }
-
-
       }
 
       RefreshScreen();

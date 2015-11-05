@@ -40,6 +40,30 @@ namespace GBSharp.ViewModel
       }
     }
 
+    private bool _tileBase;
+    public bool TileBase {
+      get { return _tileBase; }
+      set
+      {
+        if(_tileBase == value) { return; }
+        _tileBase = value;
+        _display.TileBase = value;
+        OnPropertyChanged(() => TileBase);
+      }
+    }
+
+    private bool _tileMap;
+    public bool TileMap {
+      get { return _tileMap; }
+      set
+      {
+        if(_tileMap == value) { return; }
+        _tileMap = value;
+        _display.TileMap = value;
+        OnPropertyChanged(() => TileMap);
+      }
+    }
+
     private WriteableBitmap _window;
     public WriteableBitmap Window
     {
@@ -149,6 +173,8 @@ namespace GBSharp.ViewModel
       get { return _sprites; }
     }
 
+    #region COMMANDS
+
     public ICommand ReadCommand
     {
       get { return new DelegateCommand(CopyFromDomain); }
@@ -179,7 +205,7 @@ namespace GBSharp.ViewModel
       get { return new DelegateCommand(ScrollYIncrease); }
     }
 
-   
+    #endregion
 
     public DisplayViewModel(IDisplay display, IMemory memory, IDispatcher dispatcher)
     {
@@ -230,6 +256,9 @@ namespace GBSharp.ViewModel
 
       Utils.TransferBytesToWriteableBitmap(_tiles, _display.Tiles);
       OnPropertyChanged(() => Tiles);
+
+      TileBase = _display.TileBase;
+      TileMap = _display.TileMap;
 
       for (int i = 0; i < 40; i++)
       {
