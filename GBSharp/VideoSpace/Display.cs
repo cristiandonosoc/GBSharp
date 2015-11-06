@@ -427,6 +427,7 @@ namespace GBSharp.VideoSpace
       }
 
       #endregion
+      
       #region SPRITES
 
       bool drawSprites = Utils.UtilFuncs.TestBit(LCDC, 1) != 0;
@@ -483,17 +484,18 @@ namespace GBSharp.VideoSpace
         bool LCDCBit6 = Utils.UtilFuncs.TestBit(LCDC, 6) != 0;
 
         ushort tileBaseAddress = DisFuncs.GetTileBaseAddress(disStat.tileBase);
-        for (int y = 0; y < 18; ++y)
+        ushort tileMapBaseAddress = DisFuncs.GetTileMapBaseAddress(disStat.tileMap);
+        for (int tileY = 0; tileY < 18; ++tileY)
         {
-          for (int x = 0; x < 20; ++x)
+          for (int tileX = 0; tileX < 20; ++tileX)
           {
-            int tileOffset = DisFuncs.GetTileOffset(disDef, memory, tileBaseAddress, 
-                                                    disStat.tileMap, x, y);
+            int tileOffset = DisFuncs.GetTileOffset(disDef, memory, tileMapBaseAddress, 
+                                                    disStat.tileBase, tileX, tileY);
             //int tileOffset = 16 * y + x;
             byte[] tileData = DisFuncs.GetTileData(disDef, memory, tileBaseAddress, tileOffset, false);
 
             DisFuncs.DrawTile(disDef, tiles, disDef.screenPixelCountX, tileData, 
-                              8 * x, 8 * y, 256, 256);
+                              8 * tileX, 8 * tileY, 256, 256);
           }
         }
       }
