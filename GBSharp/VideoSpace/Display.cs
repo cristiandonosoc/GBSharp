@@ -399,7 +399,7 @@ namespace GBSharp.VideoSpace
       bool drawWindow = Utils.UtilFuncs.TestBit(LCDC, 5) != 0;
       for (int row = rowBegin; row < rowEnd; row++)
       {
-        if (row >= WY)
+        if ((row >= WY) && (row < 144))
         {
           // The offset indexes represent that the window is drawn from it's beggining
           // at (WX, WY)

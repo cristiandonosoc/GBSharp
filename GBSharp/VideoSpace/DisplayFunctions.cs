@@ -467,9 +467,16 @@ namespace GBSharp.VideoSpace
         }
 
         int rowIndex = rowStart + i;
-        if (wrap && (rowIndex >= rowSpan))
+        if (rowIndex >= rowSpan)
         {
-          rowIndex %= rowSpan; 
+          if(wrap)
+          {
+            rowIndex %= rowSpan; 
+          }
+          else
+          {
+            break;
+          }
         }
         uint pixel = rowPixels[rowIndex];
         if (!CopyZeroPixels && pixel == 0) { continue; }
