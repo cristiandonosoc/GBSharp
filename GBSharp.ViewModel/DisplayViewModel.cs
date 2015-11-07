@@ -48,6 +48,8 @@ namespace GBSharp.ViewModel
         if(_tileBase == value) { return; }
         _tileBase = value;
         _display.TileBase = value;
+        _display.DrawTiles();
+        CopyFromDomain();
         OnPropertyChanged(() => TileBase);
       }
     }
@@ -60,6 +62,8 @@ namespace GBSharp.ViewModel
         if(_tileMap == value) { return; }
         _tileMap = value;
         _display.TileMap = value;
+        _display.DrawTiles();
+        CopyFromDomain();
         OnPropertyChanged(() => TileMap);
       }
     }

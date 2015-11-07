@@ -465,42 +465,46 @@ namespace GBSharp.VideoSpace
     private void EndFrame()
     {
 
+      if (disStat.drawDebugTargets)
+      {
+        DrawTiles();
+      }
+      RefreshScreen();
+    }
+
+    public void DrawTiles()
+    {
       // TODO(Cristian): Move this to disStat
       int SCX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX);
       int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
 
-      if (disStat.drawDebugTargets)
+      uint rectangleColor = 0xFFFF8822;
+      DisFuncs.DrawRectangle(disDef, background, disDef.framePixelCountX,
+                             SCX, SCY,
+                             disDef.screenPixelCountX, disDef.screenPixelCountY,
+                             rectangleColor);
+
+      byte LCDC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
+      bool LCDCBit2 = Utils.UtilFuncs.TestBit(LCDC, 2) != 0;
+      bool LCDCBit3 = Utils.UtilFuncs.TestBit(LCDC, 3) != 0;
+      bool LCDCBit4 = Utils.UtilFuncs.TestBit(LCDC, 4) != 0;
+      bool LCDCBit6 = Utils.UtilFuncs.TestBit(LCDC, 6) != 0;
+
+      ushort tileBaseAddress = DisFuncs.GetTileBaseAddress(disStat.tileBase);
+      ushort tileMapBaseAddress = DisFuncs.GetTileMapBaseAddress(disStat.tileMap);
+      for (int tileY = 0; tileY < 18; ++tileY)
       {
-        uint rectangleColor = 0xFFFF8822;
-        DisFuncs.DrawRectangle(disDef, background, disDef.framePixelCountX,
-                               SCX, SCY,
-                               disDef.screenPixelCountX, disDef.screenPixelCountY,
-                               rectangleColor);
-
-        byte LCDC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
-        bool LCDCBit2 = Utils.UtilFuncs.TestBit(LCDC, 2) != 0;
-        bool LCDCBit3 = Utils.UtilFuncs.TestBit(LCDC, 3) != 0;
-        bool LCDCBit4 = Utils.UtilFuncs.TestBit(LCDC, 4) != 0;
-        bool LCDCBit6 = Utils.UtilFuncs.TestBit(LCDC, 6) != 0;
-
-        ushort tileBaseAddress = DisFuncs.GetTileBaseAddress(disStat.tileBase);
-        ushort tileMapBaseAddress = DisFuncs.GetTileMapBaseAddress(disStat.tileMap);
-        for (int tileY = 0; tileY < 18; ++tileY)
+        for (int tileX = 0; tileX < 20; ++tileX)
         {
-          for (int tileX = 0; tileX < 20; ++tileX)
-          {
-            int tileOffset = DisFuncs.GetTileOffset(disDef, memory, tileMapBaseAddress, 
-                                                    disStat.tileBase, tileX, tileY);
-            //int tileOffset = 16 * y + x;
-            byte[] tileData = DisFuncs.GetTileData(disDef, memory, tileBaseAddress, tileOffset, false);
+          int tileOffset = DisFuncs.GetTileOffset(disDef, memory, tileMapBaseAddress,
+                                                  disStat.tileBase, tileX, tileY);
+          //int tileOffset = 16 * y + x;
+          byte[] tileData = DisFuncs.GetTileData(disDef, memory, tileBaseAddress, tileOffset, false);
 
-            DisFuncs.DrawTile(disDef, tiles, disDef.screenPixelCountX, tileData, 
-                              8 * tileX, 8 * tileY, 256, 256);
-          }
+          DisFuncs.DrawTile(disDef, tiles, disDef.screenPixelCountX, tileData,
+                            8 * tileX, 8 * tileY, 256, 256);
         }
       }
-
-      RefreshScreen();
     }
 
     private double pixelsPerTick = (double)256 / (double)456;

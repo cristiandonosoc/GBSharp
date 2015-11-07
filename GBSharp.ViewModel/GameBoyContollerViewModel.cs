@@ -141,10 +141,14 @@ namespace GBSharp.ViewModel
     private void OnFileOpened(string filePath, int filterIndex)
     {
       if(filterIndex == 1)
+      {
         LoadROM(filePath);
+        NotifyFileLoaded();
+      }
       else if (filterIndex == 2)
+      {
         LoadMemoryDump(filePath);
-      NotifyFileLoaded();
+      }
     }
 
     private void LoadROM(string filePath)

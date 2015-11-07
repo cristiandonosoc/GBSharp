@@ -29,5 +29,6 @@ namespace GBSharp
     DisplayStatus GetDisplayStatus();
 
     void DrawFrame(int rowStart = 0, int rowEnd = 144);
+    void DrawTiles();
   }
 }
