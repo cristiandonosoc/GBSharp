@@ -12,6 +12,8 @@ namespace GBSharp
 
     // Intermediate targets
     uint[] GetDebugTarget(DebugTargets debugTarget);
+    bool GetUpdateDebugTarget(DebugTargets debugTarget);
+    void SetUpdateDebugTarget(DebugTargets debugTarget, bool value);
 
     bool TileBase { get; set; }
     bool TileMap { get; set; }

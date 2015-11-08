@@ -26,6 +26,19 @@ namespace GBSharp.ViewModel
     private readonly IDisplay _display;
     private readonly IMemory _memory;
 
+    #region BACKGROUND
+
+    private bool _updateBackground;
+    public bool UpdateBackground
+    {
+      get { return _updateBackground; }
+      set
+      {
+        if(_updateBackground == value) { return; }
+        _updateBackground = value;
+        _display.SetUpdateDebugTarget(DebugTargets.Background, value);
+      }
+    }
     private WriteableBitmap _background;
     public WriteableBitmap Background
     {
@@ -37,6 +50,21 @@ namespace GBSharp.ViewModel
       }
     }
 
+    #endregion
+
+    #region TILES
+
+    private bool _updateTiles;
+    public bool UpdateTiles
+    {
+      get { return _updateTiles; }
+      set
+      {
+        if(_updateTiles == value) { return; }
+        _updateTiles = value;
+        _display.SetUpdateDebugTarget(DebugTargets.Tiles, value);
+      }
+    }
     private WriteableBitmap _tiles;
     public WriteableBitmap Tiles
     {
@@ -78,7 +106,6 @@ namespace GBSharp.ViewModel
       }
     }
 
-
     private TileMapOptions _tileMapOption;
     public TileMapOptions TileMap {
       get
@@ -110,6 +137,21 @@ namespace GBSharp.ViewModel
       }
     }
 
+    #endregion
+
+    #region WINDOW
+
+    private bool _updateWindow;
+    public bool UpdateWindow
+    {
+      get { return _updateWindow; }
+      set
+      {
+        if(_updateWindow == value) { return; }
+        _updateWindow = value;
+        _display.SetUpdateDebugTarget(DebugTargets.Window, value);
+      }
+    }
     private WriteableBitmap _window;
     public WriteableBitmap Window
     {
@@ -121,6 +163,11 @@ namespace GBSharp.ViewModel
       }
     }
 
+    #endregion
+
+    #region SPRITES
+
+    public bool UpdateSprites { get; set; }
     private SpriteViewModel _selectedSprite;
     public SpriteViewModel SelectedSprite 
     {
@@ -134,7 +181,28 @@ namespace GBSharp.ViewModel
         }
       }
     }
-    
+
+    private readonly ObservableCollection<SpriteViewModel> _sprites = new ObservableCollection<SpriteViewModel>();
+    public ObservableCollection<SpriteViewModel> Sprites
+    {
+      get { return _sprites; }
+    }
+
+    #endregion
+
+    #region SPRITE LAYER
+
+    private bool _updateSpriteLayer;
+    public bool UpdateSpriteLayer
+    {
+      get { return _updateSpriteLayer; }
+      set
+      {
+        if(_updateSpriteLayer == value) { return; }
+        _updateSpriteLayer = value;
+        _display.SetUpdateDebugTarget(DebugTargets.SpriteLayer, value);
+      }
+    }
     private WriteableBitmap _spriteLayer;
     public WriteableBitmap SpriteLayer
     {
@@ -145,6 +213,10 @@ namespace GBSharp.ViewModel
         OnPropertyChanged(() => SpriteLayer);
       }
     }
+
+    #endregion
+
+    #region DISPLAY TIMING
 
     private bool _enabled;
     public bool Enabled
@@ -201,8 +273,17 @@ namespace GBSharp.ViewModel
       }
     }
 
-    private readonly ObservableCollection<SpriteViewModel> _sprites = new ObservableCollection<SpriteViewModel>();
-
+    private bool _updateDisplayTiming;
+    public bool UpdateDisplayTiming
+    {
+      get { return _updateDisplayTiming; }
+      set
+      {
+        if(_updateDisplayTiming == value) { return; }
+        _updateDisplayTiming = value;
+        _display.SetUpdateDebugTarget(DebugTargets.DisplayTiming, value);
+      }
+    }
     private WriteableBitmap _displayTiming;
     public WriteableBitmap DisplayTiming
     {
@@ -214,10 +295,7 @@ namespace GBSharp.ViewModel
       }
     }
 
-    public ObservableCollection<SpriteViewModel> Sprites
-    {
-      get { return _sprites; }
-    }
+    #endregion
 
     #region COMMANDS
 
@@ -288,40 +366,61 @@ namespace GBSharp.ViewModel
 
     public void CopyFromDomain()
     {
-      Utils.TransferBytesToWriteableBitmap(_background, 
-                                           _display.GetDebugTarget(DebugTargets.Background));
-      OnPropertyChanged(() => Background);
-
-      Utils.TransferBytesToWriteableBitmap(_window, 
-                                           _display.GetDebugTarget(DebugTargets.Window));
-      OnPropertyChanged(() => Window);
-
-      Utils.TransferBytesToWriteableBitmap(_spriteLayer, 
-                                           _display.GetDebugTarget(DebugTargets.SpriteLayer));
-      OnPropertyChanged(() => SpriteLayer);
- 
-      Utils.TransferBytesToWriteableBitmap(_displayTiming, 
-                                           _display.GetDebugTarget(DebugTargets.DisplayTiming));
-      OnPropertyChanged(() => DisplayTiming);
-
-      Utils.TransferBytesToWriteableBitmap(_tiles, 
-                                           _display.GetDebugTarget(DebugTargets.Tiles));
-      OnPropertyChanged(() => Tiles);
-
-      TileBase = _display.TileBase;
-      SetTileMapOptionFromBool(_display.NoTileMap, _display.TileMap);
-
-      for (int i = 0; i < 40; i++)
+      UpdateBackground = _display.GetUpdateDebugTarget(DebugTargets.Background);
+      if(UpdateBackground)
       {
-        Sprites[i].RefreshSprite(_display.GetSprite(i), _display.GetOAM(i));
+        Utils.TransferBytesToWriteableBitmap(_background, 
+                                             _display.GetDebugTarget(DebugTargets.Background));
+        OnPropertyChanged(() => Background);
       }
 
-      DisplayStatus disStat = _display.GetDisplayStatus();
-      Enabled = disStat.enabled;
-      CurrentLine = disStat.currentLine;
-      DisplayMode = disStat.displayMode;
-      PrevTickCount = disStat.prevTickCount;
-      CurrentTickCount = disStat.currentLineTickCount;
+      UpdateTiles = _display.GetUpdateDebugTarget(DebugTargets.Tiles);
+      if (UpdateTiles)
+      {
+        TileBase = _display.TileBase;
+        SetTileMapOptionFromBool(_display.NoTileMap, _display.TileMap);
+        Utils.TransferBytesToWriteableBitmap(_tiles,
+                                             _display.GetDebugTarget(DebugTargets.Tiles));
+        OnPropertyChanged(() => Tiles);
+      }
+
+      UpdateWindow = _display.GetUpdateDebugTarget(DebugTargets.Window);
+      if (UpdateWindow)
+      {
+        Utils.TransferBytesToWriteableBitmap(_window,
+                                             _display.GetDebugTarget(DebugTargets.Window));
+        OnPropertyChanged(() => Window);
+      }
+
+      if (UpdateSprites)
+      {
+        for (int i = 0; i < 40; i++)
+        {
+          Sprites[i].RefreshSprite(_display.GetSprite(i), _display.GetOAM(i));
+        }
+      }
+
+      UpdateSpriteLayer = _display.GetUpdateDebugTarget(DebugTargets.SpriteLayer);
+      if (UpdateSpriteLayer)
+      {
+        Utils.TransferBytesToWriteableBitmap(_spriteLayer,
+                                             _display.GetDebugTarget(DebugTargets.SpriteLayer));
+        OnPropertyChanged(() => SpriteLayer);
+      }
+
+      UpdateDisplayTiming = _display.GetUpdateDebugTarget(DebugTargets.DisplayTiming);
+      if (UpdateDisplayTiming)
+      {
+        DisplayStatus disStat = _display.GetDisplayStatus();
+        Enabled = disStat.enabled;
+        CurrentLine = disStat.currentLine;
+        DisplayMode = disStat.displayMode;
+        PrevTickCount = disStat.prevTickCount;
+        CurrentTickCount = disStat.currentLineTickCount;
+        Utils.TransferBytesToWriteableBitmap(_displayTiming,
+                                             _display.GetDebugTarget(DebugTargets.DisplayTiming));
+        OnPropertyChanged(() => DisplayTiming);
+      }
 
       NotifyUpdateDisplay();
     }

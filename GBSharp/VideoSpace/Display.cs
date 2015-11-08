@@ -156,6 +156,15 @@ namespace GBSharp.VideoSpace
       return debugTargetDict[debugTarget];
     }
 
+    public bool GetUpdateDebugTarget(DebugTargets debugTarget)
+    {
+      return updateDebugTargetDict[debugTarget];
+    }
+    public void SetUpdateDebugTarget(DebugTargets debugTarget, bool value)
+    {
+      updateDebugTargetDict[debugTarget] = value;
+    }
+
     private uint[] sprite;
 
     /// <summary>

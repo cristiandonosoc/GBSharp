@@ -75,108 +75,104 @@
       <TabControl>
         <TabItem Header="Background">
           <Grid Margin="5">
-            <Grid>
-              <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-              </Grid.RowDefinitions>
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                  <Image Height="256" Width="256" Source="{Binding Background}"
-                 RenderOptions.BitmapScalingMode="NearestNeighbor">
-                    <Image.LayoutTransform>
-                      <ScaleTransform 
-                    CenterX="0" CenterY="0"
-                    ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
-                    ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
-                    </Image.LayoutTransform>
-                  </Image>
-                </ScrollViewer>
-            </Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <CheckBox Content="Update" IsChecked="{Binding UpdateBackground}" />
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto" 
+                          HorizontalScrollBarVisibility="Auto">
+              <Image Height="256" Width="256" Source="{Binding Background}"
+                     RenderOptions.BitmapScalingMode="NearestNeighbor">
+                <Image.LayoutTransform>
+                  <ScaleTransform 
+                CenterX="0" CenterY="0"
+                ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
+                ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
+                </Image.LayoutTransform>
+              </Image>
+            </ScrollViewer>
           </Grid>
         </TabItem>
         <TabItem Header="Tiles">
           <Grid Margin="5">
-            <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <CheckBox Content="Update" IsChecked="{Binding UpdateTiles}"/>
+            <Grid Grid.Row="1">
               <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
               </Grid.RowDefinitions>
-              <Grid>
-                <Grid.RowDefinitions>
-                  <RowDefinition Height="Auto"/>
-                  <RowDefinition Height="Auto"/>
-                  <RowDefinition Height="Auto"/>
-                  <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*"/>
-                  <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="TileBase"/>
-                <RadioButton Grid.Row="1" Grid.Column="0" GroupName="TileBase" 
-                             Content="0x8000" 
-                             IsChecked="{Binding TileBase}"/>
-                <RadioButton Grid.Row="2" Grid.Column="0" GroupName="TileBase" 
-                             Content="0x8800" 
-                             IsChecked="{Binding TileBase, Converter={StaticResource BoolInverterConverter}}"/>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <TextBlock Grid.Row="0" Grid.Column="0" Text="TileBase"/>
+              <RadioButton Grid.Row="1" Grid.Column="0" GroupName="TileBase" 
+                           Content="0x8000" 
+                           IsChecked="{Binding TileBase}"/>
+              <RadioButton Grid.Row="2" Grid.Column="0" GroupName="TileBase" 
+                           Content="0x8800" 
+                           IsChecked="{Binding TileBase, Converter={StaticResource BoolInverterConverter}}"/>
 
-                <TextBlock Grid.Row="0" Grid.Column="1" Text="TileMap"/>
-                <RadioButton Grid.Row="1" Grid.Column="1" GroupName="TileMap" 
-                             Content="None" 
-                             IsChecked="{Binding TileMap, 
-                                         Converter={StaticResource EnumToBoolConverter},
-                                         ConverterParameter=None}"/>
-                <RadioButton Grid.Row="2" Grid.Column="1" GroupName="TileMap" 
-                             Content="0x9800-0x9BFF" 
-                             IsChecked="{Binding TileMap,
-                                         Converter={StaticResource EnumToBoolConverter},
-                                         ConverterParameter=x9800}"/>
-                <RadioButton Grid.Row="3" Grid.Column="1" GroupName="TileMap" 
-                             Content="0x9C00-0x9FFF"
-                             IsChecked="{Binding TileMap,
-                                         Converter={StaticResource EnumToBoolConverter},
-                                         ConverterParameter=x9C00}"/>
-              </Grid>
-              <Grid Grid.Row="1" Height="256" Width="256">
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                  <Image Height="256" Width="256" Source="{Binding Tiles}"
-                    RenderOptions.BitmapScalingMode="NearestNeighbor">
-                    <Image.LayoutTransform>
-                      <ScaleTransform CenterX="0" CenterY="0"
-                        ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
-                    		ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
-                    </Image.LayoutTransform>
-                  </Image>
-                </ScrollViewer>
-              </Grid>
+              <TextBlock Grid.Row="0" Grid.Column="1" Text="TileMap"/>
+              <RadioButton Grid.Row="1" Grid.Column="1" GroupName="TileMap" 
+                           Content="None" 
+                           IsChecked="{Binding TileMap, 
+                                       Converter={StaticResource EnumToBoolConverter},
+                                       ConverterParameter=None}"/>
+              <RadioButton Grid.Row="2" Grid.Column="1" GroupName="TileMap" 
+                           Content="0x9800-0x9BFF" 
+                           IsChecked="{Binding TileMap,
+                                       Converter={StaticResource EnumToBoolConverter},
+                                       ConverterParameter=x9800}"/>
+              <RadioButton Grid.Row="3" Grid.Column="1" GroupName="TileMap" 
+                           Content="0x9C00-0x9FFF"
+                           IsChecked="{Binding TileMap,
+                                       Converter={StaticResource EnumToBoolConverter},
+                                       ConverterParameter=x9C00}"/>
+            </Grid>
+            <Grid Grid.Row="2" Height="256" Width="256">
+              <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                <Image Height="256" Width="256" Source="{Binding Tiles}"
+                  RenderOptions.BitmapScalingMode="NearestNeighbor">
+                  <Image.LayoutTransform>
+                    <ScaleTransform CenterX="0" CenterY="0"
+                      ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
+                      ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
+                  </Image.LayoutTransform>
+                </Image>
+              </ScrollViewer>
             </Grid>
           </Grid>
         </TabItem>
         <TabItem Header="Window">
           <Grid Margin="5">
-            <Grid>
-              <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-              </Grid.RowDefinitions>
-              <DockPanel Grid.Row="3">
-                <Button DockPanel.Dock="Left" Content="&lt;" Command="{Binding ScrollXDecreaseCommand}"></Button>
-                <Button DockPanel.Dock="Right" Content="&gt;" Command="{Binding ScrollXIncreaseCommand}"></Button>
-                <Button DockPanel.Dock="Top" Content="^" Command="{Binding ScrollYIncreaseCommand}"></Button>
-                <Button DockPanel.Dock="Bottom" Content="v" Command="{Binding ScrollYDecreaseCommand}"></Button>
-                <Grid Height="256" Width="256">
-                  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                    <Image Height="256" Width="256" Source="{Binding Window}"
-                     RenderOptions.BitmapScalingMode="NearestNeighbor">
-                      <Image.LayoutTransform>
-                        <ScaleTransform 
-                        CenterX="0" CenterY="0"
-                        ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
-                        ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
-                      </Image.LayoutTransform>
-                    </Image>
-                  </ScrollViewer>
-                </Grid>
-              </DockPanel>
-            </Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <CheckBox Content="Update" IsChecked="{Binding UpdateWindow}"/>
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto" 
+                          HorizontalScrollBarVisibility="Auto">
+              <Image Height="256" Width="256" Source="{Binding Window}"
+               RenderOptions.BitmapScalingMode="NearestNeighbor">
+                <Image.LayoutTransform>
+                  <ScaleTransform 
+                  CenterX="0" CenterY="0"
+                  ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
+                  ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
+                </Image.LayoutTransform>
+              </Image>
+            </ScrollViewer>
           </Grid>
         </TabItem>
 
@@ -184,10 +180,12 @@
           <Grid Margin="5">
             <Grid.RowDefinitions>
               <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
               <RowDefinition Height="50"/>
               <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <ListView ItemsSource="{Binding Sprites}" SelectedItem="{Binding SelectedSprite}">
+            <CheckBox Content="Update" IsChecked="{Binding UpdateSprites}"/>
+            <ListView Grid.Row="1" ItemsSource="{Binding Sprites}" SelectedItem="{Binding SelectedSprite}">
               <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
                   <StackPanel Orientation="Horizontal"></StackPanel>
@@ -196,73 +194,72 @@
               <ListView.Resources>
                 <DataTemplate DataType="{x:Type viewModel:SpriteViewModel}">
                   <Grid>
-                    <Image Width="32" Height="32" Source="{Binding SpriteImage}" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                    <Image Width="32" Height="32" Source="{Binding SpriteImage}" 
+                           RenderOptions.BitmapScalingMode="NearestNeighbor"/>
                   </Grid>
                 </DataTemplate>
               </ListView.Resources>
             </ListView>
-            <ContentPresenter Grid.Row="2" Content="{Binding SelectedSprite}"></ContentPresenter>
+            <ContentPresenter Grid.Row="3" Content="{Binding SelectedSprite}"></ContentPresenter>
           </Grid>
         </TabItem>
         <TabItem Header="SpriteLayer">
           <Grid Margin="5">
-            <Grid>
-              <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-              </Grid.RowDefinitions>
-              <Grid Height="256" Width="256">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                  <Image Height="256" Width="256" Source="{Binding SpriteLayer}"
-                     RenderOptions.BitmapScalingMode="NearestNeighbor">
-                    <Image.LayoutTransform>
-                      <ScaleTransform 
-                        CenterX="0" CenterY="0"
-                        ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
-                        ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
-                    </Image.LayoutTransform>
-                  </Image>
-                </ScrollViewer>
-              </Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <CheckBox Content="Update" IsChecked="{Binding UpdateSpriteLayer}"/>
+            <Grid Grid.Row="1" Height="256" Width="256">
+              <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                <Image Height="256" Width="256" Source="{Binding SpriteLayer}"
+                   RenderOptions.BitmapScalingMode="NearestNeighbor">
+                  <Image.LayoutTransform>
+                    <ScaleTransform 
+                      CenterX="0" CenterY="0"
+                      ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
+                      ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
+                  </Image.LayoutTransform>
+                </Image>
+              </ScrollViewer>
             </Grid>
           </Grid>
         </TabItem>
 
         <TabItem Header="DisplayTiming">
           <Grid Margin="5">
-            <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <CheckBox Content="Update" IsChecked="{Binding UpdateDisplayTiming}"/>
+            <Grid Grid.Row="1">
               <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
               </Grid.RowDefinitions>
-              <Grid Grid.Row="0">
-                <Grid.RowDefinitions>
-                  <RowDefinition Height="Auto"/>
-                  <RowDefinition Height="Auto"/>
-                  <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="Auto"/>
-                  <ColumnDefinition Width="50"/>
-                  <ColumnDefinition Width="Auto"/>
-                  <ColumnDefinition Width="50"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="Enabled: " />
-                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Enabled}" />
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="50"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="50"/>
+              </Grid.ColumnDefinitions>
+              <TextBlock Grid.Row="0" Grid.Column="0" Text="Enabled: " />
+              <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Enabled}" />
 
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="Current Line: " />
-                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CurrentLine}" />
-                <TextBlock Grid.Row="1" Grid.Column="2" Text="Current Mode: " />
-                <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding DisplayMode}" />
+              <TextBlock Grid.Row="1" Grid.Column="0" Text="Current Line: " />
+              <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CurrentLine}" />
+              <TextBlock Grid.Row="1" Grid.Column="2" Text="Current Mode: " />
+              <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding DisplayMode}" />
 
-                <TextBlock Grid.Row="2" Grid.Column="0" Text="Prev Tick: " />
-                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding PrevTickCount}" />
-                <TextBlock Grid.Row="2" Grid.Column="2" Text="Current Tick: " />
-                <TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding CurrentTickCount}" />
-
-                
-              </Grid>
-
-              <Grid Grid.Row="1" Height="256" Width="256">
+              <TextBlock Grid.Row="2" Grid.Column="0" Text="Prev Tick: " />
+              <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding PrevTickCount}" />
+              <TextBlock Grid.Row="2" Grid.Column="2" Text="Current Tick: " />
+              <TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding CurrentTickCount}" />
+            </Grid>
+            <Grid Grid.Row="2" Height="256" Width="256">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                   <Image Height="256" Width="256" Source="{Binding DisplayTiming}"
                      RenderOptions.BitmapScalingMode="NearestNeighbor">
@@ -275,7 +272,6 @@
                   </Image>
                 </ScrollViewer>
               </Grid>
-            </Grid>
           </Grid>
         </TabItem>
 
