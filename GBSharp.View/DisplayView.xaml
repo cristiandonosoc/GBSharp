@@ -74,36 +74,24 @@
     <ScrollViewer>
       <TabControl>
         <TabItem Header="Background">
-
-          <StackPanel>
-            <Grid Margin="5">
-              <Grid>
-                <Grid.RowDefinitions>
-                  <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <DockPanel Grid.Row="3">
-                  <Button DockPanel.Dock="Left" Content="&lt;" Command="{Binding ScrollXDecreaseCommand}"></Button>
-                  <Button DockPanel.Dock="Right" Content="&gt;" Command="{Binding ScrollXIncreaseCommand}"></Button>
-                  <Button DockPanel.Dock="Top" Content="^" Command="{Binding ScrollYIncreaseCommand}"></Button>
-                  <Button DockPanel.Dock="Bottom" Content="v" Command="{Binding ScrollYDecreaseCommand}"></Button>
-                  <Grid Height="256" Width="256">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                      <Image Height="256" Width="256" Source="{Binding Background}"
-                     RenderOptions.BitmapScalingMode="NearestNeighbor">
-                        <Image.LayoutTransform>
-                          <ScaleTransform 
-                        CenterX="0" CenterY="0"
-                        ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
-                        ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
-                        </Image.LayoutTransform>
-                      </Image>
-                    </ScrollViewer>
-                  </Grid>
-                </DockPanel>
-              </Grid>
+          <Grid Margin="5">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                  <Image Height="256" Width="256" Source="{Binding Background}"
+                 RenderOptions.BitmapScalingMode="NearestNeighbor">
+                    <Image.LayoutTransform>
+                      <ScaleTransform 
+                    CenterX="0" CenterY="0"
+                    ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
+                    ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
+                    </Image.LayoutTransform>
+                  </Image>
+                </ScrollViewer>
             </Grid>
-          </StackPanel>
-
+          </Grid>
         </TabItem>
         <TabItem Header="Tiles">
           <Grid Margin="5">
