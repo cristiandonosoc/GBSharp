@@ -19,6 +19,7 @@ namespace GBSharp
 
     bool TileBase { get; set; }
     bool TileMap { get; set; }
+    bool NoTileMap { get; set; }
     
     // Composed targets
     uint[] Frame { get; }

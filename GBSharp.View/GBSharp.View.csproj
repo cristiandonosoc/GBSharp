@@ -68,6 +68,7 @@
     <Compile Include="DissasembleView.xaml.cs">
       <DependentUpon>DissasembleView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="EnumToBoolConverter.cs" />
     <Compile Include="KeyboardHandler.cs" />
     <Compile Include="OpenFileDialogAdapter.cs" />
     <Compile Include="OpenFileDialogAdapterFactory.cs" />

@@ -9,6 +9,14 @@ using System.Windows.Media;
 
 namespace GBSharp.ViewModel
 {
+  public enum TileMapOptions
+  {
+    None,
+    x9800,
+    x9C00
+  };
+
+
   public class DisplayViewModel : ViewModelBase, IDisposable
   {
     public event Action UpdateDisplay;
@@ -54,16 +62,50 @@ namespace GBSharp.ViewModel
       }
     }
 
-    private bool _tileMap;
-    public bool TileMap {
-      get { return _tileMap; }
+    private void SetTileMapOptionFromBool(bool noTileMap, bool tileMap)
+    {
+      if (noTileMap)
+      {
+        TileMap = TileMapOptions.None;
+      }
+      else if(tileMap)
+      {
+        TileMap = TileMapOptions.x9C00;
+      }
+      else
+      {
+        TileMap = TileMapOptions.x9800;
+      }
+    }
+
+
+    private TileMapOptions _tileMapOption;
+    public TileMapOptions TileMap {
+      get
+      {
+        return _tileMapOption;
+      }
       set
       {
-        if(_tileMap == value) { return; }
-        _tileMap = value;
-        _display.TileMap = value;
-        _display.DrawTiles();
+        if(_tileMapOption == value) { return; }
+        _tileMapOption = value;
+
+        switch(_tileMapOption)
+        {
+          case TileMapOptions.None:
+            _display.NoTileMap = true;
+            break;
+          case TileMapOptions.x9800:
+            _display.NoTileMap = false;
+            _display.TileMap = false;
+            break;
+          case TileMapOptions.x9C00:
+            _display.NoTileMap = false;
+            _display.TileMap = true;
+            break;
+        }
         CopyFromDomain();
+        _display.DrawTiles();
         OnPropertyChanged(() => TileMap);
       }
     }
@@ -262,7 +304,7 @@ namespace GBSharp.ViewModel
       OnPropertyChanged(() => Tiles);
 
       TileBase = _display.TileBase;
-      TileMap = _display.TileMap;
+      SetTileMapOptionFromBool(_display.NoTileMap, _display.TileMap);
 
       for (int i = 0; i < 40; i++)
       {

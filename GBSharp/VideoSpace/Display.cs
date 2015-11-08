@@ -84,6 +84,7 @@ namespace GBSharp.VideoSpace
 
     // Debug targets
     public bool tileBase;
+    public bool noTileMap;
     public bool tileMap;
   }
 
@@ -180,6 +181,11 @@ namespace GBSharp.VideoSpace
       get { return disStat.tileBase; }
       set { disStat.tileBase = value; }
     }
+    public bool NoTileMap
+    {
+      get { return disStat.noTileMap; }
+      set { disStat.noTileMap = value; }
+    }
     public bool TileMap
     {
       get { return disStat.tileMap; }
@@ -252,6 +258,7 @@ namespace GBSharp.VideoSpace
       this.disStat.drawDebugTargets = true;
 
       this.disStat.tileBase = true;
+      this.disStat.noTileMap = false;
       this.disStat.tileMap = false;
 
       /*** DRAW TARGETS ***/
@@ -496,9 +503,16 @@ namespace GBSharp.VideoSpace
       {
         for (int tileX = 0; tileX < 20; ++tileX)
         {
-          int tileOffset = DisFuncs.GetTileOffset(disDef, memory, tileMapBaseAddress,
+          int tileOffset;
+          if(disStat.noTileMap)
+          {
+            tileOffset = 16 * tileY + tileX;
+          }
+          else
+          {
+            tileOffset = DisFuncs.GetTileOffset(disDef, memory, tileMapBaseAddress,
                                                   disStat.tileBase, tileX, tileY);
-          //int tileOffset = 16 * y + x;
+          }
           byte[] tileData = DisFuncs.GetTileData(disDef, memory, tileBaseAddress, tileOffset, false);
 
           DisFuncs.DrawTile(disDef, tiles, disDef.screenPixelCountX, tileData,
