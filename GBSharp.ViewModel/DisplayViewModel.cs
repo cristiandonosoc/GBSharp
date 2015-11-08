@@ -288,19 +288,24 @@ namespace GBSharp.ViewModel
 
     public void CopyFromDomain()
     {
-      Utils.TransferBytesToWriteableBitmap(_background, _display.Background);
+      Utils.TransferBytesToWriteableBitmap(_background, 
+                                           _display.GetDebugTarget(DebugTargets.Background));
       OnPropertyChanged(() => Background);
 
-      Utils.TransferBytesToWriteableBitmap(_window, _display.Window);
+      Utils.TransferBytesToWriteableBitmap(_window, 
+                                           _display.GetDebugTarget(DebugTargets.Window));
       OnPropertyChanged(() => Window);
 
-      Utils.TransferBytesToWriteableBitmap(_spriteLayer, _display.SpriteLayer);
+      Utils.TransferBytesToWriteableBitmap(_spriteLayer, 
+                                           _display.GetDebugTarget(DebugTargets.SpriteLayer));
       OnPropertyChanged(() => SpriteLayer);
  
-      Utils.TransferBytesToWriteableBitmap(_displayTiming, _display.DisplayTiming);
+      Utils.TransferBytesToWriteableBitmap(_displayTiming, 
+                                           _display.GetDebugTarget(DebugTargets.DisplayTiming));
       OnPropertyChanged(() => DisplayTiming);
 
-      Utils.TransferBytesToWriteableBitmap(_tiles, _display.Tiles);
+      Utils.TransferBytesToWriteableBitmap(_tiles, 
+                                           _display.GetDebugTarget(DebugTargets.Tiles));
       OnPropertyChanged(() => Tiles);
 
       TileBase = _display.TileBase;

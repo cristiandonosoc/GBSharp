@@ -29,6 +29,15 @@ namespace GBSharp.VideoSpace
     Mode11
   }
 
+  public enum DebugTargets 
+  {
+    Background,
+    Tiles,
+    Window,
+    SpriteLayer,
+    DisplayTiming
+  }
+
   public class OAM
   {
     internal int index;
@@ -140,28 +149,34 @@ namespace GBSharp.VideoSpace
       return disStat;
     }
 
+    public uint[] GetDebugTarget(DebugTargets debugTarget)
+    {
+      switch(debugTarget)
+      {
+        case DebugTargets.Background:
+          return background;
+        case DebugTargets.Tiles:
+          return tiles;
+        case DebugTargets.Window:
+          return window;
+        case DebugTargets.SpriteLayer:
+          return spriteLayer;
+        case DebugTargets.DisplayTiming:
+          return displayTiming;
+      }
+
+      throw new InvalidProgramException();
+    }
+
     /// <summary>
     /// Pixel numbers of the display.
     /// With this it should be THEORETICALLY have displays
     /// of different sizes without too much hazzle.
     /// </summary>
     private uint[] background;
-    public uint[] Background { get { return background; } }
-
     private uint[] window;
-    public uint[] Window { get { return window; } }
-
-    /// <summary>
-    /// The final composed frame from with the screen is calculated.
-    /// It's the conbination of the background, window and sprites.
-    /// </summary>
-    private uint[] frame;
-    public uint[] Frame { get { return frame; } }
-
     private uint[] sprite;
-
     private uint[] spriteLayer;
-    public uint[] SpriteLayer { get { return spriteLayer; } }
 
     /// <summary>
     /// The bitmap that represents the actual screen.
@@ -171,10 +186,8 @@ namespace GBSharp.VideoSpace
     public uint[] Screen { get { return screen; } }
 
     private uint[] displayTiming;
-    public uint[] DisplayTiming { get { return displayTiming; } }
 
     private uint[] tiles;
-    public uint[] Tiles { get { return tiles; } }
 
     public bool TileBase
     {
@@ -270,7 +283,6 @@ namespace GBSharp.VideoSpace
       this.spriteLayer = new uint[disDef.screenPixelCountX * disDef.screenPixelCountY];
 
       this.screen = new uint[disDef.screenPixelCountX * disDef.screenPixelCountY];
-      this.frame = new uint[disDef.framePixelCountX * disDef.framePixelCountY];
       this.displayTiming = new uint[disDef.timingPixelCountX * disDef.timingPixelCountY];
 
       // Tile stargets

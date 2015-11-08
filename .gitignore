@@ -16,7 +16,8 @@
 *.un~
 *.bak
 
-# Dono's BS 
+# Dono's BS
 VBoy/*
 gb-disasm/*
 extras/*
+Roms/*

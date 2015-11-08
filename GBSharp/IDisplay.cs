@@ -11,18 +11,13 @@ namespace GBSharp
     OAM GetOAM(int index);
 
     // Intermediate targets
-    uint[] Background { get; }
-    uint[] Window { get; }
-    uint[] SpriteLayer { get; }
-    uint[] DisplayTiming { get; }
-    uint[] Tiles { get; }
+    uint[] GetDebugTarget(DebugTargets debugTarget);
 
     bool TileBase { get; set; }
     bool TileMap { get; set; }
     bool NoTileMap { get; set; }
     
     // Composed targets
-    uint[] Frame { get; }
     uint[] Screen { get; }
     uint[] GetSprite(int index);
 
