@@ -738,7 +738,7 @@ namespace GBSharp.VideoSpace
         byte STATMask = 0x04; // Bit 2 is set 1
         STAT = (byte)(STAT | STATMask);
 
-        if((STAT & 0x40) == 1) // We check if Bit 6 is enabled
+        if(Utils.UtilFuncs.TestBit(STAT, 6) != 0)
         {
           interruptController.SetInterrupt(Interrupts.LCDCStatus);
         }
