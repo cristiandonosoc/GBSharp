@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GBSharp", "GBSharp\GBSharp.csproj", "{74F31C6A-1985-4549-AF66-29483E416003}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GBSharp.View", "GBSharp.View\GBSharp.View.csproj", "{766A1CC8-2D5F-412E-8383-AB8052806364}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GBSharp.ViewModel", "GBSharp.ViewModel\GBSharp.ViewModel.csproj", "{80655729-0EDD-4365-831E-F7AA496D0B36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GBSharp.Audio", "GBSharp.Audio\GBSharp.Audio.csproj", "{914A7DED-ADEA-4EC6-BEFA-5F728F5C66EE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{80655729-0EDD-4365-831E-F7AA496D0B36}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{80655729-0EDD-4365-831E-F7AA496D0B36}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{80655729-0EDD-4365-831E-F7AA496D0B36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{914A7DED-ADEA-4EC6-BEFA-5F728F5C66EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{914A7DED-ADEA-4EC6-BEFA-5F728F5C66EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{914A7DED-ADEA-4EC6-BEFA-5F728F5C66EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{914A7DED-ADEA-4EC6-BEFA-5F728F5C66EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
