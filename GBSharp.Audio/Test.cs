@@ -16,15 +16,25 @@ namespace GBSharp.Audio
   {
     public static void Main(string[] args)
     {
-      byte[] wave = new byte[44000 * 2 * 1000];
+      int sampleRate = 44000;
+      int freq = 440;
 
-      for(int i = 0; i < wave.Length; i = i + 2)
+      double ratio = (double)sampleRate / (double)freq;
+      byte[] wave440 = new byte[sampleRate * 2 * 10];
+      byte[] wave880 = new byte[sampleRate * 2 * 10];
+      for(int i = 0; i < wave440.Length; i = i + 2)
       {
-        wave[i] = (byte)(Math.Sin(i/2) * 128);
-        wave[i + 1] = wave[i];
+        double index440 = (double)i / ratio;
+        double index880 = 2 * (double)i / ratio;
+
+        wave440[i] = (byte)(Math.Sin(index440 * Math.PI) * 128);
+        wave440[i + 1] = wave440[i];
+
+        wave880[i] = (byte)(Math.Sin(index880 * Math.PI) * 128);
+        wave880[i + 1] = wave880[i];
       }
 
-      LoopStream stream = new LoopStream(wave);
+      LoopStream stream = new LoopStream(wave880);
 
       var format = new WaveFormat(44000, 8, 2);
       RawDataReader reader = new RawDataReader(stream, format);
@@ -39,7 +49,18 @@ namespace GBSharp.Audio
           //Play the sound
           soundOut.Play();
 
-          while (true) ;
+          bool changeSwitch = false;
+
+          while (true)
+          {
+            Thread.Sleep(1500);
+
+            stream.OffsetWrite(changeSwitch ? wave440 : wave880,
+                               0, sampleRate * 2 * 1,
+                               sampleRate * 2 * 1);
+
+            changeSwitch = !changeSwitch;
+          }
         }
       }
     }
@@ -115,6 +136,8 @@ namespace GBSharp.Audio
         }
       }
 
+      System.Console.Out.WriteLineAsync(position.ToString());
+
       return count;
     }
 
@@ -160,6 +183,25 @@ namespace GBSharp.Audio
           position = 0;
         }
       }
+    }
+
+    public void OffsetWrite(byte[] buffer, int offset, int count, int writeOffset)
+    {
+      long resPosition = position + writeOffset;
+      while(resPosition >= _buffer.Length)
+      {
+        resPosition -= _buffer.Length;
+      }
+
+      for(int i = 0; i < count; ++i)
+      {
+        _buffer[resPosition++] = buffer[offset + i];
+        if(resPosition == _buffer.Length)
+        {
+          resPosition = 0;
+        }
+      }
+
     }
   }
 }
