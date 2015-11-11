@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CSCore.SoundOut;
 using System.Threading;
+using System.Diagnostics;
 
 namespace GBSharp.Audio
 {
@@ -27,14 +28,14 @@ namespace GBSharp.Audio
         double index440 = (double)i / ratio;
         double index880 = 2 * (double)i / ratio;
 
-        wave440[i] = (byte)(Math.Sin(index440 * Math.PI) * 128);
+        wave440[i] = (byte)(Math.Sin(index440 * Math.PI) * 26);
         wave440[i + 1] = wave440[i];
 
         wave880[i] = (byte)(Math.Sin(index880 * Math.PI) * 128);
         wave880[i + 1] = wave880[i];
       }
 
-      LoopStream stream = new LoopStream(wave880);
+      LoopStream stream = new LoopStream(wave440);
 
       var format = new WaveFormat(44000, 8, 2);
       RawDataReader reader = new RawDataReader(stream, format);
@@ -50,16 +51,25 @@ namespace GBSharp.Audio
           soundOut.Play();
 
           bool changeSwitch = false;
+          TimeSpan before, after;
+          int count = sampleRate * 2;
+
 
           while (true)
           {
             Thread.Sleep(1500);
+            var currentProcess = Process.GetCurrentProcess();
 
-            stream.OffsetWrite(changeSwitch ? wave440 : wave880,
-                               0, sampleRate * 2 * 1,
-                               sampleRate * 2 * 1);
+            before = currentProcess.TotalProcessorTime;
 
-            changeSwitch = !changeSwitch;
+            stream.OffsetWrite(wave440, 0, count, count);
+
+            after = currentProcess.TotalProcessorTime;
+
+            System.Console.Out.WriteLine("Before: {0} ticks, After: {1} ticks, Diff: {2} ticks",
+                                         100 * before.Ticks,
+                                         100 * after.Ticks,
+                                         100 * (after - before).Ticks); 
           }
         }
       }
@@ -78,39 +88,28 @@ namespace GBSharp.Audio
   public class LoopStream : Stream
   {
     private byte[] _buffer;
-    private long position = 0;
+    private long _playCursor = 0;
+    private long _writeCursor = 0;
 
     public LoopStream(byte[] buffer)
     {
       _buffer = buffer;
     }
 
-    public override bool CanRead
-    {
-      get { return true; }
-    }
+    public override bool CanRead { get { return true; } }
 
-    public override bool CanSeek
-    {
-      get { return true; }
-    }
+    public override bool CanSeek { get { return true; } }
 
-    public override bool CanWrite
-    {
-      get { return true; }
-    }
+    public override bool CanWrite { get { return true; } }
 
-    public override long Length
-    {
-      get { return _buffer.Length; }
-    }
+    public override long Length { get { return _buffer.Length; } }
 
     public override long Position
     {
-      get { return position; }
+      get { return _playCursor; }
       set
       {
-        position = value;
+        _playCursor = value;
       }
     }
 
@@ -120,23 +119,23 @@ namespace GBSharp.Audio
       {
         _buffer[i] = 0;
       }
-      position = 0;
+      _playCursor = 0;
     }
 
     public override int Read(byte[] buffer, int offset, int count)
     {
       for (int i = 0; i < count; ++i)
       {
-        buffer[offset + i] = _buffer[position++];
+        buffer[offset + i] = _buffer[_playCursor++];
         
         // We loop
-        if(position == _buffer.Length)
+        if(_playCursor == _buffer.Length)
         {
-          position = 0;
+          _playCursor = 0;
         }
       }
 
-      System.Console.Out.WriteLineAsync(position.ToString());
+      //System.Console.Out.WriteLineAsync(_playCursor.ToString());
 
       return count;
     }
@@ -151,7 +150,7 @@ namespace GBSharp.Audio
       }
       else if(origin == SeekOrigin.Current)
       {
-        resOffset = position + offset;
+        resOffset = _playCursor + offset;
       }
       else
       {
@@ -162,32 +161,32 @@ namespace GBSharp.Audio
       {
         resOffset -= _buffer.Length;
       }
-      position = resOffset;
+      _playCursor = resOffset;
 
-      return position;
+      return _playCursor;
     }
 
     public override void SetLength(long value)
     {
       _buffer = new byte[value];
-      position = 0;
+      _playCursor = 0;
     }
 
     public override void Write(byte[] buffer, int offset, int count)
     {
       for(int i = 0; i < count; ++i)
       {
-        _buffer[position++] = buffer[offset + i];
-        if(position == _buffer.Length)
+        _buffer[_playCursor++] = buffer[offset + i];
+        if(_playCursor == _buffer.Length)
         {
-          position = 0;
+          _playCursor = 0;
         }
       }
     }
 
     public void OffsetWrite(byte[] buffer, int offset, int count, int writeOffset)
     {
-      long resPosition = position + writeOffset;
+      long resPosition = _playCursor + writeOffset;
       while(resPosition >= _buffer.Length)
       {
         resPosition -= _buffer.Length;
