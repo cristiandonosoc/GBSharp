@@ -50,27 +50,101 @@ namespace GBSharp.Audio
           //Play the sound
           soundOut.Play();
 
-          bool changeSwitch = false;
-          TimeSpan before, after;
           int count = sampleRate * 2;
 
+          Stopwatch sw = new Stopwatch();
+          long before, after;
+          int diff;
+          int samplesToCommit;
+          bool switchWave = true;
+          bool firstPass = true;
+          before = sw.ElapsedMilliseconds;
+          sw.Start();
 
-          while (true)
+          for (int i = 0; i < 30; ++i)
           {
-            Thread.Sleep(1500);
-            var currentProcess = Process.GetCurrentProcess();
 
-            before = currentProcess.TotalProcessorTime;
+            Thread.Sleep(1000);
 
-            stream.OffsetWrite(wave440, 0, count, count);
+            sw.Stop();
+            after = sw.ElapsedMilliseconds;
 
-            after = currentProcess.TotalProcessorTime;
 
-            System.Console.Out.WriteLine("Before: {0} ticks, After: {1} ticks, Diff: {2} ticks",
-                                         100 * before.Ticks,
-                                         100 * after.Ticks,
-                                         100 * (after - before).Ticks); 
+            if (firstPass)
+            {
+              stream.CreateWriteCursor();
+              firstPass = false;
+            }
+
+            diff = (int)(after - before);
+
+            before = sw.ElapsedMilliseconds;
+            sw.Start();
+
+            samplesToCommit = 88 * diff;
+
+            stream.Write(switchWave ? wave440 : wave880,
+                         0, samplesToCommit);
+            switchWave = !switchWave;
+
+            System.Console.Out.WriteLine("PC: {0}, WC: {1}",
+                                         (int)stream.Position,
+                                         (int)stream.WriteCursor);
           }
+
+          soundOut.Stop();
+
+
+
+          #region TIMING TEST
+
+#if false
+          long min = 10000000000000;
+          long max = 0;
+          long total = 0;
+          long before, after, diff;
+          long avg = 0;
+          Stopwatch sw = new Stopwatch();
+          double tickRatio = (double)1000000000 / (double)Stopwatch.Frequency;
+
+
+          long samples = 1000;
+          for (int i = 1; i < samples; ++i)
+          {
+            before = sw.ElapsedTicks;
+            sw.Start();
+
+            Thread.Sleep(5);
+
+            sw.Stop();
+            after = sw.ElapsedTicks;
+
+            diff = after - before;
+            total += diff;
+            avg = total / i;
+
+            if (diff < min) { min = diff; }
+            if (diff > max) { max = diff; }
+
+            //System.Console.Out.WriteLine("Before: {0} ns, After: {1} ns, Diff: {2} ns",
+            //                             tickRatio * before,
+            //                             tickRatio * after,
+            //                             tickRatio * (after - before));
+          }
+
+          System.Console.Out.WriteLine("Samples: {0}", samples);
+
+          System.Console.Out.WriteLine("Min: {0} ns, Max: {1} ns, Avg: {2} ns",
+                                       tickRatio * min,
+                                       tickRatio * max,
+                                       tickRatio * avg);
+
+#endif
+
+          #endregion
+
+          System.Console.In.ReadLine();
+
         }
       }
     }
@@ -88,8 +162,22 @@ namespace GBSharp.Audio
   public class LoopStream : Stream
   {
     private byte[] _buffer;
+
+    // Play Cursor
     private long _playCursor = 0;
+    /// <summary>
+    /// Identical to Position
+    /// </summary>
+    public long PlayCursor { get { return _playCursor; } }
+
+    // Write Cursor
     private long _writeCursor = 0;
+    public long WriteCursor { get { return _writeCursor; } }
+    private bool _writeCursorCreated = false;
+    public bool WriteCursorCreated { get { return _writeCursorCreated; } }
+
+    // TODO(Cristian): unhadcode this
+    private long _delay = 44 * 2 * 30; // 30 ms delay
 
     public LoopStream(byte[] buffer)
     {
@@ -170,37 +258,36 @@ namespace GBSharp.Audio
     {
       _buffer = new byte[value];
       _playCursor = 0;
+      _writeCursorCreated = false;
+    }
+
+    public void CreateWriteCursor()
+    {
+      _writeCursor = _playCursor + _delay;
+      while(_writeCursor >= _buffer.Length)
+      {
+        _writeCursor -= _buffer.Length;
+      }
+
+      _writeCursorCreated = true;
     }
 
     public override void Write(byte[] buffer, int offset, int count)
     {
       for(int i = 0; i < count; ++i)
       {
-        _buffer[_playCursor++] = buffer[offset + i];
-        if(_playCursor == _buffer.Length)
+        _buffer[_writeCursor++] = buffer[offset + i];
+
+        if(_writeCursor == _playCursor)
         {
-          _playCursor = 0;
+          throw new InvalidDataException("writeCursor cannot pass the playCursor");
+        }
+
+        if(_writeCursor == _buffer.Length)
+        {
+          _writeCursor = 0;
         }
       }
-    }
-
-    public void OffsetWrite(byte[] buffer, int offset, int count, int writeOffset)
-    {
-      long resPosition = _playCursor + writeOffset;
-      while(resPosition >= _buffer.Length)
-      {
-        resPosition -= _buffer.Length;
-      }
-
-      for(int i = 0; i < count; ++i)
-      {
-        _buffer[resPosition++] = buffer[offset + i];
-        if(resPosition == _buffer.Length)
-        {
-          resPosition = 0;
-        }
-      }
-
     }
   }
 }
