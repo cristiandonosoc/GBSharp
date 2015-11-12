@@ -1,7 +1,9 @@
 ﻿using System.Windows;
 using System.Windows.Input;
 using GBSharp.ViewModel;
+using GBSharp.Audio;
 using Microsoft.Win32;
+using System.Threading;
 
 namespace GBSharp.View
 {
@@ -21,6 +23,9 @@ namespace GBSharp.View
       _keyboardHandler = new KeyboardHandler();
       _mainWindowViewModel = new GameBoyViewModel(_gameBoy, new DispatcherAdapter(this), new WindowAdapter(this), new OpenFileDialogAdapterFactory(), _keyboardHandler);
       this.DataContext = _mainWindowViewModel;
+
+      Thread t = new Thread(() => Test.TestSound(_gameBoy.APU));
+      t.Start();
     }
 
     protected override void OnKeyDown(KeyEventArgs e)

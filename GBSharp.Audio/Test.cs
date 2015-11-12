@@ -16,7 +16,7 @@ namespace GBSharp.Audio
 {
   public class Test
   {
-    public static void Main(string[] args)
+    public static void TestSound(IAPU apu)
     {
       int sampleRate = 44000;
       int freq = 440;
@@ -36,10 +36,10 @@ namespace GBSharp.Audio
         wave880[i + 1] = wave880[i];
       }
 
-      AudioBuffer stream = new AudioBuffer(wave440);
+      apu.AudioStream = new AudioBuffer(wave440);
 
       var format = new WaveFormat(44000, 8, 2);
-      RawDataReader reader = new RawDataReader(stream, format);
+      RawDataReader reader = new RawDataReader(apu.AudioStream, format);
 
       using (IWaveSource soundSource = reader)
       {
@@ -77,7 +77,7 @@ namespace GBSharp.Audio
 
             if (firstPass)
             {
-              stream.CreateWriteCursor();
+              apu.AudioStream.CreateWriteCursor();
               firstPass = false;
             }
 
@@ -88,13 +88,13 @@ namespace GBSharp.Audio
 
             samplesToCommit = 88 * diff;
 
-            stream.Write(switchWave ? wave440 : wave880,
+            apu.AudioStream.Write(switchWave ? wave440 : wave880,
                          0, samplesToCommit);
             switchWave = !switchWave;
 
             System.Console.Out.WriteLine("PC: {0}, WC: {1}",
-                                         (int)stream.Position,
-                                         (int)stream.WriteCursor);
+                                         (int)apu.AudioStream.Position,
+                                         (int)apu.AudioStream.WriteCursor);
           }
 
           soundOut.Stop();
