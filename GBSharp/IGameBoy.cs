@@ -11,6 +11,7 @@ namespace GBSharp
     IMemory Memory { get; }
     ICartridge Cartridge { get; }
     IDisplay Display { get; }
+    IAPU APU { get; }
     void LoadCartridge(byte[] cartridgeData);
     void Run();
     void Pause();

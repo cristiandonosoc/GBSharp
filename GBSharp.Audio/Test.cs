@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using CSCore.SoundOut;
 using System.Threading;
 using System.Diagnostics;
+using GBSharp.AudioSpace;
 
 namespace GBSharp.Audio
 {
@@ -35,7 +36,7 @@ namespace GBSharp.Audio
         wave880[i + 1] = wave880[i];
       }
 
-      LoopStream stream = new LoopStream(wave440);
+      AudioBuffer stream = new AudioBuffer(wave440);
 
       var format = new WaveFormat(44000, 8, 2);
       RawDataReader reader = new RawDataReader(stream, format);
@@ -47,6 +48,10 @@ namespace GBSharp.Audio
         {
           //Tell the SoundOut which sound it has to play
           soundOut.Initialize(soundSource);
+
+          soundOut.Volume = 0.005f;
+
+
           //Play the sound
           soundOut.Play();
 
@@ -159,135 +164,4 @@ namespace GBSharp.Audio
   }
 
 
-  public class LoopStream : Stream
-  {
-    private byte[] _buffer;
-
-    // Play Cursor
-    private long _playCursor = 0;
-    /// <summary>
-    /// Identical to Position
-    /// </summary>
-    public long PlayCursor { get { return _playCursor; } }
-
-    // Write Cursor
-    private long _writeCursor = 0;
-    public long WriteCursor { get { return _writeCursor; } }
-    private bool _writeCursorCreated = false;
-    public bool WriteCursorCreated { get { return _writeCursorCreated; } }
-
-    // TODO(Cristian): unhadcode this
-    private long _delay = 44 * 2 * 30; // 30 ms delay
-
-    public LoopStream(byte[] buffer)
-    {
-      _buffer = buffer;
-    }
-
-    public override bool CanRead { get { return true; } }
-
-    public override bool CanSeek { get { return true; } }
-
-    public override bool CanWrite { get { return true; } }
-
-    public override long Length { get { return _buffer.Length; } }
-
-    public override long Position
-    {
-      get { return _playCursor; }
-      set
-      {
-        _playCursor = value;
-      }
-    }
-
-    public override void Flush()
-    {
-      for (int i = 0; i < _buffer.Length; ++i)
-      {
-        _buffer[i] = 0;
-      }
-      _playCursor = 0;
-    }
-
-    public override int Read(byte[] buffer, int offset, int count)
-    {
-      for (int i = 0; i < count; ++i)
-      {
-        buffer[offset + i] = _buffer[_playCursor++];
-        
-        // We loop
-        if(_playCursor == _buffer.Length)
-        {
-          _playCursor = 0;
-        }
-      }
-
-      //System.Console.Out.WriteLineAsync(_playCursor.ToString());
-
-      return count;
-    }
-
-    public override long Seek(long offset, SeekOrigin origin)
-    {
-      long resOffset;
-      if(origin == SeekOrigin.Begin)
-      {
-        resOffset = offset;
-
-      }
-      else if(origin == SeekOrigin.Current)
-      {
-        resOffset = _playCursor + offset;
-      }
-      else
-      {
-        resOffset = _buffer.Length - 1 + offset;
-      }
-
-      while (resOffset >= _buffer.Length)
-      {
-        resOffset -= _buffer.Length;
-      }
-      _playCursor = resOffset;
-
-      return _playCursor;
-    }
-
-    public override void SetLength(long value)
-    {
-      _buffer = new byte[value];
-      _playCursor = 0;
-      _writeCursorCreated = false;
-    }
-
-    public void CreateWriteCursor()
-    {
-      _writeCursor = _playCursor + _delay;
-      while(_writeCursor >= _buffer.Length)
-      {
-        _writeCursor -= _buffer.Length;
-      }
-
-      _writeCursorCreated = true;
-    }
-
-    public override void Write(byte[] buffer, int offset, int count)
-    {
-      for(int i = 0; i < count; ++i)
-      {
-        _buffer[_writeCursor++] = buffer[offset + i];
-
-        if(_writeCursor == _playCursor)
-        {
-          throw new InvalidDataException("writeCursor cannot pass the playCursor");
-        }
-
-        if(_writeCursor == _buffer.Length)
-        {
-          _writeCursor = 0;
-        }
-      }
-    }
-  }
 }

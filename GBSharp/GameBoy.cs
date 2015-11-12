@@ -17,7 +17,8 @@ namespace GBSharp
     private CPUSpace.InterruptController interruptController;
     private MemorySpace.Memory memory;
     private Cartridge.Cartridge cartridge;
-    private Display display;
+    private VideoSpace.Display display;
+    private AudioSpace.APU apu;
     private bool run;
     private bool inBreakpoint;
     private Thread clockThread;
@@ -46,6 +47,7 @@ namespace GBSharp
       this.cpu = new CPUSpace.CPU(this.memory);
       this.interruptController = this.cpu.interruptController;
       this.display = new Display(this.interruptController, this.memory);
+      this.apu = new AudioSpace.APU();
 
       this.disassembler = new Disassembler(cpu, memory);
 
@@ -91,6 +93,11 @@ namespace GBSharp
     public IDisplay Display
     {
       get { return display; }
+    }
+
+    public IAPU APU
+    {
+      get { return apu; }
     }
 
     /// <summary>
