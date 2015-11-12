@@ -310,7 +310,7 @@ namespace GBSharp.VideoSpace
 
     internal void DrawSprite(uint[] spriteData, int spriteCode, int pX, int pY)
     {
-      DisFuncs.DrawTransparency(disDef, spriteData, 8, 0, 0, 8, 16);
+      DrawFuncs.DrawTransparency(disDef, spriteData, 8, 0, 0, 8, 16);
 
       byte LCDC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
       bool LCDCBit2 = Utils.UtilFuncs.TestBit(LCDC, 2) != 0;
@@ -322,7 +322,7 @@ namespace GBSharp.VideoSpace
 
       // We draw the top part
       byte[] pixels = DisFuncs.GetTileData(disDef, memory, 0x8000, spriteCode, LCDCBit2);
-      DisFuncs.DrawTile(disDef, spriteData, 8, pixels, pX, pY,
+      DrawFuncs.DrawTile(disDef, spriteData, 8, pixels, pX, pY,
                         disDef.screenPixelCountX, disDef.screenPixelCountY);
     }
 
@@ -334,7 +334,7 @@ namespace GBSharp.VideoSpace
       // WINDOW TRANSPARENCY
       if (updateDebugTargetDict[DebugTargets.Window])
       {
-        DisFuncs.DrawTransparency(disDef, debugTargetDict[DebugTargets.Window],
+        DrawFuncs.DrawTransparency(disDef, debugTargetDict[DebugTargets.Window],
                                   disDef.screenPixelCountX,
                                   0, 0,
                                   disDef.screenPixelCountX, disDef.screenPixelCountY);
@@ -343,7 +343,7 @@ namespace GBSharp.VideoSpace
       // SPRITES TRANSPARENCY
       if (updateDebugTargetDict[DebugTargets.SpriteLayer])
       {
-        DisFuncs.DrawTransparency(disDef, debugTargetDict[DebugTargets.SpriteLayer],
+        DrawFuncs.DrawTransparency(disDef, debugTargetDict[DebugTargets.SpriteLayer],
                                   disDef.screenPixelCountX,
                                   0, 0,
                                   disDef.screenPixelCountX, disDef.screenPixelCountY);
@@ -385,7 +385,7 @@ namespace GBSharp.VideoSpace
 
         if(updateDebugTargetDict[DebugTargets.Background])
         {
-          DisFuncs.DrawLine(disDef, debugTargetDict[DebugTargets.Background],
+          DrawFuncs.DrawLine(disDef, debugTargetDict[DebugTargets.Background],
                             disDef.framePixelCountX,
                             rowPixels,
                             0, bY,
@@ -394,7 +394,7 @@ namespace GBSharp.VideoSpace
 
         if (drawBackground)
         {
-          DisFuncs.DrawLine(disDef, screen, disDef.screenPixelCountX, rowPixels,
+          DrawFuncs.DrawLine(disDef, screen, disDef.screenPixelCountX, rowPixels,
                             0, y,
                             SCX, disDef.framePixelCountX,
                             false, true);
@@ -425,7 +425,7 @@ namespace GBSharp.VideoSpace
           // Independent target
           if(updateDebugTargetDict[DebugTargets.Window])
           {
-            DisFuncs.DrawLine(disDef, debugTargetDict[DebugTargets.Window],
+            DrawFuncs.DrawLine(disDef, debugTargetDict[DebugTargets.Window],
                               disDef.screenPixelCountX,
                               rowPixels,
                               rWX, row,
@@ -435,7 +435,7 @@ namespace GBSharp.VideoSpace
           // Screen target
           if (drawWindow)
           {
-            DisFuncs.DrawLine(disDef, screen, disDef.screenPixelCountX,
+            DrawFuncs.DrawLine(disDef, screen, disDef.screenPixelCountX,
                               rowPixels,
                               rWX, row,
                               0, disDef.screenPixelCountX - rWX);
@@ -457,7 +457,7 @@ namespace GBSharp.VideoSpace
           DisFuncs.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels,
                                       row, LCDCBit2,
                                       true);
-          DisFuncs.DrawLine(disDef, debugTargetDict[DebugTargets.SpriteLayer],
+          DrawFuncs.DrawLine(disDef, debugTargetDict[DebugTargets.SpriteLayer],
                             disDef.screenPixelCountX,
                             pixels,
                             0, row,
@@ -470,7 +470,7 @@ namespace GBSharp.VideoSpace
           uint[] linePixels = DisFuncs.GetPixelRowFromBitmap(disDef, screen, 
                                                              row, disDef.screenPixelCountX);
           DisFuncs.GetSpriteRowPixels(disDef, memory, spriteOAMs, linePixels, row, LCDCBit2);
-          DisFuncs.DrawLine(disDef, screen, disDef.screenPixelCountX,
+          DrawFuncs.DrawLine(disDef, screen, disDef.screenPixelCountX,
                             linePixels,
                             0, row,
                             0, disDef.screenPixelCountX);
@@ -489,7 +489,7 @@ namespace GBSharp.VideoSpace
         int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
 
         uint rectangleColor = 0xFFFF8822;
-        DisFuncs.DrawRectangle(disDef, debugTargetDict[DebugTargets.Background],
+        DrawFuncs.DrawRectangle(disDef, debugTargetDict[DebugTargets.Background],
                                disDef.framePixelCountX,
                                SCX, SCY,
                                disDef.screenPixelCountX, disDef.screenPixelCountY,
@@ -530,7 +530,7 @@ namespace GBSharp.VideoSpace
           }
           byte[] tileData = DisFuncs.GetTileData(disDef, memory, tileBaseAddress, tileOffset, false);
 
-          DisFuncs.DrawTile(disDef, debugTargetDict[DebugTargets.Tiles],
+          DrawFuncs.DrawTile(disDef, debugTargetDict[DebugTargets.Tiles],
                             disDef.screenPixelCountX, tileData,
                             8 * tileX, 8 * tileY, 
                             256, 256);
@@ -665,7 +665,7 @@ namespace GBSharp.VideoSpace
          ((endX <= beginX) || firstRun))
       {
         //DisplayFunctions.DrawTransparency(disDef, displayTimingBmpData, 0, 0, 256, 154);
-        DisFuncs.DrawRectangle(disDef, debugTargetDict[DebugTargets.DisplayTiming],
+        DrawFuncs.DrawRectangle(disDef, debugTargetDict[DebugTargets.DisplayTiming],
                                disDef.timingPixelCountX,
                                0, 0,
                                disDef.timingPixelCountX, disDef.timingPixelCountY,
