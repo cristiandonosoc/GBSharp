@@ -36,7 +36,7 @@ namespace GBSharp.Audio
         wave880[i + 1] = wave880[i];
       }
 
-      apu.AudioStream = new AudioBuffer(wave440);
+      apu.AudioStream = new AudioBuffer(wave440, 44000, 2, 1, 10000);
 
       var format = new WaveFormat(44000, 8, 2);
       RawDataReader reader = new RawDataReader(apu.AudioStream, format);
@@ -54,6 +54,7 @@ namespace GBSharp.Audio
 
           //Play the sound
           soundOut.Play();
+          apu.Running = true;
 
           int count = sampleRate * 2;
 
@@ -91,15 +92,9 @@ namespace GBSharp.Audio
             apu.AudioStream.Write(switchWave ? wave440 : wave880,
                          0, samplesToCommit);
             switchWave = !switchWave;
-
-            System.Console.Out.WriteLine("PC: {0}, WC: {1}",
-                                         (int)apu.AudioStream.Position,
-                                         (int)apu.AudioStream.WriteCursor);
           }
 
           soundOut.Stop();
-
-
 
           #region TIMING TEST
 

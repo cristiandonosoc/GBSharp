@@ -331,8 +331,11 @@ namespace GBSharp.ViewModel
 
     #endregion
 
-    public DisplayViewModel(IDisplay display, IMemory memory, IDispatcher dispatcher)
+    IGameBoy _gameBoy;
+
+    public DisplayViewModel(IGameBoy gameboy, IDisplay display, IMemory memory, IDispatcher dispatcher)
     {
+      _gameBoy = gameboy;
       _display = display;
       _display.RefreshScreen += OnRefreshScreen;
       _memory = memory;
@@ -340,8 +343,9 @@ namespace GBSharp.ViewModel
 
       var disDef = _display.GetDisplayDefinition();
 
-      _background = new WriteableBitmap(disDef.framePixelCountX, disDef.framePixelCountY, 
-                                        96, 96, PixelFormats.Bgra32, null);
+      //_background = new WriteableBitmap(disDef.framePixelCountX, disDef.framePixelCountY, 
+      //                                  96, 96, PixelFormats.Bgra32, null);
+      _background = new WriteableBitmap(500, 10, 96, 96, PixelFormats.Bgr32, null);
       _window = new WriteableBitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
                                     96, 96, PixelFormats.Bgra32, null);
       _spriteLayer = new WriteableBitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
@@ -369,8 +373,9 @@ namespace GBSharp.ViewModel
       UpdateBackground = _display.GetUpdateDebugTarget(DebugTargets.Background);
       if(UpdateBackground)
       {
-        Utils.TransferBytesToWriteableBitmap(_background, 
-                                             _display.GetDebugTarget(DebugTargets.Background));
+        //Utils.TransferBytesToWriteableBitmap(_background, 
+        //                                     _display.GetDebugTarget(DebugTargets.Background));
+        Utils.TransferBytesToWriteableBitmap(_background, _gameBoy.APU.AudioVisualization);
         OnPropertyChanged(() => Background);
       }
 

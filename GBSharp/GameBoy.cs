@@ -48,6 +48,9 @@ namespace GBSharp
       this.interruptController = this.cpu.interruptController;
       this.display = new Display(this.interruptController, this.memory);
       this.apu = new AudioSpace.APU();
+      
+      // TODO(Cristian): Eventually hook this to the internal APU update
+      this.display.RefreshScreen += this.apu.RefreshVisualization;
 
       this.disassembler = new Disassembler(cpu, memory);
 
