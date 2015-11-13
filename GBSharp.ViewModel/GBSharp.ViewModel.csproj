@@ -72,6 +72,10 @@
     <Compile Include="ViewModelBase.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GBSharp.Audio\GBSharp.Audio.csproj">
+      <Project>{914a7ded-adea-4ec6-befa-5f728f5c66ee}</Project>
+      <Name>GBSharp.Audio</Name>
+    </ProjectReference>
     <ProjectReference Include="..\GBSharp\GBSharp.csproj">
       <Project>{74f31c6a-1985-4549-af66-29483e416003}</Project>
       <Name>GBSharp</Name>

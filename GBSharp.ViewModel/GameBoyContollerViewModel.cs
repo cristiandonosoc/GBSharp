@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using System.Windows.Input;
+using GBSharp.Audio;
 
 namespace GBSharp.ViewModel
 {
@@ -117,9 +119,19 @@ namespace GBSharp.ViewModel
       _fileDialog.Open("ROM Files (*.gb)|*.gb|Dump Files (*.dmp)|*.dmp");
     }
 
+    private Thread soundThread;
+
     private void Run()
     {
       _gameBoy.Run();
+
+      soundThread = new Thread(() => Test.TestSound(_gameBoy.APU));
+      soundThread.Start();
+    }
+
+    public void OnClosed()
+    {
+      soundThread.Abort();
     }
 
     private void Step()

@@ -20,6 +20,9 @@ namespace GBSharp.AudioSpace
     private int _sampleSize;
     public int SampleSize { get { return _sampleSize; } }
 
+    private int _milliseconds;
+    public int Milliseconds { get { return _milliseconds; } }
+
     #endregion
 
     private byte[] _buffer;
@@ -40,19 +43,29 @@ namespace GBSharp.AudioSpace
     // TODO(Cristian): unhadcode this
     private long _delay = 44 * 2 * 30; // 30 ms delay
 
-    public AudioBuffer(byte[] buffer)
+    public AudioBuffer(byte[] buffer, int sampleRate, int channelCount, 
+                                      int sampleSize, int milliseconds)
     {
+      if((sampleRate * channelCount * sampleSize * milliseconds / 1000) != buffer.Length)
+      {
+        throw new InvalidDataException("Specified Buffer Length is different that actual buffer length");
+      }
+
+      _sampleRate = sampleRate;
+      _channelCount = channelCount;
+      _sampleSize = sampleSize;
+      _milliseconds = milliseconds;
       _buffer = buffer;
     }
 
-    public AudioBuffer(int sampleRate, int channelCount, int sampleSize, int msLength)
+    public AudioBuffer(int sampleRate, int channelCount, int sampleSize, int milliseconds)
     {
       _sampleRate = sampleRate;
       _channelCount = channelCount;
       _sampleSize = sampleSize;
+      _milliseconds = milliseconds;
 
-      _buffer = new byte[sampleRate * channelCount * sampleSize * msLength / 1000];
-
+      _buffer = new byte[sampleRate * channelCount * sampleSize * milliseconds / 1000];
     }
 
     public override bool CanRead { get { return true; } }

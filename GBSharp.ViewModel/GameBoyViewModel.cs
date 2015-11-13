@@ -16,7 +16,7 @@ namespace GBSharp.ViewModel
     private readonly GameBoyContollerViewModel _gameBoyController;
     private readonly GameBoyGamePadViewModel _gameBoyGamePad;
     private readonly DissasembleViewModel _dissasemble;
-    
+
     public MemoryViewModel Memory
     {
       get { return _memory; }
@@ -74,9 +74,14 @@ namespace GBSharp.ViewModel
       _gameBoy.CPU.InterruptHappened += InterruptHandler;
 
       _interrupt = new InterruptManagerViewModel(_gameBoy, _dispatcher);
-      _display = new DisplayViewModel(_gameBoy.Display, _gameBoy.Memory, _dispatcher);
+      _display = new DisplayViewModel(_gameBoy, _gameBoy.Display, _gameBoy.Memory, _dispatcher);
       _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher, _display);
       _dissasemble = new DissasembleViewModel(_gameBoy);
+    }
+
+    public void OnClosed()
+    {
+      _gameBoyController.OnClosed();
     }
 
     private void OnKeyUp(KeyEventArgs args)
