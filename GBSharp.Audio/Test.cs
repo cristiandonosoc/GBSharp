@@ -48,29 +48,51 @@ namespace GBSharp.Audio
           //Tell the SoundOut which sound it has to play
           soundOut.Initialize(soundSource);
           //Play the sound
-          soundOut.Play();
+          //soundOut.Play();
 
-          bool changeSwitch = false;
-          TimeSpan before, after;
           int count = sampleRate * 2;
 
+          long min = 10000000000000;
+          long max = 0;
+          long total = 0;
+          long before, after, diff;
+          long avg = 0;
+          Stopwatch sw = new Stopwatch();
+          double tickRatio = (double)1000000000 / (double)Stopwatch.Frequency;
 
-          while (true)
+
+          long samples = 1000;
+          for (int i = 1; i < samples; ++i)
           {
-            Thread.Sleep(1500);
-            var currentProcess = Process.GetCurrentProcess();
+            before = sw.ElapsedTicks;
+            sw.Start();
 
-            before = currentProcess.TotalProcessorTime;
+            Thread.Sleep(5);
 
-            stream.OffsetWrite(wave440, 0, count, count);
+            sw.Stop();
+            after = sw.ElapsedTicks;
 
-            after = currentProcess.TotalProcessorTime;
+            diff = after - before;
+            total += diff;
+            avg = total / i;
 
-            System.Console.Out.WriteLine("Before: {0} ticks, After: {1} ticks, Diff: {2} ticks",
-                                         100 * before.Ticks,
-                                         100 * after.Ticks,
-                                         100 * (after - before).Ticks); 
+            if (diff < min) { min = diff; }
+            if (diff > max) { max = diff; }
+
+            //System.Console.Out.WriteLine("Before: {0} ns, After: {1} ns, Diff: {2} ns",
+            //                             tickRatio * before,
+            //                             tickRatio * after,
+            //                             tickRatio * (after - before));
           }
+
+          System.Console.Out.WriteLine("Samples: {0}", samples);
+
+          System.Console.Out.WriteLine("Min: {0} ns, Max: {1} ns, Avg: {2} ns",
+                                       tickRatio * min,
+                                       tickRatio * max,
+                                       tickRatio * avg);
+
+          System.Console.In.ReadLine();
         }
       }
     }
