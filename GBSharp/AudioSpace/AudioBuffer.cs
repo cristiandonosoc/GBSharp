@@ -26,6 +26,7 @@ namespace GBSharp.AudioSpace
     #endregion
 
     private byte[] _buffer;
+    internal byte[] Buffer { get { return _buffer; } }
 
     // Play Cursor
     private long _playCursor = 0;

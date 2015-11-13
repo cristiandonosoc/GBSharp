@@ -343,9 +343,10 @@ namespace GBSharp.ViewModel
 
       var disDef = _display.GetDisplayDefinition();
 
-      //_background = new WriteableBitmap(disDef.framePixelCountX, disDef.framePixelCountY, 
+      //_background = new WriteableBitmap(disDef.framePixelCountX, disDef.framePixelCountY,
       //                                  96, 96, PixelFormats.Bgra32, null);
-      _background = new WriteableBitmap(500, 10, 96, 96, PixelFormats.Bgr32, null);
+      _background = new WriteableBitmap(_gameBoy.APU.VisWidth, _gameBoy.APU.VisHeight,
+                                        96, 96, PixelFormats.Bgr32, null);
       _window = new WriteableBitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
                                     96, 96, PixelFormats.Bgra32, null);
       _spriteLayer = new WriteableBitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 

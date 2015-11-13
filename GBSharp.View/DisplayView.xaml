@@ -83,7 +83,7 @@
             <ScrollViewer Grid.Row="1"
                           VerticalScrollBarVisibility="Auto" 
                           HorizontalScrollBarVisibility="Auto">
-              <Image Height="256" Width="256" Source="{Binding Background}"
+              <Image Source="{Binding Background}"
                      RenderOptions.BitmapScalingMode="NearestNeighbor">
                 <Image.LayoutTransform>
                   <ScaleTransform 

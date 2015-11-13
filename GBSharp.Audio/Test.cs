@@ -20,10 +20,11 @@ namespace GBSharp.Audio
     {
       int sampleRate = 44000;
       int freq = 440;
+      int milliseconds = 4000;
 
       double ratio = (double)sampleRate / (double)freq;
-      byte[] wave440 = new byte[sampleRate * 2 * 10];
-      byte[] wave880 = new byte[sampleRate * 2 * 10];
+      byte[] wave440 = new byte[sampleRate * 2 * milliseconds / 1000];
+      byte[] wave880 = new byte[sampleRate * 2 * milliseconds / 1000];
       for(int i = 0; i < wave440.Length; i = i + 2)
       {
         double index440 = (double)i / ratio;
@@ -36,7 +37,7 @@ namespace GBSharp.Audio
         wave880[i + 1] = wave880[i];
       }
 
-      apu.AudioStream = new AudioBuffer(wave440, 44000, 2, 1, 10000);
+      apu.AudioStream = new AudioBuffer(wave440, 44000, 2, 1, milliseconds);
 
       var format = new WaveFormat(44000, 8, 2);
       RawDataReader reader = new RawDataReader(apu.AudioStream, format);
@@ -89,8 +90,11 @@ namespace GBSharp.Audio
 
             samplesToCommit = 88 * diff;
 
-            apu.AudioStream.Write(switchWave ? wave440 : wave880,
-                         0, samplesToCommit);
+            lock(apu.AudioStream)
+            {
+              apu.AudioStream.Write(switchWave ? wave440 : wave880,
+                           0, samplesToCommit);
+            }
             switchWave = !switchWave;
           }
 

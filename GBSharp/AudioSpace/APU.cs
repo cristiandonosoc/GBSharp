@@ -24,15 +24,15 @@ namespace GBSharp.AudioSpace
         _audioStream = value;
 
         // We resize the audioVisualization
-        _visWidth = (_audioStream.Milliseconds / 1000) * 50;
-        _audioVisualization = new uint[_visWidth * _visHeight];
+        _audioVisualization = new uint[VisWidth * VisHeight];
+
       }
     }
 
     #endregion
 
-    private int _visHeight = 10;
-    private int _visWidth;
+    public int VisWidth { get; private set; }
+    public int VisHeight { get; private set; }
 
     private uint[] _audioVisualization;
     public uint[] AudioVisualization { get { return _audioVisualization; } }
@@ -41,26 +41,75 @@ namespace GBSharp.AudioSpace
 
     public APU()
     {
+      VisWidth = 1000;
+      VisHeight = 50;
       Running = false;
     }
 
     public void RefreshVisualization()
     {
-      if (!Running) { return; }
-      // We clear the buffer
-      for (int i = 0; i < _audioVisualization.Length; ++i)
+      if(!Running) { return; }
+
+      int length = _audioStream.SampleRate * _audioStream.ChannelCount * _audioStream.Milliseconds / 1000;
+      int jump = length / VisWidth;
+
+      int playCursor, writeCursor, scan;
+
+      lock (_audioVisualization)
       {
-        _audioVisualization[i] = 0;
+        scan = 0;
+        lock(_audioStream)
+        {
+          playCursor = (int)(((double)_audioStream.PlayCursor / (double)length) * VisWidth);
+          writeCursor = (int)(((double)_audioStream.WriteCursor / (double)length) * VisWidth);
+        }
+        // We clear the buffer
+        for (int x = 0; x < VisWidth; ++x)
+        {
+          if (playCursor == x)
+          {
+            for (int y = 0; y < VisHeight; ++y)
+            {
+              _audioVisualization[y * VisWidth + playCursor] = 0xFFFFFF00;
+            }
+
+            continue;
+          }
+
+          if (writeCursor == x)
+          {
+            for (int y = 0; y < VisHeight; ++y)
+            {
+              _audioVisualization[y * VisWidth + writeCursor] = 0xFFFF0000;
+            }
+
+            continue;
+          }
+
+          // We clear
+          for (int y = 0; y < VisHeight; ++y)
+          {
+            _audioVisualization[y * VisWidth + x] = 0;
+          }
+
+          // We draw
+          int height = (int)(((double)_audioStream.Buffer[scan] / (double)256) * VisHeight);
+          _audioVisualization[height * VisWidth + x] = 0xFFFFFF00;
+          scan += jump;
+        }
+
+
+
       }
 
       // We show the PlayCursor and the WriteCursor
-      uint playColor = 0xFFFFFF00;
-      uint writeColor = 0xFFFF0000;
+      //uint playColor = 0xFFFFFF00;
+      //uint writeColor = 0xFFFF0000;
 
-      long playCursor = _audioStream.PlayCursor;
-      long writeCursor = _audioStream.WriteCursor;
+      //long playCursor = _audioStream.PlayCursor;
+      //long writeCursor = _audioStream.WriteCursor;
 
-      System.Console.Out.WriteLine("PC: {0}, WC: {0}", playCursor, writeCursor);
+      //System.Console.Out.WriteLine("PC: {0}, WC: {0}", playCursor, writeCursor);
 
       //for(int i = 0; i < _visHeight; ++i)
       //{
