@@ -343,10 +343,8 @@ namespace GBSharp.ViewModel
 
       var disDef = _display.GetDisplayDefinition();
 
-      //_background = new WriteableBitmap(disDef.framePixelCountX, disDef.framePixelCountY,
-      //                                  96, 96, PixelFormats.Bgra32, null);
-      _background = new WriteableBitmap(_gameBoy.APU.VisWidth, _gameBoy.APU.VisHeight,
-                                        96, 96, PixelFormats.Bgr32, null);
+      _background = new WriteableBitmap(disDef.framePixelCountX, disDef.framePixelCountY,
+                                        96, 96, PixelFormats.Bgra32, null);
       _window = new WriteableBitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
                                     96, 96, PixelFormats.Bgra32, null);
       _spriteLayer = new WriteableBitmap(disDef.screenPixelCountX, disDef.screenPixelCountY, 
@@ -374,10 +372,8 @@ namespace GBSharp.ViewModel
       UpdateBackground = _display.GetUpdateDebugTarget(DebugTargets.Background);
       if(UpdateBackground)
       {
-        //Utils.TransferBytesToWriteableBitmap(_background, 
-        //                                     _display.GetDebugTarget(DebugTargets.Background));
-        Utils.TransferBytesToWriteableBitmap(_background, _gameBoy.APU.AudioVisualization);
-        OnPropertyChanged(() => Background);
+        Utils.TransferBytesToWriteableBitmap(_background,
+                                             _display.GetDebugTarget(DebugTargets.Background));
       }
 
       UpdateTiles = _display.GetUpdateDebugTarget(DebugTargets.Tiles);

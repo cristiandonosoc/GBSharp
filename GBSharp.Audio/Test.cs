@@ -59,7 +59,6 @@ namespace GBSharp.Audio
 
           //Play the sound
           soundOut.Play();
-          apu.Running = true;
 
           int count = sampleRate * 2;
 
