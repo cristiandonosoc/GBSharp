@@ -48,6 +48,7 @@ namespace GBSharp.AudioSpace
 
     public void RefreshVisualization()
     {
+      return;
       if(!Running) { return; }
 
       int length = _audioStream.SampleRate * _audioStream.ChannelCount * _audioStream.Milliseconds / 1000;

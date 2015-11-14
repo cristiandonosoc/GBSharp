@@ -21,28 +21,33 @@ namespace GBSharp.Audio
       int sampleRate = 44000;
       int freq = 440;
       int milliseconds = 4000;
+      int numChannels = 2;
+
+      int bufferSize = sampleRate * numChannels * milliseconds / 1000;
 
       double ratio = (double)sampleRate / (double)freq;
-      byte[] wave440 = new byte[sampleRate * 2 * milliseconds / 1000];
-      byte[] wave880 = new byte[sampleRate * 2 * milliseconds / 1000];
-      for(int i = 0; i < wave440.Length; i = i + 2)
+      byte[] wave440 = new byte[bufferSize];
+      byte[] wave880 = new byte[bufferSize];
+      for(int i = 0; i < wave440.Length; i = i + numChannels)
       {
         double index440 = (double)i / ratio;
         double index880 = 2 * (double)i / ratio;
 
-        wave440[i] = (byte)(Math.Sin(index440 * Math.PI) * 26);
-        wave440[i + 1] = wave440[i];
-
+        wave440[i] = (byte)(Math.Sin(index440 * Math.PI) * 128);
         wave880[i] = (byte)(Math.Sin(index880 * Math.PI) * 128);
-        wave880[i + 1] = wave880[i];
+
+        for(int c = 1; c < numChannels; ++c)
+        {
+          wave440[i + c] = wave440[i];
+          wave880[i + c] = wave880[i];
+        }
       }
 
-      apu.AudioStream = new AudioBuffer(wave440, 44000, 2, 1, milliseconds);
+      WaveFormat format = new WaveFormat(44000, 8, numChannels);
+      WriteableBufferingSource source = new WriteableBufferingSource(format, bufferSize);
+      source.Write(wave440, 0, sampleRate * numChannels * 1);
 
-      var format = new WaveFormat(44000, 8, 2);
-      RawDataReader reader = new RawDataReader(apu.AudioStream, format);
-
-      using (IWaveSource soundSource = reader)
+      using (IWaveSource soundSource = source)
       {
         //SoundOut implementation which plays the sound
         using (ISoundOut soundOut = GetSoundOut())
@@ -50,8 +55,7 @@ namespace GBSharp.Audio
           //Tell the SoundOut which sound it has to play
           soundOut.Initialize(soundSource);
 
-          soundOut.Volume = 0.005f;
-
+          soundOut.Volume = 0.7f;
 
           //Play the sound
           soundOut.Play();
@@ -64,38 +68,33 @@ namespace GBSharp.Audio
           int diff;
           int samplesToCommit;
           bool switchWave = true;
-          bool firstPass = true;
           before = sw.ElapsedMilliseconds;
           sw.Start();
 
-          for (int i = 0; i < 30; ++i)
+          for (int i = 0; i < 500; ++i)
           {
 
-            Thread.Sleep(1000);
+            Thread.Sleep(500);
 
             sw.Stop();
             after = sw.ElapsedMilliseconds;
 
-
-            if (firstPass)
-            {
-              apu.AudioStream.CreateWriteCursor();
-              firstPass = false;
-            }
-
             diff = (int)(after - before);
-
             before = sw.ElapsedMilliseconds;
-            sw.Start();
 
-            samplesToCommit = 88 * diff;
+            samplesToCommit = (sampleRate / 1000) * numChannels * diff;
 
-            lock(apu.AudioStream)
+            if(switchWave)
             {
-              apu.AudioStream.Write(switchWave ? wave440 : wave880,
-                           0, samplesToCommit);
+              source.Write(wave440, 0, samplesToCommit);
+            }
+            else
+            {
+              source.Write(wave880, 0, samplesToCommit);
             }
             switchWave = !switchWave;
+
+            sw.Start();
           }
 
           soundOut.Stop();

@@ -42,7 +42,7 @@ namespace GBSharp.AudioSpace
     public bool WriteCursorCreated { get { return _writeCursorCreated; } }
 
     // TODO(Cristian): unhadcode this
-    private long _delay = 44 * 2 * 30; // 30 ms delay
+    private long _delay = 44 * 2 * 2200; // 120 ms delay
 
     public AudioBuffer(byte[] buffer, int sampleRate, int channelCount, 
                                       int sampleSize, int milliseconds)
@@ -97,18 +97,19 @@ namespace GBSharp.AudioSpace
 
     public override int Read(byte[] buffer, int offset, int count)
     {
-      for (int i = 0; i < count; ++i)
+      lock(_buffer)
       {
-        buffer[offset + i] = _buffer[_playCursor++];
-        
-        // We loop
-        if(_playCursor == _buffer.Length)
+        for (int i = 0; i < count; ++i)
         {
-          _playCursor = 0;
+          buffer[offset + i] = _buffer[_playCursor++];
+
+          // We loop
+          if (_playCursor == _buffer.Length)
+          {
+            _playCursor = 0;
+          }
         }
       }
-
-      //System.Console.Out.WriteLineAsync(_playCursor.ToString());
 
       return count;
     }
@@ -159,18 +160,25 @@ namespace GBSharp.AudioSpace
 
     public override void Write(byte[] buffer, int offset, int count)
     {
-      for(int i = 0; i < count; ++i)
+      if(!_writeCursorCreated)
       {
-        _buffer[_writeCursor++] = buffer[offset + i];
-
-        if(_writeCursor == _playCursor)
+        throw new InvalidDataException("You must create the WriteCursor before writing");
+      }
+      lock(_buffer)
+      {
+        for (int i = 0; i < count; ++i)
         {
-          throw new InvalidDataException("writeCursor cannot pass the playCursor");
-        }
+          _buffer[_writeCursor++] = buffer[offset + i];
 
-        if(_writeCursor == _buffer.Length)
-        {
-          _writeCursor = 0;
+          if (_writeCursor == _playCursor)
+          {
+            throw new InvalidDataException("writeCursor cannot pass the playCursor");
+          }
+
+          if (_writeCursor == _buffer.Length)
+          {
+            _writeCursor = 0;
+          }
         }
       }
     }
