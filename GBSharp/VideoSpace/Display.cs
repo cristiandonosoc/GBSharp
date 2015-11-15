@@ -100,7 +100,7 @@ namespace GBSharp.VideoSpace
   class Display : IDisplay
   {
 
-    public event Action RefreshScreen;
+    public event Action VBlank;
 
     private InterruptController interruptController;
     private Memory memory;
@@ -501,7 +501,7 @@ namespace GBSharp.VideoSpace
         DrawTiles();
       }
 
-      RefreshScreen();
+      VBlank();
     }
 
     public void DrawTiles()

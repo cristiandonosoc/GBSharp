@@ -104,7 +104,7 @@ namespace GBSharp.ViewModel
       _gameBoy = gameBoy;
       _display = _gameBoy.Display;
       //_displayVm.UpdateDisplay += OnUpdateDisplay;
-      _display.RefreshScreen += OnRefreshScreen;
+      _gameBoy.RefreshScreen += OnRefreshScreen;
 
       VideoSpace.DisplayDefinition disDef = _display.GetDisplayDefinition();
       _screen = new WriteableBitmap(disDef.screenPixelCountX, disDef.screenPixelCountY,
@@ -147,7 +147,7 @@ namespace GBSharp.ViewModel
 
     public void Dispose()
     {
-      _display.RefreshScreen -= OnRefreshScreen;
+      _gameBoy.RefreshScreen -= OnRefreshScreen;
       _displayVm.UpdateDisplay -= OnUpdateDisplay;
     }
 

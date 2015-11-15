@@ -25,5 +25,8 @@ namespace GBSharp
 
     IEnumerable<IInstruction> Disassamble(ushort startAddress, 
                                           bool permissive = true);
+
+    // Display functions
+    event Action RefreshScreen;
   }
 }

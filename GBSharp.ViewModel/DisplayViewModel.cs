@@ -337,7 +337,7 @@ namespace GBSharp.ViewModel
     {
       _gameBoy = gameboy;
       _display = display;
-      _display.RefreshScreen += OnRefreshScreen;
+      _gameBoy.RefreshScreen += OnRefreshScreen;
       _memory = memory;
       _dispatcher = dispatcher;
 
@@ -468,7 +468,7 @@ namespace GBSharp.ViewModel
 
     public void Dispose()
     {
-      _display.RefreshScreen -= OnRefreshScreen;
+      _gameBoy.RefreshScreen -= OnRefreshScreen;
     }
   }
 }

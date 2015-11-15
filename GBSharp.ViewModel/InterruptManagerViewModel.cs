@@ -58,7 +58,7 @@ namespace GBSharp.ViewModel
       _dispatcher = dispatcher;
       _gameBoy = gameBoy;
       _display = gameBoy.Display;
-      _display.RefreshScreen += OnRefreshScreen;
+      _gameBoy.RefreshScreen += OnRefreshScreen;
       //_gameBoy.StepFinished += OnRefreshScreen;
 
       InterruptList.Add(new InterruptViewModel("Vertical Blank", Interrupts.VerticalBlanking, _gameBoy));
@@ -111,7 +111,7 @@ namespace GBSharp.ViewModel
 
     public void Dispose()
     {
-      _display.RefreshScreen -= OnRefreshScreen;
+      _gameBoy.RefreshScreen -= OnRefreshScreen;
       //_gameBoy.StepFinished -= OnRefreshScreen;
     }
   }

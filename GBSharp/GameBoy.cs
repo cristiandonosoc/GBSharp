@@ -12,6 +12,7 @@ namespace GBSharp
   public class GameBoy : IGameBoy
   {
     public event Action StepFinished;
+    public event Action RefreshScreen;
 
     private CPUSpace.CPU cpu;
     private CPUSpace.InterruptController interruptController;
@@ -58,9 +59,17 @@ namespace GBSharp
       // Events
       this.cpu.BreakpointFound += BreakpointHandler;
       this.cpu.InterruptHappened += InterruptHandler;
+      this.display.VBlank += Display_VBlank;
 
       this.inBreakpoint = false;
       this.ReleaseButtons = true;
+    }
+
+    private bool frameReady = false;
+    private void Display_VBlank()
+    {
+      frameReady = true;
+      RefreshScreen();
     }
 
     private void InterruptHandler(Interrupts interrupt)
@@ -203,8 +212,17 @@ namespace GBSharp
     /// </summary>
     private void ThreadedRun()
     {
+      //Stopwatch sw = new Stopwatch();
+      //long ticksPerSecond = Stopwatch.Frequency;
+      //long ticksPerFrame = (long)(16.6f * (double)(ticksPerSecond / 1000));
+      //sw.Start();
+
       while (this.run)
       {
+        #region ORIGINAL LOOP
+
+#if true
+
         this.manualResetEvent.Wait(); // Wait for pauses.
         this.Step(false);
         //NotifyStepFinished();
@@ -228,6 +246,57 @@ namespace GBSharp
             this.stepCounter = 0;
           }
         }
+
+#endif
+
+#endregion
+
+#region COORDINATED TO V-BLANK
+
+#if false
+
+        this.Step(false);
+
+        if(frameReady)
+        {
+          // Sleep until 60 FPS
+          long ticks = sw.ElapsedTicks;
+
+          if(ticks < ticksPerFrame)
+          {
+            Thread.Sleep((int)(16 - sw.ElapsedMilliseconds));
+
+            //// Active wait
+            while (ticks < ticksPerFrame)
+            {
+              ticks = sw.ElapsedTicks;
+            }
+
+
+
+            double ms = 1000.0f * ((double)ticks / (double)ticksPerSecond);
+            System.Console.Out.WriteLine("ms: {0}", ms);
+          }
+
+          // Send frames to video
+          RefreshScreen();
+
+          frameReady = false;
+
+          sw.Stop();
+
+
+
+
+          sw.Reset();
+          sw.Start();
+
+
+          // Update sound
+        }
+
+#endif
+#endregion
       }
     }
 

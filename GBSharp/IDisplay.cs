@@ -5,8 +5,6 @@ namespace GBSharp
 {
   public interface IDisplay
   {
-    event Action RefreshScreen;
-
     OAM GetOAM(int index);
 
     // Intermediate targets
