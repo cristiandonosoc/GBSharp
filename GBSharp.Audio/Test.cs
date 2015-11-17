@@ -14,10 +14,33 @@ using GBSharp.AudioSpace;
 
 namespace GBSharp.Audio
 {
-  public class Test
+  public class AudioManager
   {
-    public static void TestSound(IAPU apu)
+    private IAPU _apu;
+
+    private WaveFormat _waveFormat;
+    private WriteableBufferingSource _source;
+
+    private ISoundOut _soundOut;
+
+
+    public AudioManager(IGameBoy gameBoy)
     {
+      _apu = gameBoy.APU;
+      _waveFormat = new WaveFormat(_apu.SampleRate,
+                                   _apu.SampleSize * 8,
+                                   _apu.NumChannels);
+      _source = new WriteableBufferingSource(_waveFormat);
+
+      gameBoy.RefreshScreen += gameBoy_RefreshScreen;
+
+      _soundOut = GetSoundOut();
+      _soundOut.Initialize(_source);
+      _soundOut.Volume = 0.7f;
+
+      #region OLD TEST
+#if false
+
       int sampleRate = 44000;
       int freq = 440;
       int milliseconds = 4000;
@@ -149,6 +172,14 @@ namespace GBSharp.Audio
 
         }
       }
+#endif
+
+      #endregion
+    }
+
+    void gameBoy_RefreshScreen()
+    {
+      _source.Write(_apu.Buffer, 0, _apu.SampleCount);
     }
 
     private static ISoundOut GetSoundOut()
@@ -157,6 +188,17 @@ namespace GBSharp.Audio
         return new WasapiOut();
       else
         return new DirectSoundOut();
+    }
+
+    // TODO(Cristian): Improve this management!!!!!
+    public void Play()
+    {
+      _soundOut.Play();
+    }
+
+    public void Stop()
+    {
+      _soundOut.Stop();
     }
   }
 

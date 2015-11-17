@@ -11,6 +11,8 @@ namespace GBSharp.ViewModel
     public event Action OnFileLoaded;
     public event Action OnStep;
 
+    public AudioManager audioManager;
+
     private readonly IGameBoy _gameBoy;
     private readonly IOpenFileDialog _fileDialog;
 
@@ -107,6 +109,8 @@ namespace GBSharp.ViewModel
       _gameBoy = gameBoy;
       _fileDialog = fileDialogFactory.Create();
       _fileDialog.OnFileOpened += OnFileOpened;
+
+      audioManager = new AudioManager(gameBoy);
     }
 
     public void Dispose()
@@ -119,19 +123,14 @@ namespace GBSharp.ViewModel
       _fileDialog.Open("ROM Files (*.gb)|*.gb|Dump Files (*.dmp)|*.dmp");
     }
 
-    private Thread soundThread;
-
     private void Run()
     {
       _gameBoy.Run();
-
-      soundThread = new Thread(() => Test.TestSound(_gameBoy.APU));
-      soundThread.Start();
+      audioManager.Play();
     }
 
     public void OnClosed()
     {
-      soundThread.Abort();
     }
 
     private void Step()
