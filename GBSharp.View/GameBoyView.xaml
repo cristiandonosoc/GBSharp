@@ -143,13 +143,11 @@
                     </avalonDock:LayoutAnchorablePane>
                     <avalonDock:LayoutAnchorablePaneGroup DockWidth="Auto" Orientation="Vertical">
                         <avalonDock:LayoutAnchorablePane>
-                            <avalonDock:LayoutAnchorable Title="Memory">
-                                <ContentPresenter x:Name="MemorySection" Visibility="{Binding ElementName=MemorySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Content="{Binding Memory}"/>
-                            </avalonDock:LayoutAnchorable>
-                        </avalonDock:LayoutAnchorablePane>
-                        <avalonDock:LayoutAnchorablePane>
                             <avalonDock:LayoutAnchorable Title="CPU">
                                 <ContentPresenter Content="{Binding CPU}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=CPUSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
+                            </avalonDock:LayoutAnchorable>
+                            <avalonDock:LayoutAnchorable Title="Memory">
+                                <ContentPresenter x:Name="MemorySection" Visibility="{Binding ElementName=MemorySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Content="{Binding Memory}"/>
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
                         <avalonDock:LayoutAnchorablePane>
