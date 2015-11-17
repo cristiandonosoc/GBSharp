@@ -56,6 +56,7 @@
     <Compile Include="GameBoyViewModel.cs" />
     <Compile Include="IDispatcher.cs" />
     <Compile Include="IKeyboardHandler.cs" />
+    <Compile Include="InstructionHistogramViewModel.cs" />
     <Compile Include="InstructionViewModel.cs" />
     <Compile Include="InterruptManagerViewModel.cs" />
     <Compile Include="InterruptViewModel.cs" />

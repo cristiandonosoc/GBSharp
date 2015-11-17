@@ -105,6 +105,13 @@
                 </ScrollViewer>
             </Grid>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:InstructionHistogramViewModel}">
+            <Grid Style="{StaticResource SubContentGrid}">
+                <ScrollViewer>
+                    <view:InstructionHistogramView></view:InstructionHistogramView>
+                </ScrollViewer>
+            </Grid>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid Style="{DynamicResource MainContentGrid}">
@@ -159,6 +166,11 @@
                             </avalonDock:LayoutAnchorable>
                             <avalonDock:LayoutAnchorable Title="IO Registers">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=InterruptSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding IORegisters}"/>
+                            </avalonDock:LayoutAnchorable>
+                        </avalonDock:LayoutAnchorablePane>
+                        <avalonDock:LayoutAnchorablePane DockHeight="*">
+                            <avalonDock:LayoutAnchorable Title="Instruction Histogram">
+                                <ContentPresenter Content="{Binding InstructionHistogram}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=ControllerSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
                     </avalonDock:LayoutAnchorablePaneGroup>

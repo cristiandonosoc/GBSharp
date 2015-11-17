@@ -75,6 +75,9 @@
       <DependentUpon>DissasembleView.xaml</DependentUpon>
     </Compile>
     <Compile Include="EnumToBoolConverter.cs" />
+    <Compile Include="InstructionHistogramView.xaml.cs">
+      <DependentUpon>InstructionHistogramView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="IORegistersManagerView.xaml.cs">
       <DependentUpon>IORegistersManagerView.xaml</DependentUpon>
     </Compile>
@@ -154,6 +157,10 @@
       <DependentUpon>GameBoyView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="InstructionHistogramView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="InterruptView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

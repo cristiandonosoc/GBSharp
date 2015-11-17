@@ -37,5 +37,20 @@ namespace GBSharp.ViewModel
       bitmap.AddDirtyRect(new System.Windows.Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
       bitmap.Unlock();
     }
+
+    public static void TransferBytesToWriteableBitmap(WriteableBitmap bitmap, ushort[] pixels)
+    {
+      bitmap.Lock();
+      unsafe
+      {
+        ushort* bPtr = (ushort*)bitmap.BackBuffer;
+        foreach (ushort pixel in pixels)
+        {
+          *bPtr++ = pixel;
+        }
+      }
+      bitmap.AddDirtyRect(new System.Windows.Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
+      bitmap.Unlock();
+    }
   }
 }

@@ -78,6 +78,16 @@ namespace GBSharp.CPUSpace
       get { return interruptController.InterruptMasterEnable; }
     }
 
+    public ulong[] InstructionHistogram
+    {
+      get { return instructionHistogram; }
+    }
+
+    public ulong[] CbInstructionHistogram
+    {
+      get { return cbInstructionHistogram; }
+    }
+
     #region Lengths and clocks
 
     internal Dictionary<byte, byte> instructionLengths = CPUInstructionLengths.Setup();
@@ -87,6 +97,8 @@ namespace GBSharp.CPUSpace
 
     #endregion
 
+    internal ulong[] instructionHistogram = new ulong[256];
+    internal ulong[] cbInstructionHistogram = new ulong[256];
 
     public CPU(MemorySpace.Memory memory)
     {
@@ -298,6 +310,7 @@ namespace GBSharp.CPUSpace
 
       if (instruction.OpCode != 0xCB)
       {
+        instructionHistogram[(byte) instruction.OpCode]++;
         // Normal instructions
         instruction.Length = this.instructionLengths[(byte)instruction.OpCode];
 
@@ -337,7 +350,7 @@ namespace GBSharp.CPUSpace
       {
         // CB instructions block
         instruction.OpCode <<= 8;
-        if(!haltLoad)
+        if (!haltLoad)
         {
           instruction.OpCode += this.memory.Read((ushort)(instructionAddress + 1));
         }
@@ -345,6 +358,7 @@ namespace GBSharp.CPUSpace
         {
           instruction.OpCode += 0xCB; // The first byte is duplicated
         }
+        cbInstructionHistogram[(byte)instruction.OpCode]++;
         instruction.Length = this.CBInstructionLengths[(byte)instruction.OpCode];
         // There is no literal in CB instructions!
 
