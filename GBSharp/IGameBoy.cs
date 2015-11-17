@@ -6,7 +6,8 @@ namespace GBSharp
 {
   public interface IGameBoy
   {
-    event Action StepFinished;
+    event Action StepCompleted;
+    event Action FrameCompleted;
     ICPU CPU { get; }
     IMemory Memory { get; }
     ICartridge Cartridge { get; }
@@ -26,7 +27,6 @@ namespace GBSharp
     IEnumerable<IInstruction> Disassamble(ushort startAddress, 
                                           bool permissive = true);
 
-    // Display functions
-    event Action RefreshScreen;
+    
   }
 }

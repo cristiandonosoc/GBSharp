@@ -104,7 +104,7 @@ namespace GBSharp.ViewModel
       _gameBoy = gameBoy;
       _display = _gameBoy.Display;
       //_displayVm.UpdateDisplay += OnUpdateDisplay;
-      _gameBoy.RefreshScreen += OnRefreshScreen;
+      _gameBoy.FrameCompleted += OnFrameCompleted;
 
       VideoSpace.DisplayDefinition disDef = _display.GetDisplayDefinition();
       _screen = new WriteableBitmap(disDef.screenPixelCountX, disDef.screenPixelCountY,
@@ -134,7 +134,7 @@ namespace GBSharp.ViewModel
       }
     }
 
-    private void OnRefreshScreen()
+    private void OnFrameCompleted()
     {
       _dispatcher.Invoke(CopyFromDomain);
       _dispatcher.Invoke(UpdateFPS);
@@ -142,12 +142,12 @@ namespace GBSharp.ViewModel
 
     private void OnUpdateDisplay()
     {
-      OnRefreshScreen();
+      OnFrameCompleted();
     }
 
     public void Dispose()
     {
-      _gameBoy.RefreshScreen -= OnRefreshScreen;
+      _gameBoy.FrameCompleted -= OnFrameCompleted;
       _displayVm.UpdateDisplay -= OnUpdateDisplay;
     }
 

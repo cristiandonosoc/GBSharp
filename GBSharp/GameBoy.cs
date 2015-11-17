@@ -11,8 +11,8 @@ namespace GBSharp
 {
   public class GameBoy : IGameBoy
   {
-    public event Action StepFinished;
-    public event Action RefreshScreen;
+    public event Action StepCompleted;
+    public event Action FrameCompleted;
 
     private CPUSpace.CPU cpu;
     private CPUSpace.InterruptController interruptController;
@@ -21,6 +21,7 @@ namespace GBSharp
     private VideoSpace.Display display;
     private AudioSpace.APU apu;
     private bool run;
+    private bool frameReady;
     private bool inBreakpoint;
     private Thread clockThread;
     private ManualResetEventSlim manualResetEvent;
@@ -30,9 +31,8 @@ namespace GBSharp
     private Stopwatch stopwatch;
     private long tickCounter;
     private long stepCounter;
-    private const int stepCheck = 5000; // ~ 5ms. Steps ellapsed between timer checks.
-    private const double targetSecondsPerTick = 0.0000002384185791015625; // It is know that this is 2^-22.
-    private const int minimumSleep = 5; // Used to avoid sleeping intervals that are too short.
+    private const double targetFramerate = 60.0; // This is not the real gameboy framerate, but it's a nice number.
+    private readonly double stopwatchTicksPerFrame = Stopwatch.Frequency / targetFramerate;
 
     public bool ReleaseButtons { get; set; }
 
@@ -59,30 +59,12 @@ namespace GBSharp
       // Events
       this.cpu.BreakpointFound += BreakpointHandler;
       this.cpu.InterruptHappened += InterruptHandler;
-      this.display.VBlank += Display_VBlank;
+      this.display.VBlank += VBlankHandler;
 
       this.inBreakpoint = false;
       this.ReleaseButtons = true;
     }
-
-    private bool frameReady = false;
-    private void Display_VBlank()
-    {
-      frameReady = true;
-      //RefreshScreen();
-    }
-
-    private void InterruptHandler(Interrupts interrupt)
-    {
-      inBreakpoint = true;
-      Pause();
-    }
-
-    private void BreakpointHandler()
-    {
-      inBreakpoint = true;
-      Pause();
-    }
+    
 
     public ICPU CPU
     {
@@ -160,12 +142,12 @@ namespace GBSharp
       this.cpu.UpdateClockAndTimers(ticks);
       this.memory.Step(ticks);
       this.display.Step(ticks);
-      this.apu.Step(ticks);
+      // this.apu.Step(ticks);
 
       this.tickCounter += ticks;
       this.stepCounter++;
 
-      NotifyStepFinished();
+      NotifyStepCompleted();
     }
 
     /// <summary>
@@ -213,89 +195,57 @@ namespace GBSharp
     /// </summary>
     private void ThreadedRun()
     {
-      Stopwatch sw = new Stopwatch();
-      long ticksPerSecond = Stopwatch.Frequency;
-      long ticksPerFrame = (long)(16.6f * (double)(ticksPerSecond / 1000));
-      sw.Start();
-
       while (this.run)
       {
-        #region ORIGINAL LOOP
-
-#if false
-
         this.manualResetEvent.Wait(); // Wait for pauses.
         this.Step(false);
-        //NotifyStepFinished();
 
-        // TODO(Cristian, Wooo): Check what happens with the tickCounter upon STOP
         // Check timing issues
-        if (this.stepCounter % stepCheck == 0)
+        if (this.frameReady)
         {
-          long ellapsedms = this.stopwatch.ElapsedMilliseconds;
-          long expectedms = (long)(1000 * targetSecondsPerTick * this.tickCounter);
+          long ellapsedStopwatchTicks = this.stopwatch.ElapsedTicks;
 
           // Should we sleep?
-          if (expectedms - ellapsedms >= minimumSleep)
+          if (ellapsedStopwatchTicks < stopwatchTicksPerFrame)
           {
             this.manualResetEvent.Reset();
-            this.manualResetEvent.Wait((int)(expectedms - ellapsedms));
+            this.manualResetEvent.Wait((int)(/*0.5 + */1000.0 * (stopwatchTicksPerFrame - ellapsedStopwatchTicks) / Stopwatch.Frequency));
             this.manualResetEvent.Set();
-
-            this.stopwatch.Restart();
-            this.tickCounter = 0;
-            this.stepCounter = 0;
           }
+
+          this.stopwatch.Restart();
+          this.tickCounter = 0;
+          this.stepCounter = 0;
+          this.frameReady = false;
         }
-
-#endif
-
-#endregion
-
-#region COORDINATED TO V-BLANK
-
-#if true
-
-        this.Step(false);
-
-        if(frameReady)
-        {
-          // Sleep until 60 FPS
-          long ticks = sw.ElapsedTicks;
-
-          if(ticks < ticksPerFrame)
-          {
-            Thread.Sleep((int)(16 - sw.ElapsedMilliseconds));
-
-            //// Active wait
-            //while (ticks < ticksPerFrame)
-            //{
-            //  ticks = sw.ElapsedTicks;
-            //}
-
-            //double ms = 1000.0f * ((double)ticks / (double)ticksPerSecond);
-            //System.Console.Out.WriteLine("ms: {0}", ms);
-          }
-
-          // Send frames to video
-          if(RefreshScreen.GetInvocationList().Length != 0)
-          {
-            RefreshScreen();
-            apu.ClearBuffer();
-          }
-
-          frameReady = false;
-
-          sw.Stop();
-          sw.Reset();
-          sw.Start();
-
-
-        }
-
-#endif
-#endregion
       }
+    }
+
+    /// <summary>
+    /// Debugger. Handles the cpu.BreakPointFound event.
+    /// </summary>
+    private void BreakpointHandler()
+    {
+      inBreakpoint = true;
+      Pause();
+    }
+
+    /// <summary>
+    /// Debugger. Handles the cpu.InterruptHappened event.
+    /// </summary>
+    private void InterruptHandler(Interrupts interrupt)
+    {
+      inBreakpoint = true;
+      Pause();
+    }
+
+    /// <summary>
+    /// Handles a new frame from the display.
+    /// </summary>
+    private void VBlankHandler()
+    {
+      frameReady = true;
+      NotifyFrameCompleted();
     }
 
     /// <summary>
@@ -323,14 +273,29 @@ namespace GBSharp
     }
 
     /// <summary>
-    /// Notifies subscribers that a step is completed.
+    /// Notifies subscribers that a step has been completed.
     /// </summary>
-    private void NotifyStepFinished()
+    private void NotifyStepCompleted()
     {
-      if (StepFinished != null)
+      if (StepCompleted != null)
       {
-        StepFinished();
+        StepCompleted();
       }
+    }
+
+    /// <summary>
+    /// Notifies subscribers that a new frame has been completed.
+    /// </summary>
+    private void NotifyFrameCompleted()
+    {
+      if(FrameCompleted != null)
+      {
+        #warning TODO (wooo): Receive the frame here and trigger a new event instead of accessing directly to the display from the view.
+        FrameCompleted();
+      }
+
+      #warning TODO (wooo): This shouldn't be here!
+      apu.ClearBuffer();
     }
 
     public Dictionary<MemoryMappedRegisters, ushort> GetRegisterDic()

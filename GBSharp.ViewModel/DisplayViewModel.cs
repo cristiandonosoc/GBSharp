@@ -337,7 +337,7 @@ namespace GBSharp.ViewModel
     {
       _gameBoy = gameboy;
       _display = display;
-      _gameBoy.RefreshScreen += OnRefreshScreen;
+      _gameBoy.FrameCompleted += OnFrameCompleted;
       _memory = memory;
       _dispatcher = dispatcher;
 
@@ -362,7 +362,7 @@ namespace GBSharp.ViewModel
       SelectedSprite = Sprites.First();
     }
 
-    private void OnRefreshScreen()
+    private void OnFrameCompleted()
     {
       _dispatcher.Invoke(CopyFromDomain);
     }
@@ -468,7 +468,7 @@ namespace GBSharp.ViewModel
 
     public void Dispose()
     {
-      _gameBoy.RefreshScreen -= OnRefreshScreen;
+      _gameBoy.FrameCompleted -= OnFrameCompleted;
     }
   }
 }

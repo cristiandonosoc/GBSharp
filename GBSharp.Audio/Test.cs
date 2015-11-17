@@ -32,7 +32,7 @@ namespace GBSharp.Audio
                                    _apu.NumChannels);
       _source = new WriteableBufferingSource(_waveFormat);
 
-      gameBoy.RefreshScreen += gameBoy_RefreshScreen;
+      gameBoy.FrameCompleted += gameBoy_FrameCompleted;
 
       _soundOut = GetSoundOut();
       _soundOut.Initialize(_source);
@@ -177,7 +177,7 @@ namespace GBSharp.Audio
       #endregion
     }
 
-    void gameBoy_RefreshScreen()
+    void gameBoy_FrameCompleted()
     {
       _source.Write(_apu.Buffer, 0, _apu.SampleCount);
     }

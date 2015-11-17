@@ -58,8 +58,8 @@ namespace GBSharp.ViewModel
       _dispatcher = dispatcher;
       _gameBoy = gameBoy;
       _display = gameBoy.Display;
-      _gameBoy.RefreshScreen += OnRefreshScreen;
-      //_gameBoy.StepFinished += OnRefreshScreen;
+      _gameBoy.FrameCompleted += OnFrameCompleted;
+      //_gameBoy.StepCompleted += OnFrameCompleted;
 
       InterruptList.Add(new InterruptViewModel("Vertical Blank", Interrupts.VerticalBlanking, _gameBoy));
       InterruptList.Add(new InterruptViewModel("Timer Overflow", Interrupts.TimerOverflow, _gameBoy));
@@ -80,7 +80,7 @@ namespace GBSharp.ViewModel
       MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF4B: WX", MemoryMappedRegisters.WX, _gameBoy));
     }
 
-    private void OnRefreshScreen()
+    private void OnFrameCompleted()
     {
       _dispatcher.Invoke(CopyFromDomain);
     }
@@ -111,8 +111,8 @@ namespace GBSharp.ViewModel
 
     public void Dispose()
     {
-      _gameBoy.RefreshScreen -= OnRefreshScreen;
-      //_gameBoy.StepFinished -= OnRefreshScreen;
+      _gameBoy.FrameCompleted -= OnFrameCompleted;
+      //_gameBoy.StepCompleted -= OnFrameCompleted;
     }
   }
 }

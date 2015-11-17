@@ -172,6 +172,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GBSharp.Audio\GBSharp.Audio.csproj">
+      <Project>{914a7ded-adea-4ec6-befa-5f728f5c66ee}</Project>
+      <Name>GBSharp.Audio</Name>
+    </ProjectReference>
     <ProjectReference Include="..\GBSharp.ViewModel\GBSharp.ViewModel.csproj">
       <Project>{80655729-0edd-4365-831e-f7aa496d0b36}</Project>
       <Name>GBSharp.ViewModel</Name>
