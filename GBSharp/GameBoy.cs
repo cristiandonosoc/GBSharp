@@ -48,7 +48,7 @@ namespace GBSharp
       this.cpu = new CPUSpace.CPU(this.memory);
       this.interruptController = this.cpu.interruptController;
       this.display = new Display(this.interruptController, this.memory);
-      this.apu = new AudioSpace.APU();
+      this.apu = new AudioSpace.APU(44000, 2, 1);
 
       this.disassembler = new Disassembler(cpu, memory);
 
@@ -69,7 +69,7 @@ namespace GBSharp
     private void Display_VBlank()
     {
       frameReady = true;
-      RefreshScreen();
+      //RefreshScreen();
     }
 
     private void InterruptHandler(Interrupts interrupt)
@@ -160,6 +160,7 @@ namespace GBSharp
       this.cpu.UpdateClockAndTimers(ticks);
       this.memory.Step(ticks);
       this.display.Step(ticks);
+      this.apu.Step(ticks);
 
       this.tickCounter += ticks;
       this.stepCounter++;
@@ -212,16 +213,16 @@ namespace GBSharp
     /// </summary>
     private void ThreadedRun()
     {
-      //Stopwatch sw = new Stopwatch();
-      //long ticksPerSecond = Stopwatch.Frequency;
-      //long ticksPerFrame = (long)(16.6f * (double)(ticksPerSecond / 1000));
-      //sw.Start();
+      Stopwatch sw = new Stopwatch();
+      long ticksPerSecond = Stopwatch.Frequency;
+      long ticksPerFrame = (long)(16.6f * (double)(ticksPerSecond / 1000));
+      sw.Start();
 
       while (this.run)
       {
         #region ORIGINAL LOOP
 
-#if true
+#if false
 
         this.manualResetEvent.Wait(); // Wait for pauses.
         this.Step(false);
@@ -253,7 +254,7 @@ namespace GBSharp
 
 #region COORDINATED TO V-BLANK
 
-#if false
+#if true
 
         this.Step(false);
 
@@ -267,32 +268,29 @@ namespace GBSharp
             Thread.Sleep((int)(16 - sw.ElapsedMilliseconds));
 
             //// Active wait
-            while (ticks < ticksPerFrame)
-            {
-              ticks = sw.ElapsedTicks;
-            }
+            //while (ticks < ticksPerFrame)
+            //{
+            //  ticks = sw.ElapsedTicks;
+            //}
 
-
-
-            double ms = 1000.0f * ((double)ticks / (double)ticksPerSecond);
-            System.Console.Out.WriteLine("ms: {0}", ms);
+            //double ms = 1000.0f * ((double)ticks / (double)ticksPerSecond);
+            //System.Console.Out.WriteLine("ms: {0}", ms);
           }
 
           // Send frames to video
-          RefreshScreen();
+          if(RefreshScreen.GetInvocationList().Length != 0)
+          {
+            RefreshScreen();
+            apu.ClearBuffer();
+          }
 
           frameReady = false;
 
           sw.Stop();
-
-
-
-
           sw.Reset();
           sw.Start();
 
 
-          // Update sound
         }
 
 #endif
