@@ -1,0 +1,48 @@
+﻿<UserControl x:Class="GBSharp.View.WindowView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewModel="clr-namespace:GBSharp.ViewModel;assembly=GBSharp.ViewModel"
+             xmlns:view="clr-namespace:GBSharp.View"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+
+    
+    <Grid Style="{StaticResource SubContentGrid}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+       
+            <Grid Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <CheckBox Content="Update" IsChecked="{Binding UpdateWindow}"/>
+                <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto" 
+                          HorizontalScrollBarVisibility="Auto">
+                    <Image Source="{Binding Window}"
+               RenderOptions.BitmapScalingMode="NearestNeighbor">
+                        <Image.LayoutTransform>
+                            <ScaleTransform 
+                  CenterX="0" CenterY="0"
+                  ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
+                  ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
+                        </Image.LayoutTransform>
+                    </Image>
+                </ScrollViewer>
+            </Grid>
+      
+
+
+        <Grid Margin="5" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Slider x:Name="uiScaleSlider" Value="1" Minimum="0.1" Maximum="10"/>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -63,8 +63,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="BackgroundView.xaml.cs">
+      <DependentUpon>BackgroundView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="BoolToVisibilityConverter.cs" />
     <Compile Include="BoolInverterConverter.cs" />
+    <Compile Include="DisplayTimingView.xaml.cs">
+      <DependentUpon>DisplayTimingView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DissasembleView.xaml.cs">
       <DependentUpon>DissasembleView.xaml</DependentUpon>
     </Compile>
@@ -72,12 +78,32 @@
     <Compile Include="KeyboardHandler.cs" />
     <Compile Include="OpenFileDialogAdapter.cs" />
     <Compile Include="OpenFileDialogAdapterFactory.cs" />
+    <Compile Include="SpriteLayerView.xaml.cs">
+      <DependentUpon>SpriteLayerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SpritesView.xaml.cs">
+      <DependentUpon>SpritesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="TilesView.xaml.cs">
+      <DependentUpon>TilesView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="WindowAdapter.cs" />
+    <Compile Include="WindowView.xaml.cs">
+      <DependentUpon>WindowView.xaml</DependentUpon>
+    </Compile>
+    <Page Include="BackgroundView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="CartridgeView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="CPUView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DisplayTimingView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -133,7 +159,23 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="SpriteLayerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SpritesView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Styles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="TilesView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="WindowView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
