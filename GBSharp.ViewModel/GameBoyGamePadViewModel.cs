@@ -148,7 +148,7 @@ namespace GBSharp.ViewModel
     public void Dispose()
     {
       _gameBoy.RefreshScreen -= OnRefreshScreen;
-      _displayVm.UpdateDisplay -= OnUpdateDisplay;
+      //_displayVm.UpdateDisplay -= OnUpdateDisplay;
     }
 
     public void KeyUp(KeyEventArgs args)
