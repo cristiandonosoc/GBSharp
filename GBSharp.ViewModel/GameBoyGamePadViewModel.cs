@@ -148,7 +148,7 @@ namespace GBSharp.ViewModel
     public void Dispose()
     {
       _gameBoy.FrameCompleted -= OnFrameCompleted;
-      _displayVm.UpdateDisplay -= OnUpdateDisplay;
+      //_displayVm.UpdateDisplay -= OnUpdateDisplay;
     }
 
     public void KeyUp(KeyEventArgs args)

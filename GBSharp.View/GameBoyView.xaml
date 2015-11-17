@@ -5,106 +5,163 @@
         xmlns:viewModel="clr-namespace:GBSharp.ViewModel;assembly=GBSharp.ViewModel"
         xmlns:avalonDock="http://schemas.xceed.com/wpf/xaml/avalondock"
         Title="GBSharp" Height="720" Width="1024" WindowState="Maximized">
-  <Window.Resources>
-    <view:BoolToVisibilityConverter x:Key="BoolToVis" TrueValue="Visible" FalseValue="Collapsed"></view:BoolToVisibilityConverter>
-    <DataTemplate DataType="{x:Type viewModel:MemoryViewModel}">
-      <Grid Style="{StaticResource SubContentGrid}">
-        <ScrollViewer>
-          <view:MemoryView></view:MemoryView>
-        </ScrollViewer>
-      </Grid>
-    </DataTemplate>
-    <DataTemplate DataType="{x:Type viewModel:CPUViewModel}">
-      <Grid Style="{StaticResource SubContentGrid}">
-        <ScrollViewer>
-          <view:CPUView></view:CPUView>
-        </ScrollViewer>
-      </Grid>
-    </DataTemplate>
-    <DataTemplate DataType="{x:Type viewModel:DissasembleViewModel}">
-      <Grid Style="{StaticResource SubContentGrid}">
-        <ScrollViewer>
-          <view:DissasembleView></view:DissasembleView>
-        </ScrollViewer>
-      </Grid>
-    </DataTemplate>
-    <DataTemplate DataType="{x:Type viewModel:InterruptManagerViewModel}">
-      <Grid Style="{StaticResource SubContentGrid}">
-        <ScrollViewer>
-          <view:InterruptView></view:InterruptView>
-        </ScrollViewer>
-      </Grid>
-    </DataTemplate>
-    <DataTemplate DataType="{x:Type viewModel:DisplayViewModel}">
-      <Grid Style="{StaticResource SubContentGrid}">
-        <ScrollViewer>
-          <view:DisplayView></view:DisplayView>
-        </ScrollViewer>
-      </Grid>
-    </DataTemplate>
-    <DataTemplate DataType="{x:Type viewModel:GameBoyContollerViewModel}">
-      <Grid Style="{StaticResource SubContentGrid}">
-        <ScrollViewer>
-          <view:GameBoyControllerView></view:GameBoyControllerView>
-        </ScrollViewer>
-      </Grid>
-    </DataTemplate>
-    <DataTemplate DataType="{x:Type viewModel:GameBoyGamePadViewModel}">
-      <Grid Style="{StaticResource SubContentGrid}">
-        <ScrollViewer>
-          <view:GameBoyGamePadView></view:GameBoyGamePadView>
-        </ScrollViewer>
-      </Grid>
-    </DataTemplate>
-  </Window.Resources>
+    <Window.Resources>
+        <view:BoolToVisibilityConverter x:Key="BoolToVis" TrueValue="Visible" FalseValue="Collapsed"></view:BoolToVisibilityConverter>
+        <DataTemplate DataType="{x:Type viewModel:MemoryViewModel}">
+            <Grid Style="{StaticResource SubContentGrid}">
+                <ScrollViewer>
+                    <view:MemoryView></view:MemoryView>
+                </ScrollViewer>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:CPUViewModel}">
+            <Grid Style="{StaticResource SubContentGrid}">
+                <ScrollViewer>
+                    <view:CPUView></view:CPUView>
+                </ScrollViewer>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:DissasembleViewModel}">
+            <Grid Style="{StaticResource SubContentGrid}">
+                <ScrollViewer>
+                    <view:DissasembleView></view:DissasembleView>
+                </ScrollViewer>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:InterruptManagerViewModel}">
+            <Grid Style="{StaticResource SubContentGrid}">
+                <ScrollViewer>
+                    <view:InterruptView></view:InterruptView>
+                </ScrollViewer>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:DisplayViewModel}">
+            <Grid Style="{StaticResource SubContentGrid}">
+                <ScrollViewer>
+                    <view:DisplayView></view:DisplayView>
+                </ScrollViewer>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:GameBoyContollerViewModel}">
+            <Grid Style="{StaticResource SubContentGrid}">
+                <ScrollViewer>
+                    <view:GameBoyControllerView></view:GameBoyControllerView>
+                </ScrollViewer>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:GameBoyGamePadViewModel}">
+            <Grid Style="{StaticResource SubContentGrid}">
+                <ScrollViewer>
+                    <view:GameBoyGamePadView></view:GameBoyGamePadView>
+                </ScrollViewer>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:BackgroundViewModel}">
+            <Grid Style="{StaticResource SubContentGrid}">
+                <ScrollViewer>
+                    <view:BackgroundView></view:BackgroundView>
+                </ScrollViewer>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:TileMapViewModel}">
+            <Grid Style="{StaticResource SubContentGrid}">
+                <ScrollViewer>
+                    <view:TilesView></view:TilesView>
+                </ScrollViewer>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:WindowViewModel}">
+            <Grid Style="{StaticResource SubContentGrid}">
+                <ScrollViewer>
+                    <view:WindowView></view:WindowView>
+                </ScrollViewer>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:SpritesViewModel}">
+            <Grid Style="{StaticResource SubContentGrid}">
+                <ScrollViewer>
+                    <view:SpritesView></view:SpritesView>
+                </ScrollViewer>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:SpriteLayerViewModel}">
+            <Grid Style="{StaticResource SubContentGrid}">
+                <ScrollViewer>
+                    <view:SpriteLayerView></view:SpriteLayerView>
+                </ScrollViewer>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:DisplayTimingViewModel}">
+            <Grid Style="{StaticResource SubContentGrid}">
+                <ScrollViewer>
+                    <view:DisplayTimingView></view:DisplayTimingView>
+                </ScrollViewer>
+            </Grid>
+        </DataTemplate>
+    </Window.Resources>
 
-  <Grid Style="{DynamicResource MainContentGrid}">
-    <avalonDock:DockingManager>
-      <avalonDock:LayoutRoot>
-        <avalonDock:LayoutPanel Orientation="Horizontal">
-          <avalonDock:LayoutAnchorablePaneGroup DockWidth="Auto" Orientation="Vertical">
-            <avalonDock:LayoutAnchorablePane>
-              <avalonDock:LayoutAnchorable Title="Controller">
-                <ContentPresenter Content="{Binding GameBoyController}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=ControllerSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
-              </avalonDock:LayoutAnchorable>
-            </avalonDock:LayoutAnchorablePane>
-            <avalonDock:LayoutAnchorablePane>
-              <avalonDock:LayoutAnchorable Title="Display">
-                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Display}"/>
-              </avalonDock:LayoutAnchorable>
-            </avalonDock:LayoutAnchorablePane>
-            <avalonDock:LayoutAnchorablePane>
-              <avalonDock:LayoutAnchorable Title="Dissasemble">
-                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Dissasemble}"/>
-              </avalonDock:LayoutAnchorable>
-            </avalonDock:LayoutAnchorablePane>
-          </avalonDock:LayoutAnchorablePaneGroup>
-          <avalonDock:LayoutAnchorablePane>
-            <avalonDock:LayoutAnchorable Title="GameBoy">
-              <ContentPresenter Content="{Binding GameBoyGamePad}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=GamePadSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
-            </avalonDock:LayoutAnchorable>
-          </avalonDock:LayoutAnchorablePane>
-          <avalonDock:LayoutAnchorablePaneGroup DockWidth="Auto" Orientation="Vertical">
-            <avalonDock:LayoutAnchorablePane>
-              <avalonDock:LayoutAnchorable Title="Memory">
-                <ContentPresenter x:Name="MemorySection" Visibility="{Binding ElementName=MemorySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Content="{Binding Memory}"/>
-              </avalonDock:LayoutAnchorable>
-            </avalonDock:LayoutAnchorablePane>
-            <avalonDock:LayoutAnchorablePane>
-              <avalonDock:LayoutAnchorable Title="CPU">
-                <ContentPresenter Content="{Binding CPU}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=CPUSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
-              </avalonDock:LayoutAnchorable>
-            </avalonDock:LayoutAnchorablePane>
-            <avalonDock:LayoutAnchorablePane>
-              <avalonDock:LayoutAnchorable Title="Interrupts">
-                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=InterruptSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Interrupt}"/>
-              </avalonDock:LayoutAnchorable>
-            </avalonDock:LayoutAnchorablePane>
-          </avalonDock:LayoutAnchorablePaneGroup>
-        </avalonDock:LayoutPanel>
-      </avalonDock:LayoutRoot>
-    </avalonDock:DockingManager>
-    <!--<ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <Grid Style="{DynamicResource MainContentGrid}">
+        <avalonDock:DockingManager>
+            <avalonDock:LayoutRoot>
+                <avalonDock:LayoutPanel Orientation="Horizontal">
+                    <avalonDock:LayoutAnchorablePaneGroup DockWidth="Auto" Orientation="Vertical">
+                        <avalonDock:LayoutAnchorablePane DockHeight="20">
+                            <avalonDock:LayoutAnchorable Title="Controller">
+                                <ContentPresenter Content="{Binding GameBoyController}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=ControllerSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
+                            </avalonDock:LayoutAnchorable>
+                        </avalonDock:LayoutAnchorablePane>
+                        <avalonDock:LayoutAnchorablePane >
+                            <avalonDock:LayoutAnchorable Title="Background">
+                                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Display.Background}"/>
+                            </avalonDock:LayoutAnchorable>
+                            <avalonDock:LayoutAnchorable Title="TileMap">
+                                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Display.TileMap}"/>
+                            </avalonDock:LayoutAnchorable>
+                            <avalonDock:LayoutAnchorable Title="Window">
+                                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Display.Window}"/>
+                            </avalonDock:LayoutAnchorable>
+                            <avalonDock:LayoutAnchorable Title="Sprites">
+                                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Display.Sprites}"/>
+                            </avalonDock:LayoutAnchorable>
+                            <avalonDock:LayoutAnchorable Title="Sprite Layer">
+                                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Display.SpriteLayer}"/>
+                            </avalonDock:LayoutAnchorable>
+                            <avalonDock:LayoutAnchorable Title="Display Timing">
+                                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Display.DisplayTiming}"/>
+                            </avalonDock:LayoutAnchorable>
+                        </avalonDock:LayoutAnchorablePane>
+                        <avalonDock:LayoutAnchorablePane>
+                            <avalonDock:LayoutAnchorable Title="Dissasemble">
+                                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Dissasemble}"/>
+                            </avalonDock:LayoutAnchorable>
+                        </avalonDock:LayoutAnchorablePane>
+                    </avalonDock:LayoutAnchorablePaneGroup>
+                    <avalonDock:LayoutAnchorablePane>
+                        <avalonDock:LayoutAnchorable Title="GameBoy">
+                            <ContentPresenter Content="{Binding GameBoyGamePad}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=GamePadSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
+                        </avalonDock:LayoutAnchorable>
+                    </avalonDock:LayoutAnchorablePane>
+                    <avalonDock:LayoutAnchorablePaneGroup DockWidth="Auto" Orientation="Vertical">
+                        <avalonDock:LayoutAnchorablePane>
+                            <avalonDock:LayoutAnchorable Title="Memory">
+                                <ContentPresenter x:Name="MemorySection" Visibility="{Binding ElementName=MemorySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Content="{Binding Memory}"/>
+                            </avalonDock:LayoutAnchorable>
+                        </avalonDock:LayoutAnchorablePane>
+                        <avalonDock:LayoutAnchorablePane>
+                            <avalonDock:LayoutAnchorable Title="CPU">
+                                <ContentPresenter Content="{Binding CPU}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=CPUSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
+                            </avalonDock:LayoutAnchorable>
+                        </avalonDock:LayoutAnchorablePane>
+                        <avalonDock:LayoutAnchorablePane>
+                            <avalonDock:LayoutAnchorable Title="Interrupts">
+                                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=InterruptSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Interrupt}"/>
+                            </avalonDock:LayoutAnchorable>
+                        </avalonDock:LayoutAnchorablePane>
+                    </avalonDock:LayoutAnchorablePaneGroup>
+                </avalonDock:LayoutPanel>
+            </avalonDock:LayoutRoot>
+        </avalonDock:DockingManager>
+        <!--<ScrollViewer HorizontalScrollBarVisibility="Disabled">
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*"></ColumnDefinition>
@@ -212,5 +269,5 @@
         </Grid>
       </Grid>
     </ScrollViewer>-->
-  </Grid>
+    </Grid>
 </Window>
