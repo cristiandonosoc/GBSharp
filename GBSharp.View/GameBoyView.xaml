@@ -112,15 +112,15 @@
             <avalonDock:LayoutRoot>
                 <avalonDock:LayoutPanel Orientation="Horizontal">
                     <avalonDock:LayoutAnchorablePaneGroup DockWidth="Auto" Orientation="Vertical">
-                        <avalonDock:LayoutAnchorablePane DockHeight="20">
+                        <avalonDock:LayoutAnchorablePane DockHeight="*">
                             <avalonDock:LayoutAnchorable Title="Controller">
                                 <ContentPresenter Content="{Binding GameBoyController}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=ControllerSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
                             </avalonDock:LayoutAnchorable>
-                            <avalonDock:LayoutAnchorable Title="Dissasemble">
+                            <avalonDock:LayoutAnchorable Title="Dissasembler">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Dissasemble}"/>
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
-                        <avalonDock:LayoutAnchorablePane >
+                        <avalonDock:LayoutAnchorablePane DockHeight="2*">
                             <avalonDock:LayoutAnchorable Title="Background">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Display.Background}"/>
                             </avalonDock:LayoutAnchorable>
