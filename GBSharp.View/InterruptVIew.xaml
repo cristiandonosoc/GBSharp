@@ -6,69 +6,60 @@
              xmlns:viewModel="clr-namespace:GBSharp.ViewModel;assembly=GBSharp.ViewModel"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-  <UserControl.Resources>
-    <DataTemplate DataType="{x:Type viewModel:InterruptViewModel}">
-      <Grid  >
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="100"></ColumnDefinition>
-          <ColumnDefinition Width="60"></ColumnDefinition>
-          <ColumnDefinition Width="60"></ColumnDefinition>
-          <ColumnDefinition Width="60"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <TextBlock Text="{Binding Name}" Margin="2"/>
-        <CheckBox Content="en" IsChecked="{Binding Enabled}" Margin="2" Grid.Column="1"/>
-        <CheckBox Content="req" IsChecked="{Binding Requested}" Margin="2" Grid.Column="2"/>
-        <CheckBox Content="brk" IsChecked="{Binding Breakable}" Margin="2" Grid.Column="3"/>
+    <UserControl.Resources>
+        <DataTemplate DataType="{x:Type viewModel:InterruptViewModel}">
+            <Grid  >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="60"></ColumnDefinition>
+                    <ColumnDefinition Width="60"></ColumnDefinition>
+                    <ColumnDefinition Width="60"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding Name}" Margin="2"/>
+                <CheckBox Content="en" IsChecked="{Binding Enabled}" Margin="2" Grid.Column="1"/>
+                <CheckBox Content="req" IsChecked="{Binding Requested}" Margin="2" Grid.Column="2"/>
+                <CheckBox Content="brk" IsChecked="{Binding Breakable}" Margin="2" Grid.Column="3"/>
 
-      </Grid>
-    </DataTemplate>
-    <DataTemplate DataType="{x:Type viewModel:MemoryMappedRegisterViewModel}">
-      <Grid  >
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="100"></ColumnDefinition>
-          <ColumnDefinition Width="60"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <TextBlock Text="{Binding Name}" Margin="2"/>
-        <TextBox Grid.Column="1" Text="{Binding Value}" Margin="2"/>
-
-      </Grid>
-    </DataTemplate>
-  </UserControl.Resources>
-  <Grid Style="{StaticResource SubContentGrid}">
-    <ScrollViewer>
-      <TabControl>
-        <TabItem Header="Interrupts">
-          <Grid>
-            <Grid.RowDefinitions>
-              <RowDefinition Height="*"/>
-              <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Grid Margin="5">
-              <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"></RowDefinition>
-                <RowDefinition Height="*"></RowDefinition>
-              </Grid.RowDefinitions>
-
-              <CheckBox Content="Interrupt Master Enabled" IsChecked="{Binding InterruptMasterEnabled}" Margin="2"/>
-              <ItemsControl ItemsSource="{Binding InterruptList}" Grid.Row="1"></ItemsControl>
             </Grid>
-            <Grid Margin="5" Grid.Row="1">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"></ColumnDefinition>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
-              </Grid.ColumnDefinitions>
-              <Button Grid.Column="1" Content="Read" Command="{Binding ReadCommand}"></Button>
-              <Button Grid.Column="2" Content="Write" Command="{Binding WriteCommand}"></Button>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:MemoryMappedRegisterViewModel}">
+            <Grid  >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="60"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding Name}" Margin="2"/>
+                <TextBox Grid.Column="1" Text="{Binding Value}" Margin="2"/>
+
             </Grid>
-          </Grid>
-        </TabItem>
-        <TabItem Header="Registers">
-          <Grid Margin="5">
-            <ItemsControl ItemsSource="{Binding MemoryMappedRegisterList}" ></ItemsControl>
-          </Grid>
-        </TabItem>
-      </TabControl>
-    </ScrollViewer>
-  </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+    <Grid Style="{StaticResource SubContentGrid}">
+        <ScrollViewer>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid Margin="5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                    </Grid.RowDefinitions>
+
+                    <CheckBox Content="Interrupt Master Enabled" IsChecked="{Binding InterruptMasterEnabled}" Margin="2"/>
+                    <ItemsControl ItemsSource="{Binding InterruptList}" Grid.Row="1"></ItemsControl>
+                </Grid>
+                <Grid Margin="5" Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="1" Content="Read" Command="{Binding ReadCommand}"></Button>
+                    <Button Grid.Column="2" Content="Write" Command="{Binding WriteCommand}"></Button>
+                </Grid>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
 </UserControl>

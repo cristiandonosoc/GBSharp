@@ -75,6 +75,9 @@
       <DependentUpon>DissasembleView.xaml</DependentUpon>
     </Compile>
     <Compile Include="EnumToBoolConverter.cs" />
+    <Compile Include="IORegistersManagerView.xaml.cs">
+      <DependentUpon>IORegistersManagerView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="KeyboardHandler.cs" />
     <Compile Include="OpenFileDialogAdapter.cs" />
     <Compile Include="OpenFileDialogAdapterFactory.cs" />
@@ -152,6 +155,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="InterruptView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="IORegistersManagerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

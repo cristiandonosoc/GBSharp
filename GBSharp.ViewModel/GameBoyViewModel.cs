@@ -12,6 +12,7 @@ namespace GBSharp.ViewModel
     private readonly MemoryViewModel _memory;
     private readonly CPUViewModel _cpu;
     private readonly InterruptManagerViewModel _interrupt;
+    private readonly IORegistersManagerViewModel _ioRegisters;
     private readonly DisplayViewModel _display;
     private readonly GameBoyContollerViewModel _gameBoyController;
     private readonly GameBoyGamePadViewModel _gameBoyGamePad;
@@ -52,6 +53,11 @@ namespace GBSharp.ViewModel
       get { return _dissasemble; }
     }
 
+    public IORegistersManagerViewModel IORegisters
+    {
+      get { return _ioRegisters; }
+    }
+
 
     public GameBoyViewModel(IGameBoy gameBoy, IDispatcher dispatcher, IWindow window, IOpenFileDialogFactory fileDialogFactory, IKeyboardHandler keyboardHandler)
     {
@@ -74,6 +80,7 @@ namespace GBSharp.ViewModel
       _gameBoy.CPU.InterruptHappened += InterruptHandler;
 
       _interrupt = new InterruptManagerViewModel(_gameBoy, _dispatcher);
+      _ioRegisters = new IORegistersManagerViewModel(_gameBoy, _dispatcher);
       _display = new DisplayViewModel(_gameBoy, _gameBoy.Display, _gameBoy.Memory, _dispatcher);
       _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher, _display);
       _dissasemble = new DissasembleViewModel(_gameBoy);
@@ -114,6 +121,7 @@ namespace GBSharp.ViewModel
       _display.CopyFromDomain();
       _dissasemble.SetCurrentSelectedInstruction();
       _interrupt.CopyFromDomain();
+      _ioRegisters.CopyFromDomain();
 
       if(_memory.HighlightUpdated == false)
       {
@@ -134,6 +142,7 @@ namespace GBSharp.ViewModel
     {
       _display.Dispose();
       _interrupt.Dispose();
+      _ioRegisters.Dispose();
       _gameBoyGamePad.Dispose();
       _cpu.Dispose();
       _gameBoyController.OnFileLoaded -= FileLoadedHandler;

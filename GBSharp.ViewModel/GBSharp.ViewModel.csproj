@@ -61,6 +61,7 @@
     <Compile Include="InterruptViewModel.cs" />
     <Compile Include="IOpenFileDialog.cs" />
     <Compile Include="IOpenFileDialogFactory.cs" />
+    <Compile Include="IORegistersManagerViewModel.cs" />
     <Compile Include="MemoryMappedRegisterViewModel.cs" />
     <Compile Include="IWindow.cs" />
     <Compile Include="MemorySectionViewModel.cs" />
