@@ -43,23 +43,28 @@ namespace GBSharp.AudioSpace
 
     private int _tickCounter = 0;
     private int _msCounter = 0;
-    private bool _positive = true;
+    private bool _up = true;
 
     internal void Step(int ticks)
     {
       _tickCounter += ticks;
+
+      //TODO(Cristian): Update the sound channels
+
+      // We tick until the ms threshold
       if(_tickCounter > ticksPerMillisecond)
       {
         _tickCounter -= ticksPerMillisecond;
         ++_msCounter;
+
         if(_msCounter >= 500)
         {
-          _positive = !_positive;
+          _up = !_up;
         }
 
         // We should output a ms of samples
         byte value = 0;
-        if (_positive) { value = 255; }
+        if (_up) { value = 255; }
 
         for(int i = 0; i < _msSampleRate; ++i)
         {
@@ -78,4 +83,48 @@ namespace GBSharp.AudioSpace
 
   }
 
+  class SoundChannel
+  {
+    private int _frequencyFactor;
+    internal int FrequencyFactor
+    {
+      get { return _frequencyFactor; }
+      private set
+      {
+        _frequencyFactor = value;
+        _frequency = (double)0x20000 / (double)(0x800 - _frequencyFactor);
+      }
+    }
+
+    private double _frequency;
+    internal double Frequency
+    {
+      get { return _frequency; }
+    }
+
+    internal void LoadFrequencyFactor(byte low, byte high)
+    {
+      FrequencyFactor = ((high & 0x7) << 8) | low;
+    }
+
+    private int _tickCounter = 0;
+
+    internal SoundChannel()
+    {
+
+    }
+
+    private int tickThreshold = 200; // ~ 47.6 us (~ 20.97 kHz max)
+
+    internal void Step(int ticks)
+    {
+      _tickCounter += ticks;
+      if(_tickCounter >= tickThreshold)
+      {
+        _tickCounter -= tickThreshold;
+        
+        //TODO(Cristian): Update according to frequency
+      }
+    }
+  }
 }
