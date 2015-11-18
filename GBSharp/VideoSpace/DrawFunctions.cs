@@ -14,8 +14,8 @@ namespace GBSharp.VideoSpace
     /// <param name="pX">x coord of the pixel where to start drawing the tile</param>
     /// <param name="pY">y coord of the pixel where to start drawing the tile</param>
     internal static void
-    DrawTile(DisplayDefinition disDef, uint[] bitmapData, int stride,
-             byte[] tileData,
+    DrawTile(DisplayDefinition disDef, uint[] bitmapData, uint[] pixelBuffer,
+             int stride, byte[] tileData,
              int pX, int pY, int maxPx, int maxPy)
     {
       // We iterate for the actual bytes
@@ -26,16 +26,17 @@ namespace GBSharp.VideoSpace
         if (pixelY >= maxPy) { break; } // We can continue no further
 
         int index = pixelY * stride; // Only add every 2 bytes
-        uint[] pixels = DisFuncs.GetPixelsFromTileBytes(disDef.tilePallete,
-                                                        disDef.pixelPerTileX,
-                                                        tileData[j], tileData[j + 1]);
+        DisFuncs.GetPixelsFromTileBytes(ref pixelBuffer,
+                                        disDef.tilePallete,
+                                        disDef.pixelPerTileX,
+                                        tileData[j], tileData[j + 1]);
         for (int i = 0; i < 8; i++)
         {
           int pixelX = pX + i;
           if (pixelX < 0) { continue; }
           if (pixelX >= maxPx) { break; }
           int pIndex = index + pixelX;
-          bitmapData[pIndex] = pixels[i];
+          bitmapData[pIndex] = pixelBuffer[i];
         }
       }
     }

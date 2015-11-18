@@ -21,3 +21,8 @@ VBoy/*
 gb-disasm/*
 extras/*
 Roms/*
+
+# Visual Studio BS
+*.psess
+*.vspx
+

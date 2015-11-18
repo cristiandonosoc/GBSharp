@@ -190,6 +190,9 @@ namespace GBSharp.VideoSpace
       set { disStat.tileMap = value; }
     }
 
+    // Temporary buffer used or not allocating a local one on each iteration
+    private uint[] pixelBuffer;
+
     /// <summary>
     /// Display constructor.
     /// </summary>
@@ -285,6 +288,8 @@ namespace GBSharp.VideoSpace
         this.spriteOAMs[i] = new OAM();
       }
 
+      this.pixelBuffer = new uint[disDef.pixelPerTileX];
+
       // We update the display status info
       UpdateDisplayLineInfo(false);
     }
@@ -322,8 +327,9 @@ namespace GBSharp.VideoSpace
 
       // We draw the top part
       byte[] pixels = DisFuncs.GetTileData(disDef, memory, 0x8000, spriteCode, LCDCBit2);
-      DrawFuncs.DrawTile(disDef, spriteData, 8, pixels, pX, pY,
-                        disDef.screenPixelCountX, disDef.screenPixelCountY);
+      DrawFuncs.DrawTile(disDef, spriteData, pixelBuffer, 
+                         8, pixels, pX, pY,
+                         disDef.screenPixelCountX, disDef.screenPixelCountY);
     }
 
     private void StartFrame()
@@ -381,7 +387,8 @@ namespace GBSharp.VideoSpace
 
         // We obtain the correct row
         int bY = (y + SCY) % disDef.framePixelCountY;
-        uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, bY, LCDCBit3, LCDCBit4);
+        uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, pixelBuffer,
+                                                 bY, LCDCBit3, LCDCBit4);
 
         if(updateDebugTargetDict[DebugTargets.Background])
         {
@@ -419,7 +426,8 @@ namespace GBSharp.VideoSpace
         {
           // The offset indexes represent that the window is drawn from it's beggining
           // at (WX, WY)
-          uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, row - WY, 
+          uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, pixelBuffer,
+                                                   row - WY, 
                                                    LCDCBit6, LCDCBit4);
 
           // Independent target
@@ -455,6 +463,7 @@ namespace GBSharp.VideoSpace
           // Independent target
           uint[] pixels = new uint[disDef.screenPixelCountX];
           DisFuncs.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels,
+                                      pixelBuffer,
                                       row, LCDCBit2,
                                       true);
           DrawFuncs.DrawLine(disDef, debugTargetDict[DebugTargets.SpriteLayer],
@@ -469,7 +478,9 @@ namespace GBSharp.VideoSpace
         {
           uint[] linePixels = DisFuncs.GetPixelRowFromBitmap(disDef, screen, 
                                                              row, disDef.screenPixelCountX);
-          DisFuncs.GetSpriteRowPixels(disDef, memory, spriteOAMs, linePixels, row, LCDCBit2);
+          DisFuncs.GetSpriteRowPixels(disDef, memory, spriteOAMs, 
+                                      linePixels, pixelBuffer,
+                                      row, LCDCBit2);
           DrawFuncs.DrawLine(disDef, screen, disDef.screenPixelCountX,
                             linePixels,
                             0, row,
@@ -531,9 +542,10 @@ namespace GBSharp.VideoSpace
           byte[] tileData = DisFuncs.GetTileData(disDef, memory, tileBaseAddress, tileOffset, false);
 
           DrawFuncs.DrawTile(disDef, debugTargetDict[DebugTargets.Tiles],
-                            disDef.screenPixelCountX, tileData,
-                            8 * tileX, 8 * tileY, 
-                            256, 256);
+                             pixelBuffer,
+                             disDef.screenPixelCountX, tileData,
+                             8 * tileX, 8 * tileY, 
+                             256, 256);
         }
       }
     }

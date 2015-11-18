@@ -204,6 +204,7 @@ namespace GBSharp
         if (this.frameReady)
         {
           long ellapsedStopwatchTicks = this.stopwatch.ElapsedTicks;
+          System.Console.Out.WriteLine(ellapsedStopwatchTicks);
 
           // Should we sleep?
           if (ellapsedStopwatchTicks < stopwatchTicksPerFrame)

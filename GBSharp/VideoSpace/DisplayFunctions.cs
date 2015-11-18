@@ -129,6 +129,7 @@ namespace GBSharp.VideoSpace
     /// <returns>An array with the pixels to show for that row (color already calculated)</returns>
     internal static uint[]
     GetRowPixels(DisplayDefinition disDef, Memory memory,
+                 uint[] pixelBuffer,
                  int row, bool LCDBit3, bool LCDBit4)
     {
       // We determine the y tile
@@ -149,13 +150,14 @@ namespace GBSharp.VideoSpace
         byte top = memory.LowLevelRead((ushort)(currentTileBaseAddress + 2 * tileRemainder));
         byte bottom = memory.LowLevelRead((ushort)(currentTileBaseAddress + 2 * tileRemainder + 1));
 
-        uint[] tilePixels = GetPixelsFromTileBytes(disDef.tilePallete,
-                                                   disDef.pixelPerTileX,
-                                                   top, bottom);
+        GetPixelsFromTileBytes(ref pixelBuffer,
+                               disDef.tilePallete,
+                               disDef.pixelPerTileX,
+                               top, bottom);
         int currentTileIndex = tileX * disDef.pixelPerTileX;
         for (int i = 0; i < disDef.pixelPerTileX; i++)
         {
-          pixels[currentTileIndex + i] = tilePixels[i];
+          pixels[currentTileIndex + i] = pixelBuffer[i];
         }
       }
 
@@ -220,7 +222,8 @@ namespace GBSharp.VideoSpace
 
     internal static void
     GetSpriteRowPixels(DisplayDefinition disDef, Memory memory, OAM[] spriteOAMs,
-                       uint[] targetPixels, int row, bool LCDCBit2,
+                       uint[] targetPixels, uint[] pixelBuffer,
+                       int row, bool LCDCBit2,
                        bool ignoreBackgroundPriority = false)
     {
       // TODO(Cristian): Separate this step from the call and pass it as an argument
@@ -243,9 +246,10 @@ namespace GBSharp.VideoSpace
         uint[] spritePallete = (Utils.UtilFuncs.TestBit(oam.flags, 4) == 0) ?
                                   disDef.spritePallete0 : disDef.spritePallete1;
 
-        uint[] spritePixels = GetPixelsFromTileBytes(spritePallete,
-                                                     disDef.pixelPerTileX,
-                                                     tilePixels[2 * y], tilePixels[2 * y + 1]);
+        GetPixelsFromTileBytes(ref pixelBuffer,
+                               spritePallete,
+                               disDef.pixelPerTileX,
+                               tilePixels[2 * y], tilePixels[2 * y + 1]);
         bool backgroundPriority = (Utils.UtilFuncs.TestBit(oam.flags, 7) != 0);
         if (ignoreBackgroundPriority)
         {
@@ -256,7 +260,7 @@ namespace GBSharp.VideoSpace
           int pX = x + i;
           if (pX < 0) { continue; }
           if (pX >= disDef.screenPixelCountX) { break; }
-          uint color = spritePixels[i];
+          uint color = pixelBuffer[i];
           if (color == 0) { continue; } // transparent pixel
 
           // NOTE(Cristian): If the BG priority bit is set, the sprite is hidden
@@ -352,20 +356,30 @@ namespace GBSharp.VideoSpace
     }
 
 
-    internal static uint[]
-    GetPixelsFromTileBytes(uint[] pallete, int pixelPerTileX, byte top, byte bottom)
+    /// <summary>
+    /// Gets the color of a pixel from two bytes. Each index within the two bytes
+    /// determine a 2-bit color pixel
+    /// </summary>
+    /// <param name="pixelBuffer">
+    /// The output buffer. We pass it as ref because out demands an assignment 
+    /// and we pass a already allocated to avoid allocating several times a frame</param>
+    /// <param name="pallete">The current color pallete</param>
+    /// <param name="pixelPerTileX">Amount of pixel per tiles (somewhat const actually)</param>
+    /// <param name="top">The top row of bits</param>
+    /// <param name="bottom">Bottom row of bits</param>
+    internal static void
+    GetPixelsFromTileBytes(ref uint[] pixelBuffer, uint[] pallete, 
+                           int pixelPerTileX, byte top, byte bottom)
     {
-      uint[] pixels = new uint[pixelPerTileX];
       for (int i = 0; i < pixelPerTileX; i++)
       {
+        // TODO(Cristian): Could a pre-defined lookup table speed up this?
         int up = (bottom >> (7 - i)) & 1;
         int down = (top >> (7 - i)) & 1;
         int index = (up << 1) | down;
         uint color = pallete[index];
-        pixels[i] = color;
+        pixelBuffer[i] = color;
       }
-
-      return pixels;
     }
   }
 }
