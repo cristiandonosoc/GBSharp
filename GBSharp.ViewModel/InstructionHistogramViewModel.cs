@@ -13,17 +13,33 @@ namespace GBSharp.ViewModel
     private ICPU _cpu;
 
     private bool _update;
+    private bool _filter;
+    private ushort _maxHistogramValue;
 
     public bool Update
     {
       get { return _update; }
       set
       {
-        if (_update == value)
+        if (_update != value)
         {
-          return;
+          _update = value;
         }
-        _update = value;
+        
+      }
+    }
+
+    public bool Filter
+    {
+      get { return _filter; }
+      set
+      {
+        if (_filter != value)
+        {
+          _filter = value;
+          CopyFromDomain();
+        }
+        
       }
     }
 
@@ -55,6 +71,20 @@ namespace GBSharp.ViewModel
       get { return new DelegateCommand(CopyFromDomain); }
     }
 
+    public ushort MaxHistogramValue
+    {
+      get { return _maxHistogramValue; }
+      set
+      {
+        if (_maxHistogramValue != value)
+        {
+          _maxHistogramValue = value;
+          CopyFromDomain();
+        }
+
+      }
+    }
+
     public InstructionHistogramViewModel(IGameBoy gameBoy, IDispatcher dispatcher)
     {
       _gameBoy = gameBoy;
@@ -63,6 +93,7 @@ namespace GBSharp.ViewModel
       _cpu = _gameBoy.CPU;
       _histogram = new WriteableBitmap(16, 16, 96, 96, PixelFormats.Gray16, null);
       _cbHistogram = new WriteableBitmap(16, 16, 96, 96, PixelFormats.Gray16, null);
+      _maxHistogramValue = 65535;
     }
 
     private void OnFrameCompleted()
@@ -84,13 +115,11 @@ namespace GBSharp.ViewModel
 
     private ushort[] ReMapHistogram(ulong[] instructionHistogram)
     {
-      var max = instructionHistogram.Max();
-      ulong maxShort = 65535;
-      
-      ulong ratio = max / maxShort;
-      if (ratio == 0)
-        ratio = 1;
-      return instructionHistogram.ToList().Select(h => (ushort)(65535 - (h / ratio))).ToArray();
+      ushort max = 65535;
+      if (_filter)
+        max = _maxHistogramValue;
+
+      return instructionHistogram.ToList().Select(h => ((ushort)(Math.Min(max, h) * (ulong)(65535 / max)))).ToArray();
     }
 
     public void Dispose()
