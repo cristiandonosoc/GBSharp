@@ -142,7 +142,7 @@ namespace GBSharp
       this.cpu.UpdateClockAndTimers(ticks);
       this.memory.Step(ticks);
       this.display.Step(ticks);
-      // this.apu.Step(ticks);
+      //this.apu.Step(ticks);
 
       this.tickCounter += ticks;
       this.stepCounter++;

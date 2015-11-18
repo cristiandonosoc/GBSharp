@@ -131,6 +131,7 @@ namespace GBSharp.ViewModel
 
     public void OnClosed()
     {
+      audioManager.Dispose();
     }
 
     private void Step()

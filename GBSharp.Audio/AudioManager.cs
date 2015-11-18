@@ -14,7 +14,7 @@ using GBSharp.AudioSpace;
 
 namespace GBSharp.Audio
 {
-  public class AudioManager
+  public class AudioManager : IDisposable
   {
     private IAPU _apu;
 
@@ -177,6 +177,11 @@ namespace GBSharp.Audio
       #endregion
     }
 
+    ~AudioManager()
+    {
+
+    }
+
     void gameBoy_FrameCompleted()
     {
       _source.Write(_apu.Buffer, 0, _apu.SampleCount);
@@ -199,6 +204,15 @@ namespace GBSharp.Audio
     public void Stop()
     {
       _soundOut.Stop();
+    }
+
+    public void Dispose()
+    {
+      if(_soundOut.PlaybackState == PlaybackState.Playing)
+      {
+        _soundOut.Stop();
+      }
+      _soundOut.Dispose();
     }
   }
 
