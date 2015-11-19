@@ -59,7 +59,7 @@ namespace GBSharp
       // Events
       this.cpu.BreakpointFound += BreakpointHandler;
       this.cpu.InterruptHappened += InterruptHandler;
-      this.display.VBlank += VBlankHandler;
+      this.display.FrameReady += FrameReadyHandler;
 
       this.inBreakpoint = false;
       this.ReleaseButtons = true;
@@ -243,7 +243,7 @@ namespace GBSharp
     /// <summary>
     /// Handles a new frame from the display.
     /// </summary>
-    private void VBlankHandler()
+    private void FrameReadyHandler()
     {
       frameReady = true;
       NotifyFrameCompleted();

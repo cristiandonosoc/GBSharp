@@ -100,7 +100,7 @@ namespace GBSharp.VideoSpace
   class Display : IDisplay
   {
 
-    public event Action VBlank;
+    public event Action FrameReady;
 
     private InterruptController interruptController;
     private Memory memory;
@@ -337,6 +337,8 @@ namespace GBSharp.VideoSpace
       disStat.currentLine = 0;
       disStat.currentWY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WY);
 
+      if(!disStat.enabled) { return; }
+
       // WINDOW TRANSPARENCY
       if (updateDebugTargetDict[DebugTargets.Window])
       {
@@ -358,9 +360,8 @@ namespace GBSharp.VideoSpace
 
     public void DrawFrame(int rowBegin, int rowEnd)
     {
-      if(rowBegin > 143) {
-        return;
-      }
+      if(!disStat.enabled) { return; }
+      if (rowBegin > 143) { return; }
 
       // Necesary, sprites could have changed during H-BLANK
       LoadSprites();
@@ -493,26 +494,29 @@ namespace GBSharp.VideoSpace
 
     private void EndFrame()
     {
-      if (updateDebugTargetDict[DebugTargets.Background])
+      if (disStat.enabled)
       {
-        // TODO(Cristian): Move this to disStat
-        int SCX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX);
-        int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
+        if (updateDebugTargetDict[DebugTargets.Background])
+        {
+          // TODO(Cristian): Move this to disStat
+          int SCX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX);
+          int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
 
-        uint rectangleColor = 0xFFFF8822;
-        DrawFuncs.DrawRectangle(disDef, debugTargetDict[DebugTargets.Background],
-                               disDef.framePixelCountX,
-                               SCX, SCY,
-                               disDef.screenPixelCountX, disDef.screenPixelCountY,
-                               rectangleColor);
+          uint rectangleColor = 0xFFFF8822;
+          DrawFuncs.DrawRectangle(disDef, debugTargetDict[DebugTargets.Background],
+                                 disDef.framePixelCountX,
+                                 SCX, SCY,
+                                 disDef.screenPixelCountX, disDef.screenPixelCountY,
+                                 rectangleColor);
+        }
+
+        if (updateDebugTargetDict[DebugTargets.Tiles])
+        {
+          DrawTiles();
+        }
       }
 
-      if(updateDebugTargetDict[DebugTargets.Tiles])
-      {
-        DrawTiles();
-      }
-
-      VBlank();
+      FrameReady();
     }
 
     public void DrawTiles()
@@ -580,9 +584,6 @@ namespace GBSharp.VideoSpace
         disStat.enabled = false;
       }
 
-      // If the LCD is not enabled, no need to simulate anything
-      if(!disStat.enabled) { return; }
-
       // TODO(Cristian): Check that the LY=LYC is correct when the display starts
 
       /**
@@ -625,7 +626,6 @@ namespace GBSharp.VideoSpace
               else // V-BLANK
               {
                 ChangeDisplayMode(DisplayModes.Mode01);
-                EndFrame();
               }
             }
           }
@@ -640,6 +640,7 @@ namespace GBSharp.VideoSpace
             if (disStat.currentLine >= 154)
             {
               ChangeDisplayMode(DisplayModes.Mode10);
+              EndFrame();
               StartFrame();
             }
           }
@@ -730,6 +731,8 @@ namespace GBSharp.VideoSpace
       disStat.displayMode = newDisplayMode;
       byte byteDisplayMode = (byte)disStat.displayMode;
 
+      if(!disStat.enabled) { return; }
+
       byte STAT = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.STAT);
       // We strip the last 2 bits of STAT and replace them with the mode
       STAT = (byte)((STAT & 0xFC) | byteDisplayMode);
@@ -771,6 +774,8 @@ namespace GBSharp.VideoSpace
         disStat.currentLineTickCount = 0;
         ++disStat.currentLine;
       }
+
+      if(!disStat.enabled) { return; }
 
       this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.LY, disStat.currentLine);
       byte LYC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LYC);
