@@ -11,6 +11,12 @@ namespace GBSharp
 {
   public class GameBoy : IGameBoy
   {
+    internal static double targetFramerate = 60.0; // This is not the real gameboy framerate, but it's a nice number.
+    internal static double stopwatchTicksPerFrame = Stopwatch.Frequency / targetFramerate;
+
+    internal static double targetMillisecondsPerTick = 0.0002384185791015625; // It is know that this is 2^-22.
+    internal static int ticksPerMillisecond = 4194; // Actually it's 4194,304
+
     public event Action StepCompleted;
     public event Action FrameCompleted;
 
@@ -31,8 +37,6 @@ namespace GBSharp
     private Stopwatch stopwatch;
     private long tickCounter;
     private long stepCounter;
-    private const double targetFramerate = 60.0; // This is not the real gameboy framerate, but it's a nice number.
-    private readonly double stopwatchTicksPerFrame = Stopwatch.Frequency / targetFramerate;
 
     public bool ReleaseButtons { get; set; }
 
@@ -142,7 +146,7 @@ namespace GBSharp
       this.cpu.UpdateClockAndTimers(ticks);
       this.memory.Step(ticks);
       this.display.Step(ticks);
-      //this.apu.Step(ticks);
+      this.apu.Step(ticks);
 
       this.tickCounter += ticks;
       this.stepCounter++;
@@ -204,7 +208,6 @@ namespace GBSharp
         if (this.frameReady)
         {
           long ellapsedStopwatchTicks = this.stopwatch.ElapsedTicks;
-          System.Console.Out.WriteLine(ellapsedStopwatchTicks);
 
           // Should we sleep?
           if (ellapsedStopwatchTicks < stopwatchTicksPerFrame)
@@ -212,6 +215,18 @@ namespace GBSharp
             this.manualResetEvent.Reset();
             this.manualResetEvent.Wait((int)(/*0.5 + */1000.0 * (stopwatchTicksPerFrame - ellapsedStopwatchTicks) / Stopwatch.Frequency));
             this.manualResetEvent.Set();
+          }
+
+          double overTicks = (double)this.stopwatch.ElapsedTicks - stopwatchTicksPerFrame;
+          if(overTicks > 0)
+          {
+            int stepsOver = (int)(ticksPerMillisecond * 1000.0 * (overTicks / Stopwatch.Frequency));
+            if(stepsOver > ticksPerMillisecond)
+            {
+                // We are over a millisecond over and we should output more sound
+                // TODO(Cristian): See why this happen (sometimes over 10ms over!)
+                apu.Step(stepsOver);
+            }
           }
 
           this.stopwatch.Restart();
