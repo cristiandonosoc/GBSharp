@@ -49,21 +49,22 @@ namespace GBSharp.AudioSpace
       //TODO(Cristian): Update the sound channels
 
       // We tick until the ms threshold
-      while(_tickCounter > GameBoy.ticksPerMillisecond)
+      while (_tickCounter > GameBoy.ticksPerMillisecond)
       {
         _tickCounter -= GameBoy.ticksPerMillisecond;
         ++_msCounter;
 
-        if(_msCounter >= 500)
+        if (_msCounter > (double)1000 / (double)440)
         {
           _up = !_up;
+          _msCounter = 0;
         }
 
         // We should output a ms of samples
         byte value = 0;
         if (_up) { value = 255; }
 
-        for(int i = 0; i < _msSampleRate; ++i)
+        for (int i = 0; i < _msSampleRate; ++i)
         {
           for (int c = 0; c < _numChannels; ++c)
           {
