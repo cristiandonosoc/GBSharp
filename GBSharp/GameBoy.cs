@@ -11,6 +11,12 @@ namespace GBSharp
 {
   public class GameBoy : IGameBoy
   {
+    internal static double targetFramerate = 60.0; // This is not the real gameboy framerate, but it's a nice number.
+    internal static double stopwatchTicksPerFrame = Stopwatch.Frequency / targetFramerate;
+
+    internal static double targetMillisecondsPerTick = 0.0002384185791015625; // It is know that this is 2^-22.
+    internal static int ticksPerMillisecond = 4194; // Actually it's 4194,304
+
     public event Action StepCompleted;
     public event Action FrameCompleted;
 
@@ -27,12 +33,10 @@ namespace GBSharp
     private ManualResetEventSlim manualResetEvent;
     private Keypad buttons;
     private Disassembler disassembler;
-    
+
     private Stopwatch stopwatch;
     private long tickCounter;
     private long stepCounter;
-    private const double targetFramerate = 60.0; // This is not the real gameboy framerate, but it's a nice number.
-    private readonly double stopwatchTicksPerFrame = Stopwatch.Frequency / targetFramerate;
 
     public bool ReleaseButtons { get; set; }
 
@@ -59,12 +63,12 @@ namespace GBSharp
       // Events
       this.cpu.BreakpointFound += BreakpointHandler;
       this.cpu.InterruptHappened += InterruptHandler;
-      this.display.VBlank += VBlankHandler;
+      this.display.FrameReady += FrameReadyHandler;
 
       this.inBreakpoint = false;
       this.ReleaseButtons = true;
     }
-    
+
 
     public ICPU CPU
     {
@@ -130,19 +134,19 @@ namespace GBSharp
       //                 breakpoint. This next step must ignore the breakpoint
       //                 or it will stop with itself.
       bool ignoreNextStep = false;
-      if (inBreakpoint) 
-      { 
+      if (inBreakpoint)
+      {
         inBreakpoint = false;
         ignoreNextStep = true;
       }
       byte ticks = this.cpu.Step(ignoreNextStep || ignoreBreakpoints);
 
       // NOTE(Cristian): If the CPU is halted, the hardware carry on
-      if(cpu.halted) { ticks = 4; }
+      if (cpu.halted) { ticks = 4; }
       this.cpu.UpdateClockAndTimers(ticks);
       this.memory.Step(ticks);
       this.display.Step(ticks);
-      //this.apu.Step(ticks);
+      this.apu.Step(ticks);
 
       this.tickCounter += ticks;
       this.stepCounter++;
@@ -157,7 +161,7 @@ namespace GBSharp
     {
       this.manualResetEvent.Set();
       // NOTE(cdonoso): If we're running, we shouldn't restart. Or should we?
-      if(this.run) { return; }
+      if (this.run) { return; }
       if (this.cartridge == null) { return; }
       this.run = true;
       this.stepCounter = 0;
@@ -165,7 +169,7 @@ namespace GBSharp
       this.stopwatch.Restart();
       this.clockThread.Start();
     }
-    
+
     /// <summary>
     /// Pauses the simulation until Run is called again.
     /// </summary>
@@ -185,7 +189,7 @@ namespace GBSharp
       this.stopwatch.Stop();
       this.run = false; // Allow the thread to exit.
       this.manualResetEvent.Set(); // Unlock the thread to make that happen.
-      
+
       // Dispose CPU and memory, create a new one and load rom again?
       //throw new NotImplementedException();
     }
@@ -204,7 +208,6 @@ namespace GBSharp
         if (this.frameReady)
         {
           long ellapsedStopwatchTicks = this.stopwatch.ElapsedTicks;
-          System.Console.Out.WriteLine(ellapsedStopwatchTicks);
 
           // Should we sleep?
           if (ellapsedStopwatchTicks < stopwatchTicksPerFrame)
@@ -214,10 +217,28 @@ namespace GBSharp
             this.manualResetEvent.Set();
           }
 
+          double overTicks = (double)this.stopwatch.ElapsedTicks - stopwatchTicksPerFrame;
+          if (overTicks > 0)
+          {
+            int stepsOver = (int)(ticksPerMillisecond * 1000.0 * (overTicks / Stopwatch.Frequency));
+            if (stepsOver > ticksPerMillisecond)
+            {
+              // We are over a millisecond over and we should output more sound
+              // TODO(Cristian): See why this happen (sometimes over 10ms over!)
+              apu.Step(stepsOver);
+            }
+          }
+
           this.stopwatch.Restart();
           this.tickCounter = 0;
           this.stepCounter = 0;
           this.frameReady = false;
+
+          // Finally here we trigger the notification
+          NotifyFrameCompleted();
+
+          // After it's been read, we clear the buffer for another run
+          apu.ClearBuffer();
         }
       }
     }
@@ -243,10 +264,9 @@ namespace GBSharp
     /// <summary>
     /// Handles a new frame from the display.
     /// </summary>
-    private void VBlankHandler()
+    private void FrameReadyHandler()
     {
       frameReady = true;
-      NotifyFrameCompleted();
     }
 
     /// <summary>
@@ -257,7 +277,7 @@ namespace GBSharp
     {
       this.buttons |= button;
       this.interruptController.UpdateKeypadState(this.buttons);
-      if(cpu.stopped) { cpu.stopped = false; }
+      if (cpu.stopped) { cpu.stopped = false; }
     }
 
     /// <summary>
@@ -266,7 +286,7 @@ namespace GBSharp
     /// <param name="button">The button that was released. It can be a combination of buttons too.</param>
     public void ReleaseButton(Keypad button)
     {
-      if(ReleaseButtons)
+      if (ReleaseButtons)
       {
         this.buttons &= ~button;
         this.interruptController.UpdateKeypadState(this.buttons);
@@ -289,27 +309,25 @@ namespace GBSharp
     /// </summary>
     private void NotifyFrameCompleted()
     {
-      if(FrameCompleted != null)
+      if (FrameCompleted != null)
       {
         #warning TODO (wooo): Receive the frame here and trigger a new event instead of accessing directly to the display from the view.
         FrameCompleted();
       }
 
-      #warning TODO (wooo): This shouldn't be here!
-      apu.ClearBuffer();
     }
 
     public Dictionary<MemoryMappedRegisters, ushort> GetRegisterDic()
     {
-      Dictionary<MemoryMappedRegisters, ushort> registerDic = new Dictionary<MemoryMappedRegisters,ushort>();
-      foreach(MemoryMappedRegisters registerEnum in Enum.GetValues(typeof(MemoryMappedRegisters)))
+      Dictionary<MemoryMappedRegisters, ushort> registerDic = new Dictionary<MemoryMappedRegisters, ushort>();
+      foreach (MemoryMappedRegisters registerEnum in Enum.GetValues(typeof(MemoryMappedRegisters)))
       {
         registerDic.Add(registerEnum, memory.LowLevelRead((ushort)registerEnum));
       }
       return registerDic;
     }
 
-    public IEnumerable<IInstruction> 
+    public IEnumerable<IInstruction>
     Disassamble(ushort startAddress, bool permissive = true)
     {
       return disassembler.Disassamble(startAddress, permissive);

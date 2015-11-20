@@ -38,10 +38,7 @@ namespace GBSharp.AudioSpace
       _buffer = new byte[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
     }
 
-    private const double targetMillisecondsPerTick = 0.0002384185791015625; // It is know that this is 2^-22.
-    private const int ticksPerMillisecond = 4194; // Actually it's 4194,304
-
-    private int _tickCounter = 0;
+    private long _tickCounter = 0;
     private int _msCounter = 0;
     private bool _up = true;
 
@@ -52,21 +49,22 @@ namespace GBSharp.AudioSpace
       //TODO(Cristian): Update the sound channels
 
       // We tick until the ms threshold
-      if(_tickCounter > ticksPerMillisecond)
+      while (_tickCounter > GameBoy.ticksPerMillisecond)
       {
-        _tickCounter -= ticksPerMillisecond;
+        _tickCounter -= GameBoy.ticksPerMillisecond;
         ++_msCounter;
 
-        if(_msCounter >= 500)
+        if (_msCounter > (double)1000 / (double)440)
         {
           _up = !_up;
+          _msCounter = 0;
         }
 
         // We should output a ms of samples
         byte value = 0;
         if (_up) { value = 255; }
 
-        for(int i = 0; i < _msSampleRate; ++i)
+        for (int i = 0; i < _msSampleRate; ++i)
         {
           for (int c = 0; c < _numChannels; ++c)
           {
