@@ -14,8 +14,9 @@ namespace GBSharp
     bool InterruptMasterEnable { get; }
     IInstruction CurrentInstruction { get; }
     ushort Breakpoint { get; set; }
-    ulong[] InstructionHistogram { get; }
-    ulong[] CbInstructionHistogram { get; }
+    ushort[] InstructionHistogram { get; }
+    ushort[] CbInstructionHistogram { get; }
+    void ResetInstructionHistograms();
 
     void SetInterruptBreakable(Interrupts interrupt, bool isBreakable);
 

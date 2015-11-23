@@ -78,12 +78,12 @@ namespace GBSharp.CPUSpace
       get { return interruptController.InterruptMasterEnable; }
     }
 
-    public ulong[] InstructionHistogram
+    public ushort[] InstructionHistogram
     {
       get { return instructionHistogram; }
     }
 
-    public ulong[] CbInstructionHistogram
+    public ushort[] CbInstructionHistogram
     {
       get { return cbInstructionHistogram; }
     }
@@ -97,8 +97,8 @@ namespace GBSharp.CPUSpace
 
     #endregion
 
-    internal ulong[] instructionHistogram = new ulong[256];
-    internal ulong[] cbInstructionHistogram = new ulong[256];
+    internal ushort[] instructionHistogram = new ushort[256];
+    internal ushort[] cbInstructionHistogram = new ushort[256];
 
     public CPU(MemorySpace.Memory memory)
     {
@@ -180,6 +180,12 @@ namespace GBSharp.CPUSpace
       this.Breakpoint = 0xFFFF;
 
       this.interruptToTrigger = null;
+    }
+
+    public void ResetInstructionHistograms()
+    {
+      instructionHistogram = new ushort[256];
+      cbInstructionHistogram = new ushort[256];
     }
 
     public void SetInterruptBreakable(Interrupts interrupt, bool isBreakable)
@@ -310,7 +316,8 @@ namespace GBSharp.CPUSpace
 
       if (instruction.OpCode != 0xCB)
       {
-        instructionHistogram[(byte) instruction.OpCode]++;
+        if(instructionHistogram[(byte)instruction.OpCode] < ushort.MaxValue)
+          instructionHistogram[(byte) instruction.OpCode]++;
         // Normal instructions
         instruction.Length = this.instructionLengths[(byte)instruction.OpCode];
 
@@ -358,7 +365,8 @@ namespace GBSharp.CPUSpace
         {
           instruction.OpCode += 0xCB; // The first byte is duplicated
         }
-        cbInstructionHistogram[(byte)instruction.OpCode]++;
+        if (cbInstructionHistogram[(byte)instruction.OpCode] < ushort.MaxValue)
+          cbInstructionHistogram[(byte)instruction.OpCode]++;
         instruction.Length = this.CBInstructionLengths[(byte)instruction.OpCode];
         // There is no literal in CB instructions!
 

@@ -71,6 +71,11 @@ namespace GBSharp.ViewModel
       get { return new DelegateCommand(CopyFromDomain); }
     }
 
+    public ICommand ResetCommand
+    {
+      get { return new DelegateCommand(Reset); }
+    }
+
     public ushort MaxHistogramValue
     {
       get { return _maxHistogramValue; }
@@ -113,13 +118,19 @@ namespace GBSharp.ViewModel
 
     }
 
-    private ushort[] ReMapHistogram(ulong[] instructionHistogram)
+    private void Reset()
+    {
+      _gameBoy.CPU.ResetInstructionHistograms();
+      CopyFromDomain();
+    }
+
+    private ushort[] ReMapHistogram(ushort[] instructionHistogram)
     {
       ushort max = 65535;
       if (_filter)
         max = _maxHistogramValue;
 
-      return instructionHistogram.ToList().Select(h => ((ushort)(Math.Min(max, h) * (ulong)(65535 / max)))).ToArray();
+      return instructionHistogram.ToList().Select(h => ((ushort)(Math.Min(max, h) * (65535 / max)))).ToArray();
     }
 
     public void Dispose()
