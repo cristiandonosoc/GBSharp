@@ -15,6 +15,24 @@ namespace GBSharp.ViewModel
     private bool _update;
     private bool _filter;
     private ushort _maxHistogramValue;
+    private double _instructionSetCoverage;
+    private double _regularInstructionSetCoverage;
+    private double _cbInstructionSetCoverage;
+
+    public string InstructionSetCoverage
+    {
+      get { return _instructionSetCoverage.ToString("0.00"); }
+    }
+
+    public string RegularInstructionSetCoverage
+    {
+      get { return _regularInstructionSetCoverage.ToString("0.00"); }
+    }
+
+    public string CBInstructionSetCoverage
+    {
+      get { return _cbInstructionSetCoverage.ToString("0.00"); }
+    }
 
     public bool Update
     {
@@ -115,7 +133,39 @@ namespace GBSharp.ViewModel
       var cbInstructionsHistogram = ReMapHistogram(_cpu.CbInstructionHistogram);
       Utils.TransferBytesToWriteableBitmap(_histogram, normalInstructionsHistogram);
       Utils.TransferBytesToWriteableBitmap(_cbHistogram, cbInstructionsHistogram);
+      UpdateInstructionSetCoverage();
+    }
 
+    private void UpdateInstructionSetCoverage()
+    {
+      _instructionSetCoverage = 0;
+      _regularInstructionSetCoverage = 0;
+      _cbInstructionSetCoverage = 0;
+      foreach (var instructionUsage in _cpu.InstructionHistogram)
+      {
+        if (instructionUsage > 0)
+        {
+          _instructionSetCoverage++;
+          _regularInstructionSetCoverage++;
+        }
+      }
+      foreach (var instructionUsage in _cpu.CbInstructionHistogram)
+      {
+        if (instructionUsage > 0)
+        {
+          _instructionSetCoverage++;
+          _cbInstructionSetCoverage++;
+        }
+      }
+      _instructionSetCoverage /= (_cpu.InstructionHistogram.Length + _cpu.CbInstructionHistogram.Length);
+      _instructionSetCoverage *= 100;
+      _regularInstructionSetCoverage /= (_cpu.InstructionHistogram.Length);
+      _regularInstructionSetCoverage *= 100;
+      _cbInstructionSetCoverage /= (_cpu.CbInstructionHistogram.Length);
+      _cbInstructionSetCoverage *= 100;
+      OnPropertyChanged(() => InstructionSetCoverage);
+      OnPropertyChanged(() => RegularInstructionSetCoverage);
+      OnPropertyChanged(() => CBInstructionSetCoverage);
     }
 
     private void Reset()

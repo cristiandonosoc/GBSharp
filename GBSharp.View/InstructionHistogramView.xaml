@@ -15,6 +15,9 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <CheckBox Content="Update" IsChecked="{Binding Update}" />
@@ -26,7 +29,23 @@
                 <CheckBox Grid.Column="0" Content="Filter" IsChecked="{Binding Filter}" />
                 <Slider Grid.Column="1" Value="{Binding MaxHistogramValue}" Minimum="1" Maximum="65535"/>
             </Grid>
-            <Grid Grid.Row="2">
+            <TextBlock FontSize="10" Grid.Row="2">
+                <Run Text="Full Instruction Set Coverage: "></Run>
+                <Run Text="{Binding InstructionSetCoverage, Mode=OneWay}"></Run>
+                <Run Text=" %"></Run>
+            </TextBlock>
+            <TextBlock FontSize="10" Grid.Row="3">
+                <Run Text="Regular Instruction Set Coverage: "></Run>
+                <Run Text="{Binding RegularInstructionSetCoverage, Mode=OneWay}"></Run>
+                <Run Text=" %"></Run>
+            </TextBlock>
+            <TextBlock FontSize="10" Grid.Row="4">
+                <Run Text="CB Instruction Set Coverage: "></Run>
+                <Run Text="{Binding CBInstructionSetCoverage, Mode=OneWay}"></Run>
+                <Run Text=" %"></Run>
+            </TextBlock>
+
+            <Grid Grid.Row="5">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"></ColumnDefinition>
                     <ColumnDefinition Width="*"></ColumnDefinition>
