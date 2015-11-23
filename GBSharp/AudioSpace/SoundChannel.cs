@@ -30,6 +30,9 @@ namespace GBSharp.AudioSpace
 
     #endregion
 
+    internal byte LowFreqByte { get; private set; }
+    internal byte HighFreqByte { get; private set; }
+
     private int _frequencyFactor;
     internal int FrequencyFactor
     {
@@ -37,22 +40,22 @@ namespace GBSharp.AudioSpace
       private set
       {
         _frequencyFactor = value;
-        _frequency = (double)0x20000 / (double)(0x800 - _frequencyFactor);
-        _tickThreshold = (int)(GameBoy.ticksPerMillisecond * (1000.0 / _frequency));
+        Frequency = (double)0x20000 / (double)(0x800 - _frequencyFactor);
+        _tickThreshold = (int)(GameBoy.ticksPerMillisecond * (1000.0 / (2 * Frequency)));
         _tickCounter = _tickThreshold;
       }
     }
 
     private int _tickThreshold;
 
-    private double _frequency;
-    internal double Frequency
-    {
-      get { return _frequency; }
-    }
+    internal double Frequency { get; private set; }
 
     internal void LoadFrequencyFactor(byte low, byte high)
     {
+      if((LowFreqByte == low) && (HighFreqByte == high)) { return; }
+
+      LowFreqByte = low;
+      HighFreqByte = high;
       FrequencyFactor = ((high & 0x7) << 8) | low;
     }
 
@@ -73,6 +76,9 @@ namespace GBSharp.AudioSpace
 
     internal void Step(int ticks)
     {
+
+      // We check if the frequency has changed
+
       _outputTickCounter += ticks;
 
       while (_outputTickCounter >= APU.MinimumTickThreshold)

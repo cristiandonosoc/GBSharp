@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GBSharp.MemorySpace;
 
 namespace GBSharp.AudioSpace
 {
@@ -37,10 +38,15 @@ namespace GBSharp.AudioSpace
     private int _sampleIndex;
     public int SampleCount { get { return _channel.SampleCount; } }
 
+    private Memory _memory;
+
+
     SoundChannel _channel;
 
-    internal APU(int sampleRate, int numChannels, int sampleSize)
+    internal APU(Memory memory, int sampleRate, int numChannels, int sampleSize)
     {
+      _memory = memory;
+
       _sampleRate = sampleRate;
       _msSampleRate = _sampleRate / 1000;
       _numChannels = numChannels;
@@ -48,11 +54,16 @@ namespace GBSharp.AudioSpace
       _buffer = new byte[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
 
       _channel = new SoundChannel(sampleRate, numChannels, sampleSize);
-      _channel.LoadFrequencyFactor(0x4F, 0x7);
+      _channel.LoadFrequencyFactor(0x7D, 0x7);
     }
 
     internal void Step(int ticks)
     {
+      // We check if any of the channels changed
+      _channel.LoadFrequencyFactor(_memory.LowLevelRead((ushort)MemoryMappedRegisters.NR13),
+                                   _memory.LowLevelRead((ushort)MemoryMappedRegisters.NR14));
+
+
       _channel.Step(ticks);
     }
 
