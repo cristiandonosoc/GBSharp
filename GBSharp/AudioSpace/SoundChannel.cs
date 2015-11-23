@@ -33,8 +33,8 @@ namespace GBSharp.AudioSpace
     internal byte LowFreqByte { get; private set; }
     internal byte HighFreqByte { get; private set; }
 
-    private int _frequencyFactor;
-    internal int FrequencyFactor
+    private ushort _frequencyFactor;
+    internal ushort FrequencyFactor
     {
       get { return _frequencyFactor; }
       private set
@@ -56,7 +56,7 @@ namespace GBSharp.AudioSpace
 
       LowFreqByte = low;
       HighFreqByte = high;
-      FrequencyFactor = ((high & 0x7) << 8) | low;
+      FrequencyFactor = (ushort)(((high & 0x7) << 8) | low);
     }
 
     private int _tickCounter = 0;
