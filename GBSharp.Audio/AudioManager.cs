@@ -1,16 +1,7 @@
 ﻿using CSCore;
 using CSCore.Streams;
-using CSCore.Codecs.RAW;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CSCore.SoundOut;
-using System.Threading;
-using System.Diagnostics;
-using GBSharp.AudioSpace;
 
 namespace GBSharp.Audio
 {

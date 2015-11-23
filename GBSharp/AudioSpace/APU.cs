@@ -11,6 +11,13 @@ namespace GBSharp.AudioSpace
   /// </summary>
   class APU : IAPU
   {
+
+    /// <summary>
+    /// This is the amount of ticks needed to output a single sample
+    /// ~ 22 kHz max frequency
+    /// </summary>
+    internal static int MinimumTickThreshold = 96; 
+
     private int _sampleRate;
     private int _msSampleRate;
     public int SampleRate { get { return _sampleRate; } }
@@ -21,13 +28,16 @@ namespace GBSharp.AudioSpace
     private int _sampleSize;
     public int SampleSize { get { return _sampleSize; } }
 
-    private int _milliseconds = 200; // ms of sample
+    private int _milliseconds = 1000; // ms of sample
 
     byte[] _buffer;
-    public byte[] Buffer { get { return _buffer; } }
+    public byte[] Buffer { get { return _channel.Buffer; } }
 
+    // TODO(Cristian): Join channels to make an unified sound channel
     private int _sampleIndex;
-    public int SampleCount { get { return _sampleIndex; } }
+    public int SampleCount { get { return _channel.SampleCount; } }
+
+    SoundChannel _channel;
 
     internal APU(int sampleRate, int numChannels, int sampleSize)
     {
@@ -36,93 +46,22 @@ namespace GBSharp.AudioSpace
       _numChannels = numChannels;
       _sampleSize = sampleSize;
       _buffer = new byte[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
-    }
 
-    private long _tickCounter = 0;
-    private int _msCounter = 0;
-    private bool _up = true;
+      _channel = new SoundChannel(sampleRate, numChannels, sampleSize);
+      _channel.LoadFrequencyFactor(0x4F, 0x7);
+    }
 
     internal void Step(int ticks)
     {
-      _tickCounter += ticks;
-
-      //TODO(Cristian): Update the sound channels
-
-      // We tick until the ms threshold
-      while (_tickCounter > GameBoy.ticksPerMillisecond)
-      {
-        _tickCounter -= GameBoy.ticksPerMillisecond;
-        ++_msCounter;
-
-        if (_msCounter > (double)1000 / (double)440)
-        {
-          _up = !_up;
-          _msCounter = 0;
-        }
-
-        // We should output a ms of samples
-        byte value = 0;
-        if (_up) { value = 255; }
-
-        for (int i = 0; i < _msSampleRate; ++i)
-        {
-          for (int c = 0; c < _numChannels; ++c)
-          {
-            _buffer[_sampleIndex++] = value;
-          }
-        }
-      }
+      _channel.Step(ticks);
     }
 
     internal void ClearBuffer()
     {
       _sampleIndex = 0;
+      _channel.ClearBuffer();
     }
 
   }
 
-  class SoundChannel
-  {
-    private int _frequencyFactor;
-    internal int FrequencyFactor
-    {
-      get { return _frequencyFactor; }
-      private set
-      {
-        _frequencyFactor = value;
-        _frequency = (double)0x20000 / (double)(0x800 - _frequencyFactor);
-      }
-    }
-
-    private double _frequency;
-    internal double Frequency
-    {
-      get { return _frequency; }
-    }
-
-    internal void LoadFrequencyFactor(byte low, byte high)
-    {
-      FrequencyFactor = ((high & 0x7) << 8) | low;
-    }
-
-    private int _tickCounter = 0;
-
-    internal SoundChannel()
-    {
-
-    }
-
-    private int tickThreshold = 200; // ~ 47.6 us (~ 20.97 kHz max)
-
-    internal void Step(int ticks)
-    {
-      _tickCounter += ticks;
-      if(_tickCounter >= tickThreshold)
-      {
-        _tickCounter -= tickThreshold;
-        
-        //TODO(Cristian): Update according to frequency
-      }
-    }
-  }
 }
