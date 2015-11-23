@@ -63,6 +63,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="APUView.xaml.cs">
+      <DependentUpon>APUView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="BackgroundView.xaml.cs">
       <DependentUpon>BackgroundView.xaml</DependentUpon>
     </Compile>
@@ -97,6 +100,10 @@
     <Compile Include="WindowView.xaml.cs">
       <DependentUpon>WindowView.xaml</DependentUpon>
     </Compile>
+    <Page Include="APUView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="BackgroundView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

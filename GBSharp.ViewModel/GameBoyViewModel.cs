@@ -18,6 +18,7 @@ namespace GBSharp.ViewModel
     private readonly GameBoyGamePadViewModel _gameBoyGamePad;
     private readonly DissasembleViewModel _dissasemble;
     private readonly InstructionHistogramViewModel _instructionHistogram;
+    private readonly APUViewModel _apu;
 
 
     public MemoryViewModel Memory
@@ -65,6 +66,11 @@ namespace GBSharp.ViewModel
       get { return _instructionHistogram; }
     }
 
+    public APUViewModel APU
+    {
+      get { return _apu; }
+    }
+
 
     public GameBoyViewModel(IGameBoy gameBoy, IDispatcher dispatcher, IWindow window, IOpenFileDialogFactory fileDialogFactory, IKeyboardHandler keyboardHandler)
     {
@@ -81,6 +87,7 @@ namespace GBSharp.ViewModel
       _memory = new MemoryViewModel(_gameBoy.Memory, "Memory View");
       _gameBoy.Memory.MemoryWritten += _memory.MemoryWrittenHandler;
       _cpu = new CPUViewModel(_gameBoy, _dispatcher);
+      
 
       // TODO(aaecheve): Should this be another function handling this?
       _gameBoy.CPU.BreakpointFound += BreakpointHandler;
@@ -92,6 +99,7 @@ namespace GBSharp.ViewModel
       _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher, _display);
       _dissasemble = new DissasembleViewModel(_gameBoy);
       _instructionHistogram = new InstructionHistogramViewModel(_gameBoy, _dispatcher);
+      _apu = new APUViewModel(_gameBoy, _dispatcher);
     }
 
     public void OnClosed()
