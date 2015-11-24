@@ -49,6 +49,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AudioManager.cs" />
+    <Compile Include="CircularBuffer.cs" />
+    <Compile Include="CircularWriteableBufferSource.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

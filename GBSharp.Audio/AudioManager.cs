@@ -10,7 +10,7 @@ namespace GBSharp.Audio
     private IAPU _apu;
 
     private WaveFormat _waveFormat;
-    private WriteableBufferingSource _source;
+    private CircularWriteableBufferingSource _source;
 
     private ISoundOut _soundOut;
 
@@ -23,7 +23,7 @@ namespace GBSharp.Audio
                                    _apu.NumChannels);
       // NOTE(Cristian): At 4400 bytes means 50 ms worth of audio.
       //                 This low is for having low latency
-      _source = new WriteableBufferingSource(_waveFormat, 4400);
+      _source = new CircularWriteableBufferingSource(_waveFormat, 88000 * 5);
 
       gameBoy.FrameCompleted += gameBoy_FrameCompleted;
 
