@@ -60,8 +60,8 @@ namespace GBSharp.AudioSpace
     internal void Step(int ticks)
     {
       // We check if any of the channels changed
-      //_channel.LoadFrequencyFactor(_memory.LowLevelRead((ushort)MemoryMappedRegisters.NR13),
-      //                             _memory.LowLevelRead((ushort)MemoryMappedRegisters.NR14));
+      _channel.LoadFrequencyFactor(_memory.LowLevelRead((ushort)MemoryMappedRegisters.NR13),
+                                   _memory.LowLevelRead((ushort)MemoryMappedRegisters.NR14));
 
 
       _channel.Step(ticks);

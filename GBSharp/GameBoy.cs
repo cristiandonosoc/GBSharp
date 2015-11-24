@@ -217,17 +217,17 @@ namespace GBSharp
             this.manualResetEvent.Set();
           }
 
-          //double overTicks = (double)this.stopwatch.ElapsedTicks - stopwatchTicksPerFrame;
-          //if (overTicks > 0)
-          //{
-          //  int stepsOver = (int)(ticksPerMillisecond * 1000.0 * (overTicks / Stopwatch.Frequency));
-          //  if (stepsOver > ticksPerMillisecond)
-          //  {
-          //    // We are over a millisecond over and we should output more sound
-          //    // TODO(Cristian): See why this happen (sometimes over 10ms over!)
-          //    apu.Step(stepsOver);
-          //  }
-          //}
+          double overTicks = (double)this.stopwatch.ElapsedTicks - stopwatchTicksPerFrame;
+          if (overTicks > 0)
+          {
+            int stepsOver = (int)(ticksPerMillisecond * 1000.0 * (overTicks / Stopwatch.Frequency));
+            if (stepsOver > ticksPerMillisecond)
+            {
+              // We are over a millisecond over and we should output more sound
+              // TODO(Cristian): See why this happen (sometimes over 10ms over!)
+              apu.Step(stepsOver);
+            }
+          }
 
           this.stopwatch.Restart();
           this.tickCounter = 0;
