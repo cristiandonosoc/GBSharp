@@ -19,6 +19,7 @@ namespace GBSharp.ViewModel
     private readonly DissasembleViewModel _dissasemble;
     private readonly InstructionHistogramViewModel _instructionHistogram;
     private readonly APUViewModel _apu;
+    private readonly MemoryImageViewModel _memoryImage;
 
 
     public MemoryViewModel Memory
@@ -71,6 +72,11 @@ namespace GBSharp.ViewModel
       get { return _apu; }
     }
 
+    public MemoryImageViewModel MemoryImage
+    {
+      get { return _memoryImage; }
+    }
+
 
     public GameBoyViewModel(IGameBoy gameBoy, IDispatcher dispatcher, IWindow window, IOpenFileDialogFactory fileDialogFactory, IKeyboardHandler keyboardHandler)
     {
@@ -100,6 +106,7 @@ namespace GBSharp.ViewModel
       _dissasemble = new DissasembleViewModel(_gameBoy);
       _instructionHistogram = new InstructionHistogramViewModel(_gameBoy, _dispatcher);
       _apu = new APUViewModel(_gameBoy, _dispatcher);
+      _memoryImage = new MemoryImageViewModel(_gameBoy, _dispatcher);
     }
 
     public void OnClosed()
@@ -161,6 +168,8 @@ namespace GBSharp.ViewModel
       _ioRegisters.Dispose();
       _gameBoyGamePad.Dispose();
       _instructionHistogram.Dispose();
+      _apu.Dispose();
+      _memoryImage.Dispose();
       _cpu.Dispose();
       _gameBoyController.OnFileLoaded -= FileLoadedHandler;
       _gameBoyController.OnStep -= StepHandler;

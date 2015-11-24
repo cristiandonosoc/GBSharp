@@ -119,6 +119,13 @@
                 </ScrollViewer>
             </Grid>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:MemoryImageViewModel}">
+            <Grid Style="{StaticResource SubContentGrid}">
+                <ScrollViewer>
+                    <view:MemoryImageView></view:MemoryImageView>
+                </ScrollViewer>
+            </Grid>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid Style="{DynamicResource MainContentGrid}">
@@ -181,6 +188,9 @@
                             </avalonDock:LayoutAnchorable>
                             <avalonDock:LayoutAnchorable Title="Spectrogram">
                                 <ContentPresenter Content="{Binding APU}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=ControllerSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
+                            </avalonDock:LayoutAnchorable>
+                            <avalonDock:LayoutAnchorable Title="Memory Image">
+                                <ContentPresenter Content="{Binding MemoryImage}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=ControllerSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
                     </avalonDock:LayoutAnchorablePaneGroup>

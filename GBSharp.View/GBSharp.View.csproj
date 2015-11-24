@@ -85,6 +85,9 @@
       <DependentUpon>IORegistersManagerView.xaml</DependentUpon>
     </Compile>
     <Compile Include="KeyboardHandler.cs" />
+    <Compile Include="MemoryImageView.xaml.cs">
+      <DependentUpon>MemoryImageView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="OpenFileDialogAdapter.cs" />
     <Compile Include="OpenFileDialogAdapterFactory.cs" />
     <Compile Include="SpriteLayerView.xaml.cs">
@@ -173,6 +176,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="IORegistersManagerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MemoryImageView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
