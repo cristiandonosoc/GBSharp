@@ -14,12 +14,6 @@ namespace GBSharp.Audio
     private CircularBuffer<byte> _buffer;
     private volatile object _bufferlock = new object();
 
-    /// <summary>
-    /// Gets or sets a value which specifies whether the <see cref="Read"/> method should clear the specified buffer with zeros before reading any data.
-    /// </summary>
-    public bool FillWithZeros { get; set; }
-
-    /// <summary>
     /// Gets the maximum size of the buffer in bytes.
     /// </summary>
     /// <value>
@@ -27,21 +21,14 @@ namespace GBSharp.Audio
     /// </value>
     public int MaxBufferSize { get; private set; }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CircularWriteableBufferingSource"/> class with a default buffersize of 5 seconds.
-    /// </summary>
-    /// <param name="waveFormat">The WaveFormat of the source.</param>
-    public CircularWriteableBufferingSource(WaveFormat waveFormat)
-        : this(waveFormat, waveFormat.BytesPerSecond * 5)
-    {
-    }
+    public int Latency { get; private set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CircularWriteableBufferingSource"/> class.
     /// </summary>
     /// <param name="waveFormat">The WaveFormat of the source.</param>
     /// <param name="bufferSize">Buffersize in bytes.</param>
-    public CircularWriteableBufferingSource(WaveFormat waveFormat, int bufferSize)
+    public CircularWriteableBufferingSource(WaveFormat waveFormat, int bufferSize, int latency)
     {
       if (waveFormat == null)
         throw new ArgumentNullException("waveFormat");
@@ -49,10 +36,15 @@ namespace GBSharp.Audio
         throw new ArgumentException("Invalid bufferSize.");
 
       MaxBufferSize = bufferSize;
+      Latency = latency;
 
       _waveFormat = waveFormat;
-      _buffer = new CircularBuffer<byte>(bufferSize);
-      FillWithZeros = true;
+      _buffer = new CircularBuffer<byte>(bufferSize, (int)_waveFormat.MillisecondsToBytes(latency));
+    }
+
+    public void SetWriteOffset()
+    {
+      _buffer.SetWriteOffset();
     }
 
     /// <summary>
@@ -91,12 +83,6 @@ namespace GBSharp.Audio
       lock (_bufferlock)
       {
         int read = _buffer.Read(buffer, offset, count);
-        //if (FillWithZeros)
-        //{
-        //  if (read < count)
-        //    Array.Clear(buffer, offset + read, count - read);
-        //  return count;
-        //}
         return read;
       }
     }

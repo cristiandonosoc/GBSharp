@@ -17,14 +17,28 @@ namespace GBSharp.Audio
 
     private readonly object _lockObj = new object();
 
+    private int _latency;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CircularBuffer{T}"/> class.
     /// </summary>
     /// <param name="bufferSize">Size of the buffer.</param>
-    public CircularBuffer(int bufferSize)
+    public CircularBuffer(int bufferSize, int latency)
     {
       _buffer = new T[bufferSize];
-      _writeOffset = 44000;
+      _latency = latency;
+    }
+
+    public void SetWriteOffset()
+    {
+      lock(_lockObj)
+      {
+        _writeOffset = _readOffset + _latency;
+        if (_writeOffset >= _buffer.Length)
+        {
+          _writeOffset -= _buffer.Length;
+        }
+      }
     }
 
     /// <summary>
@@ -39,28 +53,6 @@ namespace GBSharp.Audio
       int counter = count;
       lock (_lockObj)
       {
-        #region ORIGINAL (NON CIRCULAR) IMPLEMENTATION
-        //if (count > _buffer.Length - _bufferedElements)
-        //{
-        //  count = _buffer.Length - _bufferedElements;
-        //}
-
-        //int length = Math.Min(count, _buffer.Length - _writeOffset);
-        //Array.Copy(buffer, offset, _buffer, _writeOffset, length); //copy to buffer
-        //_writeOffset += length;
-        //written += length;
-        //_writeOffset = _writeOffset % _buffer.Length;
-
-        //if (written < count)
-        //{
-        //  Array.Copy(buffer, offset + written, _buffer, _writeOffset, count - written);
-        //  _writeOffset += (count - written);
-        //  written += (count - written);
-        //}
-
-        //_bufferedElements += written;
-        #endregion
-
         // Circular implementation
         // TODO(Cristian): Do this implementation with Array.Copy
         while(counter > 0)
@@ -100,26 +92,8 @@ namespace GBSharp.Audio
       int counter = count;
       lock (_lockObj)
       {
-        #region ORIGINAL (NON CIRCULAR) IMPLEMENTATION
-        //count = Math.Min(count, _bufferedElements);
-        //int length = Math.Min(count, _buffer.Length - _readOffset);
-        //Array.Copy(_buffer, _readOffset, buffer, offset, length); //copy to buffer
-        //read += length;
-        //_readOffset += read;
-        //_readOffset = _readOffset % _buffer.Length;
-         
-        //if (read < count)
-        //{
-        //  Array.Copy(_buffer, _readOffset, buffer, offset + read, count - read);
-        //  _readOffset += (count - read);
-        //  read += (count - read);
-        //}
-
-        //_bufferedElements -= read;
-        #endregion
-
         // TODO(Cristian): Do this with Array.Copy
-        while ((_bufferedElements > 0) && (counter > 0))
+        while (counter > 0)
         {
           buffer[offset++] = _buffer[_readOffset++];
           if(_readOffset == _buffer.Length)
