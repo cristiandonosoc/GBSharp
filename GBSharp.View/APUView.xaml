@@ -14,14 +14,23 @@
         <Grid Margin="5">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <CheckBox Content="Update" IsChecked="{Binding Update}" />
-            <Grid Grid.Row="1">
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto" 
+                          HorizontalScrollBarVisibility="Auto">
                 <Image Source="{Binding Spectrogram}"
                      RenderOptions.BitmapScalingMode="NearestNeighbor">
+                    <Image.LayoutTransform>
+                        <ScaleTransform 
+                CenterX="0" CenterY="0"
+                ScaleX="{Binding ElementName=uiScaleSlider,Path=Value}"
+                ScaleY="{Binding ElementName=uiScaleSlider,Path=Value}"/>
+                    </Image.LayoutTransform>
                 </Image>
-            </Grid>
+
+            </ScrollViewer>
         </Grid>
 
 
@@ -31,6 +40,7 @@
                 <ColumnDefinition Width="20"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
             </Grid.ColumnDefinitions>
+            <Slider x:Name="uiScaleSlider" Value="0.5" Minimum="0.1" Maximum="10"/>
             <Button Grid.Column="2" Content="Update" Command="{Binding ReadCommand}"></Button>
         </Grid>
     </Grid>

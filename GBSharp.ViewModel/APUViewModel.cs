@@ -65,19 +65,42 @@ namespace GBSharp.ViewModel
       }
     }
 
+    private void CopyFakeFromDomain()
+    {
+      var sampleRate = 44000;
+      var frequency = 400;
+      var sampleCount = 1024;
+      var buffer = new Complex[sampleCount];
+      var t = 0.0;
+      for (int i = 0; i < sampleCount; i++)
+      {
+        var real = Math.Sin(2 * Math.PI * frequency * t);
+        buffer[i] = new Complex(real, 0);
+        t += 1.0 / sampleRate;
+      }
+      FourierTransform.FFT(buffer, FourierTransform.Direction.Forward);
+      CopyFFTToFrameColumn(buffer);
+      Utils.TransferBytesToWriteableBitmap(_spectrogram, _spectrogramData);
+    }
+
     private void CopyFromDomain()
     {
       var audioBuffer = _gameBoy.APU.Buffer;
-      var complexBuffer = new Complex[1024];
+      var sampleCount = _gameBoy.APU.SampleCount;
+      var complexBuffer = new Complex[_fftSize * 2];
       var index = 0;
       var originalIndex = 0;
       foreach (var value in audioBuffer)
       {
         if (originalIndex % 2 == 0)
         {
-          complexBuffer[index] = new Complex(value, 0);
+          if (index >= sampleCount)
+            complexBuffer[index] = new Complex(0, 0);
+          else
+            complexBuffer[index] = new Complex(value, 0);
+
           index++;
-          if (index == 1024)
+          if (index == _fftSize * 2)
             break;
         }
         originalIndex++;
@@ -89,14 +112,14 @@ namespace GBSharp.ViewModel
 
     private void CopyFFTToFrameColumn(Complex[] fftResults)
     {
-      var maxReal = fftResults.Select(c => 20 * Math.Log10(Math.Abs(c.Re))).Max();
-      var minReal = fftResults.Select(c => 20 * Math.Log10(Math.Abs(c.Re))).Min();
+      var maxReal = fftResults.Select(c => 20 * Math.Log10(Math.Abs(c.Magnitude))).Max();
+      var minReal = fftResults.Select(c => 20 * Math.Log10(Math.Abs(c.Magnitude))).Min();
       for (int i = 0; i < _fftSize; i++)
       {
-        var value = fftResults[i].Re;
+        var value = fftResults[i].Magnitude;
         var logValue = 20 * Math.Log10(Math.Abs(value));
         var ushortedValue = 65536 * (logValue - minReal) / (maxReal - minReal);
-        _spectrogramData[i * _numberOfFramesPerImage +  _currentFrame] = (ushort)(ushortedValue);
+        _spectrogramData[(_fftSize - i - 1) * _numberOfFramesPerImage + _currentFrame] = (ushort)(ushortedValue);
 
       }
     }
