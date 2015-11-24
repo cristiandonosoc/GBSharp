@@ -18,7 +18,11 @@ namespace GBSharp.ViewModel
     private int _currentFrame = 0;
     private const int _fftSize = 512;
     private const int _numberOfFramesPerImage = 600;
-    private ushort[] _spectrogramData = new ushort[_numberOfFramesPerImage * _fftSize];
+    private uint[] _spectrogramData = new uint[_numberOfFramesPerImage * _fftSize];
+    private byte maxValue = 255;
+
+    private byte[] _maxColor = new byte[] { 255, 170, 0 };
+    private byte[] _minColor = new byte[] { 0, 0, 170 };
 
     public bool Update
     {
@@ -53,7 +57,7 @@ namespace GBSharp.ViewModel
       _gameBoy = gameBoy;
       _dispatcher = dispatcher;
       _gameBoy.FrameCompleted += OnFrameCompleted;
-      _spectrogram = new WriteableBitmap(_numberOfFramesPerImage, _fftSize, 96, 96, PixelFormats.Gray16, null);
+      _spectrogram = new WriteableBitmap(_numberOfFramesPerImage, _fftSize, 96, 96, PixelFormats.Bgr32, null);
     }
 
     private void OnFrameCompleted()
@@ -118,8 +122,16 @@ namespace GBSharp.ViewModel
       {
         var value = fftResults[i].Magnitude;
         var logValue = 20 * Math.Log10(Math.Abs(value));
-        var ushortedValue = 65536 * (logValue - minReal) / (maxReal - minReal);
-        _spectrogramData[(_fftSize - i - 1) * _numberOfFramesPerImage + _currentFrame] = (ushort)(ushortedValue);
+        uint ushortedValue = (uint)(maxValue * (logValue - minReal) / (maxReal - minReal));
+        uint colorB = ushortedValue * _maxColor[2] + (1-ushortedValue)* _minColor[2];
+        uint colorG = ushortedValue * _maxColor[1] + (1-ushortedValue)* _minColor[1];
+        uint colorR = ushortedValue * _maxColor[0] + (1-ushortedValue)* _minColor[0];
+        uint uintValue = 0x000000FF;
+        uintValue = uintValue | (colorR << 8);
+        uintValue = uintValue | (colorG << 16);
+        uintValue = uintValue | (colorB << 24);
+
+        _spectrogramData[(_fftSize - i - 1) * _numberOfFramesPerImage + _currentFrame] = (uintValue);
 
       }
     }
