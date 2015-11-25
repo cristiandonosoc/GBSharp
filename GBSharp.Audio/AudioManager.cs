@@ -43,7 +43,7 @@ namespace GBSharp.Audio
     {
       if(_firstRun)
       {
-        _source.SetWriteOffset();
+        _source.SetWriteCursor();
         _firstRun = false;
       }
       _source.Write(_apu.Buffer, 0, _apu.SampleCount);

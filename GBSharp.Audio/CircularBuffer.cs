@@ -12,6 +12,7 @@ namespace GBSharp.Audio
     private T[] _buffer;
     private int _bufferedElements;
 
+
     private int _writeOffset;
     private int _readOffset;
 

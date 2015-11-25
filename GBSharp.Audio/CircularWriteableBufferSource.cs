@@ -11,8 +11,17 @@ namespace GBSharp.Audio
   public class CircularWriteableBufferingSource : IWaveSource
   {
     private readonly WaveFormat _waveFormat;
-    private CircularBuffer<byte> _buffer;
-    private volatile object _bufferlock = new object();
+
+    public int ReadCursor { get; private set; }
+    public int WriteCursor { get; private set; }
+
+    private byte[] _buffer;
+    private int _bufferedElements;
+
+    public int Latency { get; private set; }
+
+    //private CircularBuffer<byte> _buffer;
+    private volatile object _lockObj = new object();
 
     /// Gets the maximum size of the buffer in bytes.
     /// </summary>
@@ -20,8 +29,6 @@ namespace GBSharp.Audio
     /// The maximum size of the buffer in bytes.
     /// </value>
     public int MaxBufferSize { get; private set; }
-
-    public int Latency { get; private set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CircularWriteableBufferingSource"/> class.
@@ -39,12 +46,20 @@ namespace GBSharp.Audio
       Latency = latency;
 
       _waveFormat = waveFormat;
-      _buffer = new CircularBuffer<byte>(bufferSize, (int)_waveFormat.MillisecondsToBytes(latency));
+      //_buffer = new CircularBuffer<byte>(bufferSize, (int)_waveFormat.MillisecondsToBytes(latency));
+      _buffer = new byte[bufferSize];
     }
 
-    public void SetWriteOffset()
+    public void SetWriteCursor()
     {
-      _buffer.SetWriteOffset();
+      lock(_lockObj)
+      {
+        WriteCursor = ReadCursor + Latency;
+        if (WriteCursor >= _buffer.Length)
+        {
+          WriteCursor -= _buffer.Length;
+        }
+      }
     }
 
     /// <summary>
@@ -56,11 +71,26 @@ namespace GBSharp.Audio
     /// <returns>Number of added bytes.</returns>
     public int Write(byte[] buffer, int offset, int count)
     {
-      lock (_bufferlock)
+      int counter = count;
+      lock (_lockObj)
       {
-        int written = _buffer.Write(buffer, offset, count);
-        return written;
+        // Circular implementation
+        // TODO(Cristian): Do this implementation with Array.Copy
+        while(counter > 0)
+        {
+          _buffer[WriteCursor++] = buffer[offset++];
+          if(WriteCursor == _buffer.Length)
+          {
+            WriteCursor = 0;
+          }
+
+          --counter;
+        }
+
+        _bufferedElements += count;
       }
+
+      return count;
     }
 
     /// <summary>
@@ -80,11 +110,27 @@ namespace GBSharp.Audio
     /// <returns>The total number of bytes read into the <paramref name="buffer"/>.</returns>
     public int Read(byte[] buffer, int offset, int count)
     {
-      lock (_bufferlock)
+      int read = 0;
+      int counter = count;
+      lock (_lockObj)
       {
-        int read = _buffer.Read(buffer, offset, count);
-        return read;
+        // TODO(Cristian): Do this with Array.Copy
+        while (counter > 0)
+        {
+          buffer[offset++] = _buffer[ReadCursor++];
+          if(ReadCursor == _buffer.Length)
+          {
+            ReadCursor = 0;
+          }
+
+          --counter;
+          --_bufferedElements;
+        }
+
+        read = count - counter;
       }
+
+      return read;
     }
 
     /// <summary>
@@ -115,7 +161,7 @@ namespace GBSharp.Audio
     /// </summary>
     public long Length
     {
-      get { return _buffer.Buffered; }
+      get { return _bufferedElements; }
     }
 
     /// <summary>
@@ -151,7 +197,6 @@ namespace GBSharp.Audio
       if (disposing)
       {
         //dispose managed
-        _buffer.Dispose();
         _buffer = null;
       }
     }
