@@ -95,6 +95,9 @@ namespace GBSharp.VideoSpace
     public bool tileBase;
     public bool noTileMap;
     public bool tileMap;
+
+    // LCDC bits
+    public bool[] LCDCBits;
   }
 
   class Display : IDisplay
@@ -302,6 +305,24 @@ namespace GBSharp.VideoSpace
       {
         SetOAM(i, memory.LowLevelArrayRead(spriteOAMAddress, 4));
         spriteOAMAddress += 4;
+      }
+    }
+
+    internal void HandleMemoryChange(MemoryMappedRegisters mappedRegister, byte value)
+    {
+
+      switch(mappedRegister)
+      {
+        case MemoryMappedRegisters.LCDC:
+          // We set all the LCDC bits
+          for (int i = 0; i < 8; ++i)
+          {
+            disStat.LCDCBits[i] = (value & (1 << i)) != 0;
+          }
+          break;
+        case MemoryMappedRegisters.STAT:
+          // TODO(Cristian): Set STAT change
+          break;
       }
     }
 

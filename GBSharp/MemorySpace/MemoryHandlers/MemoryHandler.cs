@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GBSharp.Cartridge;
+using GBSharp.VideoSpace;
 
 namespace GBSharp.MemorySpace.MemoryHandlers
 {
@@ -21,6 +22,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     protected byte[] memoryData;
     protected Cartridge.Cartridge cartridge;
     protected DMA dma;
+    protected Display display;
     #endregion
 
     #region CONSTRUCTORS
@@ -29,6 +31,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
       this.gameboy = gameboy;
       this.cartridge = (Cartridge.Cartridge)gameboy.Cartridge;
       this.memoryData = gameboy.Memory.Data;
+      this.display = (Display)gameboy.Display;
     }
     #endregion
 
@@ -128,12 +131,14 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           {
             this.dma.Start(value);
           }
+          else if (address >= 0xFF40)
+          {
+            this.memoryData[address] = value;
+            // We handle display memory changes
+            this.display.HandleMemoryChange((MemoryMappedRegisters)address, value);
+          }
           else
           {
-            // NOTE(Cristian): The 0xFF40 display handling is done in the display step
-            //                 This means that any display state change will be handled
-            //                 by reading the value of the register rather than triggrering
-            //                 an event here.
             this.memoryData[address] = value;
           }
 
