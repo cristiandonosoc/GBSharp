@@ -207,6 +207,7 @@ namespace GBSharp
         // Check timing issues
         if (this.frameReady)
         {
+          long firstMs = this.stopwatch.ElapsedMilliseconds;
           long ellapsedStopwatchTicks = this.stopwatch.ElapsedTicks;
 
           // Should we sleep?
@@ -217,17 +218,24 @@ namespace GBSharp
             this.manualResetEvent.Set();
           }
 
-          double overTicks = (double)this.stopwatch.ElapsedTicks - stopwatchTicksPerFrame;
-          if (overTicks > 0)
-          {
-            int stepsOver = (int)(ticksPerMillisecond * 1000.0 * (overTicks / Stopwatch.Frequency));
-            if (stepsOver > ticksPerMillisecond)
-            {
-              // We are over a millisecond over and we should output more sound
-              // TODO(Cristian): See why this happen (sometimes over 10ms over!)
-              apu.Step(stepsOver);
-            }
-          }
+          //double overTicks = (double)this.stopwatch.ElapsedTicks - stopwatchTicksPerFrame;
+          //bool OV = false;
+          //if (overTicks > 0)
+          //{
+          //  OV = true;
+          //  int stepsOver = (int)(ticksPerMillisecond * 1000.0 * (overTicks / Stopwatch.Frequency));
+          //  if (stepsOver > ticksPerMillisecond)
+          //  {
+          //    // We are over a millisecond over and we should output more sound
+          //    // TODO(Cristian): See why this happen (sometimes over 10ms over!)
+          //    apu.Step(stepsOver);
+          //  }
+          //}
+
+          //System.Console.WriteLine("ms BEFORE SLEEP: {0}, ms AFTER SLEEP: {1}, OV: {2}",
+          //                         firstMs,
+          //                         this.stopwatch.ElapsedMilliseconds,
+          //                         OV);
 
           this.stopwatch.Restart();
           this.tickCounter = 0;

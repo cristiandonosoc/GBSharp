@@ -19,6 +19,7 @@ namespace GBSharp.Audio
     private int _bufferedElements;
 
     public int Latency { get; private set; }
+    public int LatencyInBytes { get; private set; }
 
     //private CircularBuffer<byte> _buffer;
     private volatile object _lockObj = new object();
@@ -43,18 +44,19 @@ namespace GBSharp.Audio
         throw new ArgumentException("Invalid bufferSize.");
 
       MaxBufferSize = bufferSize;
-      Latency = latency;
 
       _waveFormat = waveFormat;
-      //_buffer = new CircularBuffer<byte>(bufferSize, (int)_waveFormat.MillisecondsToBytes(latency));
       _buffer = new byte[bufferSize];
+
+      Latency = latency;
+      LatencyInBytes = (int)_waveFormat.MillisecondsToBytes(latency);
     }
 
     public void SetWriteCursor()
     {
       lock(_lockObj)
       {
-        WriteCursor = ReadCursor + Latency;
+        WriteCursor = ReadCursor + LatencyInBytes;
         if (WriteCursor >= _buffer.Length)
         {
           WriteCursor -= _buffer.Length;
