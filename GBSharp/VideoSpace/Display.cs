@@ -264,6 +264,11 @@ namespace GBSharp.VideoSpace
       this.disStat.noTileMap = false;
       this.disStat.tileMap = false;
 
+      this.disStat.LCDCBits = new bool[8];
+      // We fill the LCDCBits correctly
+      HandleMemoryChange(MemoryMappedRegisters.LCDC,
+                         memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC));
+
       /*** DRAW TARGETS ***/
 
       // We create the target bitmaps
@@ -338,16 +343,13 @@ namespace GBSharp.VideoSpace
     {
       DrawFuncs.DrawTransparency(disDef, spriteData, 8, 0, 0, 8, 16);
 
-      byte LCDC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
-      bool LCDCBit2 = Utils.UtilFuncs.TestBit(LCDC, 2) != 0;
-
-      if(LCDCBit2)
+      if(disStat.LCDCBits[2])
       {
         spriteCode = spriteCode & 0xFE; // We remove the last bit
       }
 
       // We draw the top part
-      byte[] pixels = DisFuncs.GetTileData(disDef, memory, 0x8000, spriteCode, LCDCBit2);
+      byte[] pixels = DisFuncs.GetTileData(disDef, memory, 0x8000, spriteCode, disStat.LCDCBits[2]);
       DrawFuncs.DrawTile(disDef, spriteData, pixelBuffer, 
                          8, pixels, pX, pY,
                          disDef.screenPixelCountX, disDef.screenPixelCountY);
@@ -387,12 +389,6 @@ namespace GBSharp.VideoSpace
       // Necesary, sprites could have changed during H-BLANK
       LoadSprites();
 
-      byte LCDC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
-      bool LCDCBit2 = Utils.UtilFuncs.TestBit(LCDC, 2) != 0;
-      bool LCDCBit3 = Utils.UtilFuncs.TestBit(LCDC, 3) != 0;
-      bool LCDCBit4 = Utils.UtilFuncs.TestBit(LCDC, 4) != 0;
-      bool LCDCBit6 = Utils.UtilFuncs.TestBit(LCDC, 6) != 0;
-
       DisFuncs.SetupTilePallete(disDef, memory);
       DisFuncs.SetupSpritePalletes(disDef, memory);
 
@@ -402,7 +398,7 @@ namespace GBSharp.VideoSpace
       int SCX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX);
       int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
 
-      bool drawBackground = Utils.UtilFuncs.TestBit(LCDC, 0) != 0;
+      bool drawBackground = disStat.LCDCBits[0];
       // We copy the information from the background tile to the effective screen
       for (int y = rowBegin; y < rowEnd; y++)
       {
@@ -410,7 +406,7 @@ namespace GBSharp.VideoSpace
         // We obtain the correct row
         int bY = (y + SCY) % disDef.framePixelCountY;
         uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, pixelBuffer,
-                                                 bY, LCDCBit3, LCDCBit4);
+                                                 bY, disStat.LCDCBits[3], disStat.LCDCBits[4]);
 
         if(updateDebugTargetDict[DebugTargets.Background])
         {
@@ -441,7 +437,7 @@ namespace GBSharp.VideoSpace
       int WY = disStat.currentWY;
 
       // TODO(Cristian): If BG display is off, it actually prints white
-      bool drawWindow = Utils.UtilFuncs.TestBit(LCDC, 5) != 0;
+      bool drawWindow = disStat.LCDCBits[5];
       for (int row = rowBegin; row < rowEnd; row++)
       {
         if ((row >= WY) && (row < 144))
@@ -450,7 +446,7 @@ namespace GBSharp.VideoSpace
           // at (WX, WY)
           uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, pixelBuffer,
                                                    row - WY, 
-                                                   LCDCBit6, LCDCBit4);
+                                                   disStat.LCDCBits[6], disStat.LCDCBits[4]);
 
           // Independent target
           if(updateDebugTargetDict[DebugTargets.Window])
@@ -474,10 +470,10 @@ namespace GBSharp.VideoSpace
       }
 
       #endregion
-      
+
       #region SPRITES
 
-      bool drawSprites = Utils.UtilFuncs.TestBit(LCDC, 1) != 0;
+      bool drawSprites = disStat.LCDCBits[1];
       for (int row = rowBegin; row < rowEnd; row++)
       {
         if(updateDebugTargetDict[DebugTargets.SpriteLayer])
@@ -486,7 +482,7 @@ namespace GBSharp.VideoSpace
           uint[] pixels = new uint[disDef.screenPixelCountX];
           DisFuncs.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels,
                                       pixelBuffer,
-                                      row, LCDCBit2,
+                                      row, disStat.LCDCBits[2],
                                       true);
           DrawFuncs.DrawLine(disDef, debugTargetDict[DebugTargets.SpriteLayer],
                             disDef.screenPixelCountX,
@@ -502,7 +498,7 @@ namespace GBSharp.VideoSpace
                                                              row, disDef.screenPixelCountX);
           DisFuncs.GetSpriteRowPixels(disDef, memory, spriteOAMs, 
                                       linePixels, pixelBuffer,
-                                      row, LCDCBit2);
+                                      row, disStat.LCDCBits[2]);
           DrawFuncs.DrawLine(disDef, screen, disDef.screenPixelCountX,
                             linePixels,
                             0, row,
@@ -542,12 +538,6 @@ namespace GBSharp.VideoSpace
 
     public void DrawTiles()
     {
-      byte LCDC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
-      bool LCDCBit2 = Utils.UtilFuncs.TestBit(LCDC, 2) != 0;
-      bool LCDCBit3 = Utils.UtilFuncs.TestBit(LCDC, 3) != 0;
-      bool LCDCBit4 = Utils.UtilFuncs.TestBit(LCDC, 4) != 0;
-      bool LCDCBit6 = Utils.UtilFuncs.TestBit(LCDC, 6) != 0;
-
       ushort tileBaseAddress = DisFuncs.GetTileBaseAddress(disStat.tileBase);
       ushort tileMapBaseAddress = DisFuncs.GetTileMapBaseAddress(disStat.tileMap);
       for (int tileY = 0; tileY < 18; ++tileY)
@@ -586,8 +576,7 @@ namespace GBSharp.VideoSpace
     internal void Step(int ticks)
     {
       // We check if the display is supposed to run
-      byte LCDC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC);
-      bool activate = (Utils.UtilFuncs.TestBit(LCDC, 7) != 0);
+      bool activate = disStat.LCDCBits[7];
 
       if(activate && !disStat.enabled) // We need to turn on the LCD
       {
