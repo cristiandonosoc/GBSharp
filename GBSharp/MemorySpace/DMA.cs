@@ -8,6 +8,8 @@ namespace GBSharp.MemorySpace
 {
   class DMA
   {
+    internal event Action DMAReady;
+
     byte[] memoryData;
     ushort startAddress;
     ushort currentTickCount;
@@ -72,6 +74,12 @@ namespace GBSharp.MemorySpace
                          0xA0);
         currentTickCount = 0;
         Active = false;
+
+        // We notify the display that the sprites must be sorted
+        if(DMAReady != null)
+        {
+          DMAReady();
+        }
       }
     }
   }

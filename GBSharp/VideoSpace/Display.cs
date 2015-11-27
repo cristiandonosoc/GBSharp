@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Runtime.CompilerServices;
 
 namespace GBSharp.VideoSpace
 {
@@ -122,31 +123,6 @@ namespace GBSharp.VideoSpace
     {
       return spriteOAMs[index];
     }
-    internal void SetOAM(int index, byte x, byte y, byte spriteCode, byte flags)
-    {
-      spriteOAMs[index].index = index;
-      spriteOAMs[index].x = x;
-      spriteOAMs[index].y = y;
-      spriteOAMs[index].spriteCode = spriteCode;
-
-      spriteOAMs[index].flags = flags;
-    }
-    /// <summary>
-    /// Load an OAM from direct byte data. NOTE THE ARRAY FORMAT
-    /// </summary>
-    /// <param name="index"></param>
-    /// <param name="data">
-    /// Data layout assumes
-    /// data[0]: y 
-    /// data[0]: x
-    /// data[0]: spriteCode 
-    /// data[0]: flags 
-    /// This is because this is the way the OAM are in memory.
-    /// </param>
-    internal void SetOAM(int index, byte[] data)
-    {
-      SetOAM(index, data[1], data[0], data[2], data[3]);
-    }
 
     private DisplayDefinition disDef;
     public DisplayDefinition GetDisplayDefinition()
@@ -253,6 +229,13 @@ namespace GBSharp.VideoSpace
       this.disDef.spritePallete0 = new uint[4];
       this.disDef.spritePallete1 = new uint[4];
 
+      // Tile stargets
+      this.spriteOAMs = new OAM[spriteCount];
+      for (int i = 0; i < spriteOAMs.Length; ++i)
+      {
+        this.spriteOAMs[i] = new OAM();
+      }
+
       /*** DISPLAY STATUS ***/
 
       this.disStat = new DisplayStatus();
@@ -280,6 +263,7 @@ namespace GBSharp.VideoSpace
       HandleMemoryChange(MMR.SCY, memory.LowLevelRead((ushort)MMR.SCY));
       HandleMemoryChange(MMR.SCX, memory.LowLevelRead((ushort)MMR.SCX));
       HandleMemoryChange(MMR.LYC, memory.LowLevelRead((ushort)MMR.LYC));
+      HandleMemoryChange(MMR.DMA, memory.LowLevelRead((ushort)MMR.DMA));
       HandleMemoryChange(MMR.BGP, memory.LowLevelRead((ushort)MMR.BGP));
       HandleMemoryChange(MMR.OBP0, memory.LowLevelRead((ushort)MMR.OBP0));
       HandleMemoryChange(MMR.OBP1, memory.LowLevelRead((ushort)MMR.OBP1));
@@ -305,14 +289,6 @@ namespace GBSharp.VideoSpace
       this.screen = new uint[disDef.screenPixelCountX * disDef.screenPixelCountY];
       this.sprite = new uint[8 * 16];
 
-      // Tile stargets
-
-      this.spriteOAMs = new OAM[spriteCount];
-      for (int i = 0; i < spriteOAMs.Length; ++i)
-      {
-        this.spriteOAMs[i] = new OAM();
-      }
-
       this.pixelBuffer = new uint[disDef.pixelPerTileX];
 
       // We update the display status info
@@ -323,9 +299,16 @@ namespace GBSharp.VideoSpace
     {
       // We load the OAMs
       ushort spriteOAMAddress = 0xFE00;
+      byte[] tempArray;
       for (int i = 0; i < spriteCount; i++)
       {
-        SetOAM(i, memory.LowLevelArrayRead(spriteOAMAddress, 4));
+        tempArray = memory.LowLevelArrayRead(spriteOAMAddress, 4);
+        spriteOAMs[i].index = spriteCount;
+        spriteOAMs[i].x = tempArray[1];
+        spriteOAMs[i].y = tempArray[0];
+        spriteOAMs[i].spriteCode = tempArray[2];
+        spriteOAMs[i].flags = tempArray[3];
+
         spriteOAMAddress += 4;
       }
     }
@@ -356,6 +339,9 @@ namespace GBSharp.VideoSpace
           throw new InvalidProgramException("There shouldn't be any writes to LY");
         case MMR.LYC:
           disStat.LYC = value;
+          break;
+        case MMR.DMA:
+          LoadSprites(); 
           break;
         case MMR.BGP:
           DisFuncs.SetupTilePallete(disDef, memory);
@@ -431,9 +417,6 @@ namespace GBSharp.VideoSpace
     {
       if(!disStat.enabled) { return; }
       if (rowBegin > 143) { return; }
-
-      // Necesary, sprites could have changed during H-BLANK
-      LoadSprites();
 
       #region BACKGROUND
 

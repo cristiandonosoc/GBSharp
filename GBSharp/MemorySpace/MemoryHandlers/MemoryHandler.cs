@@ -41,6 +41,13 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     {
       this.memoryData = memory;
       this.dma = dma;
+      this.dma.DMAReady += Dma_DMAReady;
+    }
+
+    private void Dma_DMAReady()
+    {
+      // NOTE(Cristian): The value is not important, this is a signal
+      this.display.HandleMemoryChange(MMR.DMA, 0);
     }
 
     /// <summary>
@@ -88,6 +95,10 @@ namespace GBSharp.MemorySpace.MemoryHandlers
       else if (address < 0xFEA0)
       {
         this.memoryData[address] = value;
+        // TODO(Cristian): This is to see if OAM table is changed without DMA.
+        //                 Perhaps the only way to access it is through DMA.
+        //                 If that is the case, sprite sorting is greatly simplified
+        throw new InvalidProgramException("OAM should be accessed through DMA");
       } // < 0xFEA0
 
       /* [0xFEA0 - 0xFF7F]: */
