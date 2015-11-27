@@ -278,6 +278,9 @@ namespace GBSharp.VideoSpace
       HandleMemoryChange(MMR.LCDC, memory.LowLevelRead((ushort)MMR.LCDC));
       HandleMemoryChange(MMR.SCY, memory.LowLevelRead((ushort)MMR.SCY));
       HandleMemoryChange(MMR.SCX, memory.LowLevelRead((ushort)MMR.SCX));
+      HandleMemoryChange(MMR.LYC, memory.LowLevelRead((ushort)MMR.LYC));
+      HandleMemoryChange(MMR.WY, memory.LowLevelRead((ushort)MMR.WY));
+      HandleMemoryChange(MMR.WX, memory.LowLevelRead((ushort)MMR.WX));
 
       /*** DRAW TARGETS ***/
 
@@ -397,7 +400,7 @@ namespace GBSharp.VideoSpace
     private void StartFrame()
     {
       disStat.currentLine = 0;
-      disStat.currentWY = this.memory.LowLevelRead((ushort)MMR.WY);
+      disStat.currentWY = disStat.WY;
 
       if(!disStat.enabled) { return; }
 
@@ -469,20 +472,18 @@ namespace GBSharp.VideoSpace
 
       #region WINDOW
 
-      int WX = this.memory.LowLevelRead((ushort)MMR.WX);
-      int rWX = WX - 7; // The window pos is (WX - 7, WY)
-      int WY = disStat.currentWY;
+      int rWX = disStat.WX - 7; // The window pos is (WX - 7, WY)
 
       // TODO(Cristian): If BG display is off, it actually prints white
       bool drawWindow = disStat.LCDCBits[5];
       for (int row = rowBegin; row < rowEnd; row++)
       {
-        if ((row >= WY) && (row < 144))
+        if ((row >= disStat.currentWY) && (row < 144))
         {
           // The offset indexes represent that the window is drawn from it's beggining
           // at (WX, WY)
           uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, pixelBuffer,
-                                                   row - WY, 
+                                                   row - disStat.currentWY, 
                                                    disStat.LCDCBits[6], disStat.LCDCBits[4]);
 
           // Independent target
@@ -627,8 +628,6 @@ namespace GBSharp.VideoSpace
         }
         disStat.enabled = false;
       }
-
-      // TODO(Cristian): Check that the LY=LYC is correct when the display starts
 
       /**
        * We want to advance the display according to the tick count
@@ -822,11 +821,10 @@ namespace GBSharp.VideoSpace
       if(!disStat.enabled) { return; }
 
       this.memory.LowLevelWrite((ushort)MMR.LY, disStat.currentLine);
-      byte LYC = this.memory.LowLevelRead((ushort)MMR.LYC);
 
       byte STAT = this.memory.LowLevelRead((ushort)MMR.STAT);
       // We update the STAT corresponding to the LY=LYC coincidence
-      if (LYC == disStat.currentLine)
+      if (disStat.LYC == disStat.currentLine)
       {
         byte STATMask = 0x04; // Bit 2 is set 1
         STAT = (byte)(STAT | STATMask);
