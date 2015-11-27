@@ -332,26 +332,36 @@ namespace GBSharp.VideoSpace
     }
 
     internal static void
-    SetupSpritePalletes(DisplayDefinition disDef, Memory memory)
+    SetupSpritePalletes(DisplayDefinition disDef, Memory memory, MMR pallete)
     {
-      byte obp0 = memory.LowLevelRead((ushort)MMR.OBP0);
-      disDef.spritePallete0[0] = 0x00000000; // Sprite colors are trasparent
-      for (int color = 1; color < 4; ++color)
+      if (pallete == MMR.OBP0)
       {
-        int down = (obp0 >> (2 * color)) & 1;
-        int up = (obp0 >> (2 * color + 1)) & 1;
-        int index = (up << 1) | down;
-        disDef.spritePallete0[color] = disDef.spriteColors[index];
-      }
 
-      byte obp1 = memory.LowLevelRead((ushort)MMR.OBP1);
-      disDef.spritePallete1[1] = 0x00000000; // Sprite colors are trasparent
-      for (int color = 1; color < 4; ++color)
+        byte obp0 = memory.LowLevelRead((ushort)MMR.OBP0);
+        disDef.spritePallete0[0] = 0x00000000; // Sprite colors are trasparent
+        for (int color = 1; color < 4; ++color)
+        {
+          int down = (obp0 >> (2 * color)) & 1;
+          int up = (obp0 >> (2 * color + 1)) & 1;
+          int index = (up << 1) | down;
+          disDef.spritePallete0[color] = disDef.spriteColors[index];
+        }
+      }
+      else if (pallete == MMR.OBP1)
       {
-        int down = (obp1 >> (2 * color)) & 1;
-        int up = (obp1 >> (2 * color + 1)) & 1;
-        int index = (up << 1) | down;
-        disDef.spritePallete1[color] = disDef.spriteColors[index];
+        byte obp1 = memory.LowLevelRead((ushort)MMR.OBP1);
+        disDef.spritePallete1[1] = 0x00000000; // Sprite colors are trasparent
+        for (int color = 1; color < 4; ++color)
+        {
+          int down = (obp1 >> (2 * color)) & 1;
+          int up = (obp1 >> (2 * color + 1)) & 1;
+          int index = (up << 1) | down;
+          disDef.spritePallete1[color] = disDef.spriteColors[index];
+        }
+      }
+      else
+      {
+        throw new InvalidProgramException("Invalid pallete register given");
       }
     }
 

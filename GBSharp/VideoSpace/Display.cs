@@ -279,6 +279,9 @@ namespace GBSharp.VideoSpace
       HandleMemoryChange(MMR.SCY, memory.LowLevelRead((ushort)MMR.SCY));
       HandleMemoryChange(MMR.SCX, memory.LowLevelRead((ushort)MMR.SCX));
       HandleMemoryChange(MMR.LYC, memory.LowLevelRead((ushort)MMR.LYC));
+      HandleMemoryChange(MMR.BGP, memory.LowLevelRead((ushort)MMR.BGP));
+      HandleMemoryChange(MMR.OBP0, memory.LowLevelRead((ushort)MMR.OBP0));
+      HandleMemoryChange(MMR.OBP1, memory.LowLevelRead((ushort)MMR.OBP1));
       HandleMemoryChange(MMR.WY, memory.LowLevelRead((ushort)MMR.WY));
       HandleMemoryChange(MMR.WX, memory.LowLevelRead((ushort)MMR.WX));
 
@@ -354,13 +357,13 @@ namespace GBSharp.VideoSpace
           disStat.LYC = value;
           break;
         case MMR.BGP:
-          // TODO(Cristian): Handle DMG pallete
+          DisFuncs.SetupTilePallete(disDef, memory);
           break;
         case MMR.OBP0:
-          // TODO(Cristian): Handle Sprite pallete 0
+          DisFuncs.SetupSpritePalletes(disDef, memory, MMR.OBP0);
           break;
         case MMR.OBP1:
-          // TODO(Cristian): Handle Sprite pallete 1
+          DisFuncs.SetupSpritePalletes(disDef, memory, MMR.OBP1);
           break;
         case MMR.WY:
           disStat.WY = value;
@@ -430,9 +433,6 @@ namespace GBSharp.VideoSpace
 
       // Necesary, sprites could have changed during H-BLANK
       LoadSprites();
-
-      DisFuncs.SetupTilePallete(disDef, memory);
-      DisFuncs.SetupSpritePalletes(disDef, memory);
 
       #region BACKGROUND
 
