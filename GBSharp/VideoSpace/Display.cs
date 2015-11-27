@@ -84,7 +84,6 @@ namespace GBSharp.VideoSpace
     public int prevTickCount;
     public int currentLineTickCount; // We trigger OAM search at the start
     public byte currentLine;
-    public int currentWY; 
     public int OAMSearchTickCount;
     public int dataTransferTickCount;
     public int totalLineTickCount;
@@ -96,8 +95,17 @@ namespace GBSharp.VideoSpace
     public bool noTileMap;
     public bool tileMap;
 
-    // LCDC bits
+    // Registers
     public bool[] LCDCBits;
+    public byte STAT;
+    public byte SCX;
+    public byte SCY;
+    public byte LY;
+    public byte LYC;
+    public byte WX;
+    public byte WY;
+    // WY actually changes at the beginning of the frame
+    public byte currentWY;
   }
 
   class Display : IDisplay
@@ -265,9 +273,11 @@ namespace GBSharp.VideoSpace
       this.disStat.tileMap = false;
 
       this.disStat.LCDCBits = new bool[8];
-      // We fill the LCDCBits correctly
-      HandleMemoryChange(MemoryMappedRegisters.LCDC,
-                         memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC));
+
+      // We start the registers correctly
+      HandleMemoryChange(MemoryMappedRegisters.LCDC, memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC));
+      HandleMemoryChange(MemoryMappedRegisters.SCY, memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY));
+      HandleMemoryChange(MemoryMappedRegisters.SCX, memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX));
 
       /*** DRAW TARGETS ***/
 
@@ -328,6 +338,35 @@ namespace GBSharp.VideoSpace
         case MemoryMappedRegisters.STAT:
           // TODO(Cristian): Set STAT change
           break;
+        case MemoryMappedRegisters.SCY:
+          disStat.SCY = value;
+          break;
+        case MemoryMappedRegisters.SCX:
+          disStat.SCX = value;
+          break;
+        case MemoryMappedRegisters.LY:
+          // TODO(Cristian): Perhaps this should be handled by memory?
+          throw new InvalidProgramException("There shouldn't be any writes to LY");
+        case MemoryMappedRegisters.LYC:
+          disStat.LYC = value;
+          break;
+        case MemoryMappedRegisters.BGP:
+          // TODO(Cristian): Handle DMG pallete
+          break;
+        case MemoryMappedRegisters.OBP0:
+          // TODO(Cristian): Handle Sprite pallete 0
+          break;
+        case MemoryMappedRegisters.OBP1:
+          // TODO(Cristian): Handle Sprite pallete 1
+          break;
+        case MemoryMappedRegisters.WY:
+          disStat.WY = value;
+          break;
+        case MemoryMappedRegisters.WX:
+          disStat.WX = value;
+          break;
+        default:
+          throw new InvalidProgramException("All cases should be handled...");
       }
     }
 
@@ -395,8 +434,6 @@ namespace GBSharp.VideoSpace
       #region BACKGROUND
 
       // TODO(Cristian): Move this to disStat
-      int SCX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX);
-      int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
 
       bool drawBackground = disStat.LCDCBits[0];
       // We copy the information from the background tile to the effective screen
@@ -404,7 +441,7 @@ namespace GBSharp.VideoSpace
       {
 
         // We obtain the correct row
-        int bY = (y + SCY) % disDef.framePixelCountY;
+        int bY = (y + disStat.SCY) % disDef.framePixelCountY;
         uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, pixelBuffer,
                                                  bY, disStat.LCDCBits[3], disStat.LCDCBits[4]);
 
@@ -421,7 +458,7 @@ namespace GBSharp.VideoSpace
         {
           DrawFuncs.DrawLine(disDef, screen, disDef.screenPixelCountX, rowPixels,
                             0, y,
-                            SCX, disDef.framePixelCountX,
+                            disStat.SCX, disDef.framePixelCountX,
                             false, true);
 
 
@@ -516,13 +553,10 @@ namespace GBSharp.VideoSpace
         if (updateDebugTargetDict[DebugTargets.Background])
         {
           // TODO(Cristian): Move this to disStat
-          int SCX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX);
-          int SCY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY);
-
           uint rectangleColor = 0xFFFF8822;
           DrawFuncs.DrawRectangle(disDef, debugTargetDict[DebugTargets.Background],
                                  disDef.framePixelCountX,
-                                 SCX, SCY,
+                                 disStat.SCX, disStat.SCY,
                                  disDef.screenPixelCountX, disDef.screenPixelCountY,
                                  rectangleColor);
         }
