@@ -276,6 +276,7 @@ namespace GBSharp.VideoSpace
 
       // We start the registers correctly
       HandleMemoryChange(MMR.LCDC, memory.LowLevelRead((ushort)MMR.LCDC));
+      HandleMemoryChange(MMR.LCDC, memory.LowLevelRead((ushort)MMR.LCDC));
       HandleMemoryChange(MMR.SCY, memory.LowLevelRead((ushort)MMR.SCY));
       HandleMemoryChange(MMR.SCX, memory.LowLevelRead((ushort)MMR.SCX));
       HandleMemoryChange(MMR.LYC, memory.LowLevelRead((ushort)MMR.LYC));
@@ -342,7 +343,7 @@ namespace GBSharp.VideoSpace
           }
           break;
         case MMR.STAT:
-          // TODO(Cristian): Set STAT change
+          disStat.STAT = value;
           break;
         case MMR.SCY:
           disStat.SCY = value;
@@ -776,10 +777,9 @@ namespace GBSharp.VideoSpace
 
       if(!disStat.enabled) { return; }
 
-      byte STAT = this.memory.LowLevelRead((ushort)MMR.STAT);
       // We strip the last 2 bits of STAT and replace them with the mode
-      STAT = (byte)((STAT & 0xFC) | byteDisplayMode);
-      this.memory.LowLevelWrite((ushort)MMR.STAT, STAT);
+      disStat.STAT = (byte)((disStat.STAT & 0xFC) | byteDisplayMode);
+      this.memory.LowLevelWrite((ushort)MMR.STAT, disStat.STAT);
 
       // We check if we have to trigger vertical blanking
       if(disStat.displayMode == DisplayModes.Mode01) // We just change to V-BLANK Mode
@@ -795,7 +795,7 @@ namespace GBSharp.VideoSpace
       // 								 Bit 4: Mode 01
       // 								 Bit 3: Mode 00
       if ((newDisplayMode != DisplayModes.Mode11) &&
-          ((STAT >> (byteDisplayMode + 3)) & 1) == 1)
+          ((disStat.STAT >> (byteDisplayMode + 3)) & 1) == 1)
       {
         interruptController.SetInterrupt(Interrupts.LCDCStatus);
       }
@@ -822,14 +822,13 @@ namespace GBSharp.VideoSpace
 
       this.memory.LowLevelWrite((ushort)MMR.LY, disStat.currentLine);
 
-      byte STAT = this.memory.LowLevelRead((ushort)MMR.STAT);
       // We update the STAT corresponding to the LY=LYC coincidence
       if (disStat.LYC == disStat.currentLine)
       {
         byte STATMask = 0x04; // Bit 2 is set 1
-        STAT = (byte)(STAT | STATMask);
+        disStat.STAT = (byte)(disStat.STAT | STATMask);
 
-        if(Utils.UtilFuncs.TestBit(STAT, 6) != 0)
+        if(Utils.UtilFuncs.TestBit(disStat.STAT, 6) != 0)
         {
           interruptController.SetInterrupt(Interrupts.LCDCStatus);
         }
@@ -837,10 +836,10 @@ namespace GBSharp.VideoSpace
       else
       {
         byte STATMask = 0xFB; // Bit 2 is set to 0 
-        STAT = (byte)(STAT & STATMask);
+        disStat.STAT = (byte)(disStat.STAT & STATMask);
       }
 
-      this.memory.LowLevelWrite((ushort)MMR.STAT, STAT);
+      this.memory.LowLevelWrite((ushort)MMR.STAT, disStat.STAT);
     }
   }
 }
