@@ -275,9 +275,9 @@ namespace GBSharp.VideoSpace
       this.disStat.LCDCBits = new bool[8];
 
       // We start the registers correctly
-      HandleMemoryChange(MemoryMappedRegisters.LCDC, memory.LowLevelRead((ushort)MemoryMappedRegisters.LCDC));
-      HandleMemoryChange(MemoryMappedRegisters.SCY, memory.LowLevelRead((ushort)MemoryMappedRegisters.SCY));
-      HandleMemoryChange(MemoryMappedRegisters.SCX, memory.LowLevelRead((ushort)MemoryMappedRegisters.SCX));
+      HandleMemoryChange(MMR.LCDC, memory.LowLevelRead((ushort)MMR.LCDC));
+      HandleMemoryChange(MMR.SCY, memory.LowLevelRead((ushort)MMR.SCY));
+      HandleMemoryChange(MMR.SCX, memory.LowLevelRead((ushort)MMR.SCX));
 
       /*** DRAW TARGETS ***/
 
@@ -323,46 +323,46 @@ namespace GBSharp.VideoSpace
       }
     }
 
-    internal void HandleMemoryChange(MemoryMappedRegisters mappedRegister, byte value)
+    internal void HandleMemoryChange(MMR mappedRegister, byte value)
     {
 
       switch(mappedRegister)
       {
-        case MemoryMappedRegisters.LCDC:
+        case MMR.LCDC:
           // We set all the LCDC bits
           for (int i = 0; i < 8; ++i)
           {
             disStat.LCDCBits[i] = (value & (1 << i)) != 0;
           }
           break;
-        case MemoryMappedRegisters.STAT:
+        case MMR.STAT:
           // TODO(Cristian): Set STAT change
           break;
-        case MemoryMappedRegisters.SCY:
+        case MMR.SCY:
           disStat.SCY = value;
           break;
-        case MemoryMappedRegisters.SCX:
+        case MMR.SCX:
           disStat.SCX = value;
           break;
-        case MemoryMappedRegisters.LY:
+        case MMR.LY:
           // TODO(Cristian): Perhaps this should be handled by memory?
           throw new InvalidProgramException("There shouldn't be any writes to LY");
-        case MemoryMappedRegisters.LYC:
+        case MMR.LYC:
           disStat.LYC = value;
           break;
-        case MemoryMappedRegisters.BGP:
+        case MMR.BGP:
           // TODO(Cristian): Handle DMG pallete
           break;
-        case MemoryMappedRegisters.OBP0:
+        case MMR.OBP0:
           // TODO(Cristian): Handle Sprite pallete 0
           break;
-        case MemoryMappedRegisters.OBP1:
+        case MMR.OBP1:
           // TODO(Cristian): Handle Sprite pallete 1
           break;
-        case MemoryMappedRegisters.WY:
+        case MMR.WY:
           disStat.WY = value;
           break;
-        case MemoryMappedRegisters.WX:
+        case MMR.WX:
           disStat.WX = value;
           break;
         default:
@@ -397,7 +397,7 @@ namespace GBSharp.VideoSpace
     private void StartFrame()
     {
       disStat.currentLine = 0;
-      disStat.currentWY = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WY);
+      disStat.currentWY = this.memory.LowLevelRead((ushort)MMR.WY);
 
       if(!disStat.enabled) { return; }
 
@@ -469,7 +469,7 @@ namespace GBSharp.VideoSpace
 
       #region WINDOW
 
-      int WX = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.WX);
+      int WX = this.memory.LowLevelRead((ushort)MMR.WX);
       int rWX = WX - 7; // The window pos is (WX - 7, WY)
       int WY = disStat.currentWY;
 
@@ -777,10 +777,10 @@ namespace GBSharp.VideoSpace
 
       if(!disStat.enabled) { return; }
 
-      byte STAT = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.STAT);
+      byte STAT = this.memory.LowLevelRead((ushort)MMR.STAT);
       // We strip the last 2 bits of STAT and replace them with the mode
       STAT = (byte)((STAT & 0xFC) | byteDisplayMode);
-      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.STAT, STAT);
+      this.memory.LowLevelWrite((ushort)MMR.STAT, STAT);
 
       // We check if we have to trigger vertical blanking
       if(disStat.displayMode == DisplayModes.Mode01) // We just change to V-BLANK Mode
@@ -821,10 +821,10 @@ namespace GBSharp.VideoSpace
 
       if(!disStat.enabled) { return; }
 
-      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.LY, disStat.currentLine);
-      byte LYC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.LYC);
+      this.memory.LowLevelWrite((ushort)MMR.LY, disStat.currentLine);
+      byte LYC = this.memory.LowLevelRead((ushort)MMR.LYC);
 
-      byte STAT = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.STAT);
+      byte STAT = this.memory.LowLevelRead((ushort)MMR.STAT);
       // We update the STAT corresponding to the LY=LYC coincidence
       if (LYC == disStat.currentLine)
       {
@@ -842,7 +842,7 @@ namespace GBSharp.VideoSpace
         STAT = (byte)(STAT & STATMask);
       }
 
-      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.STAT, STAT);
+      this.memory.LowLevelWrite((ushort)MMR.STAT, STAT);
     }
   }
 }

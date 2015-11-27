@@ -113,7 +113,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
         /* [0xFF00 - 0xFF4B]: I/O Ports */
         else if (address < 0xFF4C)
         {
-          if (address == (ushort)MemoryMappedRegisters.P1)
+          if (address == (ushort)MMR.P1)
           {
             byte p1 = this.memoryData[address];
             // Only the bits 4 and 5 are writable in P1
@@ -127,7 +127,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           }
 
           // NOTE(Cristian): We start a DMA process.
-          else if (address == (ushort)MemoryMappedRegisters.DMA)
+          else if (address == (ushort)MMR.DMA)
           {
             this.dma.Start(value);
           }
@@ -135,7 +135,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           {
             this.memoryData[address] = value;
             // We handle display memory changes
-            this.display.HandleMemoryChange((MemoryMappedRegisters)address, value);
+            this.display.HandleMemoryChange((MMR)address, value);
           }
           else
           {

@@ -66,8 +66,8 @@ namespace GBSharp.ViewModel
 
     public void CopyFromDomain()
     {
-      var interruptEnabledWord = _gameBoy.Memory.Data[(int)MemoryMappedRegisters.IE];
-      var interruptRequestedWord = _gameBoy.Memory.Data[(int)MemoryMappedRegisters.IF];
+      var interruptEnabledWord = _gameBoy.Memory.Data[(int)MMR.IE];
+      var interruptRequestedWord = _gameBoy.Memory.Data[(int)MMR.IF];
 
       Enabled = (interruptEnabledWord & (byte)_interrupt) > 0;
       Requested = (interruptRequestedWord & (byte)_interrupt) > 0;

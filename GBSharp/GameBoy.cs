@@ -325,10 +325,10 @@ namespace GBSharp
 
     }
 
-    public Dictionary<MemoryMappedRegisters, ushort> GetRegisterDic()
+    public Dictionary<MMR, ushort> GetRegisterDic()
     {
-      Dictionary<MemoryMappedRegisters, ushort> registerDic = new Dictionary<MemoryMappedRegisters, ushort>();
-      foreach (MemoryMappedRegisters registerEnum in Enum.GetValues(typeof(MemoryMappedRegisters)))
+      Dictionary<MMR, ushort> registerDic = new Dictionary<MMR, ushort>();
+      foreach (MMR registerEnum in Enum.GetValues(typeof(MMR)))
       {
         registerDic.Add(registerEnum, memory.LowLevelRead((ushort)registerEnum));
       }

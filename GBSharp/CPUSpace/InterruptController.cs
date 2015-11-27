@@ -62,14 +62,14 @@ namespace GBSharp.CPUSpace
     /// </summary>
     internal void UpdateKeypadState()
     {
-      byte currentP1 = this.memory.Read((ushort)MemoryMappedRegisters.P1);
+      byte currentP1 = this.memory.Read((ushort)MMR.P1);
       byte newP1 = SolveP1(currentP1);
 
       // Update memory mapped keypad state. In the real gameboy there is a propagation delay of 2^4 clock oscillations before
       // this value is updated. We are not going to simulate that since the code in the game is supposed to handle this delay by
       // waiting a few instructions between writing [p14, p15] and reading [p10, p11, p12, p13]. If a game is using some shady
       // hack to read (like burst-writing and reading at the exact time the propagation occurs), then is going to die *here*.
-      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.P1, newP1);
+      this.memory.LowLevelWrite((ushort)MMR.P1, newP1);
 
       // If bit is set in current and not in the new state, it's a NEGATIVE EDGE INTERRUPT!
       if (((0x0F & currentP1) & (0x0F & ~newP1)) != 0x00)
@@ -117,8 +117,8 @@ namespace GBSharp.CPUSpace
       // TODO(Cristian, Wooo): Do we want to track what kind of LCDStatus interrupts we
       //                       are receiving. It's technically not necesarry, but might
       //                       interesting information to log... maybe?
-      byte IF = this.memory.Read((ushort)MemoryMappedRegisters.IF);
-      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.IF, (byte)(IF | (byte)kind));
+      byte IF = this.memory.Read((ushort)MMR.IF);
+      this.memory.LowLevelWrite((ushort)MMR.IF, (byte)(IF | (byte)kind));
     }
 
     /// <summary>
@@ -127,8 +127,8 @@ namespace GBSharp.CPUSpace
     /// <param name="kind">An interrupt (or a combination of).</param>
     internal void ResetInterrupt(Interrupts kind)
     {
-      byte IF = this.memory.Read((ushort)MemoryMappedRegisters.IF);
-      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.IF, (byte)(IF & ~(byte)kind));
+      byte IF = this.memory.Read((ushort)MMR.IF);
+      this.memory.LowLevelWrite((ushort)MMR.IF, (byte)(IF & ~(byte)kind));
     }
   }
 }

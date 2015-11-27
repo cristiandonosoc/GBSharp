@@ -295,9 +295,9 @@ namespace GBSharp.CPUSpace
 
       // Disable interrupts during interrupt handling and clear the current one
       this.interruptController.InterruptMasterEnable = false;
-      byte IF = this.memory.Read((ushort)MemoryMappedRegisters.IF);
+      byte IF = this.memory.Read((ushort)MMR.IF);
       IF &= (byte)~(byte)interrupt;
-      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.IF, IF);
+      this.memory.LowLevelWrite((ushort)MMR.IF, IF);
       return instruction;
     }
 
@@ -393,9 +393,9 @@ namespace GBSharp.CPUSpace
     private Interrupts? InterruptRequired(ref bool interruptRequired)
     {
       // Read interrupt flags
-      int interruptRequest = this.memory.Read((ushort)MemoryMappedRegisters.IF);
+      int interruptRequest = this.memory.Read((ushort)MMR.IF);
       // Mask enabled interrupts
-      int interruptEnable = this.memory.Read((ushort)MemoryMappedRegisters.IE);
+      int interruptEnable = this.memory.Read((ushort)MMR.IE);
 
       int interrupt = interruptEnable & interruptRequest;
 
@@ -442,10 +442,10 @@ namespace GBSharp.CPUSpace
       this.clock += ticks;
 
       // Upper 8 bits of the clock should be accessible through DIV register.
-      this.memory.LowLevelWrite((ushort)MemoryMappedRegisters.DIV, (byte)(this.clock >> 8));
+      this.memory.LowLevelWrite((ushort)MMR.DIV, (byte)(this.clock >> 8));
 
       // Configurable timer TIMA/TMA/TAC system:
-      byte TAC = this.memory.LowLevelRead((ushort)MemoryMappedRegisters.TAC);
+      byte TAC = this.memory.LowLevelRead((ushort)MMR.TAC);
 
       byte clockSelect = (byte)(TAC & 0x03); // Clock select is the bits 0 and 1 of the TAC register
       bool runTimer = (TAC & 0x04) == 0x04; // Run timer is the bit 2 of the TAC register
@@ -478,7 +478,7 @@ namespace GBSharp.CPUSpace
             // We have a perfect match! The number of oscilations is now a multiple of clock selected by TAC
 
             // Fetch current TIMA value
-            byte TIMA = this.memory.Read((ushort)MemoryMappedRegisters.TIMA);
+            byte TIMA = this.memory.Read((ushort)MMR.TIMA);
 
             // TIMA-tick
             TIMA += 1;
@@ -486,14 +486,14 @@ namespace GBSharp.CPUSpace
             if (TIMA == 0x0000)
             {
               // TIMA overflow, load TMA into TIMA
-              TIMA = this.memory.Read((ushort)MemoryMappedRegisters.TMA);
+              TIMA = this.memory.Read((ushort)MMR.TMA);
 
               // Set the interrupt request flag
               this.interruptController.SetInterrupt(Interrupts.TimerOverflow);
             }
 
             // Update memory mapped timer
-            this.memory.LowLevelWrite((ushort)MemorySpace.MemoryMappedRegisters.TIMA, TIMA);
+            this.memory.LowLevelWrite((ushort)MemorySpace.MMR.TIMA, TIMA);
           }
         }
       }

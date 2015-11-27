@@ -320,7 +320,7 @@ namespace GBSharp.VideoSpace
     SetupTilePallete(DisplayDefinition disDef, Memory memory)
     {
       // We extract the BGP (BG Pallete Data)
-      byte bgp = memory.LowLevelRead((ushort)MemoryMappedRegisters.BGP);
+      byte bgp = memory.LowLevelRead((ushort)MMR.BGP);
 
       for (int color = 0; color < 4; ++color)
       {
@@ -334,7 +334,7 @@ namespace GBSharp.VideoSpace
     internal static void
     SetupSpritePalletes(DisplayDefinition disDef, Memory memory)
     {
-      byte obp0 = memory.LowLevelRead((ushort)MemoryMappedRegisters.OBP0);
+      byte obp0 = memory.LowLevelRead((ushort)MMR.OBP0);
       disDef.spritePallete0[0] = 0x00000000; // Sprite colors are trasparent
       for (int color = 1; color < 4; ++color)
       {
@@ -344,7 +344,7 @@ namespace GBSharp.VideoSpace
         disDef.spritePallete0[color] = disDef.spriteColors[index];
       }
 
-      byte obp1 = memory.LowLevelRead((ushort)MemoryMappedRegisters.OBP1);
+      byte obp1 = memory.LowLevelRead((ushort)MMR.OBP1);
       disDef.spritePallete1[1] = 0x00000000; // Sprite colors are trasparent
       for (int color = 1; color < 4; ++color)
       {

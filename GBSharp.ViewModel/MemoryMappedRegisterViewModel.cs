@@ -6,7 +6,7 @@ namespace GBSharp.ViewModel
   {
     private string _name;
     private string _value;
-    private MemoryMappedRegisters _register;
+    private MMR _register;
     private IGameBoy _gameBoy;
 
     public string Name
@@ -28,7 +28,7 @@ namespace GBSharp.ViewModel
     }
 
     
-    public MemoryMappedRegisterViewModel(string name, MemoryMappedRegisters register, IGameBoy gameBoy)
+    public MemoryMappedRegisterViewModel(string name, MMR register, IGameBoy gameBoy)
     {
       _name = name;
       _register = register;

@@ -34,17 +34,17 @@ namespace GBSharp.ViewModel
       _gameBoy = gameBoy;
       _gameBoy.FrameCompleted += OnFrameCompleted;
   
-      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF40: LCDC", MemoryMappedRegisters.LCDC, _gameBoy));
-      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF41: STAT", MemoryMappedRegisters.STAT, _gameBoy));
-      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF42: SCY", MemoryMappedRegisters.SCY, _gameBoy));
-      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF43: SCX", MemoryMappedRegisters.SCX, _gameBoy));
-      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF44: LY", MemoryMappedRegisters.LY, _gameBoy));
-      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF45: LYC", MemoryMappedRegisters.LYC, _gameBoy));
-      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF47: BGP", MemoryMappedRegisters.BGP, _gameBoy));
-      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF48: OBP0", MemoryMappedRegisters.OBP0, _gameBoy));
-      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF49: OBP1", MemoryMappedRegisters.OBP1, _gameBoy));
-      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF4A: WY", MemoryMappedRegisters.WY, _gameBoy));
-      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF4B: WX", MemoryMappedRegisters.WX, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF40: LCDC", MMR.LCDC, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF41: STAT", MMR.STAT, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF42: SCY", MMR.SCY, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF43: SCX", MMR.SCX, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF44: LY", MMR.LY, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF45: LYC", MMR.LYC, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF47: BGP", MMR.BGP, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF48: OBP0", MMR.OBP0, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF49: OBP1", MMR.OBP1, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF4A: WY", MMR.WY, _gameBoy));
+      MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF4B: WX", MMR.WX, _gameBoy));
     }
 
     private void OnFrameCompleted()
