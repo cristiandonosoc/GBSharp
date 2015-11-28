@@ -291,8 +291,32 @@ namespace GBSharp.VideoSpace
 
       this.pixelBuffer = new uint[disDef.pixelPerTileX];
 
+      GeneratePixelLookupTable();
+
       // We update the display status info
       UpdateDisplayLineInfo(false);
+    }
+
+    private short[] pixelLookupTable;
+    private void GeneratePixelLookupTable()
+    {
+      pixelLookupTable = new short[0x100 * 0x100];
+      for(int top = 0; top < 0x100; ++top)
+      {
+        for (int bottom = 0; bottom < 0x100; ++bottom)
+        {
+          int lookup = 0;
+          for (int i = 0; i < 8; ++i)
+          {
+            int up = (bottom >> (7 - i)) & 1;
+            int down = (top >> (7 - i)) & 1;
+            lookup = lookup | (((up << 1) | down) << 2 * (7 - i));
+          }
+
+          pixelLookupTable[(top << 8) | bottom] = (short)lookup;
+        }
+      }
+
     }
 
     internal void LoadSprites()
@@ -386,7 +410,8 @@ namespace GBSharp.VideoSpace
 
       // We draw the top part
       byte[] pixels = DisFuncs.GetTileData(disDef, memory, 0x8000, spriteCode, disStat.LCDCBits[2]);
-      DrawFuncs.DrawTile(disDef, spriteData, pixelBuffer, 
+      DrawFuncs.DrawTile(pixelLookupTable, 
+                         disDef, spriteData, pixelBuffer, 
                          8, pixels, pX, pY,
                          disDef.screenPixelCountX, disDef.screenPixelCountY);
     }
@@ -433,7 +458,8 @@ namespace GBSharp.VideoSpace
 
         // We obtain the correct row
         int bY = (y + disStat.SCY) % disDef.framePixelCountY;
-        uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, pixelBuffer,
+        uint[] rowPixels = DisFuncs.GetRowPixels(pixelLookupTable,
+                                                 disDef, memory, pixelBuffer,
                                                  bY, disStat.LCDCBits[3], disStat.LCDCBits[4]);
 
         if(updateDebugTargetDict[DebugTargets.Background])
@@ -470,7 +496,8 @@ namespace GBSharp.VideoSpace
         {
           // The offset indexes represent that the window is drawn from it's beggining
           // at (WX, WY)
-          uint[] rowPixels = DisFuncs.GetRowPixels(disDef, memory, pixelBuffer,
+          uint[] rowPixels = DisFuncs.GetRowPixels(pixelLookupTable,
+                                                   disDef, memory, pixelBuffer,
                                                    row - disStat.currentWY, 
                                                    disStat.LCDCBits[6], disStat.LCDCBits[4]);
 
@@ -506,7 +533,8 @@ namespace GBSharp.VideoSpace
         {
           // Independent target
           uint[] pixels = new uint[disDef.screenPixelCountX];
-          DisFuncs.GetSpriteRowPixels(disDef, memory, spriteOAMs, pixels,
+          DisFuncs.GetSpriteRowPixels(pixelLookupTable,
+                                      disDef, memory, spriteOAMs, pixels,
                                       pixelBuffer,
                                       row, disStat.LCDCBits[2],
                                       true);
@@ -522,7 +550,8 @@ namespace GBSharp.VideoSpace
         {
           uint[] linePixels = DisFuncs.GetPixelRowFromBitmap(disDef, screen, 
                                                              row, disDef.screenPixelCountX);
-          DisFuncs.GetSpriteRowPixels(disDef, memory, spriteOAMs, 
+          DisFuncs.GetSpriteRowPixels(pixelLookupTable,
+                                      disDef, memory, spriteOAMs, 
                                       linePixels, pixelBuffer,
                                       row, disStat.LCDCBits[2]);
           DrawFuncs.DrawLine(disDef, screen, disDef.screenPixelCountX,
@@ -579,7 +608,8 @@ namespace GBSharp.VideoSpace
           }
           byte[] tileData = DisFuncs.GetTileData(disDef, memory, tileBaseAddress, tileOffset, false);
 
-          DrawFuncs.DrawTile(disDef, debugTargetDict[DebugTargets.Tiles],
+          DrawFuncs.DrawTile(pixelLookupTable,
+                             disDef, debugTargetDict[DebugTargets.Tiles],
                              pixelBuffer,
                              disDef.screenPixelCountX, tileData,
                              8 * tileX, 8 * tileY, 

@@ -128,7 +128,8 @@ namespace GBSharp.VideoSpace
     /// </param>
     /// <returns>An array with the pixels to show for that row (color already calculated)</returns>
     internal static uint[]
-    GetRowPixels(DisplayDefinition disDef, Memory memory,
+    GetRowPixels(short[] pixelLookupTable,
+                 DisplayDefinition disDef, Memory memory,
                  uint[] pixelBuffer,
                  int row, bool LCDBit3, bool LCDBit4)
     {
@@ -150,7 +151,8 @@ namespace GBSharp.VideoSpace
         byte top = memory.LowLevelRead((ushort)(currentTileBaseAddress + 2 * tileRemainder));
         byte bottom = memory.LowLevelRead((ushort)(currentTileBaseAddress + 2 * tileRemainder + 1));
 
-        GetPixelsFromTileBytes(ref pixelBuffer,
+        GetPixelsFromTileBytes(pixelLookupTable,
+                               ref pixelBuffer,
                                disDef.tilePallete,
                                disDef.pixelPerTileX,
                                top, bottom);
@@ -215,7 +217,8 @@ namespace GBSharp.VideoSpace
 
 
     internal static void
-    GetSpriteRowPixels(DisplayDefinition disDef, Memory memory, OAM[] spriteOAMs,
+    GetSpriteRowPixels(short[] pixelLookupTable,
+                       DisplayDefinition disDef, Memory memory, OAM[] spriteOAMs,
                        uint[] targetPixels, uint[] pixelBuffer,
                        int row, bool LCDCBit2,
                        bool ignoreBackgroundPriority = false)
@@ -240,7 +243,8 @@ namespace GBSharp.VideoSpace
         uint[] spritePallete = (Utils.UtilFuncs.TestBit(oam.flags, 4) == 0) ?
                                   disDef.spritePallete0 : disDef.spritePallete1;
 
-        GetPixelsFromTileBytes(ref pixelBuffer,
+        GetPixelsFromTileBytes(pixelLookupTable,
+                               ref pixelBuffer,
                                spritePallete,
                                disDef.pixelPerTileX,
                                tilePixels[2 * y], tilePixels[2 * y + 1]);
@@ -372,15 +376,18 @@ namespace GBSharp.VideoSpace
     /// <param name="top">The top row of bits</param>
     /// <param name="bottom">Bottom row of bits</param>
     internal static void
-    GetPixelsFromTileBytes(ref uint[] pixelBuffer, uint[] pallete, 
+    GetPixelsFromTileBytes(short[] pixelLookupTable, 
+                           ref uint[] pixelBuffer, uint[] pallete,
                            int pixelPerTileX, byte top, byte bottom)
     {
+      short lookup = pixelLookupTable[(top << 8) | bottom];
       for (int i = 0; i < pixelPerTileX; i++)
       {
         // TODO(Cristian): Could a pre-defined lookup table speed up this?
-        int up = (bottom >> (7 - i)) & 1;
-        int down = (top >> (7 - i)) & 1;
-        int index = (up << 1) | down;
+        //int up = (bottom >> (7 - i)) & 1;
+        //int down = (top >> (7 - i)) & 1;
+        //int index = (up << 1) | down;
+        int index = (lookup >> 2 * (7 - i)) & 0x3;
         uint color = pallete[index];
         pixelBuffer[i] = color;
       }
