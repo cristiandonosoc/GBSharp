@@ -311,6 +311,10 @@ namespace GBSharp.VideoSpace
 
         spriteOAMAddress += 4;
       }
+
+      // Now we sort them according to sprite priority rules
+      Array.Sort<OAM>(spriteOAMs, (a, b) => (a.x == b.x) ?
+                                            (a.index - b.index) : (a.x - b.x));
     }
 
     internal void HandleMemoryChange(MMR mappedRegister, byte value)

@@ -187,12 +187,6 @@ namespace GBSharp.VideoSpace
     internal static OAM[]
     GetScanLineOAMs(DisplayDefinition disDef, OAM[] spriteOAMs, int row, bool LCDCBit2)
     {
-      // First we sort the oams
-      // TODO(Cristian): Find a more efficient way to keep this list sorted by priority
-      OAM[] oams = (OAM[])spriteOAMs.Clone();
-      Array.Sort<OAM>(oams, (a, b) => (a.x == b.x) ?
-                                      (a.index - b.index) : (a.x - b.x));
-
       int spriteSize = disDef.bytesPerTileShort / 2;
       if (LCDCBit2) { spriteSize = disDef.bytesPerTileLong / 2; }
 
@@ -200,7 +194,7 @@ namespace GBSharp.VideoSpace
       int scanLineSize = 0;
       int maxScanLineSize = 10;
       OAM[] scanLineOAMs = new OAM[maxScanLineSize];
-      foreach (OAM oam in oams)
+      foreach (OAM oam in spriteOAMs)
       {
         int y = oam.y - 16;
         if ((y <= row) && (row < (y + spriteSize)))
