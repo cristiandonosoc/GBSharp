@@ -48,10 +48,10 @@
     <Compile Include="Cartridge\Cartridge.cs" />
     <Compile Include="CartridgeType.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionLengths.cs" />
-    <Compile Include="CPUSpace\Dictionaries\CPUCBIntructionClocks.cs" />
+    <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionClocks.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBOpcodeNames.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUInstructionClocks.cs" />
-    <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionDescriptions .cs" />
+    <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionDescriptions.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUInstructionLengths.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUInstructionDescriptions.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUOpcodeNames.cs" />

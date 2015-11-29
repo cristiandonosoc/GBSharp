@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GBSharp.CPUSpace.Dictionaries;
 
 namespace GBSharp.CPUSpace
 {
@@ -51,7 +52,7 @@ namespace GBSharp.CPUSpace
 
         // NOTE(Cristian): The 0xCB external opcodes all exists, so we just need to check
         //                 that the first byte is 0xCB to know that the instruction is valid
-        if (_cpu.instructionClocks.ContainsKey((byte)_memory.Read(address)))
+        if (CPUInstructionLengths.Get((byte)_memory.Read(address)) != 0)
         {
           try
           {

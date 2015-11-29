@@ -8,265 +8,764 @@ namespace GBSharp.CPUSpace.Dictionaries
 {
   class CPUInstructionLengths
   {
-    internal static Dictionary<byte, byte> Setup() {
-      return new Dictionary<byte, byte>() {
-            {0x00, 1}, // NOP
-            {0x01, 3}, // LD BC,nn
-            {0x02, 1}, // LD (BC),A
-            {0x03, 1}, // INC BC
-            {0x04, 1}, // INC B
-            {0x05, 1}, // DEC B
-            {0x06, 2}, // LD B,n
-            {0x07, 1}, // RLC A
-            {0x08, 3}, // LD (nn),SP
-            {0x09, 1}, // ADD HL,BC
-            {0x0A, 1}, // LD A,(BC)
-            {0x0B, 1}, // DEC BC
-            {0x0C, 1}, // INC C
-            {0x0D, 1}, // DEC C
-            {0x0E, 2}, // LD C,n
-            {0x0F, 1}, // RRC A
-            {0x10, 2}, // STOP
-            {0x11, 3}, // LD DE,nn
-            {0x12, 1}, // LD (DE),A
-            {0x13, 1}, // INC DE
-            {0x14, 1}, // INC D
-            {0x15, 1}, // DEC D
-            {0x16, 2}, // LD D,n
-            {0x17, 1}, // RL A
-            {0x18, 2}, // JR n
-            {0x19, 1}, // ADD HL,DE
-            {0x1A, 1}, // LD A,(DE)
-            {0x1B, 1}, // DEC DE
-            {0x1C, 1}, // INC E
-            {0x1D, 1}, // DEC E
-            {0x1E, 2}, // LD E,n
-            {0x1F, 1}, // RR A
-            {0x20, 2}, // JR NZ,n
-            {0x21, 3}, // LD HL,nn
-            {0x22, 1}, // LDI (HL),A
-            {0x23, 1}, // INC HL
-            {0x24, 1}, // INC H
-            {0x25, 1}, // DEC H
-            {0x26, 2}, // LD H,n
-            {0x27, 1}, // DAA
-            {0x28, 2}, // JR Z,n
-            {0x29, 1}, // ADD HL,HL
-            {0x2A, 1}, // LDI A,(HL)
-            {0x2B, 1}, // DEC HL
-            {0x2C, 1}, // INC L
-            {0x2D, 1}, // DEC L
-            {0x2E, 2}, // LD L,n
-            {0x2F, 1}, // CPL
-            {0x30, 2}, // JR NC,n
-            {0x31, 3}, // LD SP,nn
-            {0x32, 1}, // LDD (HL),A
-            {0x33, 1}, // INC SP
-            {0x34, 1}, // INC (HL)
-            {0x35, 1}, // DEC (HL)
-            {0x36, 2}, // LD (HL),n
-            {0x37, 1}, // SCF
-            {0x38, 2}, // JR C,n
-            {0x39, 1}, // ADD HL,SP
-            {0x3A, 1}, // LDD A,(HL)
-            {0x3B, 1}, // DEC SP
-            {0x3C, 1}, // INC A
-            {0x3D, 1}, // DEC A
-            {0x3E, 2}, // LD A,n
-            {0x3F, 1}, // CCF
-            {0x40, 1}, // LD B,B
-            {0x41, 1}, // LD B,C
-            {0x42, 1}, // LD B,D
-            {0x43, 1}, // LD B,E
-            {0x44, 1}, // LD B,H
-            {0x45, 1}, // LD B,L
-            {0x46, 1}, // LD B,(HL)
-            {0x47, 1}, // LD B,A
-            {0x48, 1}, // LD C,B
-            {0x49, 1}, // LD C,C
-            {0x4A, 1}, // LD C,D
-            {0x4B, 1}, // LD C,E
-            {0x4C, 1}, // LD C,H
-            {0x4D, 1}, // LD C,L
-            {0x4E, 1}, // LD C,(HL)
-            {0x4F, 1}, // LD C,A
-            {0x50, 1}, // LD D,B
-            {0x51, 1}, // LD D,C
-            {0x52, 1}, // LD D,D
-            {0x53, 1}, // LD D,E
-            {0x54, 1}, // LD D,H
-            {0x55, 1}, // LD D,L
-            {0x56, 1}, // LD D,(HL)
-            {0x57, 1}, // LD D,A
-            {0x58, 1}, // LD E,B
-            {0x59, 1}, // LD E,C
-            {0x5A, 1}, // LD E,D
-            {0x5B, 1}, // LD E,E
-            {0x5C, 1}, // LD E,H
-            {0x5D, 1}, // LD E,L
-            {0x5E, 1}, // LD E,(HL)
-            {0x5F, 1}, // LD E,A
-            {0x60, 1}, // LD H,B
-            {0x61, 1}, // LD H,C
-            {0x62, 1}, // LD H,D
-            {0x63, 1}, // LD H,E
-            {0x64, 1}, // LD H,H
-            {0x65, 1}, // LD H,L
-            {0x66, 1}, // LD H,(HL)
-            {0x67, 1}, // LD H,A
-            {0x68, 1}, // LD L,B
-            {0x69, 1}, // LD L,C
-            {0x6A, 1}, // LD L,D
-            {0x6B, 1}, // LD L,E
-            {0x6C, 1}, // LD L,H
-            {0x6D, 1}, // LD L,L
-            {0x6E, 1}, // LD L,(HL)
-            {0x6F, 1}, // LD L,A
-            {0x70, 1}, // LD (HL),B
-            {0x71, 1}, // LD (HL),C
-            {0x72, 1}, // LD (HL),D
-            {0x73, 1}, // LD (HL),E
-            {0x74, 1}, // LD (HL),H
-            {0x75, 1}, // LD (HL),L
-            {0x76, 1}, // HALT
-            {0x77, 1}, // LD (HL),A
-            {0x78, 1}, // LD A,B
-            {0x79, 1}, // LD A,C
-            {0x7A, 1}, // LD A,D
-            {0x7B, 1}, // LD A,E
-            {0x7C, 1}, // LD A,H
-            {0x7D, 1}, // LD A,L
-            {0x7E, 1}, // LD A,(HL)
-            {0x7F, 1}, // LD A,A
-            {0x80, 1}, // ADD A,B
-            {0x81, 1}, // ADD A,C
-            {0x82, 1}, // ADD A,D
-            {0x83, 1}, // ADD A,E
-            {0x84, 1}, // ADD A,H
-            {0x85, 1}, // ADD A,L
-            {0x86, 1}, // ADD A,(HL)
-            {0x87, 1}, // ADD A,A
-            {0x88, 1}, // ADC A,B
-            {0x89, 1}, // ADC A,C
-            {0x8A, 1}, // ADC A,D
-            {0x8B, 1}, // ADC A,E
-            {0x8C, 1}, // ADC A,H
-            {0x8D, 1}, // ADC A,L
-            {0x8E, 1}, // ADC A,(HL)
-            {0x8F, 1}, // ADC A,A
-            {0x90, 1}, // SUB A,B
-            {0x91, 1}, // SUB A,C
-            {0x92, 1}, // SUB A,D
-            {0x93, 1}, // SUB A,E
-            {0x94, 1}, // SUB A,H
-            {0x95, 1}, // SUB A,L
-            {0x96, 1}, // SUB A,(HL)
-            {0x97, 1}, // SUB A,A
-            {0x98, 1}, // SBC A,B
-            {0x99, 1}, // SBC A,C
-            {0x9A, 1}, // SBC A,D
-            {0x9B, 1}, // SBC A,E
-            {0x9C, 1}, // SBC A,H
-            {0x9D, 1}, // SBC A,L
-            {0x9E, 1}, // SBC A,(HL)
-            {0x9F, 1}, // SBC A,A
-            {0xA0, 1}, // AND B
-            {0xA1, 1}, // AND C
-            {0xA2, 1}, // AND D
-            {0xA3, 1}, // AND E
-            {0xA4, 1}, // AND H
-            {0xA5, 1}, // AND L
-            {0xA6, 1}, // AND (HL)
-            {0xA7, 1}, // AND A
-            {0xA8, 1}, // XOR B
-            {0xA9, 1}, // XOR C
-            {0xAA, 1}, // XOR D
-            {0xAB, 1}, // XOR E
-            {0xAC, 1}, // XOR H
-            {0xAD, 1}, // XOR L
-            {0xAE, 1}, // XOR (HL)
-            {0xAF, 1}, // XOR A
-            {0xB0, 1}, // OR B
-            {0xB1, 1}, // OR C
-            {0xB2, 1}, // OR D
-            {0xB3, 1}, // OR E
-            {0xB4, 1}, // OR H
-            {0xB5, 1}, // OR L
-            {0xB6, 1}, // OR (HL)
-            {0xB7, 1}, // OR A
-            {0xB8, 1}, // CP B
-            {0xB9, 1}, // CP C
-            {0xBA, 1}, // CP D
-            {0xBB, 1}, // CP E
-            {0xBC, 1}, // CP H
-            {0xBD, 1}, // CP L
-            {0xBE, 1}, // CP (HL)
-            {0xBF, 1}, // CP A
-            {0xC0, 1}, // RET NZ
-            {0xC1, 1}, // POP BC
-            {0xC2, 3}, // JP NZ,nn
-            {0xC3, 3}, // JP nn
-            {0xC4, 3}, // CALL NZ,nn
-            {0xC5, 1}, // PUSH BC
-            {0xC6, 2}, // ADD A,n
-            {0xC7, 1}, // RST 0
-            {0xC8, 1}, // RET Z
-            {0xC9, 1}, // RET
-            {0xCA, 3}, // JP Z,nn
-            {0xCB, 2}, // Ext ops
-            {0xCC, 3}, // CALL Z,nn
-            {0xCD, 3}, // CALL nn
-            {0xCE, 2}, // ADC A,n
-            {0xCF, 1}, // RST 8
-            {0xD0, 1}, // RET NC
-            {0xD1, 1}, // POP DE
-            {0xD2, 3}, // JP NC,nn
-            // {0xD3, }, // XX
-            {0xD4, 3}, // CALL NC,nn
-            {0xD5, 1}, // PUSH DE
-            {0xD6, 2}, // SUB A,n
-            {0xD7, 1}, // RST 10
-            {0xD8, 1}, // RET C
-            {0xD9, 1}, // RETI
-            {0xDA, 3}, // JP C,nn
-            // {0xDB, }, // XX
-            {0xDC, 3}, // CALL C,nn
-            // {0xDD, }, // XX
-            {0xDE, 2}, // SBC A,n
-            {0xDF, 1}, // RST 18
-            {0xE0, 2}, // LDH (n),A
-            {0xE1, 1}, // POP HL
-            {0xE2, 1}, // LDH (C),A
-            // {0xE3, }, // XX
-            {0xE4, 1}, // XX
-            {0xE5, 1}, // PUSH HL
-            {0xE6, 2}, // AND n
-            {0xE7, 1}, // RST 20
-            {0xE8, 2}, // ADD SP,d
-            {0xE9, 1}, // JP (HL)
-            {0xEA, 3}, // LD (nn),A
-            // {0xEB, }, // XX
-            // {0xEC, }, // XX
-            // {0xED, }, // XX
-            {0xEE, 2}, // XOR n
-            {0xEF, 1}, // RST 28
-            {0xF0, 2}, // LDH A,(n)
-            {0xF1, 1}, // POP AF
-            {0xF2, 2}, // LDH A, (C)
-            {0xF3, 1}, // DI
-            // {0xF4, }, // XX
-            {0xF5, 1}, // PUSH AF
-            {0xF6, 2}, // OR n
-            {0xF7, 1}, // RST 30
-            {0xF8, 2}, // LDHL SP,d
-            {0xF9, 1}, // LD SP,HL
-            {0xFA, 3}, // LD A,(nn)
-            {0xFB, 1}, // EI
-            // {0xFC, }, // XX
-            // {0xFD, }, // XX
-            {0xFE, 2}, // CP n
-            {0xFF, 1} // RST 38
-        };
+    internal static byte Get(byte opcode) {
+      byte result;
+      switch(opcode)
+      {
+        case 0x00:  // NOP
+          result = 1;
+          break;
+        case 0x01:  // LD BC,nn
+          result = 3;
+          break;
+        case 0x02:  // LD (BC),A
+          result = 1;
+          break;
+        case 0x03:  // INC BC
+          result = 1;
+          break;
+        case 0x04:  // INC B
+          result = 1;
+          break;
+        case 0x05:  // DEC B
+          result = 1;
+          break;
+        case 0x06:  // LD B,n
+          result = 2;
+          break;
+        case 0x07:  // RLC A
+          result = 1;
+          break;
+        case 0x08:  // LD (nn),SP
+          result = 3;
+          break;
+        case 0x09:  // ADD HL,BC
+          result = 1;
+          break;
+        case 0x0A:  // LD A,(BC)
+          result = 1;
+          break;
+        case 0x0B:  // DEC BC
+          result = 1;
+          break;
+        case 0x0C:  // INC C
+          result = 1;
+          break;
+        case 0x0D:  // DEC C
+          result = 1;
+          break;
+        case 0x0E:  // LD C,n
+          result = 2;
+          break;
+        case 0x0F:  // RRC A
+          result = 1;
+          break;
+        case 0x10:  // STOP
+          result = 2;
+          break;
+        case 0x11:  // LD DE,nn
+          result = 3;
+          break;
+        case 0x12:  // LD (DE),A
+          result = 1;
+          break;
+        case 0x13:  // INC DE
+          result = 1;
+          break;
+        case 0x14:  // INC D
+          result = 1;
+          break;
+        case 0x15:  // DEC D
+          result = 1;
+          break;
+        case 0x16:  // LD D,n
+          result = 2;
+          break;
+        case 0x17:  // RL A
+          result = 1;
+          break;
+        case 0x18:  // JR n
+          result = 2;
+          break;
+        case 0x19:  // ADD HL,DE
+          result = 1;
+          break;
+        case 0x1A:  // LD A,(DE)
+          result = 1;
+          break;
+        case 0x1B:  // DEC DE
+          result = 1;
+          break;
+        case 0x1C:  // INC E
+          result = 1;
+          break;
+        case 0x1D:  // DEC E
+          result = 1;
+          break;
+        case 0x1E:  // LD E,n
+          result = 2;
+          break;
+        case 0x1F:  // RR A
+          result = 1;
+          break;
+        case 0x20:  // JR NZ,n
+          result = 2;
+          break;
+        case 0x21:  // LD HL,nn
+          result = 3;
+          break;
+        case 0x22:  // LDI (HL),A
+          result = 1;
+          break;
+        case 0x23:  // INC HL
+          result = 1;
+          break;
+        case 0x24:  // INC H
+          result = 1;
+          break;
+        case 0x25:  // DEC H
+          result = 1;
+          break;
+        case 0x26:  // LD H,n
+          result = 2;
+          break;
+        case 0x27:  // DAA
+          result = 1;
+          break;
+        case 0x28:  // JR Z,n
+          result = 2;
+          break;
+        case 0x29:  // ADD HL,HL
+          result = 1;
+          break;
+        case 0x2A:  // LDI A,(HL)
+          result = 1;
+          break;
+        case 0x2B:  // DEC HL
+          result = 1;
+          break;
+        case 0x2C:  // INC L
+          result = 1;
+          break;
+        case 0x2D:  // DEC L
+          result = 1;
+          break;
+        case 0x2E:  // LD L,n
+          result = 2;
+          break;
+        case 0x2F:  // CPL
+          result = 1;
+          break;
+        case 0x30:  // JR NC,n
+          result = 2;
+          break;
+        case 0x31:  // LD SP,nn
+          result = 3;
+          break;
+        case 0x32:  // LDD (HL),A
+          result = 1;
+          break;
+        case 0x33:  // INC SP
+          result = 1;
+          break;
+        case 0x34:  // INC (HL)
+          result = 1;
+          break;
+        case 0x35:  // DEC (HL)
+          result = 1;
+          break;
+        case 0x36:  // LD (HL),n
+          result = 2;
+          break;
+        case 0x37:  // SCF
+          result = 1;
+          break;
+        case 0x38:  // JR C,n
+          result = 2;
+          break;
+        case 0x39:  // ADD HL,SP
+          result = 1;
+          break;
+        case 0x3A:  // LDD A,(HL)
+          result = 1;
+          break;
+        case 0x3B:  // DEC SP
+          result = 1;
+          break;
+        case 0x3C:  // INC A
+          result = 1;
+          break;
+        case 0x3D:  // DEC A
+          result = 1;
+          break;
+        case 0x3E:  // LD A,n
+          result = 2;
+          break;
+        case 0x3F:  // CCF
+          result = 1;
+          break;
+        case 0x40:  // LD B,B
+          result = 1;
+          break;
+        case 0x41:  // LD B,C
+          result = 1;
+          break;
+        case 0x42:  // LD B,D
+          result = 1;
+          break;
+        case 0x43:  // LD B,E
+          result = 1;
+          break;
+        case 0x44:  // LD B,H
+          result = 1;
+          break;
+        case 0x45:  // LD B,L
+          result = 1;
+          break;
+        case 0x46:  // LD B,(HL)
+          result = 1;
+          break;
+        case 0x47:  // LD B,A
+          result = 1;
+          break;
+        case 0x48:  // LD C,B
+          result = 1;
+          break;
+        case 0x49:  // LD C,C
+          result = 1;
+          break;
+        case 0x4A:  // LD C,D
+          result = 1;
+          break;
+        case 0x4B:  // LD C,E
+          result = 1;
+          break;
+        case 0x4C:  // LD C,H
+          result = 1;
+          break;
+        case 0x4D:  // LD C,L
+          result = 1;
+          break;
+        case 0x4E:  // LD C,(HL)
+          result = 1;
+          break;
+        case 0x4F:  // LD C,A
+          result = 1;
+          break;
+        case 0x50:  // LD D,B
+          result = 1;
+          break;
+        case 0x51:  // LD D,C
+          result = 1;
+          break;
+        case 0x52:  // LD D,D
+          result = 1;
+          break;
+        case 0x53:  // LD D,E
+          result = 1;
+          break;
+        case 0x54:  // LD D,H
+          result = 1;
+          break;
+        case 0x55:  // LD D,L
+          result = 1;
+          break;
+        case 0x56:  // LD D,(HL)
+          result = 1;
+          break;
+        case 0x57:  // LD D,A
+          result = 1;
+          break;
+        case 0x58:  // LD E,B
+          result = 1;
+          break;
+        case 0x59:  // LD E,C
+          result = 1;
+          break;
+        case 0x5A:  // LD E,D
+          result = 1;
+          break;
+        case 0x5B:  // LD E,E
+          result = 1;
+          break;
+        case 0x5C:  // LD E,H
+          result = 1;
+          break;
+        case 0x5D:  // LD E,L
+          result = 1;
+          break;
+        case 0x5E:  // LD E,(HL)
+          result = 1;
+          break;
+        case 0x5F:  // LD E,A
+          result = 1;
+          break;
+        case 0x60:  // LD H,B
+          result = 1;
+          break;
+        case 0x61:  // LD H,C
+          result = 1;
+          break;
+        case 0x62:  // LD H,D
+          result = 1;
+          break;
+        case 0x63:  // LD H,E
+          result = 1;
+          break;
+        case 0x64:  // LD H,H
+          result = 1;
+          break;
+        case 0x65:  // LD H,L
+          result = 1;
+          break;
+        case 0x66:  // LD H,(HL)
+          result = 1;
+          break;
+        case 0x67:  // LD H,A
+          result = 1;
+          break;
+        case 0x68:  // LD L,B
+          result = 1;
+          break;
+        case 0x69:  // LD L,C
+          result = 1;
+          break;
+        case 0x6A:  // LD L,D
+          result = 1;
+          break;
+        case 0x6B:  // LD L,E
+          result = 1;
+          break;
+        case 0x6C:  // LD L,H
+          result = 1;
+          break;
+        case 0x6D:  // LD L,L
+          result = 1;
+          break;
+        case 0x6E:  // LD L,(HL)
+          result = 1;
+          break;
+        case 0x6F:  // LD L,A
+          result = 1;
+          break;
+        case 0x70:  // LD (HL),B
+          result = 1;
+          break;
+        case 0x71:  // LD (HL),C
+          result = 1;
+          break;
+        case 0x72:  // LD (HL),D
+          result = 1;
+          break;
+        case 0x73:  // LD (HL),E
+          result = 1;
+          break;
+        case 0x74:  // LD (HL),H
+          result = 1;
+          break;
+        case 0x75:  // LD (HL),L
+          result = 1;
+          break;
+        case 0x76:  // HALT
+          result = 1;
+          break;
+        case 0x77:  // LD (HL),A
+          result = 1;
+          break;
+        case 0x78:  // LD A,B
+          result = 1;
+          break;
+        case 0x79:  // LD A,C
+          result = 1;
+          break;
+        case 0x7A:  // LD A,D
+          result = 1;
+          break;
+        case 0x7B:  // LD A,E
+          result = 1;
+          break;
+        case 0x7C:  // LD A,H
+          result = 1;
+          break;
+        case 0x7D:  // LD A,L
+          result = 1;
+          break;
+        case 0x7E:  // LD A,(HL)
+          result = 1;
+          break;
+        case 0x7F:  // LD A,A
+          result = 1;
+          break;
+        case 0x80:  // ADD A,B
+          result = 1;
+          break;
+        case 0x81:  // ADD A,C
+          result = 1;
+          break;
+        case 0x82:  // ADD A,D
+          result = 1;
+          break;
+        case 0x83:  // ADD A,E
+          result = 1;
+          break;
+        case 0x84:  // ADD A,H
+          result = 1;
+          break;
+        case 0x85:  // ADD A,L
+          result = 1;
+          break;
+        case 0x86:  // ADD A,(HL)
+          result = 1;
+          break;
+        case 0x87:  // ADD A,A
+          result = 1;
+          break;
+        case 0x88:  // ADC A,B
+          result = 1;
+          break;
+        case 0x89:  // ADC A,C
+          result = 1;
+          break;
+        case 0x8A:  // ADC A,D
+          result = 1;
+          break;
+        case 0x8B:  // ADC A,E
+          result = 1;
+          break;
+        case 0x8C:  // ADC A,H
+          result = 1;
+          break;
+        case 0x8D:  // ADC A,L
+          result = 1;
+          break;
+        case 0x8E:  // ADC A,(HL)
+          result = 1;
+          break;
+        case 0x8F:  // ADC A,A
+          result = 1;
+          break;
+        case 0x90:  // SUB A,B
+          result = 1;
+          break;
+        case 0x91:  // SUB A,C
+          result = 1;
+          break;
+        case 0x92:  // SUB A,D
+          result = 1;
+          break;
+        case 0x93:  // SUB A,E
+          result = 1;
+          break;
+        case 0x94:  // SUB A,H
+          result = 1;
+          break;
+        case 0x95:  // SUB A,L
+          result = 1;
+          break;
+        case 0x96:  // SUB A,(HL)
+          result = 1;
+          break;
+        case 0x97:  // SUB A,A
+          result = 1;
+          break;
+        case 0x98:  // SBC A,B
+          result = 1;
+          break;
+        case 0x99:  // SBC A,C
+          result = 1;
+          break;
+        case 0x9A:  // SBC A,D
+          result = 1;
+          break;
+        case 0x9B:  // SBC A,E
+          result = 1;
+          break;
+        case 0x9C:  // SBC A,H
+          result = 1;
+          break;
+        case 0x9D:  // SBC A,L
+          result = 1;
+          break;
+        case 0x9E:  // SBC A,(HL)
+          result = 1;
+          break;
+        case 0x9F:  // SBC A,A
+          result = 1;
+          break;
+        case 0xA0:  // AND B
+          result = 1;
+          break;
+        case 0xA1:  // AND C
+          result = 1;
+          break;
+        case 0xA2:  // AND D
+          result = 1;
+          break;
+        case 0xA3:  // AND E
+          result = 1;
+          break;
+        case 0xA4:  // AND H
+          result = 1;
+          break;
+        case 0xA5:  // AND L
+          result = 1;
+          break;
+        case 0xA6:  // AND (HL)
+          result = 1;
+          break;
+        case 0xA7:  // AND A
+          result = 1;
+          break;
+        case 0xA8:  // XOR B
+          result = 1;
+          break;
+        case 0xA9:  // XOR C
+          result = 1;
+          break;
+        case 0xAA:  // XOR D
+          result = 1;
+          break;
+        case 0xAB:  // XOR E
+          result = 1;
+          break;
+        case 0xAC:  // XOR H
+          result = 1;
+          break;
+        case 0xAD:  // XOR L
+          result = 1;
+          break;
+        case 0xAE:  // XOR (HL)
+          result = 1;
+          break;
+        case 0xAF:  // XOR A
+          result = 1;
+          break;
+        case 0xB0:  // OR B
+          result = 1;
+          break;
+        case 0xB1:  // OR C
+          result = 1;
+          break;
+        case 0xB2:  // OR D
+          result = 1;
+          break;
+        case 0xB3:  // OR E
+          result = 1;
+          break;
+        case 0xB4:  // OR H
+          result = 1;
+          break;
+        case 0xB5:  // OR L
+          result = 1;
+          break;
+        case 0xB6:  // OR (HL)
+          result = 1;
+          break;
+        case 0xB7:  // OR A
+          result = 1;
+          break;
+        case 0xB8:  // CP B
+          result = 1;
+          break;
+        case 0xB9:  // CP C
+          result = 1;
+          break;
+        case 0xBA:  // CP D
+          result = 1;
+          break;
+        case 0xBB:  // CP E
+          result = 1;
+          break;
+        case 0xBC:  // CP H
+          result = 1;
+          break;
+        case 0xBD:  // CP L
+          result = 1;
+          break;
+        case 0xBE:  // CP (HL)
+          result = 1;
+          break;
+        case 0xBF:  // CP A
+          result = 1;
+          break;
+        case 0xC0:  // RET NZ
+          result = 1;
+          break;
+        case 0xC1:  // POP BC
+          result = 1;
+          break;
+        case 0xC2:  // JP NZ,nn
+          result = 3;
+          break;
+        case 0xC3:  // JP nn
+          result = 3;
+          break;
+        case 0xC4:  // CALL NZ,nn
+          result = 3;
+          break;
+        case 0xC5:  // PUSH BC
+          result = 1;
+          break;
+        case 0xC6:  // ADD A,n
+          result = 2;
+          break;
+        case 0xC7:  // RST 0
+          result = 1;
+          break;
+        case 0xC8:  // RET Z
+          result = 1;
+          break;
+        case 0xC9:  // RET
+          result = 1;
+          break;
+        case 0xCA:  // JP Z,nn
+          result = 3;
+          break;
+        case 0xCB:  // Ext ops
+          result = 2;
+          break;
+        case 0xCC:  // CALL Z,nn
+          result = 3;
+          break;
+        case 0xCD:  // CALL nn
+          result = 3;
+          break;
+        case 0xCE:  // ADC A,n
+          result = 2;
+          break;
+        case 0xCF:  // RST 8
+          result = 1;
+          break;
+        case 0xD0:  // RET NC
+          result = 1;
+          break;
+        case 0xD1:  // POP DE
+          result = 1;
+          break;
+        case 0xD2:  // JP NC,nn
+          result = 3;
+          break;
+        // {0xD3, }, // XX
+        case 0xD4:  // CALL NC,nn
+          result = 3;
+          break;
+        case 0xD5:  // PUSH DE
+          result = 1;
+          break;
+        case 0xD6:  // SUB A,n
+          result = 2;
+          break;
+        case 0xD7:  // RST 10
+          result = 1;
+          break;
+        case 0xD8:  // RET C
+          result = 1;
+          break;
+        case 0xD9:  // RETI
+          result = 1;
+          break;
+        case 0xDA:  // JP C,nn
+          result = 3;
+          break;
+        // {0xDB, }, // XX
+        case 0xDC:  // CALL C,nn
+          result = 3;
+          break;
+        // {0xDD, }, // XX
+        case 0xDE:  // SBC A,n
+          result = 2;
+          break;
+        case 0xDF:  // RST 18
+          result = 1;
+          break;
+        case 0xE0:  // LDH (n),A
+          result = 2;
+          break;
+        case 0xE1:  // POP HL
+          result = 1;
+          break;
+        case 0xE2:  // LDH (C),A
+          result = 1;
+          break;
+        // {0xE3, }, // XX
+        case 0xE4:  // XX
+          result = 1;
+          break;
+        case 0xE5:  // PUSH HL
+          result = 1;
+          break;
+        case 0xE6:  // AND n
+          result = 2;
+          break;
+        case 0xE7:  // RST 20
+          result = 1;
+          break;
+        case 0xE8:  // ADD SP,d
+          result = 2;
+          break;
+        case 0xE9:  // JP (HL)
+          result = 1;
+          break;
+        case 0xEA:  // LD (nn),A
+          result = 3;
+          break;
+        // {0xEB, }, // XX
+        // {0xEC, }, // XX
+        // {0xED, }, // XX
+        case 0xEE:  // XOR n
+          result = 2;
+          break;
+        case 0xEF:  // RST 28
+          result = 1;
+          break;
+        case 0xF0:  // LDH A,(n)
+          result = 2;
+          break;
+        case 0xF1:  // POP AF
+          result = 1;
+          break;
+        case 0xF2:  // LDH A, (C)
+          result = 2;
+          break;
+        case 0xF3:  // DI
+          result = 1;
+          break;
+        // {0xF4, }, // XX
+        case 0xF5:  // PUSH AF
+          result = 1;
+          break;
+        case 0xF6:  // OR n
+          result = 2;
+          break;
+        case 0xF7:  // RST 30
+          result = 1;
+          break;
+        case 0xF8:  // LDHL SP,d
+          result = 2;
+          break;
+        case 0xF9:  // LD SP,HL
+          result = 1;
+          break;
+        case 0xFA:  // LD A,(nn)
+          result = 3;
+          break;
+        case 0xFB:  // EI
+          result = 1;
+          break;
+        // {0xFC, }, // XX
+        // {0xFD, }, // XX
+        case 0xFE:  // CP n
+          result = 2;
+          break;
+        case 0xFF: // RST 38
+          result = 1;
+          break;
+        default:
+          result = 0;
+          break;
+      }
+
+      return result;
     }
   }
 }

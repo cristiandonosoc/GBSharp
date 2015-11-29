@@ -88,13 +88,6 @@ namespace GBSharp.CPUSpace
       get { return cbInstructionHistogram; }
     }
 
-    #region Lengths and clocks
-
-    internal Dictionary<byte, byte> instructionLengths = CPUInstructionLengths.Setup();
-    internal Dictionary<byte, byte> instructionClocks = CPUInstructionClocks.Setup();
-
-    #endregion
-
     internal ushort[] instructionHistogram = new ushort[256];
     internal ushort[] cbInstructionHistogram = new ushort[256];
 
@@ -103,12 +96,8 @@ namespace GBSharp.CPUSpace
       //Create Instruction Lambdas
       CreateInstructionLambdas();
       CreateCBInstructionLambdas();
-      instructionNames = CPUOpcodeNames.Setup();
-
-      instructionDescriptions = CPUInstructionDescriptions.Setup();
 
       _currentInstruction = new Instruction();
-
 
       this.memory = memory;
       this.interruptController = new InterruptController(this.memory);
@@ -282,12 +271,13 @@ namespace GBSharp.CPUSpace
       // Handle interrupt with a CALL instruction to the interrupt handler
       Instruction instruction = new Instruction();
       instruction.OpCode = 0xCD; // CALL!
-      instruction.Length = this.instructionLengths[(byte)instruction.OpCode];
+      byte lowOpcode = (byte)instruction.OpCode;
+      instruction.Length = CPUInstructionLengths.Get(lowOpcode);
       instruction.Literal = this.interruptHandlers[(Interrupts)interrupt];
       instruction.Lambda = this.instructionLambdas[(byte)instruction.OpCode];
-      instruction.Ticks = this.instructionClocks[(byte)instruction.OpCode];
-      instruction.Name = this.instructionNames[(byte)instruction.OpCode];
-      instruction.Description = this.instructionDescriptions[(byte)instruction.OpCode];
+      instruction.Ticks = CPUInstructionClocks.Get(lowOpcode);
+      instruction.Name = CPUOpcodeNames.Get(lowOpcode);
+      instruction.Description = CPUInstructionDescriptions.Get(lowOpcode);
 
       // Disable interrupts during interrupt handling and clear the current one
       this.interruptController.InterruptMasterEnable = false;
@@ -312,10 +302,11 @@ namespace GBSharp.CPUSpace
 
       if (instruction.OpCode != 0xCB)
       {
-        if(instructionHistogram[(byte)instruction.OpCode] < ushort.MaxValue)
-          instructionHistogram[(byte) instruction.OpCode]++;
+        byte lowOpcode = (byte)instruction.OpCode;
+        if(instructionHistogram[lowOpcode] < ushort.MaxValue)
+          instructionHistogram[lowOpcode]++;
         // Normal instructions
-        instruction.Length = this.instructionLengths[(byte)instruction.OpCode];
+        instruction.Length = CPUInstructionLengths.Get(lowOpcode);
 
         // Extract literal
         if (instruction.Length == 2)
@@ -345,9 +336,9 @@ namespace GBSharp.CPUSpace
         }
 
         instruction.Lambda = this.instructionLambdas[(byte)instruction.OpCode];
-        instruction.Ticks = this.instructionClocks[(byte)instruction.OpCode];
-        instruction.Name = instructionNames[(byte)instruction.OpCode];
-        instruction.Description = instructionDescriptions[(byte)instruction.OpCode];
+        instruction.Ticks = CPUInstructionClocks.Get(lowOpcode);
+        instruction.Name = CPUOpcodeNames.Get(lowOpcode);
+        instruction.Description = CPUInstructionDescriptions.Get(lowOpcode);
       }
       else
       {
@@ -511,13 +502,8 @@ namespace GBSharp.CPUSpace
     private Dictionary<byte, Action<ushort>> instructionLambdas;
     private Dictionary<byte, Action<ushort>> CBInstructionLambdas;
 
-    private Dictionary<byte, string> instructionNames;
-
-    private Dictionary<byte, string> instructionDescriptions;
-
     private void CreateInstructionLambdas()
     {
-#warning TODO: Conditional JUMP and CALL instructions should increment the clock if the condition is met.
       instructionLambdas = new Dictionary<byte, Action<ushort>>() {
             // NOP: No Operation
             {0x00, (n)=>{ }},
