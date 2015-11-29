@@ -92,8 +92,6 @@ namespace GBSharp.CPUSpace
 
     internal Dictionary<byte, byte> instructionLengths = CPUInstructionLengths.Setup();
     internal Dictionary<byte, byte> instructionClocks = CPUInstructionClocks.Setup();
-    internal Dictionary<byte, byte> CBInstructionLengths = CPUCBInstructionLengths.Setup();
-    internal Dictionary<byte, byte> CBInstructionClocks = CPUCBIntructionClocks.Setup();
 
     #endregion
 
@@ -106,10 +104,8 @@ namespace GBSharp.CPUSpace
       CreateInstructionLambdas();
       CreateCBInstructionLambdas();
       instructionNames = CPUOpcodeNames.Setup();
-      CBinstructionNames = CPUCBOpcodeNames.Setup();
 
       instructionDescriptions = CPUInstructionDescriptions.Setup();
-      CBinstructionDescriptions = CPUCBInstructionDescriptions.Setup();
 
       _currentInstruction = new Instruction();
 
@@ -365,15 +361,20 @@ namespace GBSharp.CPUSpace
         {
           instruction.OpCode += 0xCB; // The first byte is duplicated
         }
-        if (cbInstructionHistogram[(byte)instruction.OpCode] < ushort.MaxValue)
-          cbInstructionHistogram[(byte)instruction.OpCode]++;
-        instruction.Length = this.CBInstructionLengths[(byte)instruction.OpCode];
+
+        byte lowOpcode = (byte)instruction.OpCode;
+
+        if (cbInstructionHistogram[lowOpcode] < ushort.MaxValue)
+        {
+          cbInstructionHistogram[lowOpcode]++;
+        }
+        instruction.Length = CPUCBInstructionLengths.Get(lowOpcode);
         // There is no literal in CB instructions!
 
-        instruction.Lambda = this.CBInstructionLambdas[(byte)instruction.OpCode];
-        instruction.Ticks = this.CBInstructionClocks[(byte)instruction.OpCode];
-        instruction.Name = CBinstructionNames[(byte)instruction.OpCode];
-        instruction.Description = CBinstructionDescriptions[(byte)instruction.OpCode];
+        instruction.Lambda = this.CBInstructionLambdas[lowOpcode];
+        instruction.Ticks = CPUCBIntructionClocks.Get(lowOpcode);
+        instruction.Name = CPUCBOpcodeNames.Get(lowOpcode);
+        instruction.Description = CPUCBInstructionDescriptions.Get(lowOpcode);
       }
 
       // NOTE(Cristian): On haltLoad (HALT with IME disabled), the next byte after the HALT opcode
@@ -511,10 +512,8 @@ namespace GBSharp.CPUSpace
     private Dictionary<byte, Action<ushort>> CBInstructionLambdas;
 
     private Dictionary<byte, string> instructionNames;
-    private Dictionary<byte, string> CBinstructionNames;
 
     private Dictionary<byte, string> instructionDescriptions;
-    private Dictionary<byte, string> CBinstructionDescriptions;
 
     private void CreateInstructionLambdas()
     {

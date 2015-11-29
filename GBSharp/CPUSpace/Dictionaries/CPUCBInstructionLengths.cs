@@ -8,266 +8,784 @@ namespace GBSharp.CPUSpace.Dictionaries
 {
   class CPUCBInstructionLengths
   {
-    internal static Dictionary<byte, byte> Setup()
+    internal static byte Get(byte opcode)
     {
-      return new Dictionary<byte, byte>() {
-            {0x00, 2}, // RLC B
-            {0x01, 2}, // RLC C
-            {0x02, 2}, // RLC D
-            {0x03, 2}, // RLC E
-            {0x04, 2}, // RLC H
-            {0x05, 2}, // RLC L
-            {0x06, 2}, // RLC (HL)
-            {0x07, 2}, // RLC A
-            {0x08, 2}, // RRC B
-            {0x09, 2}, // RRC C
-            {0x0A, 2}, // RRC D
-            {0x0B, 2}, // RRC E
-            {0x0C, 2}, // RRC H
-            {0x0D, 2}, // RRC L
-            {0x0E, 2}, // RRC (HL)
-            {0x0F, 2}, // RRC A
-            {0x10, 2}, // RL B
-            {0x11, 2}, // RL C
-            {0x12, 2}, // RL D
-            {0x13, 2}, // RL E
-            {0x14, 2}, // RL H
-            {0x15, 2}, // RL L
-            {0x16, 2}, // RL (HL)
-            {0x17, 2}, // RL A
-            {0x18, 2}, // RR B
-            {0x19, 2}, // RR C
-            {0x1A, 2}, // RR D
-            {0x1B, 2}, // RR E
-            {0x1C, 2}, // RR H
-            {0x1D, 2}, // RR L
-            {0x1E, 2}, // RR (HL)
-            {0x1F, 2}, // RR A
-            {0x20, 2}, // SLA B
-            {0x21, 2}, // SLA C
-            {0x22, 2}, // SLA D
-            {0x23, 2}, // SLA E
-            {0x24, 2}, // SLA H
-            {0x25, 2}, // SLA L
-            {0x26, 2}, // SLA (HL)
-            {0x27, 2}, // SLA A
-            {0x28, 2}, // SRA B
-            {0x29, 2}, // SRA C
-            {0x2A, 2}, // SRA D
-            {0x2B, 2}, // SRA E
-            {0x2C, 2}, // SRA H
-            {0x2D, 2}, // SRA L
-            {0x2E, 2}, // SRA (HL)
-            {0x2F, 2}, // SRA A
-            {0x30, 2}, // SWAP B
-            {0x31, 2}, // SWAP C
-            {0x32, 2}, // SWAP D
-            {0x33, 2}, // SWAP E
-            {0x34, 2}, // SWAP H
-            {0x35, 2}, // SWAP L
-            {0x36, 2}, // SWAP (HL)
-            {0x37, 2}, // SWAP A
-            {0x38, 2}, // SRL B
-            {0x39, 2}, // SRL C
-            {0x3A, 2}, // SRL D
-            {0x3B, 2}, // SRL E
-            {0x3C, 2}, // SRL H
-            {0x3D, 2}, // SRL L
-            {0x3E, 2}, // SRL (HL)
-            {0x3F, 2}, // SRL A
-            {0x40, 2}, // BIT 0,B
-            {0x41, 2}, // BIT 0,C
-            {0x42, 2}, // BIT 0,D
-            {0x43, 2}, // BIT 0,E
-            {0x44, 2}, // BIT 0,H
-            {0x45, 2}, // BIT 0,L
-            {0x46, 2}, // BIT 0,(HL)
-            {0x47, 2}, // BIT 0,A
-            {0x48, 2}, // BIT 1,B
-            {0x49, 2}, // BIT 1,C
-            {0x4A, 2}, // BIT 1,D
-            {0x4B, 2}, // BIT 1,E
-            {0x4C, 2}, // BIT 1,H
-            {0x4D, 2}, // BIT 1,L
-            {0x4E, 2}, // BIT 1,(HL)
-            {0x4F, 2}, // BIT 1,A
-            {0x50, 2}, // BIT 2,B
-            {0x51, 2}, // BIT 2,C
-            {0x52, 2}, // BIT 2,D
-            {0x53, 2}, // BIT 2,E
-            {0x54, 2}, // BIT 2,H
-            {0x55, 2}, // BIT 2,L
-            {0x56, 2}, // BIT 2,(HL)
-            {0x57, 2}, // BIT 2,A
-            {0x58, 2}, // BIT 3,B
-            {0x59, 2}, // BIT 3,C
-            {0x5A, 2}, // BIT 3,D
-            {0x5B, 2}, // BIT 3,E
-            {0x5C, 2}, // BIT 3,H
-            {0x5D, 2}, // BIT 3,L
-            {0x5E, 2}, // BIT 3,(HL)
-            {0x5F, 2}, // BIT 3,A
-            {0x60, 2}, // BIT 4,B
-            {0x61, 2}, // BIT 4,C
-            {0x62, 2}, // BIT 4,D
-            {0x63, 2}, // BIT 4,E
-            {0x64, 2}, // BIT 4,H
-            {0x65, 2}, // BIT 4,L
-            {0x66, 2}, // BIT 4,(HL)
-            {0x67, 2}, // BIT 4,A
-            {0x68, 2}, // BIT 5,B
-            {0x69, 2}, // BIT 5,C
-            {0x6A, 2}, // BIT 5,D
-            {0x6B, 2}, // BIT 5,E
-            {0x6C, 2}, // BIT 5,H
-            {0x6D, 2}, // BIT 5,L
-            {0x6E, 2}, // BIT 5,(HL)
-            {0x6F, 2}, // BIT 5,A
-            {0x70, 2}, // BIT 6,B
-            {0x71, 2}, // BIT 6,C
-            {0x72, 2}, // BIT 6,D
-            {0x73, 2}, // BIT 6,E
-            {0x74, 2}, // BIT 6,H
-            {0x75, 2}, // BIT 6,L
-            {0x76, 2}, // BIT 6,(HL)
-            {0x77, 2}, // BIT 6,A
-            {0x78, 2}, // BIT 7,B
-            {0x79, 2}, // BIT 7,C
-            {0x7A, 2}, // BIT 7,D
-            {0x7B, 2}, // BIT 7,E
-            {0x7C, 2}, // BIT 7,H
-            {0x7D, 2}, // BIT 7,L
-            {0x7E, 2}, // BIT 7,(HL)
-            {0x7F, 2}, // BIT 7,A
-            {0x80, 2}, // RES 0,B
-            {0x81, 2}, // RES 0,C
-            {0x82, 2}, // RES 0,D
-            {0x83, 2}, // RES 0,E
-            {0x84, 2}, // RES 0,H
-            {0x85, 2}, // RES 0,L
-            {0x86, 2}, // RES 0,(HL)
-            {0x87, 2}, // RES 0,A
-            {0x88, 2}, // RES 1,B
-            {0x89, 2}, // RES 1,C
-            {0x8A, 2}, // RES 1,D
-            {0x8B, 2}, // RES 1,E
-            {0x8C, 2}, // RES 1,H
-            {0x8D, 2}, // RES 1,L
-            {0x8E, 2}, // RES 1,(HL)
-            {0x8F, 2}, // RES 1,A
-            {0x90, 2}, // RES 2,B
-            {0x91, 2}, // RES 2,C
-            {0x92, 2}, // RES 2,D
-            {0x93, 2}, // RES 2,E
-            {0x94, 2}, // RES 2,H
-            {0x95, 2}, // RES 2,L
-            {0x96, 2}, // RES 2,(HL)
-            {0x97, 2}, // RES 2,A
-            {0x98, 2}, // RES 3,B
-            {0x99, 2}, // RES 3,C
-            {0x9A, 2}, // RES 3,D
-            {0x9B, 2}, // RES 3,E
-            {0x9C, 2}, // RES 3,H
-            {0x9D, 2}, // RES 3,L
-            {0x9E, 2}, // RES 3,(HL)
-            {0x9F, 2}, // RES 3,A
-            {0xA0, 2}, // RES 4,B
-            {0xA1, 2}, // RES 4,C
-            {0xA2, 2}, // RES 4,D
-            {0xA3, 2}, // RES 4,E
-            {0xA4, 2}, // RES 4,H
-            {0xA5, 2}, // RES 4,L
-            {0xA6, 2}, // RES 4,(HL)
-            {0xA7, 2}, // RES 4,A
-            {0xA8, 2}, // RES 5,B
-            {0xA9, 2}, // RES 5,C
-            {0xAA, 2}, // RES 5,D
-            {0xAB, 2}, // RES 5,E
-            {0xAC, 2}, // RES 5,H
-            {0xAD, 2}, // RES 5,L
-            {0xAE, 2}, // RES 5,(HL)
-            {0xAF, 2}, // RES 5,A
-            {0xB0, 2}, // RES 6,B
-            {0xB1, 2}, // RES 6,C
-            {0xB2, 2}, // RES 6,D
-            {0xB3, 2}, // RES 6,E
-            {0xB4, 2}, // RES 6,H
-            {0xB5, 2}, // RES 6,L
-            {0xB6, 2}, // RES 6,(HL)
-            {0xB7, 2}, // RES 6,A
-            {0xB8, 2}, // RES 7,B
-            {0xB9, 2}, // RES 7,C
-            {0xBA, 2}, // RES 7,D
-            {0xBB, 2}, // RES 7,E
-            {0xBC, 2}, // RES 7,H
-            {0xBD, 2}, // RES 7,L
-            {0xBE, 2}, // RES 7,(HL)
-            {0xBF, 2}, // RES 7,A
-            {0xC0, 2}, // SET 0,B
-            {0xC1, 2}, // SET 0,C
-            {0xC2, 2}, // SET 0,D
-            {0xC3, 2}, // SET 0,E
-            {0xC4, 2}, // SET 0,H
-            {0xC5, 2}, // SET 0,L
-            {0xC6, 2}, // SET 0,(HL)
-            {0xC7, 2}, // SET 0,A
-            {0xC8, 2}, // SET 1,B
-            {0xC9, 2}, // SET 1,C
-            {0xCA, 2}, // SET 1,D
-            {0xCB, 2}, // SET 1,E
-            {0xCC, 2}, // SET 1,H
-            {0xCD, 2}, // SET 1,L
-            {0xCE, 2}, // SET 1,(HL)
-            {0xCF, 2}, // SET 1,A
-            {0xD0, 2}, // SET 2,B
-            {0xD1, 2}, // SET 2,C
-            {0xD2, 2}, // SET 2,D
-            {0xD3, 2}, // SET 2,E
-            {0xD4, 2}, // SET 2,H
-            {0xD5, 2}, // SET 2,L
-            {0xD6, 2}, // SET 2,(HL)
-            {0xD7, 2}, // SET 2,A
-            {0xD8, 2}, // SET 3,B
-            {0xD9, 2}, // SET 3,C
-            {0xDA, 2}, // SET 3,D
-            {0xDB, 2}, // SET 3,E
-            {0xDC, 2}, // SET 3,H
-            {0xDD, 2}, // SET 3,L
-            {0xDE, 2}, // SET 3,(HL)
-            {0xDF, 2}, // SET 3,A
-            {0xE0, 2}, // SET 4,B
-            {0xE1, 2}, // SET 4,C
-            {0xE2, 2}, // SET 4,D
-            {0xE3, 2}, // SET 4,E
-            {0xE4, 2}, // SET 4,H
-            {0xE5, 2}, // SET 4,L
-            {0xE6, 2}, // SET 4,(HL)
-            {0xE7, 2}, // SET 4,A
-            {0xE8, 2}, // SET 5,B
-            {0xE9, 2}, // SET 5,C
-            {0xEA, 2}, // SET 5,D
-            {0xEB, 2}, // SET 5,E
-            {0xEC, 2}, // SET 5,H
-            {0xED, 2}, // SET 5,L
-            {0xEE, 2}, // SET 5,(HL)
-            {0xEF, 2}, // SET 5,A
-            {0xF0, 2}, // SET 6,B
-            {0xF1, 2}, // SET 6,C
-            {0xF2, 2}, // SET 6,D
-            {0xF3, 2}, // SET 6,E
-            {0xF4, 2}, // SET 6,H
-            {0xF5, 2}, // SET 6,L
-            {0xF6, 2}, // SET 6,(HL)
-            {0xF7, 2}, // SET 6,A
-            {0xF8, 2}, // SET 7,B
-            {0xF9, 2}, // SET 7,C
-            {0xFA, 2}, // SET 7,D
-            {0xFB, 2}, // SET 7,E
-            {0xFC, 2}, // SET 7,H
-            {0xFD, 2}, // SET 7,L
-            {0xFE, 2}, // SET 7,(HL)
-            {0xFF, 2} // SET 7,A
-        };
+      byte result;
+      switch (opcode)
+      {
+        case 0x00:  // RLC B
+          result = 2;
+          break;
+        case 0x01:  // RLC C
+          result = 2;
+          break;
+        case 0x02:  // RLC D
+          result = 2;
+          break;
+        case 0x03:  // RLC E
+          result = 2;
+          break;
+        case 0x04:  // RLC H
+          result = 2;
+          break;
+        case 0x05:  // RLC L
+          result = 2;
+          break;
+        case 0x06:  // RLC (HL)
+          result = 2;
+          break;
+        case 0x07:  // RLC A
+          result = 2;
+          break;
+        case 0x08:  // RRC B
+          result = 2;
+          break;
+        case 0x09:  // RRC C
+          result = 2;
+          break;
+        case 0x0A:  // RRC D
+          result = 2;
+          break;
+        case 0x0B:  // RRC E
+          result = 2;
+          break;
+        case 0x0C:  // RRC H
+          result = 2;
+          break;
+        case 0x0D:  // RRC L
+          result = 2;
+          break;
+        case 0x0E:  // RRC (HL)
+          result = 2;
+          break;
+        case 0x0F:  // RRC A
+          result = 2;
+          break;
+        case 0x10:  // RL B
+          result = 2;
+          break;
+        case 0x11:  // RL C
+          result = 2;
+          break;
+        case 0x12:  // RL D
+          result = 2;
+          break;
+        case 0x13:  // RL E
+          result = 2;
+          break;
+        case 0x14:  // RL H
+          result = 2;
+          break;
+        case 0x15:  // RL L
+          result = 2;
+          break;
+        case 0x16:  // RL (HL)
+          result = 2;
+          break;
+        case 0x17:  // RL A
+          result = 2;
+          break;
+        case 0x18:  // RR B
+          result = 2;
+          break;
+        case 0x19:  // RR C
+          result = 2;
+          break;
+        case 0x1A:  // RR D
+          result = 2;
+          break;
+        case 0x1B:  // RR E
+          result = 2;
+          break;
+        case 0x1C:  // RR H
+          result = 2;
+          break;
+        case 0x1D:  // RR L
+          result = 2;
+          break;
+        case 0x1E:  // RR (HL)
+          result = 2;
+          break;
+        case 0x1F:  // RR A
+          result = 2;
+          break;
+        case 0x20:  // SLA B
+          result = 2;
+          break;
+        case 0x21:  // SLA C
+          result = 2;
+          break;
+        case 0x22:  // SLA D
+          result = 2;
+          break;
+        case 0x23:  // SLA E
+          result = 2;
+          break;
+        case 0x24:  // SLA H
+          result = 2;
+          break;
+        case 0x25:  // SLA L
+          result = 2;
+          break;
+        case 0x26:  // SLA (HL)
+          result = 2;
+          break;
+        case 0x27:  // SLA A
+          result = 2;
+          break;
+        case 0x28:  // SRA B
+          result = 2;
+          break;
+        case 0x29:  // SRA C
+          result = 2;
+          break;
+        case 0x2A:  // SRA D
+          result = 2;
+          break;
+        case 0x2B:  // SRA E
+          result = 2;
+          break;
+        case 0x2C:  // SRA H
+          result = 2;
+          break;
+        case 0x2D:  // SRA L
+          result = 2;
+          break;
+        case 0x2E:  // SRA (HL)
+          result = 2;
+          break;
+        case 0x2F:  // SRA A
+          result = 2;
+          break;
+        case 0x30:  // SWAP B
+          result = 2;
+          break;
+        case 0x31:  // SWAP C
+          result = 2;
+          break;
+        case 0x32:  // SWAP D
+          result = 2;
+          break;
+        case 0x33:  // SWAP E
+          result = 2;
+          break;
+        case 0x34:  // SWAP H
+          result = 2;
+          break;
+        case 0x35:  // SWAP L
+          result = 2;
+          break;
+        case 0x36:  // SWAP (HL)
+          result = 2;
+          break;
+        case 0x37:  // SWAP A
+          result = 2;
+          break;
+        case 0x38:  // SRL B
+          result = 2;
+          break;
+        case 0x39:  // SRL C
+          result = 2;
+          break;
+        case 0x3A:  // SRL D
+          result = 2;
+          break;
+        case 0x3B:  // SRL E
+          result = 2;
+          break;
+        case 0x3C:  // SRL H
+          result = 2;
+          break;
+        case 0x3D:  // SRL L
+          result = 2;
+          break;
+        case 0x3E:  // SRL (HL)
+          result = 2;
+          break;
+        case 0x3F:  // SRL A
+          result = 2;
+          break;
+        case 0x40:  // BIT 0,B
+          result = 2;
+          break;
+        case 0x41:  // BIT 0,C
+          result = 2;
+          break;
+        case 0x42:  // BIT 0,D
+          result = 2;
+          break;
+        case 0x43:  // BIT 0,E
+          result = 2;
+          break;
+        case 0x44:  // BIT 0,H
+          result = 2;
+          break;
+        case 0x45:  // BIT 0,L
+          result = 2;
+          break;
+        case 0x46:  // BIT 0,(HL)
+          result = 2;
+          break;
+        case 0x47:  // BIT 0,A
+          result = 2;
+          break;
+        case 0x48:  // BIT 1,B
+          result = 2;
+          break;
+        case 0x49:  // BIT 1,C
+          result = 2;
+          break;
+        case 0x4A:  // BIT 1,D
+          result = 2;
+          break;
+        case 0x4B:  // BIT 1,E
+          result = 2;
+          break;
+        case 0x4C:  // BIT 1,H
+          result = 2;
+          break;
+        case 0x4D:  // BIT 1,L
+          result = 2;
+          break;
+        case 0x4E:  // BIT 1,(HL)
+          result = 2;
+          break;
+        case 0x4F:  // BIT 1,A
+          result = 2;
+          break;
+        case 0x50:  // BIT 2,B
+          result = 2;
+          break;
+        case 0x51:  // BIT 2,C
+          result = 2;
+          break;
+        case 0x52:  // BIT 2,D
+          result = 2;
+          break;
+        case 0x53:  // BIT 2,E
+          result = 2;
+          break;
+        case 0x54:  // BIT 2,H
+          result = 2;
+          break;
+        case 0x55:  // BIT 2,L
+          result = 2;
+          break;
+        case 0x56:  // BIT 2,(HL)
+          result = 2;
+          break;
+        case 0x57:  // BIT 2,A
+          result = 2;
+          break;
+        case 0x58:  // BIT 3,B
+          result = 2;
+          break;
+        case 0x59:  // BIT 3,C
+          result = 2;
+          break;
+        case 0x5A:  // BIT 3,D
+          result = 2;
+          break;
+        case 0x5B:  // BIT 3,E
+          result = 2;
+          break;
+        case 0x5C:  // BIT 3,H
+          result = 2;
+          break;
+        case 0x5D:  // BIT 3,L
+          result = 2;
+          break;
+        case 0x5E:  // BIT 3,(HL)
+          result = 2;
+          break;
+        case 0x5F:  // BIT 3,A
+          result = 2;
+          break;
+        case 0x60:  // BIT 4,B
+          result = 2;
+          break;
+        case 0x61:  // BIT 4,C
+          result = 2;
+          break;
+        case 0x62:  // BIT 4,D
+          result = 2;
+          break;
+        case 0x63:  // BIT 4,E
+          result = 2;
+          break;
+        case 0x64:  // BIT 4,H
+          result = 2;
+          break;
+        case 0x65:  // BIT 4,L
+          result = 2;
+          break;
+        case 0x66:  // BIT 4,(HL)
+          result = 2;
+          break;
+        case 0x67:  // BIT 4,A
+          result = 2;
+          break;
+        case 0x68:  // BIT 5,B
+          result = 2;
+          break;
+        case 0x69:  // BIT 5,C
+          result = 2;
+          break;
+        case 0x6A:  // BIT 5,D
+          result = 2;
+          break;
+        case 0x6B:  // BIT 5,E
+          result = 2;
+          break;
+        case 0x6C:  // BIT 5,H
+          result = 2;
+          break;
+        case 0x6D:  // BIT 5,L
+          result = 2;
+          break;
+        case 0x6E:  // BIT 5,(HL)
+          result = 2;
+          break;
+        case 0x6F:  // BIT 5,A
+          result = 2;
+          break;
+        case 0x70:  // BIT 6,B
+          result = 2;
+          break;
+        case 0x71:  // BIT 6,C
+          result = 2;
+          break;
+        case 0x72:  // BIT 6,D
+          result = 2;
+          break;
+        case 0x73:  // BIT 6,E
+          result = 2;
+          break;
+        case 0x74:  // BIT 6,H
+          result = 2;
+          break;
+        case 0x75:  // BIT 6,L
+          result = 2;
+          break;
+        case 0x76:  // BIT 6,(HL)
+          result = 2;
+          break;
+        case 0x77:  // BIT 6,A
+          result = 2;
+          break;
+        case 0x78:  // BIT 7,B
+          result = 2;
+          break;
+        case 0x79:  // BIT 7,C
+          result = 2;
+          break;
+        case 0x7A:  // BIT 7,D
+          result = 2;
+          break;
+        case 0x7B:  // BIT 7,E
+          result = 2;
+          break;
+        case 0x7C:  // BIT 7,H
+          result = 2;
+          break;
+        case 0x7D:  // BIT 7,L
+          result = 2;
+          break;
+        case 0x7E:  // BIT 7,(HL)
+          result = 2;
+          break;
+        case 0x7F:  // BIT 7,A
+          result = 2;
+          break;
+        case 0x80:  // RES 0,B
+          result = 2;
+          break;
+        case 0x81:  // RES 0,C
+          result = 2;
+          break;
+        case 0x82:  // RES 0,D
+          result = 2;
+          break;
+        case 0x83:  // RES 0,E
+          result = 2;
+          break;
+        case 0x84:  // RES 0,H
+          result = 2;
+          break;
+        case 0x85:  // RES 0,L
+          result = 2;
+          break;
+        case 0x86:  // RES 0,(HL)
+          result = 2;
+          break;
+        case 0x87:  // RES 0,A
+          result = 2;
+          break;
+        case 0x88:  // RES 1,B
+          result = 2;
+          break;
+        case 0x89:  // RES 1,C
+          result = 2;
+          break;
+        case 0x8A:  // RES 1,D
+          result = 2;
+          break;
+        case 0x8B:  // RES 1,E
+          result = 2;
+          break;
+        case 0x8C:  // RES 1,H
+          result = 2;
+          break;
+        case 0x8D:  // RES 1,L
+          result = 2;
+          break;
+        case 0x8E:  // RES 1,(HL)
+          result = 2;
+          break;
+        case 0x8F:  // RES 1,A
+          result = 2;
+          break;
+        case 0x90:  // RES 2,B
+          result = 2;
+          break;
+        case 0x91:  // RES 2,C
+          result = 2;
+          break;
+        case 0x92:  // RES 2,D
+          result = 2;
+          break;
+        case 0x93:  // RES 2,E
+          result = 2;
+          break;
+        case 0x94:  // RES 2,H
+          result = 2;
+          break;
+        case 0x95:  // RES 2,L
+          result = 2;
+          break;
+        case 0x96:  // RES 2,(HL)
+          result = 2;
+          break;
+        case 0x97:  // RES 2,A
+          result = 2;
+          break;
+        case 0x98:  // RES 3,B
+          result = 2;
+          break;
+        case 0x99:  // RES 3,C
+          result = 2;
+          break;
+        case 0x9A:  // RES 3,D
+          result = 2;
+          break;
+        case 0x9B:  // RES 3,E
+          result = 2;
+          break;
+        case 0x9C:  // RES 3,H
+          result = 2;
+          break;
+        case 0x9D:  // RES 3,L
+          result = 2;
+          break;
+        case 0x9E:  // RES 3,(HL)
+          result = 2;
+          break;
+        case 0x9F:  // RES 3,A
+          result = 2;
+          break;
+        case 0xA0:  // RES 4,B
+          result = 2;
+          break;
+        case 0xA1:  // RES 4,C
+          result = 2;
+          break;
+        case 0xA2:  // RES 4,D
+          result = 2;
+          break;
+        case 0xA3:  // RES 4,E
+          result = 2;
+          break;
+        case 0xA4:  // RES 4,H
+          result = 2;
+          break;
+        case 0xA5:  // RES 4,L
+          result = 2;
+          break;
+        case 0xA6:  // RES 4,(HL)
+          result = 2;
+          break;
+        case 0xA7:  // RES 4,A
+          result = 2;
+          break;
+        case 0xA8:  // RES 5,B
+          result = 2;
+          break;
+        case 0xA9:  // RES 5,C
+          result = 2;
+          break;
+        case 0xAA:  // RES 5,D
+          result = 2;
+          break;
+        case 0xAB:  // RES 5,E
+          result = 2;
+          break;
+        case 0xAC:  // RES 5,H
+          result = 2;
+          break;
+        case 0xAD:  // RES 5,L
+          result = 2;
+          break;
+        case 0xAE:  // RES 5,(HL)
+          result = 2;
+          break;
+        case 0xAF:  // RES 5,A
+          result = 2;
+          break;
+        case 0xB0:  // RES 6,B
+          result = 2;
+          break;
+        case 0xB1:  // RES 6,C
+          result = 2;
+          break;
+        case 0xB2:  // RES 6,D
+          result = 2;
+          break;
+        case 0xB3:  // RES 6,E
+          result = 2;
+          break;
+        case 0xB4:  // RES 6,H
+          result = 2;
+          break;
+        case 0xB5:  // RES 6,L
+          result = 2;
+          break;
+        case 0xB6:  // RES 6,(HL)
+          result = 2;
+          break;
+        case 0xB7:  // RES 6,A
+          result = 2;
+          break;
+        case 0xB8:  // RES 7,B
+          result = 2;
+          break;
+        case 0xB9:  // RES 7,C
+          result = 2;
+          break;
+        case 0xBA:  // RES 7,D
+          result = 2;
+          break;
+        case 0xBB:  // RES 7,E
+          result = 2;
+          break;
+        case 0xBC:  // RES 7,H
+          result = 2;
+          break;
+        case 0xBD:  // RES 7,L
+          result = 2;
+          break;
+        case 0xBE:  // RES 7,(HL)
+          result = 2;
+          break;
+        case 0xBF:  // RES 7,A
+          result = 2;
+          break;
+        case 0xC0:  // SET 0,B
+          result = 2;
+          break;
+        case 0xC1:  // SET 0,C
+          result = 2;
+          break;
+        case 0xC2:  // SET 0,D
+          result = 2;
+          break;
+        case 0xC3:  // SET 0,E
+          result = 2;
+          break;
+        case 0xC4:  // SET 0,H
+          result = 2;
+          break;
+        case 0xC5:  // SET 0,L
+          result = 2;
+          break;
+        case 0xC6:  // SET 0,(HL)
+          result = 2;
+          break;
+        case 0xC7:  // SET 0,A
+          result = 2;
+          break;
+        case 0xC8:  // SET 1,B
+          result = 2;
+          break;
+        case 0xC9:  // SET 1,C
+          result = 2;
+          break;
+        case 0xCA:  // SET 1,D
+          result = 2;
+          break;
+        case 0xCB:  // SET 1,E
+          result = 2;
+          break;
+        case 0xCC:  // SET 1,H
+          result = 2;
+          break;
+        case 0xCD:  // SET 1,L
+          result = 2;
+          break;
+        case 0xCE:  // SET 1,(HL)
+          result = 2;
+          break;
+        case 0xCF:  // SET 1,A
+          result = 2;
+          break;
+        case 0xD0:  // SET 2,B
+          result = 2;
+          break;
+        case 0xD1:  // SET 2,C
+          result = 2;
+          break;
+        case 0xD2:  // SET 2,D
+          result = 2;
+          break;
+        case 0xD3:  // SET 2,E
+          result = 2;
+          break;
+        case 0xD4:  // SET 2,H
+          result = 2;
+          break;
+        case 0xD5:  // SET 2,L
+          result = 2;
+          break;
+        case 0xD6:  // SET 2,(HL)
+          result = 2;
+          break;
+        case 0xD7:  // SET 2,A
+          result = 2;
+          break;
+        case 0xD8:  // SET 3,B
+          result = 2;
+          break;
+        case 0xD9:  // SET 3,C
+          result = 2;
+          break;
+        case 0xDA:  // SET 3,D
+          result = 2;
+          break;
+        case 0xDB:  // SET 3,E
+          result = 2;
+          break;
+        case 0xDC:  // SET 3,H
+          result = 2;
+          break;
+        case 0xDD:  // SET 3,L
+          result = 2;
+          break;
+        case 0xDE:  // SET 3,(HL)
+          result = 2;
+          break;
+        case 0xDF:  // SET 3,A
+          result = 2;
+          break;
+        case 0xE0:  // SET 4,B
+          result = 2;
+          break;
+        case 0xE1:  // SET 4,C
+          result = 2;
+          break;
+        case 0xE2:  // SET 4,D
+          result = 2;
+          break;
+        case 0xE3:  // SET 4,E
+          result = 2;
+          break;
+        case 0xE4:  // SET 4,H
+          result = 2;
+          break;
+        case 0xE5:  // SET 4,L
+          result = 2;
+          break;
+        case 0xE6:  // SET 4,(HL)
+          result = 2;
+          break;
+        case 0xE7:  // SET 4,A
+          result = 2;
+          break;
+        case 0xE8:  // SET 5,B
+          result = 2;
+          break;
+        case 0xE9:  // SET 5,C
+          result = 2;
+          break;
+        case 0xEA:  // SET 5,D
+          result = 2;
+          break;
+        case 0xEB:  // SET 5,E
+          result = 2;
+          break;
+        case 0xEC:  // SET 5,H
+          result = 2;
+          break;
+        case 0xED:  // SET 5,L
+          result = 2;
+          break;
+        case 0xEE:  // SET 5,(HL)
+          result = 2;
+          break;
+        case 0xEF:  // SET 5,A
+          result = 2;
+          break;
+        case 0xF0:  // SET 6,B
+          result = 2;
+          break;
+        case 0xF1:  // SET 6,C
+          result = 2;
+          break;
+        case 0xF2:  // SET 6,D
+          result = 2;
+          break;
+        case 0xF3:  // SET 6,E
+          result = 2;
+          break;
+        case 0xF4:  // SET 6,H
+          result = 2;
+          break;
+        case 0xF5:  // SET 6,L
+          result = 2;
+          break;
+        case 0xF6:  // SET 6,(HL)
+          result = 2;
+          break;
+        case 0xF7:  // SET 6,A
+          result = 2;
+          break;
+        case 0xF8:  // SET 7,B
+          result = 2;
+          break;
+        case 0xF9:  // SET 7,C
+          result = 2;
+          break;
+        case 0xFA:  // SET 7,D
+          result = 2;
+          break;
+        case 0xFB:  // SET 7,E
+          result = 2;
+          break;
+        case 0xFC:  // SET 7,H
+          result = 2;
+          break;
+        case 0xFD:  // SET 7,L
+          result = 2;
+          break;
+        case 0xFE:  // SET 7,(HL)
+          result = 2;
+          break;
+        case 0xFF: // SET 7,A
+          result = 2;
+          break;
+        default:
+          throw new InvalidProgramException("Invalid Opcode");
+      }
+
+      return result;
     }
   }
 }
