@@ -372,7 +372,7 @@ namespace GBSharp.CPUSpace
         // There is no literal in CB instructions!
 
         instruction.Lambda = this.CBInstructionLambdas[lowOpcode];
-        instruction.Ticks = CPUCBIntructionClocks.Get(lowOpcode);
+        instruction.Ticks = CPUCBInstructionClocks.Get(lowOpcode);
         instruction.Name = CPUCBOpcodeNames.Get(lowOpcode);
         instruction.Description = CPUCBInstructionDescriptions.Get(lowOpcode);
       }
