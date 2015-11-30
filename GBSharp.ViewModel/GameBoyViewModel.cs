@@ -91,9 +91,7 @@ namespace GBSharp.ViewModel
       _gameBoyController.OnFileLoaded += FileLoadedHandler;
       _gameBoyController.OnStep += StepHandler;
       _memory = new MemoryViewModel(_gameBoy.Memory, "Memory View");
-      _gameBoy.Memory.MemoryWritten += _memory.MemoryWrittenHandler;
       _cpu = new CPUViewModel(_gameBoy, _dispatcher);
-      
 
       // TODO(aaecheve): Should this be another function handling this?
       _gameBoy.CPU.BreakpointFound += BreakpointHandler;
@@ -146,11 +144,7 @@ namespace GBSharp.ViewModel
       _interrupt.CopyFromDomain();
       _ioRegisters.CopyFromDomain();
 
-      if(_memory.HighlightUpdated == false)
-      {
-        _memory.CopyFromDomain();
-        _memory.HighlightUpdated = true;
-      }
+      _memory.StepHandler();
     }
 
     private void FileLoadedHandler()

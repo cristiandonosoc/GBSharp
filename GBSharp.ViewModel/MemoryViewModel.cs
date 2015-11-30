@@ -26,7 +26,6 @@ namespace GBSharp.ViewModel
     // NOTE(Cristian): the initial range doesn't highlight anything :)
     private ushort _highlightAddressStart = 0xFFFF;
     private ushort _highlightAddressEnd = 0x0000;
-    public bool HighlightUpdated { get; set; }
 
     public ObservableCollection<MemoryWordGroupViewModel> MemoryWordGroups
     {
@@ -181,8 +180,6 @@ namespace GBSharp.ViewModel
       _numberOfWordsOptions.Add(512);
       _numberOfWordsOptions.Add(1024);
       NumberOfWordsPerLine = 16;
-
-      HighlightUpdated = true;
     }
 
     private void UpdateMemoryWords()
@@ -205,8 +202,19 @@ namespace GBSharp.ViewModel
 
     public void MemoryWrittenHandler(ushort addressStart, ushort addressEnd)
     {
-      _highlightAddressStart = addressStart;
-      _highlightAddressEnd = addressEnd;
+
+    }
+
+    public void StepHandler()
+    {
+      if((_highlightAddressStart == _memory.MemoryChangedLow) &&
+         (_highlightAddressEnd == _memory.MemoryChangedHigh))
+      {
+        return;
+      }
+
+      _highlightAddressStart = _memory.MemoryChangedLow;
+      _highlightAddressEnd = _memory.MemoryChangedHigh;
 
       // We search for the correct section
       foreach(MemorySectionViewModel section in _memorySections)
@@ -222,7 +230,6 @@ namespace GBSharp.ViewModel
         }
       }
 
-      HighlightUpdated = false;
     }
 
     public void CopyFromDomain()
