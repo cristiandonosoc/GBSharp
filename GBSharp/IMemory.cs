@@ -7,6 +7,7 @@ namespace GBSharp
     byte[] Data { get; }
     void Load(byte[] data);
 
-    event Action<ushort, ushort> MemoryWritten;
+    ushort MemoryChangedLow { get; }
+    ushort MemoryChangedHigh { get; }
   }
 }

@@ -10,7 +10,8 @@ namespace GBSharp.MemorySpace
 {
   class Memory : IMemory
   {
-    public event Action<ushort, ushort> MemoryWritten;
+    public ushort MemoryChangedLow { get; private set; }
+    public ushort MemoryChangedHigh { get; private set; }
 
     /// <summary>
     /// This is what can be addressed.
@@ -67,7 +68,8 @@ namespace GBSharp.MemorySpace
     internal void Write(ushort address, byte value)
     {
       this.memoryHandler.Write(address, value);
-      MemoryWritten(address, address);
+      MemoryChangedLow = address;
+      MemoryChangedLow = address;
     }
 
     /// <summary>
@@ -78,7 +80,8 @@ namespace GBSharp.MemorySpace
     internal void Write(ushort address, ushort value)
     {
       this.memoryHandler.Write(address, value);
-      MemoryWritten(address, ++address);
+      MemoryChangedLow = address;
+      MemoryChangedLow = ++address;
     }
 
     /// <summary>
