@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GBSharp.MemorySpace;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GBSharp.AudioSpace
 {
-  class SoundChannel
+  internal class SoundChannel1 : ISoundChannel
   {
     #region BUFFER DEFINITION
 
@@ -22,8 +23,8 @@ namespace GBSharp.AudioSpace
 
     private int _milliseconds = 1000; // ms of sample
 
-    byte[] _buffer;
-    public byte[] Buffer { get { return _buffer; } }
+    float[] _buffer;
+    public float[] Buffer { get { return _buffer; } }
 
     private int _sampleIndex;
     public int SampleCount { get { return _sampleIndex; } }
@@ -63,18 +64,18 @@ namespace GBSharp.AudioSpace
     private int _outputTickCounter = 0;
 
     private bool _up = false;
-    private byte _outputValue = 0;
+    private float _outputValue = 0;
 
-    internal SoundChannel(int sampleRate, int numChannels, int sampleSize)
+    internal SoundChannel1(int sampleRate, int numChannels, int sampleSize)
     {
       _sampleRate = sampleRate;
       _msSampleRate = _sampleRate / 1000;
       _numChannels = numChannels;
       _sampleSize = sampleSize;
-      _buffer = new byte[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
+      _buffer = new float[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
     }
 
-    internal void GenerateSamples(int sampleCount)
+    public void GenerateSamples(int sampleCount)
     {
       while(sampleCount > 0)
       {
@@ -91,14 +92,19 @@ namespace GBSharp.AudioSpace
         {
           _tickCounter = _tickThreshold;
           _up = !_up;
-          _outputValue = (byte)(_up ? 255 : 0);
+          _outputValue = _up ? -0.5f : 0.5f;
         }
       }
     }
 
-    internal void ClearBuffer()
+    public void ClearBuffer()
     {
       _sampleIndex = 0;
+    }
+    
+    public void HandleMemoryChange(MMR register, byte value)
+    {
+
     }
   }
 }

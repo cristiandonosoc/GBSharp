@@ -44,7 +44,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AudioSpace\APU.cs" />
-    <Compile Include="AudioSpace\SoundChannel.cs" />
+    <Compile Include="AudioSpace\ISoundChannel.cs" />
+    <Compile Include="AudioSpace\SoundChannel1.cs" />
     <Compile Include="Cartridge\Cartridge.cs" />
     <Compile Include="CartridgeType.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionLengths.cs" />

@@ -32,7 +32,9 @@ namespace GBSharp.AudioSpace
     private int _milliseconds = 1000; // ms of sample
 
     byte[] _buffer;
-    public byte[] Buffer { get { return _channel.Buffer; } }
+    public byte[] Buffer { get { return _buffer; } }
+
+    private uint[] _tempBuffer;
 
     // TODO(Cristian): Join channels to make an unified sound channel
     private int _sampleIndex;
@@ -40,11 +42,12 @@ namespace GBSharp.AudioSpace
 
     private Memory _memory;
 
-
-    SoundChannel _channel;
+    SoundChannel1 _channel;
 
     internal APU(Memory memory, int sampleRate, int numChannels, int sampleSize)
     {
+
+
       _memory = memory;
 
       _sampleRate = sampleRate;
@@ -52,9 +55,9 @@ namespace GBSharp.AudioSpace
       _numChannels = numChannels;
       _sampleSize = sampleSize;
       _buffer = new byte[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
+      _tempBuffer = new uint[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
 
-      _channel = new SoundChannel(sampleRate, numChannels, sampleSize);
-      _channel.LoadFrequencyFactor(0x7D, 0x7);
+      _channel = (new SoundChannel1(sampleRate, numChannels, sampleSize));
     }
 
     // TODO(Cristian): Do this on memory change
@@ -67,7 +70,19 @@ namespace GBSharp.AudioSpace
 
     public void GenerateSamples(int sampleCount)
     {
+      ClearBuffer();
       _channel.GenerateSamples(sampleCount);
+
+      // We transformate the samples
+      for(int i = 0; i < sampleCount; ++i)
+      {
+        for(int c = 0; c < _numChannels; ++c)
+        {
+          _buffer[_sampleIndex] = (byte)(127 * (_channel.Buffer[_sampleIndex] + 0.5f));
+          ++_sampleIndex;
+        }
+      }
+
     }
 
     public void ClearBuffer()
