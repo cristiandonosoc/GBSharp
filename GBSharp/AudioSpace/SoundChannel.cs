@@ -52,7 +52,7 @@ namespace GBSharp.AudioSpace
 
     internal void LoadFrequencyFactor(byte low, byte high)
     {
-      if((LowFreqByte == low) && (HighFreqByte == high)) { return; }
+      if ((LowFreqByte == low) && (HighFreqByte == high)) { return; }
 
       LowFreqByte = low;
       HighFreqByte = high;
@@ -74,26 +74,20 @@ namespace GBSharp.AudioSpace
       _buffer = new byte[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
     }
 
-    internal void Step(int ticks)
+    internal void GenerateSamples(int sampleCount)
     {
-
-      // We check if the frequency has changed
-
-      _outputTickCounter += ticks;
-
-      while (_outputTickCounter >= APU.MinimumTickThreshold)
+      while(sampleCount > 0)
       {
-        _outputTickCounter -= APU.MinimumTickThreshold;
-        _tickCounter -= APU.MinimumTickThreshold;
+        --sampleCount;
 
-        // We output a sample
-        for (int c = 0; c < _numChannels; ++c)
+        for(int c = 0; c < _numChannels; ++c)
         {
           _buffer[_sampleIndex++] = _outputValue;
         }
 
-        // We check if we need to change the value
-        if (_tickCounter < 0)
+        // The amount of ticks in a sample
+        _tickCounter -= APU.MinimumTickThreshold;
+        if(_tickCounter < 0)
         {
           _tickCounter = _tickThreshold;
           _up = !_up;

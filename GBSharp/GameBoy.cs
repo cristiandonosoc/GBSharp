@@ -13,6 +13,7 @@ namespace GBSharp
   {
     internal static double targetFramerate = 60.0; // This is not the real gameboy framerate, but it's a nice number.
     internal static double stopwatchTicksPerFrame = Stopwatch.Frequency / targetFramerate;
+    internal static double stopwatchTicksPerMs = Stopwatch.Frequency / 1000.0;
 
     internal static double targetMillisecondsPerTick = 0.0002384185791015625; // It is know that this is 2^-22.
     internal static int ticksPerMillisecond = 4194; // Actually it's 4194,304
@@ -207,7 +208,13 @@ namespace GBSharp
         // Check timing issues
         if (this.frameReady)
         {
-          long firstMs = this.stopwatch.ElapsedMilliseconds;
+          apu.UpdateChannels();
+
+          //// We generate 12 ms of sound
+          //int msToGenerate = 13;
+          //apu.Step(msToGenerate * GameBoy.ticksPerMillisecond);
+
+          //long firstMs = this.stopwatch.ElapsedMilliseconds;
           long ellapsedStopwatchTicks = this.stopwatch.ElapsedTicks;
 
           // Should we sleep?
@@ -217,6 +224,13 @@ namespace GBSharp
             this.manualResetEvent.Wait((int)(/*0.5 + */1000.0 * (stopwatchTicksPerFrame - ellapsedStopwatchTicks) / Stopwatch.Frequency));
             this.manualResetEvent.Set();
           }
+
+          //// Now we see how much time we really slept and generate the leftover
+          //double swTicksLeft = this.stopwatch.ElapsedTicks - msToGenerate * stopwatchTicksPerMs;
+          //double msLeft = swTicksLeft / stopwatchTicksPerMs;
+          //apu.Step((int)(GameBoy.ticksPerMillisecond * msLeft));
+
+          // With this we generate exactly the amount needed for this time
 
           //double overTicks = (double)this.stopwatch.ElapsedTicks - stopwatchTicksPerFrame;
           //bool OV = false;
@@ -242,11 +256,9 @@ namespace GBSharp
           this.stepCounter = 0;
           this.frameReady = false;
 
+
           // Finally here we trigger the notification
           NotifyFrameCompleted();
-
-          // After it's been read, we clear the buffer for another run
-          apu.ClearBuffer();
         }
       }
     }

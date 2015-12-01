@@ -11,5 +11,8 @@ namespace GBSharp
 
     byte[] Buffer { get; }
     int SampleCount { get; }
+
+    void GenerateSamples(int sampleCount);
+    void ClearBuffer();
   }
 }

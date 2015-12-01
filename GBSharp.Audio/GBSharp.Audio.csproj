@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="AudioManager.cs" />
     <Compile Include="CircularWriteableBufferSource.cs" />
+    <Compile Include="DirectStreamingSource.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

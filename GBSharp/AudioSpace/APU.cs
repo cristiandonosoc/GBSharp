@@ -57,17 +57,20 @@ namespace GBSharp.AudioSpace
       _channel.LoadFrequencyFactor(0x7D, 0x7);
     }
 
-    internal void Step(int ticks)
+    // TODO(Cristian): Do this on memory change
+    internal void UpdateChannels()
     {
       // We check if any of the channels changed
       _channel.LoadFrequencyFactor(_memory.LowLevelRead((ushort)MMR.NR13),
                                    _memory.LowLevelRead((ushort)MMR.NR14));
-
-
-      _channel.Step(ticks);
     }
 
-    internal void ClearBuffer()
+    public void GenerateSamples(int sampleCount)
+    {
+      _channel.GenerateSamples(sampleCount);
+    }
+
+    public void ClearBuffer()
     {
       _sampleIndex = 0;
       _channel.ClearBuffer();
