@@ -53,7 +53,7 @@ namespace GBSharp
       this.cpu = new CPUSpace.CPU(this.memory);
       this.interruptController = this.cpu.interruptController;
       this.display = new Display(this.interruptController, this.memory);
-      this.apu = new AudioSpace.APU(this.memory, 44000, 2, 1);
+      this.apu = new AudioSpace.APU(this.memory, 44000, 2, 2);
 
       this.disassembler = new Disassembler(cpu, memory);
 

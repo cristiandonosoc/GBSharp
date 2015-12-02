@@ -54,10 +54,10 @@ namespace GBSharp.Audio
     {
       // We generate the needed samples
       _streamingSource.GenerateSamples(count / _streamingSource.NumChannels);
-      if(_streamingSource.SampleCount != count)
-      {
-        throw new InvalidProgramException("Samples should be the same");
-      }
+      //if(_streamingSource.SampleCount != count)
+      //{
+      //  throw new InvalidProgramException("Samples should be the same");
+      //}
 
       Array.Copy(_streamingSource.Buffer, buffer, count);
       _streamingSource.ClearBuffer();

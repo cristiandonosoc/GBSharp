@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GBSharp.AudioSpace
 {
-  internal class SoundChannel1 : ISoundChannel
+  internal class SoundChannel1
   {
     #region BUFFER DEFINITION
 
@@ -23,8 +23,8 @@ namespace GBSharp.AudioSpace
 
     private int _milliseconds = 1000; // ms of sample
 
-    float[] _buffer;
-    public float[] Buffer { get { return _buffer; } }
+    short[] _buffer;
+    public short[] Buffer { get { return _buffer; } }
 
     private int _sampleIndex;
     public int SampleCount { get { return _sampleIndex; } }
@@ -64,7 +64,7 @@ namespace GBSharp.AudioSpace
     private int _outputTickCounter = 0;
 
     private bool _up = false;
-    private float _outputValue = 0;
+    private short _outputValue = 0;
 
     internal SoundChannel1(int sampleRate, int numChannels, int sampleSize)
     {
@@ -72,7 +72,7 @@ namespace GBSharp.AudioSpace
       _msSampleRate = _sampleRate / 1000;
       _numChannels = numChannels;
       _sampleSize = sampleSize;
-      _buffer = new float[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
+      _buffer = new short[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
     }
 
     public void GenerateSamples(int sampleCount)
@@ -92,7 +92,7 @@ namespace GBSharp.AudioSpace
         {
           _tickCounter = _tickThreshold;
           _up = !_up;
-          _outputValue = _up ? -0.5f : 0.5f;
+          _outputValue = (short)(_up ? 32767 : -32768);
         }
       }
     }

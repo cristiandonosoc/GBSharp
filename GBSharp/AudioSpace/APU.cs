@@ -71,15 +71,23 @@ namespace GBSharp.AudioSpace
     public void GenerateSamples(int sampleCount)
     {
       ClearBuffer();
-      _channel.GenerateSamples(sampleCount);
+
+      int sc = sampleCount / 2;
+
+      _channel.GenerateSamples(sc);
 
       // We transformate the samples
-      for(int i = 0; i < sampleCount; ++i)
+
+
+
+      int _channelSampleIndex = 0;
+      for(int i = 0; i < sc; ++i)
       {
         for(int c = 0; c < _numChannels; ++c)
         {
-          _buffer[_sampleIndex] = (byte)(127 * (_channel.Buffer[_sampleIndex] + 0.5f));
-          ++_sampleIndex;
+          short sample = _channel.Buffer[_channelSampleIndex++];
+          _buffer[_sampleIndex++] = (byte)sample;
+          _buffer[_sampleIndex++] = (byte)(sample >> 8);
         }
       }
 
