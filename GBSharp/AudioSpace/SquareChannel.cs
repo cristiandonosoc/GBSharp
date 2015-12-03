@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GBSharp.AudioSpace
 {
-  internal class SoundChannel1
+  internal class SquareChannel
   {
     #region BUFFER DEFINITION
 
@@ -66,7 +66,7 @@ namespace GBSharp.AudioSpace
     private bool _up = false;
     private short _outputValue = 0;
 
-    internal SoundChannel1(int sampleRate, int numChannels, int sampleSize)
+    internal SquareChannel(int sampleRate, int numChannels, int sampleSize)
     {
       _sampleRate = sampleRate;
       _msSampleRate = _sampleRate / 1000;
@@ -92,7 +92,7 @@ namespace GBSharp.AudioSpace
         {
           _tickCounter = _tickThreshold;
           _up = !_up;
-          _outputValue = (short)(_up ? 32767 : -32768);
+          _outputValue = (short)(_up ? 8191 : -8192);
         }
       }
     }

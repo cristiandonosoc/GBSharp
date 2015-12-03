@@ -38,16 +38,15 @@ namespace GBSharp.AudioSpace
 
     // TODO(Cristian): Join channels to make an unified sound channel
     private int _sampleIndex;
-    public int SampleCount { get { return _channel.SampleCount; } }
+    public int SampleCount { get { return _sampleIndex; } }
 
     private Memory _memory;
 
-    SoundChannel1 _channel;
+    SquareChannel _channel1;
+    SquareChannel _channel2;
 
     internal APU(Memory memory, int sampleRate, int numChannels, int sampleSize)
     {
-
-
       _memory = memory;
 
       _sampleRate = sampleRate;
@@ -57,15 +56,19 @@ namespace GBSharp.AudioSpace
       _buffer = new byte[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
       _tempBuffer = new uint[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
 
-      _channel = (new SoundChannel1(sampleRate, numChannels, sampleSize));
+      _channel1 = new SquareChannel(sampleRate, numChannels, sampleSize);
+      _channel2 = new SquareChannel(sampleRate, numChannels, sampleSize);
     }
 
     // TODO(Cristian): Do this on memory change
     internal void UpdateChannels()
     {
       // We check if any of the channels changed
-      _channel.LoadFrequencyFactor(_memory.LowLevelRead((ushort)MMR.NR13),
-                                   _memory.LowLevelRead((ushort)MMR.NR14));
+      _channel1.LoadFrequencyFactor(_memory.LowLevelRead((ushort)MMR.NR13),
+                                    _memory.LowLevelRead((ushort)MMR.NR14));
+
+      _channel2.LoadFrequencyFactor(_memory.LowLevelRead((ushort)MMR.NR23),
+                                    _memory.LowLevelRead((ushort)MMR.NR24));
     }
 
     public void GenerateSamples(int sampleCount)
@@ -74,29 +77,33 @@ namespace GBSharp.AudioSpace
 
       int sc = sampleCount / 2;
 
-      _channel.GenerateSamples(sc);
+      _channel1.GenerateSamples(sc);
+      _channel2.GenerateSamples(sc);
 
       // We transformate the samples
-
-
-
       int _channelSampleIndex = 0;
       for(int i = 0; i < sc; ++i)
       {
         for(int c = 0; c < _numChannels; ++c)
         {
-          short sample = _channel.Buffer[_channelSampleIndex++];
-          _buffer[_sampleIndex++] = (byte)sample;
-          _buffer[_sampleIndex++] = (byte)(sample >> 8);
+          short sample1 = _channel1.Buffer[_channelSampleIndex];
+          short sample2 = _channel2.Buffer[_channelSampleIndex];
+          ++_channelSampleIndex;
+
+          //  TODO(Cristian): post-process mixed sample?
+
+          short finalSample = (short)(sample1 + sample2);
+          _buffer[_sampleIndex++] = (byte)finalSample;
+          _buffer[_sampleIndex++] = (byte)(finalSample >> 8);
         }
       }
-
     }
 
     public void ClearBuffer()
     {
       _sampleIndex = 0;
-      _channel.ClearBuffer();
+      _channel1.ClearBuffer();
+      _channel2.ClearBuffer();
     }
 
   }
