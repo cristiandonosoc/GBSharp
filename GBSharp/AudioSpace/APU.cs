@@ -44,7 +44,9 @@ namespace GBSharp.AudioSpace
     SquareChannel _channel1;
     SquareChannel _channel2;
 
-    public bool Enabled { get; protected set; }
+    public bool Enabled { get; private set; }
+    public bool LeftChannelEnabled { get; private set; }
+    public bool RightChannelEnabled { get; private set; }
 
     internal APU(Memory memory, int sampleRate, int numChannels, int sampleSize)
     {
@@ -62,6 +64,8 @@ namespace GBSharp.AudioSpace
       // NOTE(Cristian): Channel 2 doesn't have frequency sweep
       _channel2 = new SquareChannel(sampleRate, numChannels, sampleSize, 1,
                                     0, MMR.NR21, MMR.NR22, MMR.NR23, MMR.NR24);
+      LeftChannelEnabled = true;
+      RightChannelEnabled = true;
     }
 
     internal void HandleMemoryChange(MMR register, byte value)
@@ -96,40 +100,56 @@ namespace GBSharp.AudioSpace
     {
       ClearBuffer();
 
-      int sc = sampleCount / 2;
+      int sc = sampleCount / _sampleSize;
 
-      _channel1.GenerateSamples(sc);
-      _channel2.GenerateSamples(sc);
+      if(Enabled)
+      {
+        _channel1.GenerateSamples(sc);
+        _channel2.GenerateSamples(sc);
+      }
 
       // We transformate the samples
       int _channelSampleIndex = 0;
-      for(int i = 0; i < sc; ++i)
+      for (int i = 0; i < sc; ++i)
       {
-        for(int c = 0; c < _numChannels; ++c)
+
+        // LEFT CHANNEL
+        short leftSample = 0;
+        if (Enabled && LeftChannelEnabled)
         {
-
-          short sample = 0;
-
-          if (Enabled)
+          // We add the correspondant samples
+          if (_channel1.Enabled)
           {
-            // We add the correspondant samples
-            if(_channel1.Enabled)
-            {
-              sample += _channel1.Buffer[_channelSampleIndex];
-            }
-            if(_channel1.Enabled)
-            {
-              sample += _channel2.Buffer[_channelSampleIndex];
-            }
+            leftSample += _channel1.Buffer[_channelSampleIndex];
           }
-
-          ++_channelSampleIndex;
-
-          //  TODO(Cristian): post-process mixed sample?
-
-          _buffer[_sampleIndex++] = (byte)sample;
-          _buffer[_sampleIndex++] = (byte)(sample >> 8);
+          if (_channel1.Enabled)
+          {
+            leftSample += _channel2.Buffer[_channelSampleIndex];
+          }
         }
+        ++_channelSampleIndex;
+        //  TODO(Cristian): post-process mixed sample?
+        _buffer[_sampleIndex++] = (byte)leftSample;
+        _buffer[_sampleIndex++] = (byte)(leftSample >> 8);
+
+        // RIGHT CHANNEL
+        short rightSample = 0;
+        if (Enabled && RightChannelEnabled)
+        {
+          // We add the correspondant samples
+          if (_channel1.Enabled)
+          {
+            rightSample += _channel1.Buffer[_channelSampleIndex];
+          }
+          if (_channel1.Enabled)
+          {
+            rightSample += _channel2.Buffer[_channelSampleIndex];
+          }
+        }
+        ++_channelSampleIndex;
+        //  TODO(Cristian): post-process mixed sample?
+        _buffer[_sampleIndex++] = (byte)rightSample;
+        _buffer[_sampleIndex++] = (byte)(rightSample >> 8);
       }
     }
 
