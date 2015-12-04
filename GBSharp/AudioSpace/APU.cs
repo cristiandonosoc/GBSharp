@@ -31,10 +31,9 @@ namespace GBSharp.AudioSpace
 
     private int _milliseconds = 1000; // ms of sample
 
+    private short[] _tempBuffer;
     byte[] _buffer;
     public byte[] Buffer { get { return _buffer; } }
-
-    private uint[] _tempBuffer;
 
     // TODO(Cristian): Join channels to make an unified sound channel
     private int _sampleIndex;
@@ -45,6 +44,8 @@ namespace GBSharp.AudioSpace
     SquareChannel _channel1;
     SquareChannel _channel2;
 
+    public bool Enabled { get; protected set; }
+
     internal APU(Memory memory, int sampleRate, int numChannels, int sampleSize)
     {
       _memory = memory;
@@ -54,21 +55,41 @@ namespace GBSharp.AudioSpace
       _numChannels = numChannels;
       _sampleSize = sampleSize;
       _buffer = new byte[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
-      _tempBuffer = new uint[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
+      _tempBuffer = new short[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
 
-      _channel1 = new SquareChannel(sampleRate, numChannels, sampleSize);
-      _channel2 = new SquareChannel(sampleRate, numChannels, sampleSize);
+      _channel1 = new SquareChannel(sampleRate, numChannels, sampleSize, 0,
+                                    MMR.NR10, MMR.NR11, MMR.NR12, MMR.NR13, MMR.NR14);
+      // NOTE(Cristian): Channel 2 doesn't have frequency sweep
+      _channel2 = new SquareChannel(sampleRate, numChannels, sampleSize, 1,
+                                    0, MMR.NR21, MMR.NR22, MMR.NR23, MMR.NR24);
     }
 
-    // TODO(Cristian): Do this on memory change
-    internal void UpdateChannels()
+    internal void HandleMemoryChange(MMR register, byte value)
     {
-      // We check if any of the channels changed
-      _channel1.LoadFrequencyFactor(_memory.LowLevelRead((ushort)MMR.NR13),
-                                    _memory.LowLevelRead((ushort)MMR.NR14));
-
-      _channel2.LoadFrequencyFactor(_memory.LowLevelRead((ushort)MMR.NR23),
-                                    _memory.LowLevelRead((ushort)MMR.NR24));
+      switch(register)
+      {
+        case MMR.NR10:
+        case MMR.NR11:
+        case MMR.NR12:
+        case MMR.NR13:
+        case MMR.NR14:
+          _channel1.HandleMemoryChange(register, value);
+          break;
+        case MMR.NR21:
+        case MMR.NR22:
+        case MMR.NR23:
+        case MMR.NR24:
+          _channel2.HandleMemoryChange(register, value);
+          break;
+        // TODO(Cristian): Handle Channel 3/4 changes
+        case MMR.NR50:
+          break;
+        case MMR.NR51:
+          break;
+        case MMR.NR52:
+          Enabled = (Utils.UtilFuncs.TestBit(value, 7) != 0);
+          break;
+      }
     }
 
     public void GenerateSamples(int sampleCount)
@@ -86,15 +107,28 @@ namespace GBSharp.AudioSpace
       {
         for(int c = 0; c < _numChannels; ++c)
         {
-          short sample1 = _channel1.Buffer[_channelSampleIndex];
-          short sample2 = _channel2.Buffer[_channelSampleIndex];
+
+          short sample = 0;
+
+          if (Enabled)
+          {
+            // We add the correspondant samples
+            if(_channel1.Enabled)
+            {
+              sample += _channel1.Buffer[_channelSampleIndex];
+            }
+            if(_channel1.Enabled)
+            {
+              sample += _channel2.Buffer[_channelSampleIndex];
+            }
+          }
+
           ++_channelSampleIndex;
 
           //  TODO(Cristian): post-process mixed sample?
 
-          short finalSample = (short)(sample1 + sample2);
-          _buffer[_sampleIndex++] = (byte)finalSample;
-          _buffer[_sampleIndex++] = (byte)(finalSample >> 8);
+          _buffer[_sampleIndex++] = (byte)sample;
+          _buffer[_sampleIndex++] = (byte)(sample >> 8);
         }
       }
     }

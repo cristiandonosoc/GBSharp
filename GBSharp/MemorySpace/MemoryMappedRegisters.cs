@@ -66,6 +66,10 @@ namespace GBSharp.MemorySpace
     NR43 = 0xFF22, 
     NR44 = 0xFF23, 
 
+    NR50 = 0xFF24,
+    NR51 = 0xFF25,
+    NR52 = 0xFF26,
+
     WFRAM = 0xFF30 // Waveform RAM 0xFF30 ~ 0xFF3F
   }
 }

@@ -60,7 +60,6 @@ namespace GBSharp.Audio
       //}
 
       Array.Copy(_streamingSource.Buffer, buffer, count);
-      _streamingSource.ClearBuffer();
 
       return count;
     }

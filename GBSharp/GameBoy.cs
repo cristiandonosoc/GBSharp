@@ -208,8 +208,6 @@ namespace GBSharp
         // Check timing issues
         if (this.frameReady)
         {
-          apu.UpdateChannels();
-
           //// We generate 12 ms of sound
           //int msToGenerate = 13;
           //apu.Step(msToGenerate * GameBoy.ticksPerMillisecond);

@@ -29,6 +29,8 @@ namespace GBSharp.AudioSpace
     private int _sampleIndex;
     public int SampleCount { get { return _sampleIndex; } }
 
+    internal bool Enabled { get; private set; }
+
     #endregion
 
     internal byte LowFreqByte { get; private set; }
@@ -51,28 +53,38 @@ namespace GBSharp.AudioSpace
 
     internal double Frequency { get; private set; }
 
-    internal void LoadFrequencyFactor(byte low, byte high)
-    {
-      if ((LowFreqByte == low) && (HighFreqByte == high)) { return; }
-
-      LowFreqByte = low;
-      HighFreqByte = high;
-      FrequencyFactor = (ushort)(((high & 0x7) << 8) | low);
-    }
-
     private int _tickCounter = 0;
-    private int _outputTickCounter = 0;
 
     private bool _up = false;
     private short _outputValue = 0;
 
-    internal SquareChannel(int sampleRate, int numChannels, int sampleSize)
+    // Registers
+    private MMR _sweepRegister;
+    private MMR _wavePatternDutyRegister;
+    private MMR _volumeEnvelopeRegister;
+    private MMR _freqLowRegister;
+    private MMR _freqHighRegister;
+
+    private int _channelIndex;
+
+    internal SquareChannel(int sampleRate, int numChannels, int sampleSize, int channelIndex,
+                           MMR sweepRegister, MMR wavePatternDutyRegister, MMR volumeEnvelopeRegister, 
+                           MMR freqLowRegister, MMR freqHighRegister)
     {
       _sampleRate = sampleRate;
       _msSampleRate = _sampleRate / 1000;
       _numChannels = numChannels;
       _sampleSize = sampleSize;
       _buffer = new short[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
+
+      _channelIndex = channelIndex;
+
+      // Register setup
+      _sweepRegister = sweepRegister;
+      _wavePatternDutyRegister = wavePatternDutyRegister;
+      _volumeEnvelopeRegister = volumeEnvelopeRegister;
+      _freqLowRegister = freqLowRegister;
+      _freqHighRegister = freqHighRegister;
     }
 
     public void GenerateSamples(int sampleCount)
@@ -104,7 +116,38 @@ namespace GBSharp.AudioSpace
     
     public void HandleMemoryChange(MMR register, byte value)
     {
+      if(register == _sweepRegister)
+      {
+        // TODO(Cristian): Implement sweep registers
+      }
+      else if(register == _wavePatternDutyRegister)
+      {
+        // TODO(Cristian): Wave Pattern Duty
+      }
+      else if(register == _volumeEnvelopeRegister)
+      {
+        // TODO(Cristian): Implement volume envelope
+      }
+      else if(register == _freqLowRegister)
+      {
+        LowFreqByte = value;
+        FrequencyFactor = (ushort)(((HighFreqByte & 0x7) << 8) | LowFreqByte);
+      }
+      else if(register == _freqHighRegister)
+      {
+        Enabled = (Utils.UtilFuncs.TestBit(value, 7) != 0);
 
+        HighFreqByte = value;
+        FrequencyFactor = (ushort)(((HighFreqByte & 0x7) << 8) | LowFreqByte);
+      }
+      else if(register == MMR.NR52)
+      {
+        Enabled = (Utils.UtilFuncs.TestBit(value, _channelIndex) != 0);
+      }
+      else
+      {
+        throw new InvalidProgramException("Invalid register received");
+      }
     }
   }
 }
