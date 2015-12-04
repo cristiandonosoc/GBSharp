@@ -67,6 +67,10 @@ namespace GBSharp.AudioSpace
 
     private int _channelIndex;
 
+    private int _soundLengthTicks;
+    private int _soundLengthTickCounter;
+    private bool _continuousOutput;
+
     internal SquareChannel(int sampleRate, int numChannels, int sampleSize, int channelIndex,
                            MMR sweepRegister, MMR wavePatternDutyRegister, MMR volumeEnvelopeRegister, 
                            MMR freqLowRegister, MMR freqHighRegister)
@@ -106,6 +110,17 @@ namespace GBSharp.AudioSpace
           _up = !_up;
           _outputValue = (short)(_up ? 8191 : -8192);
         }
+
+        if(!_continuousOutput)
+        {
+          _soundLengthTickCounter += APU.MinimumTickThreshold;
+          if(_soundLengthTickCounter >= _soundLengthTicks)
+          {
+            Enabled = false;
+            // TODO(Cristian): Trigger a change to ouput the correct enabled bit
+            //                 NR52
+          }
+        }
       }
     }
 
@@ -123,7 +138,10 @@ namespace GBSharp.AudioSpace
       else if(register == _wavePatternDutyRegister)
       {
         // TODO(Cristian): Wave Pattern Duty
-      }
+        int soundLenghtFactor = value & 0x3F;
+        double soundLengthMs = (double)(0x40 - soundLenghtFactor) / (double)0x100;
+        _soundLengthTicks = (int)(GameBoy.ticksPerMillisecond * soundLengthMs);
+      } 
       else if(register == _volumeEnvelopeRegister)
       {
         // TODO(Cristian): Implement volume envelope
@@ -135,10 +153,17 @@ namespace GBSharp.AudioSpace
       }
       else if(register == _freqHighRegister)
       {
-        Enabled = (Utils.UtilFuncs.TestBit(value, 7) != 0);
 
         HighFreqByte = value;
         FrequencyFactor = (ushort)(((HighFreqByte & 0x7) << 8) | LowFreqByte);
+
+        _continuousOutput = (Utils.UtilFuncs.TestBit(value, 6) == 0);
+
+        Enabled = (Utils.UtilFuncs.TestBit(value, 7) != 0);
+        if(Enabled)
+        {
+          _soundLengthTickCounter = 0;
+        }
       }
       else if(register == MMR.NR52)
       {

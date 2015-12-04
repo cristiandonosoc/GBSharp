@@ -104,8 +104,14 @@ namespace GBSharp.AudioSpace
 
       if(Enabled)
       {
-        _channel1.GenerateSamples(sc);
-        _channel2.GenerateSamples(sc);
+        if(_channel1.Enabled)
+        {
+          _channel1.GenerateSamples(sc);
+        }
+        if(_channel2.Enabled)
+        {
+          _channel2.GenerateSamples(sc);
+        }
       }
 
       // We transformate the samples
@@ -122,7 +128,7 @@ namespace GBSharp.AudioSpace
           {
             leftSample += _channel1.Buffer[_channelSampleIndex];
           }
-          if (_channel1.Enabled)
+          if (_channel2.Enabled)
           {
             leftSample += _channel2.Buffer[_channelSampleIndex];
           }
@@ -141,7 +147,7 @@ namespace GBSharp.AudioSpace
           {
             rightSample += _channel1.Buffer[_channelSampleIndex];
           }
-          if (_channel1.Enabled)
+          if (_channel2.Enabled)
           {
             rightSample += _channel2.Buffer[_channelSampleIndex];
           }
