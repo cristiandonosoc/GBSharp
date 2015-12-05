@@ -70,7 +70,11 @@ namespace GBSharp.AudioSpace
 
     internal void HandleMemoryChange(MMR register, byte value)
     {
-      switch(register)
+      // We store previous channel status
+      bool channel1Enabled = _channel1.Enabled;
+      bool channel2Enabled = _channel2.Enabled;
+
+      switch (register)
       {
         case MMR.NR10:
         case MMR.NR11:
@@ -93,6 +97,16 @@ namespace GBSharp.AudioSpace
         case MMR.NR52:
           Enabled = (Utils.UtilFuncs.TestBit(value, 7) != 0);
           break;
+      }
+
+      // We compare to see if we have to change the NR52 byte
+      if ((channel1Enabled != _channel1.Enabled) ||
+          (channel2Enabled != _channel2.Enabled))
+      {
+        byte nr52 = (byte)((_channel1.Enabled ? 0x1 : 0) |  // bit 0
+                           (_channel2.Enabled ? 0x2 : 0) |  // bit 1
+                           (Enabled ? 0x80 : 0));           // bit 7
+        _memory.LowLevelWrite((ushort)MMR.NR52, nr52);
       }
     }
 
