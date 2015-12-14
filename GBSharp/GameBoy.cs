@@ -41,6 +41,13 @@ namespace GBSharp
 
     public bool ReleaseButtons { get; set; }
 
+    private System.IO.StreamWriter timingWriter;
+    private Stopwatch swCPU;
+    private Stopwatch swDisplay;
+    private Stopwatch swBlit;
+
+    private int frameCounter = 1;
+
     /// <summary>
     /// Class constructor.
     /// Initializes cpu and memory.
@@ -68,6 +75,11 @@ namespace GBSharp
 
       this.inBreakpoint = false;
       this.ReleaseButtons = true;
+
+      this.timingWriter = new System.IO.StreamWriter("timing.log", false);
+      this.swCPU = new Stopwatch();
+      this.swDisplay = new Stopwatch();
+      this.swBlit = new Stopwatch();
     }
 
 
@@ -140,19 +152,26 @@ namespace GBSharp
         inBreakpoint = false;
         ignoreNextStep = true;
       }
+
       byte ticks = this.cpu.Step(ignoreNextStep || ignoreBreakpoints);
 
       // NOTE(Cristian): If the CPU is halted, the hardware carry on
       if (cpu.halted) { ticks = 4; }
+
+      swCPU.Start();
       this.cpu.UpdateClockAndTimers(ticks);
+      swCPU.Stop();
+
       this.memory.Step(ticks);
+
+      swDisplay.Start();
       this.display.Step(ticks);
-      //this.apu.Step(ticks);
+      swDisplay.Stop();
 
       this.tickCounter += ticks;
       this.stepCounter++;
 
-      NotifyStepCompleted();
+      //NotifyStepCompleted();
     }
 
     /// <summary>
@@ -208,55 +227,51 @@ namespace GBSharp
         // Check timing issues
         if (this.frameReady)
         {
-          //// We generate 12 ms of sound
-          //int msToGenerate = 13;
-          //apu.Step(msToGenerate * GameBoy.ticksPerMillisecond);
-
-          //long firstMs = this.stopwatch.ElapsedMilliseconds;
           long ellapsedStopwatchTicks = this.stopwatch.ElapsedTicks;
 
           // Should we sleep?
+          bool onTime = false;
           if (ellapsedStopwatchTicks < stopwatchTicksPerFrame)
           {
+            onTime = true;
             this.manualResetEvent.Reset();
-            this.manualResetEvent.Wait((int)(/*0.5 + */1000.0 * (stopwatchTicksPerFrame - ellapsedStopwatchTicks) / Stopwatch.Frequency));
+            int timeToWait = (int)(/*0.5 + */1000.0 * (stopwatchTicksPerFrame - ellapsedStopwatchTicks) / Stopwatch.Frequency);
+            this.manualResetEvent.Wait(timeToWait);
             this.manualResetEvent.Set();
           }
 
-          //// Now we see how much time we really slept and generate the leftover
-          //double swTicksLeft = this.stopwatch.ElapsedTicks - msToGenerate * stopwatchTicksPerMs;
-          //double msLeft = swTicksLeft / stopwatchTicksPerMs;
-          //apu.Step((int)(GameBoy.ticksPerMillisecond * msLeft));
-
-          // With this we generate exactly the amount needed for this time
-
-          //double overTicks = (double)this.stopwatch.ElapsedTicks - stopwatchTicksPerFrame;
-          //bool OV = false;
-          //if (overTicks > 0)
+          if (!onTime)
+          {
+            timingWriter.WriteLine("*** Frame {0}: {1}/{2} (CPU: {3}, Display: {4}, Blit: {5})", 
+                                   frameCounter, 
+                                   ellapsedStopwatchTicks,
+                                   stopwatchTicksPerFrame,
+                                   swCPU.ElapsedTicks,
+                                   swDisplay.ElapsedTicks,
+                                   swBlit.ElapsedTicks);
+          }
+          //else
           //{
-          //  OV = true;
-          //  int stepsOver = (int)(ticksPerMillisecond * 1000.0 * (overTicks / Stopwatch.Frequency));
-          //  if (stepsOver > ticksPerMillisecond)
-          //  {
-          //    // We are over a millisecond over and we should output more sound
-          //    // TODO(Cristian): See why this happen (sometimes over 10ms over!)
-          //    apu.Step(stepsOver);
-          //  }
+          //  timingWriter.WriteLine("Frame {0}: {1} (CPU: {2}, Display: {3})", 
+          //                         frameCounter, 
+          //                         ellapsedStopwatchTicks,
+          //                         swCPU.ElapsedTicks,
+          //                         swDisplay.ElapsedTicks);
           //}
-
-          //System.Console.WriteLine("ms BEFORE SLEEP: {0}, ms AFTER SLEEP: {1}, OV: {2}",
-          //                         firstMs,
-          //                         this.stopwatch.ElapsedMilliseconds,
-          //                         OV);
+          ++frameCounter;
 
           this.stopwatch.Restart();
           this.tickCounter = 0;
           this.stepCounter = 0;
           this.frameReady = false;
-
+          this.swCPU.Reset();
+          this.swDisplay.Reset();
+          this.swBlit.Reset();
 
           // Finally here we trigger the notification
+          this.swBlit.Start();
           NotifyFrameCompleted();
+          this.swBlit.Stop();
         }
       }
     }
