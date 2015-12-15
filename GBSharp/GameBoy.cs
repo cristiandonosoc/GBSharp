@@ -41,12 +41,16 @@ namespace GBSharp
 
     public bool ReleaseButtons { get; set; }
 
-    private System.IO.StreamWriter timingWriter;
+    private long[] timingSamples;
+
+    private int frameCounter = 0;
+    private int sampleCounter = 0;
+    private int maxSamples = 500;
+
     private Stopwatch swCPU;
     private Stopwatch swDisplay;
     private Stopwatch swBlit;
 
-    private int frameCounter = 1;
 
     /// <summary>
     /// Class constructor.
@@ -76,7 +80,9 @@ namespace GBSharp
       this.inBreakpoint = false;
       this.ReleaseButtons = true;
 
-      this.timingWriter = new System.IO.StreamWriter("timing.log", false);
+      // TIMING
+      this.timingSamples = new long[5 * maxSamples];
+
       this.swCPU = new Stopwatch();
       this.swDisplay = new Stopwatch();
       this.swBlit = new Stopwatch();
@@ -153,14 +159,14 @@ namespace GBSharp
         ignoreNextStep = true;
       }
 
+      swCPU.Start();
       byte ticks = this.cpu.Step(ignoreNextStep || ignoreBreakpoints);
+      swCPU.Stop();
 
       // NOTE(Cristian): If the CPU is halted, the hardware carry on
       if (cpu.halted) { ticks = 4; }
 
-      swCPU.Start();
       this.cpu.UpdateClockAndTimers(ticks);
-      swCPU.Stop();
 
       this.memory.Step(ticks);
 
@@ -242,13 +248,16 @@ namespace GBSharp
 
           if (!onTime)
           {
-            timingWriter.WriteLine("*** Frame {0}: {1}/{2} (CPU: {3}, Display: {4}, Blit: {5})", 
-                                   frameCounter, 
-                                   ellapsedStopwatchTicks,
-                                   stopwatchTicksPerFrame,
-                                   swCPU.ElapsedTicks,
-                                   swDisplay.ElapsedTicks,
-                                   swBlit.ElapsedTicks);
+            if (sampleCounter < maxSamples)
+            {
+              int index = sampleCounter * 5;
+              timingSamples[index] = frameCounter;
+              timingSamples[index + 1] = ellapsedStopwatchTicks;
+              timingSamples[index + 2] = swCPU.ElapsedTicks;
+              timingSamples[index + 3] = swDisplay.ElapsedTicks;
+              timingSamples[index + 4] = swBlit.ElapsedTicks;
+              ++sampleCounter;
+            }
           }
           //else
           //{
@@ -264,14 +273,15 @@ namespace GBSharp
           this.tickCounter = 0;
           this.stepCounter = 0;
           this.frameReady = false;
-          this.swCPU.Reset();
-          this.swDisplay.Reset();
-          this.swBlit.Reset();
+          swCPU.Reset();
+          swDisplay.Reset();
+          swBlit.Reset();
 
           // Finally here we trigger the notification
-          this.swBlit.Start();
+          swBlit.Start();
           NotifyFrameCompleted();
-          this.swBlit.Stop();
+          swBlit.Stop();
+
         }
       }
     }
@@ -364,6 +374,30 @@ namespace GBSharp
     Disassamble(ushort startAddress, bool permissive = true)
     {
       return disassembler.Disassamble(startAddress, permissive);
+    }
+
+    ~GameBoy()
+    {
+      using (var file = new System.IO.StreamWriter("timing.log", false))
+      {
+        file.WriteLine("FRAMES OVER THE TIMING");
+        file.WriteLine("======================");
+        for (int i = 0; i < sampleCounter; ++i)
+        {
+          int index = i * 5;
+          long total = timingSamples[index + 2] +
+                       timingSamples[index + 3] +
+                       timingSamples[index + 4];
+          long rest = timingSamples[index + 1] - total;
+          file.WriteLine("Frame {0}: {1}/{2} --> CPU: {3} ({4:N2}%), Display: {5} ({6:N2}%), Blit: {7} ({8:N2}%), Other: {9} ({10:N2}%)",
+                         timingSamples[index],
+                         timingSamples[index + 1], (int)stopwatchTicksPerFrame,
+                         timingSamples[index + 2], 100 * (double)timingSamples[index + 2] / (double)timingSamples[index + 1],
+                         timingSamples[index + 3], 100 * (double)timingSamples[index + 3] / (double)timingSamples[index + 1],
+                         timingSamples[index + 4], 100 * (double)timingSamples[index + 4] / (double)timingSamples[index + 1],
+                         rest, 100 * (double)rest / (double)timingSamples[index + 1]);
+        }
+      }
     }
   }
 }
