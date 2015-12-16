@@ -13,6 +13,7 @@ namespace GBSharp.CPUSpace
     internal Action<ushort> Lambda { get; set; }
     internal byte Length { get; set; }
     internal byte Ticks { get; set; }
+    internal bool CB { get; set; }
 
     public Instruction()
     {
