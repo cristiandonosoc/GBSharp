@@ -380,8 +380,13 @@ namespace GBSharp
     {
       using (var file = new System.IO.StreamWriter("timing.log", false))
       {
-        file.WriteLine("FRAMES OVER THE TIMING");
-        file.WriteLine("======================");
+        // We write the total timing information
+        file.WriteLine("{0}", (int)stopwatchTicksPerFrame);
+
+        // We write the header
+        file.WriteLine("{0},{1},{2},{3},{4},{5}", "Frame #", "Total", "CPU", "Display", "Blit", "Other");
+
+        // We write the data
         for (int i = 0; i < sampleCounter; ++i)
         {
           int index = i * 5;
@@ -389,13 +394,14 @@ namespace GBSharp
                        timingSamples[index + 3] +
                        timingSamples[index + 4];
           long rest = timingSamples[index + 1] - total;
-          file.WriteLine("Frame {0}: {1}/{2} --> CPU: {3} ({4:N2}%), Display: {5} ({6:N2}%), Blit: {7} ({8:N2}%), Other: {9} ({10:N2}%)",
+          //file.WriteLine("Frame {0}: {1}/{2} --> CPU: {3} ({4:N2}%), Display: {5} ({6:N2}%), Blit: {7} ({8:N2}%), Other: {9} ({10:N2}%)",
+          file.WriteLine("{0},{1},{2},{3},{4},{5}",
                          timingSamples[index],
-                         timingSamples[index + 1], (int)stopwatchTicksPerFrame,
-                         timingSamples[index + 2], 100 * (double)timingSamples[index + 2] / (double)timingSamples[index + 1],
-                         timingSamples[index + 3], 100 * (double)timingSamples[index + 3] / (double)timingSamples[index + 1],
-                         timingSamples[index + 4], 100 * (double)timingSamples[index + 4] / (double)timingSamples[index + 1],
-                         rest, 100 * (double)rest / (double)timingSamples[index + 1]);
+                         timingSamples[index + 1],
+                         timingSamples[index + 2],
+                         timingSamples[index + 3],
+                         timingSamples[index + 4],
+                         rest);
         }
       }
     }
