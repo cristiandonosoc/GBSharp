@@ -284,7 +284,7 @@ namespace GBSharp.CPUSpace
 
       // Disable interrupts during interrupt handling and clear the current one
       this.interruptController.InterruptMasterEnable = false;
-      byte IF = this.memory.Read((ushort)MMR.IF);
+      byte IF = this.memory.LowLevelRead((ushort)MMR.IF);
       IF &= (byte)~(byte)interrupt;
       this.memory.LowLevelWrite((ushort)MMR.IF, IF);
       return instruction;
@@ -300,7 +300,7 @@ namespace GBSharp.CPUSpace
     {
       Instruction instruction = new Instruction();
       instruction.Address = instructionAddress;
-      byte opcode = this.memory.Read(instructionAddress);
+      byte opcode = this.memory.LowLevelRead(instructionAddress);
       instruction.OpCode = opcode;
 
       if (instruction.OpCode != 0xCB)
@@ -316,7 +316,7 @@ namespace GBSharp.CPUSpace
         if (instruction.Length == 2)
         {
           // 8 bit literal
-          instruction.Operands[0] = this.memory.Read((ushort)(instructionAddress + 1));
+          instruction.Operands[0] = this.memory.LowLevelRead((ushort)(instructionAddress + 1));
           if(haltLoad)
           {
             instruction.Operands[0] = opcode;
@@ -326,8 +326,8 @@ namespace GBSharp.CPUSpace
         else if (instruction.Length == 3)
         {
           // 16 bit literal, little endian
-          instruction.Operands[0] = this.memory.Read((ushort)(instructionAddress + 2));
-          instruction.Operands[1] = this.memory.Read((ushort)(instructionAddress + 1));
+          instruction.Operands[0] = this.memory.LowLevelRead((ushort)(instructionAddress + 2));
+          instruction.Operands[1] = this.memory.LowLevelRead((ushort)(instructionAddress + 1));
 
           if(haltLoad)
           {
@@ -350,7 +350,7 @@ namespace GBSharp.CPUSpace
         instruction.OpCode <<= 8;
         if (!haltLoad)
         {
-          instruction.OpCode += this.memory.Read((ushort)(instructionAddress + 1));
+          instruction.OpCode += this.memory.LowLevelRead((ushort)(instructionAddress + 1));
         }
         else
         {
@@ -389,9 +389,9 @@ namespace GBSharp.CPUSpace
     private Interrupts? InterruptRequired(ref bool interruptRequired)
     {
       // Read interrupt flags
-      int interruptRequest = this.memory.Read((ushort)MMR.IF);
+      int interruptRequest = this.memory.LowLevelRead((ushort)MMR.IF);
       // Mask enabled interrupts
-      int interruptEnable = this.memory.Read((ushort)MMR.IE);
+      int interruptEnable = this.memory.LowLevelRead((ushort)MMR.IE);
 
       int interrupt = interruptEnable & interruptRequest;
 
@@ -474,7 +474,7 @@ namespace GBSharp.CPUSpace
             // We have a perfect match! The number of oscilations is now a multiple of clock selected by TAC
 
             // Fetch current TIMA value
-            byte TIMA = this.memory.Read((ushort)MMR.TIMA);
+            byte TIMA = this.memory.LowLevelRead((ushort)MMR.TIMA);
 
             // TIMA-tick
             TIMA += 1;
@@ -482,7 +482,7 @@ namespace GBSharp.CPUSpace
             if (TIMA == 0x0000)
             {
               // TIMA overflow, load TMA into TIMA
-              TIMA = this.memory.Read((ushort)MMR.TMA);
+              TIMA = this.memory.LowLevelRead((ushort)MMR.TMA);
 
               // Set the interrupt request flag
               this.interruptController.SetInterrupt(Interrupts.TimerOverflow);
