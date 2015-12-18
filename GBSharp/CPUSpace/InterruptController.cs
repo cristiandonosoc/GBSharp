@@ -118,7 +118,7 @@ namespace GBSharp.CPUSpace
       //                       are receiving. It's technically not necesarry, but might
       //                       interesting information to log... maybe?
       byte IF = this.memory.Read((ushort)MMR.IF);
-      this.memory.LowLevelWrite((ushort)MMR.IF, (byte)(IF | (byte)kind));
+      this.memory.Write((ushort)MMR.IF, (byte)(IF | (byte)kind));
     }
 
     /// <summary>
@@ -128,7 +128,7 @@ namespace GBSharp.CPUSpace
     internal void ResetInterrupt(Interrupts kind)
     {
       byte IF = this.memory.Read((ushort)MMR.IF);
-      this.memory.LowLevelWrite((ushort)MMR.IF, (byte)(IF & ~(byte)kind));
+      this.memory.Write((ushort)MMR.IF, (byte)(IF & ~(byte)kind));
     }
   }
 }

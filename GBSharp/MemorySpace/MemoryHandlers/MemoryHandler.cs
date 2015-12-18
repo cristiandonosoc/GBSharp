@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using GBSharp.Cartridge;
 using GBSharp.VideoSpace;
 using GBSharp.AudioSpace;
+using GBSharp.CPUSpace;
 
 namespace GBSharp.MemorySpace.MemoryHandlers
 {
@@ -25,6 +26,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     protected DMA dma;
     protected Display display;
     protected APU apu;
+    protected CPU cpu;
     #endregion
 
     #region CONSTRUCTORS
@@ -33,6 +35,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
       this.gameboy = gameboy;
       this.cartridge = (Cartridge.Cartridge)gameboy.Cartridge;
       this.memoryData = gameboy.Memory.Data;
+      this.cpu = (CPU)gameboy.CPU;
       this.display = (Display)gameboy.Display;
       this.apu = (APU)gameboy.APU;
     }
@@ -124,6 +127,13 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           this.memoryData[address] = value;
         }
 
+        else if(address == (ushort)MMR.IF)
+        {
+          this.memoryData[address] = value;
+          // Trigger interrupt check event
+          this.cpu.CheckForInterruptRequired();
+        }
+
         /* [0xFF10 - 0xFF26]: Sound registers */
         else if ((0xFF10 <= address) && (address <= 0xFF26))
         {
@@ -182,6 +192,8 @@ namespace GBSharp.MemorySpace.MemoryHandlers
       else
       {
         this.memoryData[address] = value;
+        // Trigger memory event check
+        this.cpu.CheckForInterruptRequired();
       } // < 0x10000
     }
 

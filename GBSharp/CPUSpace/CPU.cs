@@ -18,8 +18,11 @@ namespace GBSharp.CPUSpace
     internal bool halted;
     internal bool haltLoad;
     internal bool stopped;
+    internal bool interruptRequired;
+    internal bool interruptInProgress;
     // Whether the next step should trigger an interrupt event
-    internal Interrupts? interruptToTrigger;
+    internal Interrupts interruptToTrigger;
+    internal Interrupts interruptTriggered;
     internal Dictionary<Interrupts, bool> _breakableInterrupts = new Dictionary<Interrupts, bool>()
     {
       {Interrupts.VerticalBlanking, false},
@@ -159,8 +162,6 @@ namespace GBSharp.CPUSpace
       // NOTE(Cristian): This address is not writable as a program,
       //                 so this breakpoint *should* be inactive
       this.Breakpoint = 0xFFFF;
-
-      this.interruptToTrigger = null;
     }
 
     public void ResetInstructionHistograms()
@@ -185,13 +186,13 @@ namespace GBSharp.CPUSpace
       if(stopped) { return 0; }
 
       // Instruction fetch and decode
-      bool interruptExists = false;
-      Interrupts? interruptRequested = InterruptRequired(ref interruptExists);
-      bool interruptInProgress = interruptRequested != null;
+      //bool interruptExists = false;
+      //Interrupts? interruptRequested = InterruptRequired(ref interruptExists);
+      //bool interruptInProgress = interruptRequested != null;
 
       if (halted)
       {
-        if (interruptInProgress || interruptExists)
+        if (interruptRequired)
         {
           // An interrupt unhalts the CPU
           halted = false;
@@ -203,27 +204,32 @@ namespace GBSharp.CPUSpace
         }
       }
 
-      if (interruptInProgress)
+      if (interruptRequired)
       {
         // NOTE(Cristian): We store the interrupt so we break on the next
         //                 step. This will enable that we're breaking on the
         //                 first instruction of the interrupt handler, vs
         //                 an invented CALL
-        interruptToTrigger = interruptRequested.Value;
-        _currentInstruction = InterruptHandler(interruptRequested.Value);
+        interruptInProgress = true;
+        interruptTriggered = interruptToTrigger;
+        _currentInstruction = InterruptHandler(interruptToTrigger);
+
+        // We need to check if there is another interrupt waiting
+        CheckForInterruptRequired();
       }
       else
       {
         // If we have set an interupt to trigger a breakpoint, we break
-        if (interruptToTrigger != null)
+        if (interruptInProgress)
         {
-          if (_breakableInterrupts[interruptToTrigger.Value])
+          // TODO(Cristian): Change this to an array!
+          if (_breakableInterrupts[interruptTriggered])
           {
-            InterruptHappened(interruptToTrigger.Value);
+            InterruptHappened(interruptTriggered);
             return 0; // We don't advance the state because we're breaking
           }
 
-          interruptToTrigger = null;
+          interruptInProgress = false;
         }
 
         // Otherwise we fetch as usual
@@ -386,8 +392,10 @@ namespace GBSharp.CPUSpace
     /// Returns the address of the interrupt handler 
     /// </summary>
     /// <returns></returns>
-    private Interrupts? InterruptRequired(ref bool interruptRequired)
+    internal void CheckForInterruptRequired()
     {
+      interruptRequired = false;
+
       // Read interrupt flags
       int interruptRequest = this.memory.LowLevelRead((ushort)MMR.IF);
       // Mask enabled interrupts
@@ -398,23 +406,19 @@ namespace GBSharp.CPUSpace
       if ((interrupt & 0x1F) == 0x00) // 0x1F masks the useful bits of IE and IF, there is only 5 interrupts.
       {
         // Nothing, or disabled, who cares
-        return null;
+        return;
       }
-
-      // There is an interrupt waiting
-      interruptRequired = true;
 
       if (this.interruptController.InterruptMasterEnable)
       {
+        // There is an interrupt waiting
+        interruptRequired = true;
+
         // Ok, find the interrupt with the highest priority, check the first bit set
         interrupt &= -interrupt; // Magics ;)
 
         // Return the first interrupt
-        return (Interrupts)(interrupt & 0x1F);
-      }
-      else
-      {
-        return null;
+        interruptToTrigger = (Interrupts)(interrupt & 0x1F);
       }
     }
 
