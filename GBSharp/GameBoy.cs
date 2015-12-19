@@ -41,15 +41,19 @@ namespace GBSharp
 
     public bool ReleaseButtons { get; set; }
 
+#if TIMING
     private long[] timingSamples;
 
     private int frameCounter = 0;
     private int sampleCounter = 0;
-    private int maxSamples = 500;
+    private int maxSamples = 60 * 100;
+    private int sampleAmount = 4;
 
     private Stopwatch swCPU;
     private Stopwatch swDisplay;
     private Stopwatch swBlit;
+    private Stopwatch swClockMem;
+#endif
 
 
     /// <summary>
@@ -80,12 +84,14 @@ namespace GBSharp
       this.inBreakpoint = false;
       this.ReleaseButtons = true;
 
-      // TIMING
-      this.timingSamples = new long[5 * maxSamples];
+#if TIMING
+      this.timingSamples = new long[sampleAmount * maxSamples];
 
       this.swCPU = new Stopwatch();
       this.swDisplay = new Stopwatch();
       this.swBlit = new Stopwatch();
+      this.swClockMem = new Stopwatch();
+#endif
     }
 
 
@@ -159,20 +165,35 @@ namespace GBSharp
         ignoreNextStep = true;
       }
 
+#if TIMING 
       swCPU.Start();
       byte ticks = this.cpu.Step(ignoreNextStep || ignoreBreakpoints);
       swCPU.Stop();
+#else
+      byte ticks = this.cpu.Step(ignoreNextStep || ignoreBreakpoints);
+#endif
 
+#if TIMING
+      swClockMem.Start();
       // NOTE(Cristian): If the CPU is halted, the hardware carry on
       if (cpu.halted) { ticks = 4; }
-
       this.cpu.UpdateClockAndTimers(ticks);
-
       this.memory.Step(ticks);
+      swClockMem.Stop();
+#else
+      // NOTE(Cristian): If the CPU is halted, the hardware carry on
+      if (cpu.halted) { ticks = 4; }
+      this.cpu.UpdateClockAndTimers(ticks);
+      this.memory.Step(ticks);
+#endif
 
+#if TIMING
       swDisplay.Start();
       this.display.Step(ticks);
       swDisplay.Stop();
+#else
+      this.display.Step(ticks);
+#endif
 
       this.tickCounter += ticks;
       this.stepCounter++;
@@ -236,51 +257,44 @@ namespace GBSharp
           long ellapsedStopwatchTicks = this.stopwatch.ElapsedTicks;
 
           // Should we sleep?
-          bool onTime = false;
           if (ellapsedStopwatchTicks < stopwatchTicksPerFrame)
           {
-            onTime = true;
             this.manualResetEvent.Reset();
             int timeToWait = (int)(/*0.5 + */1000.0 * (stopwatchTicksPerFrame - ellapsedStopwatchTicks) / Stopwatch.Frequency);
             this.manualResetEvent.Wait(timeToWait);
             this.manualResetEvent.Set();
           }
-
-          if (!onTime)
+#if TIMING
+          if (sampleCounter < maxSamples)
           {
-            if (sampleCounter < maxSamples)
-            {
-              int index = sampleCounter * 5;
-              timingSamples[index] = frameCounter;
-              timingSamples[index + 1] = ellapsedStopwatchTicks;
-              timingSamples[index + 2] = swCPU.ElapsedTicks;
-              timingSamples[index + 3] = swDisplay.ElapsedTicks;
-              timingSamples[index + 4] = swBlit.ElapsedTicks;
-              ++sampleCounter;
-            }
+            int index = sampleCounter * sampleAmount;
+            timingSamples[index + 0] = swCPU.ElapsedTicks;
+            timingSamples[index + 1] = swClockMem.ElapsedTicks;
+            timingSamples[index + 2] = swDisplay.ElapsedTicks;
+            timingSamples[index + 3] = swBlit.ElapsedTicks;
+            ++sampleCounter;
           }
-          //else
-          //{
-          //  timingWriter.WriteLine("Frame {0}: {1} (CPU: {2}, Display: {3})", 
-          //                         frameCounter, 
-          //                         ellapsedStopwatchTicks,
-          //                         swCPU.ElapsedTicks,
-          //                         swDisplay.ElapsedTicks);
-          //}
           ++frameCounter;
+
+          swCPU.Reset();
+          swClockMem.Reset();
+          swDisplay.Reset();
+          swBlit.Reset();
+#endif
 
           this.stopwatch.Restart();
           this.tickCounter = 0;
           this.stepCounter = 0;
           this.frameReady = false;
-          swCPU.Reset();
-          swDisplay.Reset();
-          swBlit.Reset();
 
           // Finally here we trigger the notification
+#if TIMING
           swBlit.Start();
           NotifyFrameCompleted();
           swBlit.Stop();
+#else
+          NotifyFrameCompleted();
+#endif
 
         }
       }
@@ -354,7 +368,7 @@ namespace GBSharp
     {
       if (FrameCompleted != null)
       {
-        #warning TODO (wooo): Receive the frame here and trigger a new event instead of accessing directly to the display from the view.
+#warning TODO (wooo): Receive the frame here and trigger a new event instead of accessing directly to the display from the view.
         FrameCompleted();
       }
 
@@ -378,32 +392,32 @@ namespace GBSharp
 
     ~GameBoy()
     {
+#if TIMING
       using (var file = new System.IO.StreamWriter("timing.log", false))
       {
         // We write the total timing information
         file.WriteLine("{0}", (int)stopwatchTicksPerFrame);
 
         // We write the header
-        file.WriteLine("{0},{1},{2},{3},{4},{5}", "Frame #", "Total", "CPU", "Display", "Blit", "Other");
+        file.WriteLine("{0},{1},{2},{3}", "CPU", "Clock & Mem", "Display", "Blit");
 
         // We write the data
         for (int i = 0; i < sampleCounter; ++i)
         {
-          int index = i * 5;
-          long total = timingSamples[index + 2] +
-                       timingSamples[index + 3] +
-                       timingSamples[index + 4];
-          long rest = timingSamples[index + 1] - total;
-          //file.WriteLine("Frame {0}: {1}/{2} --> CPU: {3} ({4:N2}%), Display: {5} ({6:N2}%), Blit: {7} ({8:N2}%), Other: {9} ({10:N2}%)",
-          file.WriteLine("{0},{1},{2},{3},{4},{5}",
-                         timingSamples[index],
+          int index = i * sampleAmount;
+          //long total = timingSamples[index + 2] +
+          //             timingSamples[index + 3] +
+          //             timingSamples[index + 4];
+          //long rest = timingSamples[index + 1] - total;
+          ////file.WriteLine("Frame {0}: {1}/{2} --> CPU: {3} ({4:N2}%), Display: {5} ({6:N2}%), Blit: {7} ({8:N2}%), Other: {9} ({10:N2}%)",
+          file.WriteLine("{0},{1},{2},{3}",
+                         timingSamples[index + 0],
                          timingSamples[index + 1],
                          timingSamples[index + 2],
-                         timingSamples[index + 3],
-                         timingSamples[index + 4],
-                         rest);
+                         timingSamples[index + 3]);
         }
       }
+#endif
     }
   }
 }
