@@ -64,8 +64,8 @@ namespace GBSharp.AudioSpace
       // NOTE(Cristian): Channel 2 doesn't have frequency sweep
       _channel2 = new SquareChannel(sampleRate, numChannels, sampleSize, 1,
                                     0, MMR.NR21, MMR.NR22, MMR.NR23, MMR.NR24);
-      LeftChannelEnabled = true;
-      RightChannelEnabled = true;
+      LeftChannelEnabled = false;
+      RightChannelEnabled = false;
     }
 
     internal void HandleMemoryChange(MMR register, byte value)
