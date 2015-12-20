@@ -92,6 +92,8 @@ namespace GBSharp
       this.swBlit = new Stopwatch();
       this.swClockMem = new Stopwatch();
 #endif
+      var disDef = display.GetDisplayDefinition();
+      ScreenFrame = new uint[disDef.screenPixelCountX * disDef.screenPixelCountY];
     }
 
 
@@ -361,6 +363,13 @@ namespace GBSharp
       }
     }
 
+    private object _lockObj = new object();
+    public object LockObj
+    {
+      get { return _lockObj; }
+    }
+    public uint[] ScreenFrame { get; private set; }
+
     /// <summary>
     /// Notifies subscribers that a new frame has been completed.
     /// </summary>
@@ -369,6 +378,9 @@ namespace GBSharp
       if (FrameCompleted != null)
       {
 #warning TODO (wooo): Receive the frame here and trigger a new event instead of accessing directly to the display from the view.
+
+        Array.Copy(display.Screen, ScreenFrame, ScreenFrame.Length);
+
         FrameCompleted();
       }
 
@@ -393,7 +405,7 @@ namespace GBSharp
     ~GameBoy()
     {
 #if TIMING
-      using (var file = new System.IO.StreamWriter("timing.log", false))
+      using (var file = new System.IO.StreamWriter("timing.csv", false))
       {
         // We write the total timing information
         file.WriteLine("{0}", (int)stopwatchTicksPerFrame);

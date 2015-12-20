@@ -27,6 +27,8 @@ namespace GBSharp
     IEnumerable<IInstruction> Disassamble(ushort startAddress, 
                                           bool permissive = true);
 
+    uint[] ScreenFrame { get; }
+    object LockObj { get; }
     
   }
 }

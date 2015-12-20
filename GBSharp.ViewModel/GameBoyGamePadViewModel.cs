@@ -115,19 +115,30 @@ namespace GBSharp.ViewModel
 
     uint[] _frame;
 
+    private void OnFrameCompleted()
+    {
+      _dispatcher.BeginInvoke(new Action(TransferImageToBitmap), null);
+      //_dispatcher.Invoke(CopyFromDomain);
+      //_dispatcher.Invoke(UpdateFPS);
+    }
+
     private void CopyFromDomain()
     {
-      var target = _display.Screen;
-      Array.Copy(target, _frame, target.Length);
-
       ReleaseButtons = _gameBoy.ReleaseButtons;
+      // BeginInvoke returns immediatelly
       _dispatcher.BeginInvoke(new Action(TransferImageToBitmap), null);
     }
 
     private void TransferImageToBitmap()
     {
-      Utils.TransferBytesToWriteableBitmap(_screen, _display.Screen);
+
+      // We copy the ready screen Frame
+      var target = _gameBoy.ScreenFrame;
+      Array.Copy(target, _frame, target.Length);
+      Utils.TransferBytesToWriteableBitmap(_screen, _frame);
       OnPropertyChanged(() => Screen);
+
+      UpdateFPS();
 
     }
 
@@ -143,12 +154,6 @@ namespace GBSharp.ViewModel
         _frameCount = 0;
         OnPropertyChanged(() => FPS);
       }
-    }
-
-    private void OnFrameCompleted()
-    {
-      _dispatcher.Invoke(CopyFromDomain);
-      _dispatcher.Invoke(UpdateFPS);
     }
 
     private void OnUpdateDisplay()
