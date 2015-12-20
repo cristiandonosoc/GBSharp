@@ -27,5 +27,17 @@ namespace GBSharp.View
       }
       
     }
+
+    public void BeginInvoke(Delegate del, params object[] args)
+    {
+      try
+      {
+        _dipatchingControl.Dispatcher.BeginInvoke(del, args);
+      }
+      catch(TaskCanceledException)
+      {
+        Console.WriteLine("Task canceled");
+      }
+    }
   }
 }
