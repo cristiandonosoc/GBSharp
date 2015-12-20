@@ -110,14 +110,25 @@ namespace GBSharp.ViewModel
       _screen = new WriteableBitmap(disDef.screenPixelCountX, disDef.screenPixelCountY,
                                     96, 96,
                                     System.Windows.Media.PixelFormats.Bgra32, null);
+      _frame = new uint[disDef.screenPixelCountX * disDef.screenPixelCountY];
     }
 
+    uint[] _frame;
+
     private void CopyFromDomain()
+    {
+      var target = _display.Screen;
+      Array.Copy(target, _frame, target.Length);
+
+      ReleaseButtons = _gameBoy.ReleaseButtons;
+      _dispatcher.BeginInvoke(new Action(TransferImageToBitmap), null);
+    }
+
+    private void TransferImageToBitmap()
     {
       Utils.TransferBytesToWriteableBitmap(_screen, _display.Screen);
       OnPropertyChanged(() => Screen);
 
-      ReleaseButtons = _gameBoy.ReleaseButtons;
     }
 
     private void UpdateFPS()
