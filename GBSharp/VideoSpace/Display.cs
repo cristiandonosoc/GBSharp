@@ -179,6 +179,7 @@ namespace GBSharp.VideoSpace
 
     // Temporary buffer used or not allocating a local one on each iteration
     private uint[] pixelBuffer;
+    private uint[] frameLineBuffer;
 
     /// <summary>
     /// Display constructor.
@@ -295,6 +296,7 @@ namespace GBSharp.VideoSpace
       this.sprite = new uint[8 * 16];
 
       this.pixelBuffer = new uint[disDef.pixelPerTileX];
+      this.frameLineBuffer = new uint[disDef.framePixelCountX];
 
       GeneratePixelLookupTable();
 
@@ -463,27 +465,29 @@ namespace GBSharp.VideoSpace
 
         // We obtain the correct row
         int bY = (y + disStat.SCY) % disDef.framePixelCountY;
-        uint[] rowPixels = DisFuncs.GetRowPixels(pixelLookupTable,
-                                                 disDef, memory, pixelBuffer,
-                                                 bY, disStat.LCDCBits[3], disStat.LCDCBits[4]);
+        DisFuncs.GetRowPixels(ref frameLineBuffer,
+                              pixelLookupTable,
+                              disDef, memory, 
+                              pixelBuffer, 
+                              bY, disStat.LCDCBits[3], disStat.LCDCBits[4]);
 
         if(updateDebugTargets[(int)DebugTargets.Background])
         {
           DrawFuncs.DrawLine(disDef, debugTargets[(int)DebugTargets.Background],
-                            disDef.framePixelCountX,
-                            rowPixels,
-                            0, bY,
-                            0, disDef.framePixelCountX);
+                             disDef.framePixelCountX,
+                             frameLineBuffer,
+                             0, bY,
+                             0, disDef.framePixelCountX);
         }
 
         if (drawBackground)
         {
-          DrawFuncs.DrawLine(disDef, screen, disDef.screenPixelCountX, rowPixels,
-                            0, y,
-                            disStat.SCX, disDef.framePixelCountX,
-                            false, true);
-
-
+          DrawFuncs.DrawLine(disDef, screen, 
+                             disDef.screenPixelCountX, 
+                             frameLineBuffer,
+                             0, y,
+                             disStat.SCX, disDef.framePixelCountX,
+                             false, true);
         }
       }
 
@@ -501,28 +505,29 @@ namespace GBSharp.VideoSpace
         {
           // The offset indexes represent that the window is drawn from it's beggining
           // at (WX, WY)
-          uint[] rowPixels = DisFuncs.GetRowPixels(pixelLookupTable,
-                                                   disDef, memory, pixelBuffer,
-                                                   row - disStat.currentWY, 
-                                                   disStat.LCDCBits[6], disStat.LCDCBits[4]);
+          DisFuncs.GetRowPixels(ref frameLineBuffer,
+                                pixelLookupTable,
+                                disDef, memory, pixelBuffer,
+                                row - disStat.currentWY, 
+                                disStat.LCDCBits[6], disStat.LCDCBits[4]);
 
           // Independent target
           if(updateDebugTargets[(int)DebugTargets.Window])
           {
             DrawFuncs.DrawLine(disDef, debugTargets[(int)DebugTargets.Window],
-                              disDef.screenPixelCountX,
-                              rowPixels,
-                              rWX, row,
-                              0, disDef.screenPixelCountX - rWX);
+                               disDef.screenPixelCountX,
+                               frameLineBuffer,
+                               rWX, row,
+                               0, disDef.screenPixelCountX - rWX);
           }
 
           // Screen target
           if (drawWindow)
           {
             DrawFuncs.DrawLine(disDef, screen, disDef.screenPixelCountX,
-                              rowPixels,
-                              rWX, row,
-                              0, disDef.screenPixelCountX - rWX);
+                               frameLineBuffer,
+                               rWX, row,
+                               0, disDef.screenPixelCountX - rWX);
           }
         }
       }
@@ -553,14 +558,15 @@ namespace GBSharp.VideoSpace
         // Screen Target
         if (drawSprites)
         {
-          uint[] linePixels = DisFuncs.GetPixelRowFromBitmap(disDef, screen, 
-                                                             row, disDef.screenPixelCountX);
+          DisFuncs.GetPixelRowFromBitmap(ref frameLineBuffer, 
+                                         disDef, screen, 
+                                         row, disDef.screenPixelCountX);
           DisFuncs.GetSpriteRowPixels(pixelLookupTable,
                                       disDef, memory, spriteOAMs, 
-                                      linePixels, pixelBuffer,
+                                      frameLineBuffer, pixelBuffer,
                                       row, disStat.LCDCBits[2]);
           DrawFuncs.DrawLine(disDef, screen, disDef.screenPixelCountX,
-                            linePixels,
+                            frameLineBuffer,
                             0, row,
                             0, disDef.screenPixelCountX);
         }

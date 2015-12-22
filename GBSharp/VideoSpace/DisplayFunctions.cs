@@ -73,8 +73,7 @@ namespace GBSharp.VideoSpace
       if (LCDCBit2) { spriteLength = disDef.bytesPerTileLong; }
 
       // We obtain the tile memory
-      byte[] data = new byte[spriteLength];
-      data = memory.LowLevelArrayRead(
+      byte[] data = memory.LowLevelArrayRead(
         (ushort)(tileBaseAddress + (tileLength * tileOffset)),
         spriteLength);
 
@@ -127,10 +126,11 @@ namespace GBSharp.VideoSpace
     /// 1: 0x8000 - 0x8FFF | unsigned access
     /// </param>
     /// <returns>An array with the pixels to show for that row (color already calculated)</returns>
-    internal static uint[]
-    GetRowPixels(short[] pixelLookupTable,
+    internal static void
+    GetRowPixels(ref uint[] frameLineBuffer,
+                 short[] pixelLookupTable,
                  DisplayDefinition disDef, Memory memory,
-                 uint[] pixelBuffer,
+                 uint[] pixelBuffer, 
                  int row, bool LCDBit3, bool LCDBit4)
     {
       // We determine the y tile
@@ -140,7 +140,6 @@ namespace GBSharp.VideoSpace
       ushort tileMapBaseAddress = GetTileMapBaseAddress(LCDBit3);
       ushort tileBaseAddress = GetTileBaseAddress(LCDBit4);
 
-      uint[] pixels = new uint[disDef.framePixelCountX];
       for (int tileX = 0; tileX < disDef.frameTileCountX; tileX++)
       {
         // We obtain the correct tile index
@@ -159,24 +158,20 @@ namespace GBSharp.VideoSpace
         int currentTileIndex = tileX * disDef.pixelPerTileX;
         for (int i = 0; i < disDef.pixelPerTileX; i++)
         {
-          pixels[currentTileIndex + i] = pixelBuffer[i];
+          frameLineBuffer[currentTileIndex + i] = pixelBuffer[i];
         }
       }
-
-      return pixels;
     }
 
-    internal static uint[]
-    GetPixelRowFromBitmap(DisplayDefinition disDef, uint[] bitmapData, int row, int stride)
+    internal static void
+    GetPixelRowFromBitmap(ref uint[] frameLineBuffer, 
+                          DisplayDefinition disDef, uint[] bitmapData, int row, int stride)
     {
-      uint[] pixels = new uint[stride];
       int index = row * stride;
       for (int x = 0; x < stride; ++x)
       {
-        pixels[x] = bitmapData[index++];
+        frameLineBuffer[x] = bitmapData[index++];
       }
-
-      return pixels;
     }
 
     /// <summary>
@@ -186,7 +181,7 @@ namespace GBSharp.VideoSpace
     /// <param name="row"></param>
     /// <param name="LCDCBit2"></param>
     /// <returns></returns>
-    internal static OAM[]
+    internal static int
     GetScanLineOAMs(DisplayDefinition disDef, OAM[] spriteOAMs, int row, bool LCDCBit2)
     {
       int spriteSize = disDef.bytesPerTileShort / 2;
@@ -195,7 +190,6 @@ namespace GBSharp.VideoSpace
       // Then we select the 10 that correspond
       int scanLineSize = 0;
       int maxScanLineSize = 10;
-      OAM[] scanLineOAMs = new OAM[maxScanLineSize];
       foreach (OAM oam in spriteOAMs)
       {
         int y = oam.y - 16;
@@ -206,15 +200,11 @@ namespace GBSharp.VideoSpace
         }
       }
 
-      // NOTE(Cristian): This array "resize" will actually allocate a new
-      //                 array and copy the correspondent data, so it's not
-      //                 that magical afterall. (The GB will have to collect the
-      //                 past one anyway).
-      Array.Resize<OAM>(ref scanLineOAMs, scanLineSize);
-
-      return scanLineOAMs;
+      return scanLineSize;
     }
 
+
+    static OAM[] scanLineOAMs = new OAM[10];
 
     internal static void
     GetSpriteRowPixels(short[] pixelLookupTable,
@@ -224,10 +214,10 @@ namespace GBSharp.VideoSpace
                        bool ignoreBackgroundPriority = false)
     {
       // TODO(Cristian): Separate this step from the call and pass it as an argument
-      OAM[] scanLineOAMs = GetScanLineOAMs(disDef, spriteOAMs, row, LCDCBit2);
+      int scanLineSize = GetScanLineOAMs(disDef, spriteOAMs, row, LCDCBit2);
 
       // We obtain the pixels we want from it
-      for (int oamIndex = scanLineOAMs.Length - 1; oamIndex >= 0; --oamIndex)
+      for (int oamIndex = scanLineSize - 1; oamIndex >= 0; --oamIndex)
       {
         // TODO(Cristian): Obtain only the tile data we care about
         OAM oam = scanLineOAMs[oamIndex];
