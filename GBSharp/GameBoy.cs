@@ -47,14 +47,14 @@ namespace GBSharp
     private int frameCounter = 0;
     private int sampleCounter = 0;
     private int maxSamples = 60 * 100;
-    private int sampleAmount = 4;
+    private int sampleAmount = 5;
 
     private Stopwatch swCPU;
     private Stopwatch swDisplay;
     private Stopwatch swBlit;
     private Stopwatch swClockMem;
-#endif
 
+#endif
 
     /// <summary>
     /// Class constructor.
@@ -243,11 +243,13 @@ namespace GBSharp
       //throw new NotImplementedException();
     }
 
+
     /// <summary>
     /// Method that is going to be running in a separate thread, calling Step() forever.
     /// </summary>
     private void ThreadedRun()
     {
+      long drama = 0;
       while (this.run)
       {
         this.manualResetEvent.Wait(); // Wait for pauses.
@@ -257,15 +259,27 @@ namespace GBSharp
         if (this.frameReady)
         {
           long ellapsedStopwatchTicks = this.stopwatch.ElapsedTicks;
+          ellapsedStopwatchTicks += drama;
 
           // Should we sleep?
           if (ellapsedStopwatchTicks < stopwatchTicksPerFrame)
           {
             this.manualResetEvent.Reset();
-            int timeToWait = (int)(/*0.5 + */1000.0 * (stopwatchTicksPerFrame - ellapsedStopwatchTicks) / Stopwatch.Frequency);
+            int timeToWait = (int)(/* 0.5 + */1000.0 * (stopwatchTicksPerFrame - ellapsedStopwatchTicks) / Stopwatch.Frequency);
             this.manualResetEvent.Wait(timeToWait);
             this.manualResetEvent.Set();
           }
+
+          long finalTicks = this.stopwatch.ElapsedTicks;
+          while(finalTicks < stopwatchTicksPerFrame)
+          {
+            finalTicks = this.stopwatch.ElapsedTicks;
+          }
+
+          drama = finalTicks - (long)stopwatchTicksPerFrame;
+
+
+
 #if TIMING
           if (sampleCounter < maxSamples)
           {
@@ -274,6 +288,7 @@ namespace GBSharp
             timingSamples[index + 1] = swClockMem.ElapsedTicks;
             timingSamples[index + 2] = swDisplay.ElapsedTicks;
             timingSamples[index + 3] = swBlit.ElapsedTicks;
+            //timingSamples[index + 4] = swBeginInvoke.ElapsedTicks;
             ++sampleCounter;
           }
           ++frameCounter;
@@ -282,6 +297,7 @@ namespace GBSharp
           swClockMem.Reset();
           swDisplay.Reset();
           swBlit.Reset();
+          //swBeginInvoke.Reset();
 #endif
 
           this.stopwatch.Restart();
@@ -290,13 +306,7 @@ namespace GBSharp
           this.frameReady = false;
 
           // Finally here we trigger the notification
-#if TIMING
-          swBlit.Start();
           NotifyFrameCompleted();
-          swBlit.Stop();
-#else
-          NotifyFrameCompleted();
-#endif
 
         }
       }
@@ -379,7 +389,13 @@ namespace GBSharp
       {
 #warning TODO (wooo): Receive the frame here and trigger a new event instead of accessing directly to the display from the view.
 
+#if TIMING
+        swBlit.Start();
         Array.Copy(display.Screen, ScreenFrame, ScreenFrame.Length);
+        swBlit.Stop();
+#else
+        Array.Copy(display.Screen, ScreenFrame, ScreenFrame.Length);
+#endif
 
         FrameCompleted();
       }
@@ -422,11 +438,12 @@ namespace GBSharp
           //             timingSamples[index + 4];
           //long rest = timingSamples[index + 1] - total;
           ////file.WriteLine("Frame {0}: {1}/{2} --> CPU: {3} ({4:N2}%), Display: {5} ({6:N2}%), Blit: {7} ({8:N2}%), Other: {9} ({10:N2}%)",
-          file.WriteLine("{0},{1},{2},{3}",
+          file.WriteLine("{0},{1},{2},{3},{4}",
                          timingSamples[index + 0],
                          timingSamples[index + 1],
                          timingSamples[index + 2],
-                         timingSamples[index + 3]);
+                         timingSamples[index + 3],
+                         timingSamples[index + 4]);
         }
       }
 #endif

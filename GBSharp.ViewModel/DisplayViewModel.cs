@@ -31,7 +31,7 @@ namespace GBSharp.ViewModel
     {
       _gameBoy = gameboy;
       _display = display;
-      _gameBoy.FrameCompleted += OnFrameCompleted;
+      //_gameBoy.FrameCompleted += OnFrameCompleted;
       _memory = memory;
       _dispatcher = dispatcher;
 
@@ -81,17 +81,17 @@ namespace GBSharp.ViewModel
 
     public void CopyFromDomain()
     {
-      _background.CopyFromDomain();
-      _tileMap.CopyFromDomain();
-      _window.CopyFromDomain();
-      _sprites.CopyFromDomain();
-      _spriteLayer.CopyFromDomain();
-      _displayTiming.CopyFromDomain();
+      //_background.CopyFromDomain();
+      //_tileMap.CopyFromDomain();
+      //_window.CopyFromDomain();
+      //_sprites.CopyFromDomain();
+      //_spriteLayer.CopyFromDomain();
+      //_displayTiming.CopyFromDomain();
     }
 
     public void Dispose()
     {
-      _gameBoy.FrameCompleted -= OnFrameCompleted;
+      //_gameBoy.FrameCompleted -= OnFrameCompleted;
       _background.Dispose();
       _tileMap.Dispose();
       _window.Dispose();

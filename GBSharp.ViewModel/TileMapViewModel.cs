@@ -111,7 +111,7 @@ namespace GBSharp.ViewModel
     {
       _gameBoy = gameboy;
       _display = display;
-      _gameBoy.FrameCompleted += OnFrameCompleted;
+      //_gameBoy.FrameCompleted += OnFrameCompleted;
       _dispatcher = dispatcher;
 
       var disDef = _display.GetDisplayDefinition();
@@ -142,7 +142,7 @@ namespace GBSharp.ViewModel
 
     public void Dispose()
     {
-      _gameBoy.FrameCompleted -= OnFrameCompleted;
+      //_gameBoy.FrameCompleted -= OnFrameCompleted;
     }
   }
 }

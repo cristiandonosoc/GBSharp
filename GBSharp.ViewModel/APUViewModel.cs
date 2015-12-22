@@ -56,7 +56,7 @@ namespace GBSharp.ViewModel
     {
       _gameBoy = gameBoy;
       _dispatcher = dispatcher;
-      _gameBoy.FrameCompleted += OnFrameCompleted;
+      //_gameBoy.FrameCompleted += OnFrameCompleted;
       _spectrogram = new WriteableBitmap(_numberOfFramesPerImage, _fftSize, 96, 96, PixelFormats.Bgr32, null);
     }
 
@@ -138,7 +138,7 @@ namespace GBSharp.ViewModel
 
     public void Dispose()
     {
-      _gameBoy.FrameCompleted -= OnFrameCompleted;
+      //_gameBoy.FrameCompleted -= OnFrameCompleted;
     }
   }
 }

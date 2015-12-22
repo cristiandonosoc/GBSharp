@@ -17,7 +17,7 @@ namespace GBSharp.ViewModel
     {
       _gameBoy = gameBoy;
       _dispatcher = dispatcher;
-      _gameBoy.FrameCompleted += OnFrameCompleted;
+      //_gameBoy.FrameCompleted += OnFrameCompleted;
       _memoryImage = new WriteableBitmap(256, 256, 96, 96, PixelFormats.Gray8, null);
     }
 
@@ -59,7 +59,7 @@ namespace GBSharp.ViewModel
 
     public void Dispose()
     {
-      _gameBoy.FrameCompleted -= OnFrameCompleted;
+      //_gameBoy.FrameCompleted -= OnFrameCompleted;
     }
   }
 }

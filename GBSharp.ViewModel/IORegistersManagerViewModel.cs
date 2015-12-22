@@ -32,7 +32,7 @@ namespace GBSharp.ViewModel
     {
       _dispatcher = dispatcher;
       _gameBoy = gameBoy;
-      _gameBoy.FrameCompleted += OnFrameCompleted;
+      //_gameBoy.FrameCompleted += OnFrameCompleted;
   
       MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF40: LCDC", MMR.LCDC, _gameBoy));
       MemoryMappedRegisterList.Add(new MemoryMappedRegisterViewModel("FF41: STAT", MMR.STAT, _gameBoy));
@@ -68,7 +68,7 @@ namespace GBSharp.ViewModel
 
     public void Dispose()
     {
-      _gameBoy.FrameCompleted -= OnFrameCompleted;
+      //_gameBoy.FrameCompleted -= OnFrameCompleted;
     }
   }
 }

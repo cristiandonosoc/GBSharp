@@ -49,7 +49,7 @@ namespace GBSharp.ViewModel
     {
       _dispatcher = dispatcher;
       _gameBoy = gameBoy;
-      _gameBoy.FrameCompleted += OnFrameCompleted;
+      //_gameBoy.FrameCompleted += OnFrameCompleted;
 
       InterruptList.Add(new InterruptViewModel("Vertical Blank", Interrupts.VerticalBlanking, _gameBoy));
       InterruptList.Add(new InterruptViewModel("Timer Overflow", Interrupts.TimerOverflow, _gameBoy));
@@ -80,7 +80,7 @@ namespace GBSharp.ViewModel
 
     public void Dispose()
     {
-      _gameBoy.FrameCompleted -= OnFrameCompleted;
+      //_gameBoy.FrameCompleted -= OnFrameCompleted;
       //_gameBoy.StepCompleted -= OnFrameCompleted;
     }
   }

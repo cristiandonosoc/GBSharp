@@ -112,7 +112,7 @@ namespace GBSharp.ViewModel
     {
       _gameBoy = gameBoy;
       _dispatcher = dispatcher;
-      _gameBoy.FrameCompleted += OnFrameCompleted;
+      //_gameBoy.FrameCompleted += OnFrameCompleted;
       _cpu = _gameBoy.CPU;
       _histogram = new WriteableBitmap(16, 16, 96, 96, PixelFormats.Gray16, null);
       _cbHistogram = new WriteableBitmap(16, 16, 96, 96, PixelFormats.Gray16, null);
@@ -185,7 +185,7 @@ namespace GBSharp.ViewModel
 
     public void Dispose()
     {
-      _gameBoy.FrameCompleted -= OnFrameCompleted;
+      //_gameBoy.FrameCompleted -= OnFrameCompleted;
     }
   }
 }
