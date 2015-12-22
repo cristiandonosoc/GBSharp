@@ -53,7 +53,7 @@ namespace GBSharp
     private Stopwatch swDisplay;
     private Stopwatch swBlit;
     private Stopwatch swClockMem;
-
+    public static Stopwatch swBeginInvoke = new Stopwatch();
 #endif
 
     /// <summary>
@@ -282,8 +282,6 @@ namespace GBSharp
 
           drama = finalTicks - (long)stopwatchTicksPerFrame;
 
-
-
 #if TIMING
           if (sampleCounter < maxSamples)
           {
@@ -292,7 +290,7 @@ namespace GBSharp
             timingSamples[index + 1] = swClockMem.ElapsedTicks;
             timingSamples[index + 2] = swDisplay.ElapsedTicks;
             timingSamples[index + 3] = swBlit.ElapsedTicks;
-            //timingSamples[index + 4] = swBeginInvoke.ElapsedTicks;
+            timingSamples[index + 4] = swBeginInvoke.ElapsedTicks;
             ++sampleCounter;
           }
           ++frameCounter;
@@ -301,7 +299,7 @@ namespace GBSharp
           swClockMem.Reset();
           swDisplay.Reset();
           swBlit.Reset();
-          //swBeginInvoke.Reset();
+          swBeginInvoke.Reset();
 #endif
 
           this.stopwatch.Restart();
@@ -431,7 +429,7 @@ namespace GBSharp
         file.WriteLine("{0}", (int)stopwatchTicksPerFrame);
 
         // We write the header
-        file.WriteLine("{0},{1},{2},{3}", "CPU", "Clock & Mem", "Display", "Blit");
+        file.WriteLine("{0},{1},{2},{3},{4}", "CPU", "Clock & Mem", "Display", "Blit", "BeginInvoke");
 
         // We write the data
         for (int i = 0; i < sampleCounter; ++i)

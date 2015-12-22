@@ -117,9 +117,13 @@ namespace GBSharp.ViewModel
 
     private void OnFrameCompleted()
     {
-      //GameBoy.swBeginInvoke.Start();
+#if TIMING
+      GameBoy.swBeginInvoke.Start();
       _dispatcher.BeginInvoke(new Action(TransferImageToBitmap), null);
-      //GameBoy.swBeginInvoke.Stop();
+      GameBoy.swBeginInvoke.Stop();
+#else
+      _dispatcher.BeginInvoke(new Action(TransferImageToBitmap), null);
+#endif
 
       //_dispatcher.Invoke(CopyFromDomain);
       //_dispatcher.Invoke(UpdateFPS);
