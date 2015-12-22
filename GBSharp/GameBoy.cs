@@ -273,6 +273,10 @@ namespace GBSharp
           long finalTicks = this.stopwatch.ElapsedTicks;
           while(finalTicks < stopwatchTicksPerFrame)
           {
+            // NOTE(Cristian): Sometimes the thread would be trapped here because when
+            //                 the process close signal gets, the timers stop working and
+            //                 the finalTicks variable would never update.
+            if(!this.run) { break; }
             finalTicks = this.stopwatch.ElapsedTicks;
           }
 
