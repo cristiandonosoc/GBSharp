@@ -41,10 +41,14 @@ namespace GBSharp
 
     public bool ReleaseButtons { get; set; }
 
+    private int frameCounter = 0;
+    private long totalFrameTicks = 0;
+    public double FPS { get; private set; }
+
 #if TIMING
     private long[] timingSamples;
 
-    private int frameCounter = 0;
+    private int timingFrameCounter = 0;
     private int sampleCounter = 0;
     private int maxSamples = 60 * 100;
     private int sampleAmount = 5;
@@ -243,7 +247,6 @@ namespace GBSharp
       //throw new NotImplementedException();
     }
 
-
     /// <summary>
     /// Method that is going to be running in a separate thread, calling Step() forever.
     /// </summary>
@@ -282,6 +285,17 @@ namespace GBSharp
 
           drama = finalTicks - (long)stopwatchTicksPerFrame;
 
+          // We calculate how many FPS we're giving
+          totalFrameTicks += finalTicks;
+          ++frameCounter;
+          if (frameCounter >= 30)
+          {
+            FPS = Math.Round(60 * (double)(30 * stopwatchTicksPerFrame) / (double)totalFrameTicks);
+            frameCounter = 0;
+            totalFrameTicks = 0;
+          }
+
+
 #if TIMING
           if (sampleCounter < maxSamples)
           {
@@ -293,7 +307,7 @@ namespace GBSharp
             timingSamples[index + 4] = swBeginInvoke.ElapsedTicks;
             ++sampleCounter;
           }
-          ++frameCounter;
+          ++timingFrameCounter;
 
           swCPU.Reset();
           swClockMem.Reset();

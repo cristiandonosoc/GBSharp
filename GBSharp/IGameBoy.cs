@@ -29,6 +29,8 @@ namespace GBSharp
 
     uint[] ScreenFrame { get; }
     object LockObj { get; }
+
+    double FPS { get; }
     
   }
 }

@@ -122,22 +122,13 @@ namespace GBSharp.ViewModel
       _dispatcher.BeginInvoke(new Action(TransferImageToBitmap), null);
       GameBoy.swBeginInvoke.Stop();
 #else
-      _dispatcher.BeginInvoke(new Action(TransferImageToBitmap), null);
+      _dispatcher.BeginInvoke(new Action(UpdateFromGameboy), null);
 #endif
-
-      //_dispatcher.Invoke(CopyFromDomain);
-      //_dispatcher.Invoke(UpdateFPS);
     }
 
-    private void CopyFromDomain()
+    private void UpdateFromGameboy()
     {
       ReleaseButtons = _gameBoy.ReleaseButtons;
-      // BeginInvoke returns immediatelly
-      _dispatcher.BeginInvoke(new Action(TransferImageToBitmap), null);
-    }
-
-    private void TransferImageToBitmap()
-    {
 
       // We copy the ready screen Frame
       var target = _gameBoy.ScreenFrame;
@@ -146,20 +137,17 @@ namespace GBSharp.ViewModel
       OnPropertyChanged(() => Screen);
 
       UpdateFPS();
-
     }
 
     private void UpdateFPS()
     {
       _frameCount++;
-      if (_frameCount % 10 == 0)
+      if (_frameCount > 30)
       {
-        var currentTime = DateTime.Now;
-        var deltaTime = currentTime - _previousTime;
-        _previousTime = currentTime;
-        _fps = (float)(_frameCount) / (deltaTime.TotalSeconds);
-        _frameCount = 0;
+        _fps = _gameBoy.FPS;
         OnPropertyChanged(() => FPS);
+        _frameCount = 0;
+
       }
     }
 
