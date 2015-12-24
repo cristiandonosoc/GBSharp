@@ -112,15 +112,6 @@ namespace GBSharp.MemorySpace.MemoryHandlers
       {
         // During DMA transfer, the CPU can only access the High-RAM block
         // HRAM: 0xFF80-0xFE9F
-        if (this.dma.Active)
-        {
-          // TODO(Cristian): Investigate what the gameboy actually does on this event.
-          //                 Does it just return and the instruction took as much time?
-          //                 Does it crash and it's simply not done?
-          //                 Who knows...
-          //throw new InvalidOperationException("Can only access HRAM during DMA transfer");
-        }
-
         /* [0xFEA0 - 0xFEFF]: Empty but unusable for I/O */
         if (address < 0xFF00)
         {

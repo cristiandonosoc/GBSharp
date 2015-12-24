@@ -54,7 +54,7 @@ namespace GBSharp.VideoSpace
     public int FramePixelCountX       { get; internal set; }
     public int FramePixelCountY       { get; internal set; }
     public int ScreenPixelCountX      { get; internal set; }
-    public int ScreenPixelCountY      { get; internal set; }
+    public int ScreenPixelCountY 			{ get; internal set; }
     public int TimingPixelCountX 			{ get; internal set; }
     public int TimingPixelCountY 			{ get; internal set; }
     public int FrameTileCountX        { get; internal set; }
@@ -62,16 +62,17 @@ namespace GBSharp.VideoSpace
     public int ScreenTileCountX       { get; internal set; }
     public int ScreenTileCountY 			{ get; internal set; }
     public int BytesPerTileShort      { get; internal set; }
-    public int BytesPerTileLong       { get; internal set; }
+    public int BytesPerTileLong   		{ get; internal set; }
     public int PixelPerTileX          { get; internal set; }
     public int PixelPerTileY 					{ get; internal set; }
     public int BytesPerPixel 					{ get; internal set; }
     public PixelFormat PixelFormat    { get; internal set; }
     public uint[] TileColors          { get; internal set; }
     public uint[] SpriteColors        { get; internal set; }
-    public uint[] TilePallete         { get; internal set; }
+    public uint[] TilePallete     		{ get; internal set; }
     public uint[] SpritePallete0      { get; internal set; }
     public uint[] SpritePallete1 			{ get; internal set; }
+    public uint rectangleColor        { get; set; }
   }
 
   public class DisplayStatus
@@ -448,8 +449,6 @@ namespace GBSharp.VideoSpace
 
       #region BACKGROUND
 
-      // TODO(Cristian): Move this to disStat
-
       bool drawBackground = _disStat.LCDCBits[0];
       // We copy the information from the background tile to the effective screen
       for (int y = rowBegin; y < rowEnd; y++)
@@ -573,13 +572,11 @@ namespace GBSharp.VideoSpace
       {
         if (_updateDebugTargets[(int)DebugTargets.Background])
         {
-          // TODO(Cristian): Move this to disStat
-          uint rectangleColor = 0xFFFF8822;
           DrawFuncs.DrawRectangle(_disDef, _debugInternalTargets[(int)DebugTargets.Background],
                                  _disDef.FramePixelCountX,
                                  _disStat.SCX, _disStat.SCY,
                                  _disDef.ScreenPixelCountX, _disDef.ScreenPixelCountY,
-                                 rectangleColor);
+                                 _disDef.RectangleColor);
         }
 
         if (_updateDebugTargets[(int)DebugTargets.Tiles])
