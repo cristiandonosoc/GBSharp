@@ -37,14 +37,14 @@ namespace GBSharp.VideoSpace
 
       if (wrap)
       {
-        tileX %= disDef.frameTileCountX;
-        tileY %= disDef.screenTileCountY;
+        tileX %= disDef.FrameTileCountX;
+        tileY %= disDef.ScreenTileCountY;
       }
       else
       {
         // TODO(Cristian): See if clipping is what we want
-        if (tileX >= disDef.frameTileCountX) { tileX = disDef.frameTileCountX - 1; }
-        if (tileY >= disDef.screenTileCountY) { tileY = disDef.screenTileCountY - 1; }
+        if (tileX >= disDef.FrameTileCountX) { tileX = disDef.FrameTileCountX - 1; }
+        if (tileY >= disDef.ScreenTileCountY) { tileY = disDef.ScreenTileCountY - 1; }
       }
 
       ushort tileMapBaseAddress = GetTileMapBaseAddress(LCDBit3);
@@ -69,8 +69,8 @@ namespace GBSharp.VideoSpace
                 bool flipX = false, bool flipY = false)
     {
       int tileLength = 16;
-      int spriteLength = disDef.bytesPerTileShort;
-      if (LCDCBit2) { spriteLength = disDef.bytesPerTileLong; }
+      int spriteLength = disDef.BytesPerTileShort;
+      if (LCDCBit2) { spriteLength = disDef.BytesPerTileLong; }
 
       // We obtain the tile memory
       byte[] data = memory.LowLevelArrayRead(
@@ -134,29 +134,29 @@ namespace GBSharp.VideoSpace
                  int row, bool LCDBit3, bool LCDBit4)
     {
       // We determine the y tile
-      int tileY = row / disDef.pixelPerTileY;
-      int tileRemainder = row % disDef.pixelPerTileY;
+      int tileY = row / disDef.PixelPerTileY;
+      int tileRemainder = row % disDef.PixelPerTileY;
 
       ushort tileMapBaseAddress = GetTileMapBaseAddress(LCDBit3);
       ushort tileBaseAddress = GetTileBaseAddress(LCDBit4);
 
-      for (int tileX = 0; tileX < disDef.frameTileCountX; tileX++)
+      for (int tileX = 0; tileX < disDef.FrameTileCountX; tileX++)
       {
         // We obtain the correct tile index
         int tileOffset = GetTileOffset(disDef, memory, tileMapBaseAddress, LCDBit4, tileX, tileY);
 
         // We obtain both pixels
-        int currentTileBaseAddress = tileBaseAddress + disDef.bytesPerTileShort * tileOffset;
+        int currentTileBaseAddress = tileBaseAddress + disDef.BytesPerTileShort * tileOffset;
         byte top = memory.LowLevelRead((ushort)(currentTileBaseAddress + 2 * tileRemainder));
         byte bottom = memory.LowLevelRead((ushort)(currentTileBaseAddress + 2 * tileRemainder + 1));
 
         GetPixelsFromTileBytes(pixelLookupTable,
                                ref pixelBuffer,
-                               disDef.tilePallete,
-                               disDef.pixelPerTileX,
+                               disDef.TilePallete,
+                               disDef.PixelPerTileX,
                                top, bottom);
-        int currentTileIndex = tileX * disDef.pixelPerTileX;
-        for (int i = 0; i < disDef.pixelPerTileX; i++)
+        int currentTileIndex = tileX * disDef.PixelPerTileX;
+        for (int i = 0; i < disDef.PixelPerTileX; i++)
         {
           frameLineBuffer[currentTileIndex + i] = pixelBuffer[i];
         }
@@ -184,15 +184,15 @@ namespace GBSharp.VideoSpace
     internal static int
     GetScanLineOAMs(DisplayDefinition disDef, OAM[] spriteOAMs, int row, bool LCDCBit2)
     {
-      int spriteSize = disDef.bytesPerTileShort / 2;
-      if (LCDCBit2) { spriteSize = disDef.bytesPerTileLong / 2; }
+      int spriteSize = disDef.BytesPerTileShort / 2;
+      if (LCDCBit2) { spriteSize = disDef.BytesPerTileLong / 2; }
 
       // Then we select the 10 that correspond
       int scanLineSize = 0;
       int maxScanLineSize = 10;
       foreach (OAM oam in spriteOAMs)
       {
-        int y = oam.y - 16;
+        int y = oam.Y - 16;
         if ((y <= row) && (row < (y + spriteSize)))
         {
           scanLineOAMs[scanLineSize++] = oam;
@@ -222,23 +222,23 @@ namespace GBSharp.VideoSpace
         // TODO(Cristian): Obtain only the tile data we care about
         OAM oam = scanLineOAMs[oamIndex];
 
-        bool flipX = Utils.UtilFuncs.TestBit(oam.flags, 5) != 0;
-        bool flipY = Utils.UtilFuncs.TestBit(oam.flags, 6) != 0;
-        byte[] tilePixels = GetTileData(disDef, memory, 0x8000, oam.spriteCode,
+        bool flipX = Utils.UtilFuncs.TestBit(oam.Flags, 5) != 0;
+        bool flipY = Utils.UtilFuncs.TestBit(oam.Flags, 6) != 0;
+        byte[] tilePixels = GetTileData(disDef, memory, 0x8000, oam.SpriteCode,
                                         LCDCBit2, flipX, flipY);
 
-        int x = oam.x - 8;
-        int y = row - (oam.y - 16);
+        int x = oam.X - 8;
+        int y = row - (oam.Y - 16);
 
-        uint[] spritePallete = (Utils.UtilFuncs.TestBit(oam.flags, 4) == 0) ?
-                                  disDef.spritePallete0 : disDef.spritePallete1;
+        uint[] spritePallete = (Utils.UtilFuncs.TestBit(oam.Flags, 4) == 0) ?
+                                  disDef.SpritePallete0 : disDef.SpritePallete1;
 
         GetPixelsFromTileBytes(pixelLookupTable,
                                ref pixelBuffer,
                                spritePallete,
-                               disDef.pixelPerTileX,
+                               disDef.PixelPerTileX,
                                tilePixels[2 * y], tilePixels[2 * y + 1]);
-        bool backgroundPriority = (Utils.UtilFuncs.TestBit(oam.flags, 7) != 0);
+        bool backgroundPriority = (Utils.UtilFuncs.TestBit(oam.Flags, 7) != 0);
         if (ignoreBackgroundPriority)
         {
           backgroundPriority = false;
@@ -247,7 +247,7 @@ namespace GBSharp.VideoSpace
         {
           int pX = x + i;
           if (pX < 0) { continue; }
-          if (pX >= disDef.screenPixelCountX) { break; }
+          if (pX >= disDef.ScreenPixelCountX) { break; }
           uint color = pixelBuffer[i];
           if (color == 0) { continue; } // transparent pixel
 
@@ -255,7 +255,7 @@ namespace GBSharp.VideoSpace
           //                 on every color except tile color 0
           if (backgroundPriority)
           {
-            if (targetPixels[pX] != disDef.tileColors[0]) { continue; }
+            if (targetPixels[pX] != disDef.TileColors[0]) { continue; }
           }
           targetPixels[pX] = color;
         }
@@ -271,7 +271,7 @@ namespace GBSharp.VideoSpace
       if (LCDBit4)
       {
         tileOffset = memory.LowLevelRead((ushort)(tileMapBaseAddress +
-                                                 (disDef.frameTileCountX * tileY) +
+                                                 (disDef.FrameTileCountX * tileY) +
                                                  tileX));
       }
       else
@@ -279,7 +279,7 @@ namespace GBSharp.VideoSpace
         unchecked
         {
           byte t = memory.LowLevelRead((ushort)(tileMapBaseAddress +
-                                                (disDef.frameTileCountX * tileY) +
+                                                (disDef.FrameTileCountX * tileY) +
                                                 tileX));
           sbyte tR = (sbyte)t;
           tileOffset = tR;
@@ -315,7 +315,7 @@ namespace GBSharp.VideoSpace
         int down = (bgp >> (2 * color)) & 1;
         int up = (bgp >> (2 * color + 1)) & 1;
         int index = (up << 1) | down;
-        disDef.tilePallete[color] = disDef.tileColors[index];
+        disDef.TilePallete[color] = disDef.TileColors[index];
       }
     }
 
@@ -326,25 +326,25 @@ namespace GBSharp.VideoSpace
       {
 
         byte obp0 = memory.LowLevelRead((ushort)MMR.OBP0);
-        disDef.spritePallete0[0] = 0x00000000; // Sprite colors are trasparent
+        disDef.SpritePallete0[0] = 0x00000000; // Sprite colors are trasparent
         for (int color = 1; color < 4; ++color)
         {
           int down = (obp0 >> (2 * color)) & 1;
           int up = (obp0 >> (2 * color + 1)) & 1;
           int index = (up << 1) | down;
-          disDef.spritePallete0[color] = disDef.spriteColors[index];
+          disDef.SpritePallete0[color] = disDef.SpriteColors[index];
         }
       }
       else if (pallete == MMR.OBP1)
       {
         byte obp1 = memory.LowLevelRead((ushort)MMR.OBP1);
-        disDef.spritePallete1[1] = 0x00000000; // Sprite colors are trasparent
+        disDef.SpritePallete1[1] = 0x00000000; // Sprite colors are trasparent
         for (int color = 1; color < 4; ++color)
         {
           int down = (obp1 >> (2 * color)) & 1;
           int up = (obp1 >> (2 * color + 1)) & 1;
           int index = (up << 1) | down;
-          disDef.spritePallete1[color] = disDef.spriteColors[index];
+          disDef.SpritePallete1[color] = disDef.SpriteColors[index];
         }
       }
       else

@@ -97,7 +97,7 @@ namespace GBSharp
       this.swClockMem = new Stopwatch();
 #endif
       var disDef = display.GetDisplayDefinition();
-      ScreenFrame = new uint[disDef.screenPixelCountX * disDef.screenPixelCountY];
+      ScreenFrame = new uint[disDef.ScreenPixelCountX * disDef.ScreenPixelCountY];
     }
 
 

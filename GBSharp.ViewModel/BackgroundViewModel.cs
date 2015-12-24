@@ -49,7 +49,7 @@ namespace GBSharp.ViewModel
 
       var disDef = _display.GetDisplayDefinition();
 
-      _background = new WriteableBitmap(disDef.framePixelCountX, disDef.framePixelCountY,
+      _background = new WriteableBitmap(disDef.FramePixelCountX, disDef.FramePixelCountY,
           96, 96, PixelFormats.Bgra32, null);
 
     }

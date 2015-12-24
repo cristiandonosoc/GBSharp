@@ -104,10 +104,10 @@ namespace GBSharp.ViewModel
       _gameBoy.FrameCompleted += OnFrameCompleted;
 
       VideoSpace.DisplayDefinition disDef = _display.GetDisplayDefinition();
-      _screen = new WriteableBitmap(disDef.screenPixelCountX, disDef.screenPixelCountY,
+      _screen = new WriteableBitmap(disDef.ScreenPixelCountX, disDef.ScreenPixelCountY,
                                     96, 96,
                                     System.Windows.Media.PixelFormats.Bgra32, null);
-      _frame = new uint[disDef.screenPixelCountX * disDef.screenPixelCountY];
+      _frame = new uint[disDef.ScreenPixelCountX * disDef.ScreenPixelCountY];
     }
 
     uint[] _frame;

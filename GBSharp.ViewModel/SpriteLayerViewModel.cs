@@ -42,7 +42,7 @@ namespace GBSharp.ViewModel
 
       var disDef = _display.GetDisplayDefinition();
 
-      _spriteLayer = new WriteableBitmap(disDef.screenPixelCountX, disDef.screenPixelCountY,
+      _spriteLayer = new WriteableBitmap(disDef.ScreenPixelCountX, disDef.ScreenPixelCountY,
                                          96, 96, PixelFormats.Bgra32, null);
     }
 
