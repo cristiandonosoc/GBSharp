@@ -42,7 +42,6 @@ namespace GBSharp.VideoSpace
       }
       else
       {
-        // TODO(Cristian): See if clipping is what we want
         if (tileX >= disDef.FrameTileCountX) { tileX = disDef.FrameTileCountX - 1; }
         if (tileY >= disDef.ScreenTileCountY) { tileY = disDef.ScreenTileCountY - 1; }
       }
@@ -213,13 +212,11 @@ namespace GBSharp.VideoSpace
                        int row, bool LCDCBit2,
                        bool ignoreBackgroundPriority = false)
     {
-      // TODO(Cristian): Separate this step from the call and pass it as an argument
       int scanLineSize = GetScanLineOAMs(disDef, spriteOAMs, row, LCDCBit2);
 
       // We obtain the pixels we want from it
       for (int oamIndex = scanLineSize - 1; oamIndex >= 0; --oamIndex)
       {
-        // TODO(Cristian): Obtain only the tile data we care about
         OAM oam = scanLineOAMs[oamIndex];
 
         bool flipX = Utils.UtilFuncs.TestBit(oam.Flags, 5) != 0;
@@ -373,10 +370,6 @@ namespace GBSharp.VideoSpace
       short lookup = pixelLookupTable[(top << 8) | bottom];
       for (int i = 0; i < pixelPerTileX; i++)
       {
-        // TODO(Cristian): Could a pre-defined lookup table speed up this?
-        //int up = (bottom >> (7 - i)) & 1;
-        //int down = (top >> (7 - i)) & 1;
-        //int index = (up << 1) | down;
         int index = (lookup >> 2 * (7 - i)) & 0x3;
         uint color = pallete[index];
         pixelBuffer[i] = color;

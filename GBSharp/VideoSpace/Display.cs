@@ -42,66 +42,66 @@ namespace GBSharp.VideoSpace
 
   public class OAM
   {
-    public int Index                  { get; internal set; }
-    public byte Y           					{ get; internal set; }
-    public byte X 										{ get; internal set; }
-    public byte SpriteCode  					{ get; internal set; }
-    public byte Flags       					{ get; internal set; }
+    public int Index { get; internal set; }
+    public byte Y { get; internal set; }
+    public byte X { get; internal set; }
+    public byte SpriteCode { get; internal set; }
+    public byte Flags { get; internal set; }
   }
 
   public class DisplayDefinition
   {
-    public int FramePixelCountX       { get; internal set; }
-    public int FramePixelCountY       { get; internal set; }
-    public int ScreenPixelCountX      { get; internal set; }
-    public int ScreenPixelCountY 			{ get; internal set; }
-    public int TimingPixelCountX 			{ get; internal set; }
-    public int TimingPixelCountY 			{ get; internal set; }
-    public int FrameTileCountX        { get; internal set; }
-    public int FrameTileCountY 				{ get; internal set; }
-    public int ScreenTileCountX       { get; internal set; }
-    public int ScreenTileCountY 			{ get; internal set; }
-    public int BytesPerTileShort      { get; internal set; }
-    public int BytesPerTileLong   		{ get; internal set; }
-    public int PixelPerTileX          { get; internal set; }
-    public int PixelPerTileY 					{ get; internal set; }
-    public int BytesPerPixel 					{ get; internal set; }
-    public PixelFormat PixelFormat    { get; internal set; }
-    public uint[] TileColors          { get; internal set; }
-    public uint[] SpriteColors        { get; internal set; }
-    public uint[] TilePallete     		{ get; internal set; }
-    public uint[] SpritePallete0      { get; internal set; }
-    public uint[] SpritePallete1 			{ get; internal set; }
-    public uint rectangleColor        { get; set; }
+    public int FramePixelCountX { get; internal set; }
+    public int FramePixelCountY { get; internal set; }
+    public int ScreenPixelCountX { get; internal set; }
+    public int ScreenPixelCountY { get; internal set; }
+    public int TimingPixelCountX { get; internal set; }
+    public int TimingPixelCountY { get; internal set; }
+    public int FrameTileCountX { get; internal set; }
+    public int FrameTileCountY { get; internal set; }
+    public int ScreenTileCountX { get; internal set; }
+    public int ScreenTileCountY { get; internal set; }
+    public int BytesPerTileShort { get; internal set; }
+    public int BytesPerTileLong { get; internal set; }
+    public int PixelPerTileX { get; internal set; }
+    public int PixelPerTileY { get; internal set; }
+    public int BytesPerPixel { get; internal set; }
+    public PixelFormat PixelFormat { get; internal set; }
+    public uint[] TileColors { get; internal set; }
+    public uint[] SpriteColors { get; internal set; }
+    public uint[] TilePallete { get; internal set; }
+    public uint[] SpritePallete0 { get; internal set; }
+    public uint[] SpritePallete1 { get; internal set; }
+    public uint RectangleColor { get; set; }
   }
 
   public class DisplayStatus
   {
-    public int PrevTickCount          { get; internal set; }
-    public int CurrentLineTickCount   { get; internal set; }
-    public byte CurrentLine           { get; internal set; }
-    public int OAMSearchTickCount     { get; internal set; }
-    public int DataTransferTickCount  { get; internal set; }
-    public int TotalLineTickCount     { get; internal set; }
-    public bool Enabled               { get; internal set; }
-    public DisplayModes DisplayMode   { get; internal set; }
+    public int PrevTickCount { get; internal set; }
+    public int CurrentLineTickCount { get; internal set; }
+    public byte CurrentLine { get; internal set; }
+    public int OAMSearchTickCount { get; internal set; }
+    public int DataTransferTickCount { get; internal set; }
+    public int TotalLineTickCount { get; internal set; }
+    public bool Enabled { get; internal set; }
+    public DisplayModes DisplayMode { get; internal set; }
 
     // Debug targets
-    public bool TileBase              { get; internal set; }
-    public bool NoTileMap             { get; internal set; }
-    public bool TileMap               { get; internal set; }
+    public bool TileBase { get; internal set; }
+    public bool NoTileMap { get; internal set; }
+    public bool TileMap { get; internal set; }
 
     // Registers
-    public bool[] LCDCBits            { get; internal set; }
-    public byte STAT                  { get; internal set; }
-    public byte SCX   								{ get; internal set; }
-    public byte SCY   								{ get; internal set; }
-    public byte LY    								{ get; internal set; }
-    public byte LYC   								{ get; internal set; }
-    public byte WX    								{ get; internal set; }
-    public byte WY    								{ get; internal set; }
+    public bool[] LCDCBits { get; internal set; }
+    public byte STAT { get; internal set; }
+    public byte SCX { get; internal set; }
+    public byte SCY { get; internal set; }
+    public byte LY { get; internal set; }
+    public byte LYC { get; internal set; }
+    public byte WX { get; internal set; }
+    public byte WY { get; internal set; }
     // WY actually changes at the beginning of the frame
-    public byte CurrentWY             { get; internal set; }
+    public byte CurrentWY { get; internal set; }
   }
 
   class Display : IDisplay
@@ -641,7 +641,6 @@ namespace GBSharp.VideoSpace
         {
           // NOTE(Cristian): Turning off the gameboy *should* be made only during V-BLANK.
           //                 Apparently it damages the hardware otherwise.
-          // TODO(Cristian): See if this should be an assertion
           throw new InvalidOperationException("Stopping LCD should be made during V-BLANK");
         }
         _disStat.Enabled = false;
