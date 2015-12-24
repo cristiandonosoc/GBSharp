@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GBSharp.MemorySpace;
+using System.Diagnostics;
 
 namespace GBSharp.AudioSpace
 {
@@ -48,6 +49,10 @@ namespace GBSharp.AudioSpace
     public bool LeftChannelEnabled { get; private set; }
     public bool RightChannelEnabled { get; private set; }
 
+#if SoundTiming
+    public static Stopwatch swAPU = new Stopwatch();
+#endif
+
     internal APU(Memory memory, int sampleRate, int numChannels, int sampleSize)
     {
       _memory = memory;
@@ -64,8 +69,12 @@ namespace GBSharp.AudioSpace
       // NOTE(Cristian): Channel 2 doesn't have frequency sweep
       _channel2 = new SquareChannel(sampleRate, numChannels, sampleSize, 1,
                                     0, MMR.NR21, MMR.NR22, MMR.NR23, MMR.NR24);
-      LeftChannelEnabled = false;
-      RightChannelEnabled = false;
+      LeftChannelEnabled = true;
+      RightChannelEnabled = true;
+
+#if SoundTiming
+      swAPU.Start();
+#endif
     }
 
     internal void HandleMemoryChange(MMR register, byte value)
@@ -180,6 +189,12 @@ namespace GBSharp.AudioSpace
       _channel2.ClearBuffer();
     }
 
+#if SoundTiming
+    ~APU()
+    {
+      _channel1.WriteOutput();
+    }
+#endif
   }
 
 }

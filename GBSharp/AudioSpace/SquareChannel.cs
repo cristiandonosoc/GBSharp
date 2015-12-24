@@ -7,9 +7,23 @@ using System.Threading.Tasks;
 
 namespace GBSharp.AudioSpace
 {
+#if SoundTiming
+  internal enum TimelineEvents
+  {
+    FREQUENCY_CHANGE,
+    SOUND_LENGTH_SET,
+    SOUND_LENGTH_END
+  }
+#endif
+
   internal class SquareChannel
   {
     #region BUFFER DEFINITION
+
+#if SoundTiming
+    static long[] Timeline = new long[10000 * 2];
+    static uint TimelineCount = 0;
+#endif
 
     private int _sampleRate;
     private int _msSampleRate;
@@ -36,6 +50,8 @@ namespace GBSharp.AudioSpace
     internal byte LowFreqByte { get; private set; }
     internal byte HighFreqByte { get; private set; }
 
+    private int _tickThreshold;
+
     private ushort _frequencyFactor;
     internal ushort FrequencyFactor
     {
@@ -46,12 +62,15 @@ namespace GBSharp.AudioSpace
         Frequency = (double)0x20000 / (double)(0x800 - _frequencyFactor);
         _tickThreshold = (int)(GameBoy.ticksPerMillisecond * (1000.0 / (2 * Frequency)));
         _tickCounter = _tickThreshold;
+
+#if SoundTiming
+        Timeline[TimelineCount++] = APU.swAPU.ElapsedTicks;
+        Timeline[TimelineCount++] = (long)TimelineEvents.FREQUENCY_CHANGE;
+#endif
       }
     }
 
-    private int _tickThreshold;
-
-    internal double Frequency { get; private set; }
+    internal double Frequency { get; set; }
 
     private int _tickCounter = 0;
 
@@ -119,6 +138,10 @@ namespace GBSharp.AudioSpace
             Enabled = false;
             // TODO(Cristian): Trigger a change to ouput the correct enabled bit
             //                 NR52
+#if SoundTiming
+            Timeline[TimelineCount++] = APU.swAPU.ElapsedTicks;
+        		Timeline[TimelineCount++] = (long)TimelineEvents.SOUND_LENGTH_END;
+#endif
           }
         }
       }
@@ -141,6 +164,11 @@ namespace GBSharp.AudioSpace
         int soundLenghtFactor = value & 0x3F;
         double soundLengthMs = (double)(0x40 - soundLenghtFactor) / (double)0x100;
         _soundLengthTicks = (int)(GameBoy.ticksPerMillisecond * soundLengthMs);
+
+#if SoundTiming
+        Timeline[TimelineCount++] = APU.swAPU.ElapsedTicks;
+        Timeline[TimelineCount++] = (long)TimelineEvents.SOUND_LENGTH_SET;
+#endif
       } 
       else if(register == _volumeEnvelopeRegister)
       {
@@ -174,5 +202,21 @@ namespace GBSharp.AudioSpace
         throw new InvalidProgramException("Invalid register received");
       }
     }
+
+#if SoundTiming
+    public void WriteOutput()
+    {
+      using (var file = new System.IO.StreamWriter("sound_events.csv", false))
+      {
+        for (uint i = 0; i < TimelineCount; i += 2)
+        {
+          file.WriteLine("{0}, {1}",
+                         Timeline[i],
+                         ((TimelineEvents)Timeline[i + 1]).ToString());
+        }
+      }
+    }
+#endif
+
   }
 }
