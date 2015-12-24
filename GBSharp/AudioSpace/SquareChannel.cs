@@ -25,16 +25,10 @@ namespace GBSharp.AudioSpace
     static uint TimelineCount = 0;
 #endif
 
-    private int _sampleRate;
     private int _msSampleRate;
-    public int SampleRate { get { return _sampleRate; } }
-
-    private int _numChannels;
-    public int NumChannels { get { return _numChannels; } }
-
-    private int _sampleSize;
-    public int SampleSize { get { return _sampleSize; } }
-
+    public int SampleRate { get; private set; }
+    public int NumChannels { get; private set; }
+    public int SampleSize { get; private set; }
     private int _milliseconds = 1000; // ms of sample
 
     short[] _buffer;
@@ -44,6 +38,15 @@ namespace GBSharp.AudioSpace
     public int SampleCount { get { return _sampleIndex; } }
 
     internal bool Enabled { get; private set; }
+
+    private int _envelopeVolumeMultiplier = 0;
+    private const int _volumeConstant = 511;
+    public int Volume {
+      get
+      {
+        return _envelopeVolumeMultiplier * _volumeConstant;
+      }
+    }
 
     #endregion
 
@@ -90,15 +93,19 @@ namespace GBSharp.AudioSpace
     private int _soundLengthTickCounter;
     private bool _continuousOutput;
 
+    private int _envelopeTicks = 0;
+    private int _envelopeTickCounter = 0;
+    private bool _envelopeUp;
+
     internal SquareChannel(int sampleRate, int numChannels, int sampleSize, int channelIndex,
                            MMR sweepRegister, MMR wavePatternDutyRegister, MMR volumeEnvelopeRegister, 
                            MMR freqLowRegister, MMR freqHighRegister)
     {
-      _sampleRate = sampleRate;
-      _msSampleRate = _sampleRate / 1000;
-      _numChannels = numChannels;
-      _sampleSize = sampleSize;
-      _buffer = new short[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
+      SampleRate = sampleRate;
+      _msSampleRate = SampleRate / 1000;
+      NumChannels = numChannels;
+      SampleSize = sampleSize;
+      _buffer = new short[SampleRate * NumChannels * SampleSize * _milliseconds / 1000];
 
       _channelIndex = channelIndex;
 
@@ -110,55 +117,13 @@ namespace GBSharp.AudioSpace
       _freqHighRegister = freqHighRegister;
     }
 
-    public void GenerateSamples(int sampleCount)
-    {
-      while(sampleCount > 0)
-      {
-        --sampleCount;
-
-        for(int c = 0; c < _numChannels; ++c)
-        {
-          _buffer[_sampleIndex++] = _outputValue;
-        }
-
-        // The amount of ticks in a sample
-        _tickCounter -= APU.MinimumTickThreshold;
-        if(_tickCounter < 0)
-        {
-          _tickCounter = _tickThreshold;
-          _up = !_up;
-          _outputValue = (short)(_up ? 8191 : -8192);
-        }
-
-        if(!_continuousOutput)
-        {
-          _soundLengthTickCounter += APU.MinimumTickThreshold;
-          if(_soundLengthTickCounter >= _soundLengthTicks)
-          {
-            Enabled = false;
-            // TODO(Cristian): Trigger a change to ouput the correct enabled bit
-            //                 NR52
-#if SoundTiming
-            Timeline[TimelineCount++] = APU.swAPU.ElapsedTicks;
-        		Timeline[TimelineCount++] = (long)TimelineEvents.SOUND_LENGTH_END;
-#endif
-          }
-        }
-      }
-    }
-
-    public void ClearBuffer()
-    {
-      _sampleIndex = 0;
-    }
-    
     public void HandleMemoryChange(MMR register, byte value)
     {
-      if(register == _sweepRegister)
+      if (register == _sweepRegister)
       {
         // TODO(Cristian): Implement sweep registers
       }
-      else if(register == _wavePatternDutyRegister)
+      else if (register == _wavePatternDutyRegister)
       {
         // TODO(Cristian): Wave Pattern Duty
         int soundLenghtFactor = value & 0x3F;
@@ -169,31 +134,34 @@ namespace GBSharp.AudioSpace
         Timeline[TimelineCount++] = APU.swAPU.ElapsedTicks;
         Timeline[TimelineCount++] = (long)TimelineEvents.SOUND_LENGTH_SET;
 #endif
-      } 
-      else if(register == _volumeEnvelopeRegister)
+      }
+      else if (register == _volumeEnvelopeRegister)
       {
         // TODO(Cristian): Implement volume envelope
+        double envelopeMsLength = 1000 * ((double)(value & 0x7) / (double)64);
+        _envelopeTicks = (int)(GameBoy.ticksPerMillisecond * envelopeMsLength);
+        _envelopeUp = (value & 0x8) != 0;
+        _envelopeVolumeMultiplier = value >> 4;
       }
-      else if(register == _freqLowRegister)
+      else if (register == _freqLowRegister)
       {
         LowFreqByte = value;
         FrequencyFactor = (ushort)(((HighFreqByte & 0x7) << 8) | LowFreqByte);
       }
-      else if(register == _freqHighRegister)
+      else if (register == _freqHighRegister)
       {
-
         HighFreqByte = value;
         FrequencyFactor = (ushort)(((HighFreqByte & 0x7) << 8) | LowFreqByte);
 
         _continuousOutput = (Utils.UtilFuncs.TestBit(value, 6) == 0);
 
         Enabled = (Utils.UtilFuncs.TestBit(value, 7) != 0);
-        if(Enabled)
+        if (Enabled)
         {
           _soundLengthTickCounter = 0;
         }
       }
-      else if(register == MMR.NR52)
+      else if (register == MMR.NR52)
       {
         Enabled = (Utils.UtilFuncs.TestBit(value, _channelIndex) != 0);
       }
@@ -203,6 +171,77 @@ namespace GBSharp.AudioSpace
       }
     }
 
+    public void GenerateSamples(int sampleCount)
+    {
+      while(sampleCount > 0)
+      {
+        --sampleCount;
+
+        for(int c = 0; c < NumChannels; ++c)
+        {
+          _buffer[_sampleIndex++] = _outputValue;
+        }
+
+        // The amount of ticks in a sample
+        _tickCounter -= APU.MinimumTickThreshold;
+        if(_tickCounter < 0)
+        {
+          _tickCounter = _tickThreshold;
+          _up = !_up;
+
+          _outputValue = (short)(_up ? Volume : -Volume);
+        }
+
+        /* FREQUENCY SWEEP */
+        // TODO(Cristian): Implement frequency sweep
+
+        /* SOUND LENGTH DURATION */
+
+//        if(!_continuousOutput)
+//        {
+//          _soundLengthTickCounter += APU.MinimumTickThreshold;
+//          if(_soundLengthTickCounter >= _soundLengthTicks)
+//          {
+//            Enabled = false;
+//            // TODO(Cristian): Trigger a change to ouput the correct enabled bit
+//            //                 NR52
+//#if SoundTiming
+//            Timeline[TimelineCount++] = APU.swAPU.ElapsedTicks;
+//        		Timeline[TimelineCount++] = (long)TimelineEvents.SOUND_LENGTH_END;
+//#endif
+//          }
+//        }
+
+        /* VOLUME ENVELOPE */
+
+        if(_envelopeTicks != 0)
+        {
+          _envelopeTickCounter += APU.MinimumTickThreshold;
+          if(_envelopeTickCounter > _envelopeTicks)
+          {
+            _envelopeTickCounter -= _envelopeTicks;
+            if(_envelopeUp)
+            {
+              ++_envelopeVolumeMultiplier;
+              if(_envelopeVolumeMultiplier > 15) { _envelopeVolumeMultiplier = 15; }
+            }
+            else
+            {
+              --_envelopeVolumeMultiplier;
+              if(_envelopeVolumeMultiplier < 0) { _envelopeVolumeMultiplier = 0; }
+            }
+
+            _outputValue = (short)(_up ? Volume : -Volume);
+          }
+        }
+      }
+    }
+
+    public void ClearBuffer()
+    {
+      _sampleIndex = 0;
+    }
+    
 #if SoundTiming
     public void WriteOutput()
     {
