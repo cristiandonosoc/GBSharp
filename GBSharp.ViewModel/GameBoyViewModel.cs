@@ -100,7 +100,7 @@ namespace GBSharp.ViewModel
       _interrupt = new InterruptManagerViewModel(_gameBoy, _dispatcher);
       _ioRegisters = new IORegistersManagerViewModel(_gameBoy, _dispatcher);
       _display = new DisplayViewModel(_gameBoy, _gameBoy.Display, _gameBoy.Memory, _dispatcher);
-      _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher, _display);
+      _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher);
       _dissasemble = new DissasembleViewModel(_gameBoy);
       _instructionHistogram = new InstructionHistogramViewModel(_gameBoy, _dispatcher);
       _apu = new APUViewModel(_gameBoy, _dispatcher);

@@ -403,8 +403,6 @@ namespace GBSharp
     {
       if (FrameCompleted != null)
       {
-#warning TODO (wooo): Receive the frame here and trigger a new event instead of accessing directly to the display from the view.
-
 #if TIMING
         swBlit.Start();
         Array.Copy(display.Screen, ScreenFrame, ScreenFrame.Length);
@@ -449,11 +447,6 @@ namespace GBSharp
         for (int i = 0; i < sampleCounter; ++i)
         {
           int index = i * sampleAmount;
-          //long total = timingSamples[index + 2] +
-          //             timingSamples[index + 3] +
-          //             timingSamples[index + 4];
-          //long rest = timingSamples[index + 1] - total;
-          ////file.WriteLine("Frame {0}: {1}/{2} --> CPU: {3} ({4:N2}%), Display: {5} ({6:N2}%), Blit: {7} ({8:N2}%), Other: {9} ({10:N2}%)",
           file.WriteLine("{0},{1},{2},{3},{4}",
                          timingSamples[index + 0],
                          timingSamples[index + 1],

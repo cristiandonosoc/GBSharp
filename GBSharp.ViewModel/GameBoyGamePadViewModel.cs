@@ -9,7 +9,6 @@ namespace GBSharp.ViewModel
     private readonly IGameBoy _gameBoy;
     private readonly IDisplay _display;
     private readonly IDispatcher _dispatcher;
-    private readonly DisplayViewModel _displayVm;
 
     private WriteableBitmap _screen;
 
@@ -97,13 +96,11 @@ namespace GBSharp.ViewModel
     private void ButtonStartDown() { _gameBoy.PressButton(Keypad.Start); }
     private void ButtonStartUp() { _gameBoy.ReleaseButton(Keypad.Start); }
 
-    public GameBoyGamePadViewModel(IGameBoy gameBoy, IDispatcher dispatcher, DisplayViewModel displayVM)
+    public GameBoyGamePadViewModel(IGameBoy gameBoy, IDispatcher dispatcher)
     {
       _dispatcher = dispatcher;
-      _displayVm = displayVM;
       _gameBoy = gameBoy;
       _display = _gameBoy.Display;
-      //_displayVm.UpdateDisplay += OnUpdateDisplay;
       _gameBoy.FrameCompleted += OnFrameCompleted;
 
       VideoSpace.DisplayDefinition disDef = _display.GetDisplayDefinition();
@@ -119,7 +116,7 @@ namespace GBSharp.ViewModel
     {
 #if TIMING
       GameBoy.swBeginInvoke.Start();
-      _dispatcher.BeginInvoke(new Action(TransferImageToBitmap), null);
+      _dispatcher.BeginInvoke(new Action(UpdateFromGameboy), null);
       GameBoy.swBeginInvoke.Stop();
 #else
       _dispatcher.BeginInvoke(new Action(UpdateFromGameboy), null);
@@ -159,7 +156,6 @@ namespace GBSharp.ViewModel
     public void Dispose()
     {
       _gameBoy.FrameCompleted -= OnFrameCompleted;
-      //_displayVm.UpdateDisplay -= OnUpdateDisplay;
     }
 
     public void KeyUp(KeyEventArgs args)
