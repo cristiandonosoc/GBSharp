@@ -49,6 +49,9 @@ namespace GBSharp.AudioSpace
     public bool LeftChannelEnabled { get; private set; }
     public bool RightChannelEnabled { get; private set; }
 
+    private bool _channel1Run = true;
+    private bool _channel2Run = false;
+
 #if SoundTiming
     public static Stopwatch swAPU = new Stopwatch();
 #endif
@@ -127,11 +130,11 @@ namespace GBSharp.AudioSpace
 
       if(Enabled)
       {
-        if(_channel1.Enabled)
+        if(_channel1Run && _channel1.Enabled)
         {
           _channel1.GenerateSamples(sc);
         }
-        if(_channel2.Enabled)
+        if(_channel2Run && _channel2.Enabled)
         {
           _channel2.GenerateSamples(sc);
         }
@@ -147,11 +150,11 @@ namespace GBSharp.AudioSpace
         if (Enabled && LeftChannelEnabled)
         {
           // We add the correspondant samples
-          if (_channel1.Enabled)
+          if (_channel1Run && _channel1.Enabled)
           {
             leftSample += _channel1.Buffer[_channelSampleIndex];
           }
-          if (_channel2.Enabled)
+          if (_channel2Run && _channel2.Enabled)
           {
             leftSample += _channel2.Buffer[_channelSampleIndex];
           }
