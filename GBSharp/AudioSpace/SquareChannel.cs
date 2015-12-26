@@ -98,6 +98,8 @@ namespace GBSharp.AudioSpace
     private int _envelopeTickCounter = 0;
     private bool _envelopeUp;
 
+    private byte _envelopeRegister;
+
     internal SquareChannel(int sampleRate, int numChannels, int sampleSize, int channelIndex,
                            MMR sweepRegister, MMR wavePatternDutyRegister, MMR volumeEnvelopeRegister, 
                            MMR freqLowRegister, MMR freqHighRegister)
@@ -154,10 +156,8 @@ namespace GBSharp.AudioSpace
       }
       else if (register == _volumeEnvelopeRegister)
       {
-        double envelopeMsLength = 1000 * ((double)(value & 0x7) / (double)64);
-        _envelopeTicks = (int)(GameBoy.ticksPerMillisecond * envelopeMsLength);
-        _envelopeUp = (value & 0x8) != 0;
-        _envelopeVolumeMultiplier = value >> 4;
+        _envelopeRegister = value;
+
       }
       else if (register == _freqLowRegister)
       {
@@ -170,9 +170,20 @@ namespace GBSharp.AudioSpace
         _continuousOutput = (Utils.UtilFuncs.TestBit(value, 6) == 0);
 
         Enabled = (Utils.UtilFuncs.TestBit(value, 7) != 0);
+
+        /**
+         * Bit 7 is called a channel INIT. On this event the following occurs:
+         * - The Volume Envelope values value are changed
+         */
+
         if (Enabled)
         {
           _soundLengthTickCounter = 0;
+
+          double envelopeMsLength = 1000 * ((double)(_envelopeRegister & 0x7) / (double)64);
+          _envelopeTicks = (int)(GameBoy.ticksPerMillisecond * envelopeMsLength);
+          _envelopeUp = (_envelopeRegister & 0x8) != 0;
+          _envelopeVolumeMultiplier = _envelopeRegister >> 4;
         }
       }
       else if (register == MMR.NR52)
@@ -262,7 +273,7 @@ namespace GBSharp.AudioSpace
         //        }
 
         /* VOLUME ENVELOPE */
-        if (_envelopeTicks != 0)
+        if (_envelopeTicks > 0)
         {
           _envelopeTickCounter += APU.MinimumTickThreshold;
           if (_envelopeTickCounter > _envelopeTicks)
