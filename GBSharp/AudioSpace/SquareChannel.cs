@@ -62,6 +62,8 @@ namespace GBSharp.AudioSpace
       private set
       {
         _frequencyFactor = value;
+        LowFreqByte = (byte)_frequencyFactor;
+        HighFreqByte = (byte)((_frequencyFactor >> 8) & 0x7);
         Frequency = (double)0x20000 / (double)(0x800 - _frequencyFactor);
         _tickThreshold = (int)(GameBoy.ticksPerMillisecond * (1000.0 / (2 * Frequency)));
 
@@ -116,12 +118,28 @@ namespace GBSharp.AudioSpace
       _freqHighRegister = freqHighRegister;
     }
 
+    private int _sweepShiftFactor;
+    private bool _sweepUp;
+    private int _sweepTicks;
+    private int _sweepTicksCounter;
+
     public void HandleMemoryChange(MMR register, byte value)
     {
       if (register == _sweepRegister)
       {
-        // TODO(Cristian): Implement sweep registers
-      }
+        // Sweep Shift Number (Bits 0-2)
+        int sweepShiftNumber = value & 0x7;
+        _sweepShiftFactor = 1 << sweepShiftNumber; // 2^sweepShiftNumber
+
+        // Sweep Direction (Bit 3)
+        _sweepUp = (value & 0x8) == 0;
+
+        // Sweep Time (Bits 4-6)
+        int sweepTime = ((value >> 4) & 0x7);
+        double sweepTimeMs = 1000 * ((double)sweepTime / (double)0x200);
+        _sweepTicks = (int)(GameBoy.ticksPerMillisecond * sweepTimeMs);
+        _sweepTicksCounter = 0;
+      }       
       else if (register == _wavePatternDutyRegister)
       {
         // TODO(Cristian): Wave Pattern Duty
@@ -136,7 +154,6 @@ namespace GBSharp.AudioSpace
       }
       else if (register == _volumeEnvelopeRegister)
       {
-        // TODO(Cristian): Implement volume envelope
         double envelopeMsLength = 1000 * ((double)(value & 0x7) / (double)64);
         _envelopeTicks = (int)(GameBoy.ticksPerMillisecond * envelopeMsLength);
         _envelopeUp = (value & 0x8) != 0;
@@ -144,13 +161,11 @@ namespace GBSharp.AudioSpace
       }
       else if (register == _freqLowRegister)
       {
-        LowFreqByte = value;
-        FrequencyFactor = (ushort)(((HighFreqByte & 0x7) << 8) | LowFreqByte);
+        FrequencyFactor = (ushort)(((HighFreqByte & 0x7) << 8) | value);
       }
       else if (register == _freqHighRegister)
       {
-        HighFreqByte = value;
-        FrequencyFactor = (ushort)(((HighFreqByte & 0x7) << 8) | LowFreqByte);
+        FrequencyFactor = (ushort)(((value & 0x7) << 8) | LowFreqByte);
 
         _continuousOutput = (Utils.UtilFuncs.TestBit(value, 6) == 0);
 
@@ -192,6 +207,41 @@ namespace GBSharp.AudioSpace
         }
 
         /* FREQUENCY SWEEP */
+        if(_sweepTicks > 0)
+        {
+          _sweepTicksCounter += APU.MinimumTickThreshold;
+          if(_sweepTicksCounter > _sweepTicks)
+          {
+            _sweepTicksCounter -= _sweepTicks;
+
+            if(_sweepUp)
+            {
+              ushort newFreqFactor = (ushort)(FrequencyFactor + FrequencyFactor / _sweepShiftFactor);
+              if(newFreqFactor < 0x80) // Higher than an 11-bit number
+              {
+                FrequencyFactor = newFreqFactor;
+              }
+              else
+              {
+                Enabled = false;
+                // TODO(Cristian): Update NR52 bits
+              }
+            }
+            else
+            {
+              ushort newFreqFactor = (ushort)(FrequencyFactor - FrequencyFactor / _sweepShiftFactor);
+              if (newFreqFactor > 0)
+              {
+                FrequencyFactor = newFreqFactor;
+              }
+              else
+              {
+                Enabled = false;
+                // TODO(Cristian): Update NR52 bits
+              }
+            }
+          }
+        }
         // TODO(Cristian): Implement frequency sweep
 
         /* SOUND LENGTH DURATION */
@@ -212,7 +262,6 @@ namespace GBSharp.AudioSpace
         //        }
 
         /* VOLUME ENVELOPE */
-
         if (_envelopeTicks != 0)
         {
           _envelopeTickCounter += APU.MinimumTickThreshold;
