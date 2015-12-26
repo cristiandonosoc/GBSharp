@@ -64,7 +64,6 @@ namespace GBSharp.AudioSpace
         _frequencyFactor = value;
         Frequency = (double)0x20000 / (double)(0x800 - _frequencyFactor);
         _tickThreshold = (int)(GameBoy.ticksPerMillisecond * (1000.0 / (2 * Frequency)));
-        _tickCounter = _tickThreshold;
 
 #if SoundTiming
         Timeline[TimelineCount++] = APU.swAPU.ElapsedTicks;
@@ -186,7 +185,7 @@ namespace GBSharp.AudioSpace
         _tickCounter -= APU.MinimumTickThreshold;
         if(_tickCounter < 0)
         {
-          _tickCounter = _tickThreshold;
+          _tickCounter = _tickThreshold + _tickCounter;
           _up = !_up;
 
           _outputValue = (short)(_up ? Volume : -Volume);
@@ -197,38 +196,38 @@ namespace GBSharp.AudioSpace
 
         /* SOUND LENGTH DURATION */
 
-//        if(!_continuousOutput)
-//        {
-//          _soundLengthTickCounter += APU.MinimumTickThreshold;
-//          if(_soundLengthTickCounter >= _soundLengthTicks)
-//          {
-//            Enabled = false;
-//            // TODO(Cristian): Trigger a change to ouput the correct enabled bit
-//            //                 NR52
-//#if SoundTiming
-//            Timeline[TimelineCount++] = APU.swAPU.ElapsedTicks;
-//        		Timeline[TimelineCount++] = (long)TimelineEvents.SOUND_LENGTH_END;
-//#endif
-//          }
-//        }
+        //        if(!_continuousOutput)
+        //        {
+        //          _soundLengthTickCounter += APU.MinimumTickThreshold;
+        //          if(_soundLengthTickCounter >= _soundLengthTicks)
+        //          {
+        //            Enabled = false;
+        //            // TODO(Cristian): Trigger a change to ouput the correct enabled bit
+        //            //                 NR52
+        //#if SoundTiming
+        //            Timeline[TimelineCount++] = APU.swAPU.ElapsedTicks;
+        //        		Timeline[TimelineCount++] = (long)TimelineEvents.SOUND_LENGTH_END;
+        //#endif
+        //          }
+        //        }
 
         /* VOLUME ENVELOPE */
 
-        if(_envelopeTicks != 0)
+        if (_envelopeTicks != 0)
         {
           _envelopeTickCounter += APU.MinimumTickThreshold;
-          if(_envelopeTickCounter > _envelopeTicks)
+          if (_envelopeTickCounter > _envelopeTicks)
           {
             _envelopeTickCounter -= _envelopeTicks;
-            if(_envelopeUp)
+            if (_envelopeUp)
             {
               ++_envelopeVolumeMultiplier;
-              if(_envelopeVolumeMultiplier > 15) { _envelopeVolumeMultiplier = 15; }
+              if (_envelopeVolumeMultiplier > 15) { _envelopeVolumeMultiplier = 15; }
             }
             else
             {
               --_envelopeVolumeMultiplier;
-              if(_envelopeVolumeMultiplier < 0) { _envelopeVolumeMultiplier = 0; }
+              if (_envelopeVolumeMultiplier < 0) { _envelopeVolumeMultiplier = 0; }
             }
 
             _outputValue = (short)(_up ? Volume : -Volume);
