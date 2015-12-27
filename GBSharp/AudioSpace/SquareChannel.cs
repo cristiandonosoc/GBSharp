@@ -39,15 +39,6 @@ namespace GBSharp.AudioSpace
 
     internal bool Enabled { get; private set; }
 
-    private int _envelopeVolumeMultiplier = 0;
-    private const int _volumeConstant = 511;
-    public int Volume {
-      get
-      {
-        return _envelopeVolumeMultiplier * _volumeConstant;
-      }
-    }
-
     #endregion
 
     internal byte LowFreqByte { get; private set; }
@@ -94,11 +85,30 @@ namespace GBSharp.AudioSpace
     private int _soundLengthTickCounter;
     private bool _continuousOutput;
 
-    private int _envelopeTicks = 0;
-    private int _envelopeTickCounter = 0;
+    /// <summary>
+    /// These are the values that are currently set by the volume envelope registers.
+    /// These are the values that will become 'live' on the next channel INIT
+    /// </summary>
+    private int _envelopeTicks;
+    private int _envelopeTickCounter;
     private bool _envelopeUp;
+    private int _defaultEnvelopeValue;
 
-    private byte _envelopeRegister;
+    /// <summary>
+    /// These are the values that are currently 'live' in the channel.
+    /// These could be (or not) the same values that are loaded in the envelope register.
+    /// </summary>
+    private int _currentEnvelopeTicks;
+    private bool _currentEnvelopeUp;
+    private int _currentEnvelopeValue;
+
+    private const int _volumeConstant = 511;
+    public int Volume {
+      get
+      {
+        return _currentEnvelopeValue * _volumeConstant;
+      }
+    }
 
     internal SquareChannel(int sampleRate, int numChannels, int sampleSize, int channelIndex,
                            MMR sweepRegister, MMR wavePatternDutyRegister, MMR volumeEnvelopeRegister, 
@@ -156,8 +166,11 @@ namespace GBSharp.AudioSpace
       }
       else if (register == _volumeEnvelopeRegister)
       {
-        _envelopeRegister = value;
 
+        double envelopeMsLength = 1000 * ((double)(value & 0x7) / (double)64);
+        _envelopeTicks = (int)(GameBoy.ticksPerMillisecond * envelopeMsLength);
+        _envelopeUp = (value & 0x8) != 0;
+        _defaultEnvelopeValue = value >> 4;
       }
       else if (register == _freqLowRegister)
       {
@@ -180,10 +193,9 @@ namespace GBSharp.AudioSpace
         {
           _soundLengthTickCounter = 0;
 
-          double envelopeMsLength = 1000 * ((double)(_envelopeRegister & 0x7) / (double)64);
-          _envelopeTicks = (int)(GameBoy.ticksPerMillisecond * envelopeMsLength);
-          _envelopeUp = (_envelopeRegister & 0x8) != 0;
-          _envelopeVolumeMultiplier = _envelopeRegister >> 4;
+          _currentEnvelopeTicks = _envelopeTicks;
+          _currentEnvelopeUp = _envelopeUp;
+          _currentEnvelopeValue = _defaultEnvelopeValue;
         }
       }
       else if (register == MMR.NR52)
@@ -281,13 +293,13 @@ namespace GBSharp.AudioSpace
             _envelopeTickCounter -= _envelopeTicks;
             if (_envelopeUp)
             {
-              ++_envelopeVolumeMultiplier;
-              if (_envelopeVolumeMultiplier > 15) { _envelopeVolumeMultiplier = 15; }
+              ++_currentEnvelopeValue;
+              if (_currentEnvelopeValue > 15) { _currentEnvelopeValue = 15; }
             }
             else
             {
-              --_envelopeVolumeMultiplier;
-              if (_envelopeVolumeMultiplier < 0) { _envelopeVolumeMultiplier = 0; }
+              --_currentEnvelopeValue;
+              if (_currentEnvelopeValue < 0) { _currentEnvelopeValue = 0; }
             }
 
             _outputValue = (short)(_up ? Volume : -Volume);
