@@ -256,7 +256,7 @@ namespace GBSharp.AudioSpace
               {
                 int newFreqFactor = FrequencyFactor +
                                     (_sweepFrequencyFactor >> _sweepShiftNumber);
-                if (newFreqFactor < 0x80) // Higher than an 11-bit number
+                if (newFreqFactor < 0x800) // Higher than an 11-bit number
                 {
                   _sweepFrequencyFactor = (ushort)newFreqFactor;
                   FrequencyFactor = _sweepFrequencyFactor;
