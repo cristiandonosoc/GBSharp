@@ -85,19 +85,22 @@ namespace GBSharp.AudioSpace
     private int _soundLengthTickCounter;
     private bool _continuousOutput;
 
-    /// <summary>
-    /// These are the values that are currently set by the volume envelope registers.
-    /// These are the values that will become 'live' on the next channel INIT
-    /// </summary>
+
+    #region VOLUME / VOLUME ENVELOPE
+
+    /**
+     * These are the values that are currently set by the volume envelope registers.
+     * These are the values that will become 'live' on the next channel INIT
+     */
     private int _envelopeTicks;
     private int _envelopeTickCounter;
     private bool _envelopeUp;
     private int _defaultEnvelopeValue;
 
-    /// <summary>
-    /// These are the values that are currently 'live' in the channel.
-    /// These could be (or not) the same values that are loaded in the envelope register.
-    /// </summary>
+    /**
+     * These are the values that are currently 'live' in the channel.
+     * These could be (or not) the same values that are loaded in the envelope register.
+     */
     private int _currentEnvelopeTicks;
     private bool _currentEnvelopeUp;
     private int _currentEnvelopeValue;
@@ -109,6 +112,8 @@ namespace GBSharp.AudioSpace
         return _currentEnvelopeValue * _volumeConstant;
       }
     }
+
+    #endregion
 
     internal SquareChannel(int sampleRate, int numChannels, int sampleSize, int channelIndex,
                            MMR sweepRegister, MMR wavePatternDutyRegister, MMR volumeEnvelopeRegister, 
@@ -130,7 +135,8 @@ namespace GBSharp.AudioSpace
       _freqHighRegister = freqHighRegister;
     }
 
-    private int _sweepShiftFactor;
+    private ushort _sweepFrequencyFactor;
+    private int _sweepShiftNumber;
     private bool _sweepUp;
     private int _sweepTicks;
     private int _sweepTicksCounter;
@@ -140,8 +146,7 @@ namespace GBSharp.AudioSpace
       if (register == _sweepRegister)
       {
         // Sweep Shift Number (Bits 0-2)
-        int sweepShiftNumber = value & 0x7;
-        _sweepShiftFactor = 1 << sweepShiftNumber; // 2^sweepShiftNumber
+        _sweepShiftNumber = value & 0x7;
 
         // Sweep Direction (Bit 3)
         _sweepUp = (value & 0x8) == 0;
@@ -193,6 +198,8 @@ namespace GBSharp.AudioSpace
         {
           _soundLengthTickCounter = 0;
 
+          _sweepFrequencyFactor = FrequencyFactor;
+
           _currentEnvelopeTicks = _envelopeTicks;
           _currentEnvelopeUp = _envelopeUp;
           _currentEnvelopeValue = _defaultEnvelopeValue;
@@ -237,35 +244,42 @@ namespace GBSharp.AudioSpace
           {
             _sweepTicksCounter -= _sweepTicks;
 
-            if(_sweepUp)
+            if (_sweepShiftNumber == 0)
             {
-              ushort newFreqFactor = (ushort)(FrequencyFactor + FrequencyFactor / _sweepShiftFactor);
-              if(newFreqFactor < 0x80) // Higher than an 11-bit number
-              {
-                FrequencyFactor = newFreqFactor;
-              }
-              else
-              {
-                Enabled = false;
-                // TODO(Cristian): Update NR52 bits
-              }
+              // If the shift number is 0, the channel stops when it's time to
+              // shift
+              Enabled = false;
             }
             else
             {
-              ushort newFreqFactor = (ushort)(FrequencyFactor - FrequencyFactor / _sweepShiftFactor);
-              if (newFreqFactor > 0)
+              if (_sweepUp)
               {
-                FrequencyFactor = newFreqFactor;
+                int newFreqFactor = FrequencyFactor +
+                                    (_sweepFrequencyFactor >> _sweepShiftNumber);
+                if (newFreqFactor < 0x80) // Higher than an 11-bit number
+                {
+                  _sweepFrequencyFactor = (ushort)newFreqFactor;
+                  FrequencyFactor = _sweepFrequencyFactor;
+                }
+                else
+                {
+                  // Overflow stops the channel
+                  Enabled = false;
+                }
               }
               else
               {
-                Enabled = false;
-                // TODO(Cristian): Update NR52 bits
+                int newFreqFactor = FrequencyFactor -
+                                       (_sweepFrequencyFactor >> _sweepShiftNumber);
+                if (newFreqFactor > 0)
+                {
+                  _sweepFrequencyFactor = (ushort)newFreqFactor;
+                  FrequencyFactor = _sweepFrequencyFactor;
+                }
               }
             }
           }
         }
-        // TODO(Cristian): Implement frequency sweep
 
         /* SOUND LENGTH DURATION */
 
