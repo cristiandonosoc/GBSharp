@@ -141,6 +141,11 @@ namespace GBSharp.AudioSpace
     private int _sweepTicks;
     private int _sweepTicksCounter;
 
+    // DEBUG FLAGS
+    private bool _runSweep = true;
+    private bool _runSoundLength = true;
+    private bool _runVolumeEnvelope = true;
+
     public void HandleMemoryChange(MMR register, byte value)
     {
       if (register == _sweepRegister)
@@ -237,7 +242,7 @@ namespace GBSharp.AudioSpace
         }
 
         /* FREQUENCY SWEEP */
-        if(_sweepTicks > 0)
+        if(_runSweep && _sweepTicks > 0)
         {
           _sweepTicksCounter += APU.MinimumTickThreshold;
           if(_sweepTicksCounter > _sweepTicks)
@@ -283,23 +288,23 @@ namespace GBSharp.AudioSpace
 
         /* SOUND LENGTH DURATION */
 
-        //        if(!_continuousOutput)
-        //        {
-        //          _soundLengthTickCounter += APU.MinimumTickThreshold;
-        //          if(_soundLengthTickCounter >= _soundLengthTicks)
-        //          {
-        //            Enabled = false;
-        //            // TODO(Cristian): Trigger a change to ouput the correct enabled bit
-        //            //                 NR52
-        //#if SoundTiming
-        //            Timeline[TimelineCount++] = APU.swAPU.ElapsedTicks;
-        //        		Timeline[TimelineCount++] = (long)TimelineEvents.SOUND_LENGTH_END;
-        //#endif
-        //          }
-        //        }
+        if (_runSoundLength && !_continuousOutput)
+        {
+          _soundLengthTickCounter += APU.MinimumTickThreshold;
+          if (_soundLengthTickCounter >= _soundLengthTicks)
+          {
+            Enabled = false;
+            // TODO(Cristian): Trigger a change to ouput the correct enabled bit
+            //                 NR52
+#if SoundTiming
+                    Timeline[TimelineCount++] = APU.swAPU.ElapsedTicks;
+                		Timeline[TimelineCount++] = (long)TimelineEvents.SOUND_LENGTH_END;
+#endif
+          }
+        }
 
         /* VOLUME ENVELOPE */
-        if (_envelopeTicks > 0)
+        if (_runVolumeEnvelope && _envelopeTicks > 0)
         {
           _envelopeTickCounter += APU.MinimumTickThreshold;
           if (_envelopeTickCounter > _envelopeTicks)
