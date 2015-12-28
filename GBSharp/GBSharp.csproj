@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AudioSpace\APU.cs" />
+    <Compile Include="AudioSpace\IChannel.cs" />
     <Compile Include="AudioSpace\SquareChannel.cs" />
     <Compile Include="Cartridge\Cartridge.cs" />
     <Compile Include="CartridgeType.cs" />

@@ -16,7 +16,7 @@ namespace GBSharp.AudioSpace
   }
 #endif
 
-  internal class SquareChannel
+  internal class SquareChannel : IChannel
   {
     #region BUFFER DEFINITION
 
@@ -37,7 +37,7 @@ namespace GBSharp.AudioSpace
     private int _sampleIndex;
     public int SampleCount { get { return _sampleIndex; } }
 
-    internal bool Enabled { get; private set; }
+    public bool Enabled { get; private set; }
 
     #endregion
 
