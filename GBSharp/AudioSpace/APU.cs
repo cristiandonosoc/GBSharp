@@ -52,6 +52,24 @@ namespace GBSharp.AudioSpace
     private bool _channel1Run = true;
     private bool _channel2Run = false;
 
+
+
+    private int _currentWavSamples = 0;
+    private const int _wavBufferLength = 44000 * 2 / 10;
+    private short[] _wavBuffer1 = new short[_wavBufferLength];
+    private short[] _wavBuffer2 = new short[_wavBufferLength];
+    private bool _wavBuffer1Active = true;
+    private short[] ActiveWavBuffer
+    {
+      get { return _wavBuffer1Active ? _wavBuffer1 : _wavBuffer2; }
+    }
+
+    internal bool WavBufferReady { get; set; }
+    internal short[] BackWavBuffer
+    {
+      get { return _wavBuffer1Active ? _wavBuffer2 : _wavBuffer1; }
+    }
+
 #if SoundTiming
     public static Stopwatch swAPU = new Stopwatch();
 #endif
@@ -182,6 +200,17 @@ namespace GBSharp.AudioSpace
         //  TODO(Cristian): post-process mixed sample?
         _buffer[_sampleIndex++] = (byte)rightSample;
         _buffer[_sampleIndex++] = (byte)(rightSample >> 8);
+
+        // We output the wav
+        ActiveWavBuffer[_currentWavSamples++] = leftSample;
+        ActiveWavBuffer[_currentWavSamples++] = rightSample;
+
+        if(_currentWavSamples >= _wavBufferLength - 1)
+        {
+          _wavBuffer1Active = !_wavBuffer1Active;
+          _currentWavSamples = 0;
+          WavBufferReady = true;
+        }
       }
     }
 

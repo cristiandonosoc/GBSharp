@@ -31,6 +31,8 @@ namespace GBSharp
     object LockObj { get; }
 
     double FPS { get; }
+
+    void Dispose();
     
   }
 }
