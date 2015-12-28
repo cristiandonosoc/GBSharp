@@ -364,8 +364,8 @@ namespace GBSharp.VideoSpace
           _disStat.SCX = value;
           break;
         case MMR.LY:
-          // TODO(Cristian): Perhaps this should be handled by memory?
-          throw new InvalidProgramException("There shouldn't be any writes to LY");
+          _disStat.CurrentLine = 0;
+          break;
         case MMR.LYC:
           _disStat.LYC = value;
           break;
