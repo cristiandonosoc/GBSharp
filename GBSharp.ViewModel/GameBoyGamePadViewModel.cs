@@ -11,6 +11,7 @@ namespace GBSharp.ViewModel
     private readonly IDispatcher _dispatcher;
 
     private WriteableBitmap _screen;
+    private string _textScreen;
 
     private int _frameCount;
     private double _fps;
@@ -18,6 +19,7 @@ namespace GBSharp.ViewModel
     private bool _releaseButtons;
 
     private bool _screenOnly;
+    private bool _asciiMode;
 
     public WriteableBitmap Screen
     {
@@ -26,6 +28,16 @@ namespace GBSharp.ViewModel
       {
         _screen = value;
         OnPropertyChanged(() => Screen);
+      }
+    }
+
+    public string TextScreen
+    {
+      get { return _textScreen; }
+      set
+      {
+        _textScreen = value;
+        OnPropertyChanged(() => TextScreen);
       }
     }
 
@@ -93,6 +105,16 @@ namespace GBSharp.ViewModel
       }
     }
 
+    public bool AsciiMode
+    {
+      get { return _asciiMode; }
+      set
+      {
+        _asciiMode = value;
+        OnPropertyChanged(() => AsciiMode);
+      }
+    }
+
     private void ButtonStartDown() { _gameBoy.PressButton(Keypad.Start); }
     private void ButtonStartUp() { _gameBoy.ReleaseButton(Keypad.Start); }
 
@@ -131,6 +153,8 @@ namespace GBSharp.ViewModel
       var target = _gameBoy.ScreenFrame;
       Array.Copy(target, _frame, target.Length);
       Utils.TransferBytesToWriteableBitmap(_screen, _frame);
+      if (AsciiMode)
+        TextScreen = Utils.DisplayBytesToString(_frame, new []{' ', '-', '*','@'}, _screen.PixelWidth);
       OnPropertyChanged(() => Screen);
 
       UpdateFPS();

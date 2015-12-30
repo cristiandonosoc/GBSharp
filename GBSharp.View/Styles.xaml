@@ -29,8 +29,11 @@
     <Setter Property="Margin" Value="3"/>
     <Setter Property="Background" Value="{StaticResource MedBrush}" />
   </Style>
+    <Style TargetType="Grid" x:Key="MedGridNoMargin">
+        <Setter Property="Background" Value="{StaticResource MedBrush}" />
+    </Style>
 
-  <Style TargetType="ComboBox" BasedOn="{StaticResource ControlStyle}">
+    <Style TargetType="ComboBox" BasedOn="{StaticResource ControlStyle}">
     <Setter Property="VerticalAlignment" Value="Center"/>
     <Setter Property="Margin" Value="1"/>
 

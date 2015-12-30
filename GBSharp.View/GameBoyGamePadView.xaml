@@ -7,380 +7,392 @@
              xmlns:view="clr-namespace:GBSharp.View"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-  <UserControl.Resources>
-    <view:BoolToVisibilityConverter x:Key="BoolToVis" TrueValue="Visible" FalseValue="Hidden"></view:BoolToVisibilityConverter>
-    <view:BoolToVisibilityConverter x:Key="BoolToHid" TrueValue="Hidden" FalseValue="Visible"></view:BoolToVisibilityConverter>
-  </UserControl.Resources>
-  <Grid Style="{DynamicResource MedGrid}">
-    <Grid.RowDefinitions>
-      <RowDefinition Height="Auto"></RowDefinition>
-      <RowDefinition Height="Auto"></RowDefinition>
-      <RowDefinition Height="*"></RowDefinition>
-      <RowDefinition Height="Auto"></RowDefinition>
-    </Grid.RowDefinitions>
-    <CheckBox Grid.Row="0" Content="Release Buttons"  Foreground="White" Visibility="Hidden"  IsChecked="{Binding ReleaseButtons}" />
-    <TextBlock Grid.Row="1" Foreground="White" Text="{Binding FPS}"></TextBlock>
+    <UserControl.Resources>
+        <view:BoolToVisibilityConverter x:Key="BoolToVis" TrueValue="Visible" FalseValue="Hidden"></view:BoolToVisibilityConverter>
+        <view:BoolToVisibilityConverter x:Key="BoolToHid" TrueValue="Hidden" FalseValue="Visible"></view:BoolToVisibilityConverter>
+    </UserControl.Resources>
+    <Grid Style="{DynamicResource MedGrid}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <CheckBox Grid.Row="0" Content="Release Buttons"  Foreground="White" Visibility="Hidden"  IsChecked="{Binding ReleaseButtons}" />
+        <TextBlock Grid.Row="1" Foreground="White" Text="{Binding FPS}"></TextBlock>
+        <TextBox Grid.Row="2" TextWrapping="Wrap" AcceptsReturn="True" Text="{Binding TextScreen}" Foreground="White" Background="Black" FontSize="4" FontFamily="Courier New"
+                 Visibility="{Binding AsciiMode, Converter={StaticResource BoolToVis}}">
+            <!--<TextBox.LayoutTransform>
+                <ScaleTransform 
+                        CenterX="0" CenterY="0"
+                        ScaleX="1"
+                        ScaleY="0.5"/>
+            </TextBox.LayoutTransform>-->
+        </TextBox>
+        <Grid Style="{DynamicResource MedGridNoMargin}" Grid.Row="2" Visibility="{Binding AsciiMode, Converter={StaticResource BoolToHid}}">
+            <Image  Visibility="{Binding ScreenOnly, Converter={StaticResource BoolToVis}}" Source="{Binding Screen}"/>
+            <Grid Visibility="{Binding ScreenOnly, Converter={StaticResource BoolToHid}}" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" ></ColumnDefinition>
+                    <ColumnDefinition Width="Auto" ></ColumnDefinition>
+                    <ColumnDefinition Width="*" ></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Canvas Grid.Column="1" Height="568" Width="345">
+                    <Image Canvas.Top="0" Canvas.Left="0" Source="Images/Nintendo_Gameboy720.jpg"  Height="568" Width="345">
 
-    <Image Grid.Row="2" Visibility="{Binding ScreenOnly, Converter={StaticResource BoolToVis}}" Source="{Binding Screen}"/>
-    <Grid Grid.Row="2" Visibility="{Binding ScreenOnly, Converter={StaticResource BoolToHid}}" >
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*" ></ColumnDefinition>
-        <ColumnDefinition Width="Auto" ></ColumnDefinition>
-        <ColumnDefinition Width="*" ></ColumnDefinition>
-      </Grid.ColumnDefinitions>
-      <Canvas Grid.Column="1" Height="568" Width="345">
-        <Image Canvas.Top="0" Canvas.Left="0" Source="Images/Nintendo_Gameboy720.jpg"  Height="568" Width="345">
-
-        </Image>
-        <Button x:Name="A" Canvas.Top="345" Canvas.Left="274" HorizontalAlignment="Left" VerticalAlignment="Top" Width="40" Height="40">
-          <i:Interaction.Triggers>
-            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-              <i:InvokeCommandAction Command="{Binding ButtonADownCommand}" />
-            </i:EventTrigger>
-            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
-              <i:InvokeCommandAction Command="{Binding ButtonAUpCommand}" />
-            </i:EventTrigger>
-          </i:Interaction.Triggers>
-          <Button.Template>
-            <ControlTemplate TargetType="Button">
-              <Grid>
-                <VisualStateManager.VisualStateGroups>
-                  <VisualStateGroup x:Name="CommonStates">
-                    <VisualState x:Name="Normal"/>
-                    <VisualState x:Name="MouseOver">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
-                      </Storyboard>
-                    </VisualState>
-                    <VisualState x:Name="Pressed">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </VisualState>
-                    <VisualState x:Name="Disabled">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </VisualState>
-                  </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
-                <Ellipse Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
-                <Ellipse Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
-                <Ellipse Stroke="Black" Fill="Transparent">
-                </Ellipse>
-                <ContentPresenter HorizontalAlignment="Center"
+                    </Image>
+                    <Button x:Name="A" Canvas.Top="345" Canvas.Left="274" HorizontalAlignment="Left" VerticalAlignment="Top" Width="40" Height="40">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                <i:InvokeCommandAction Command="{Binding ButtonADownCommand}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                <i:InvokeCommandAction Command="{Binding ButtonAUpCommand}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Grid>
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal"/>
+                                            <VisualState x:Name="MouseOver">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Pressed">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Disabled">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                                                </Storyboard>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <Ellipse Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
+                                    <Ellipse Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
+                                    <Ellipse Stroke="Black" Fill="Transparent">
+                                    </Ellipse>
+                                    <ContentPresenter HorizontalAlignment="Center"
                                   VerticalAlignment="Center"/>
-              </Grid>
-            </ControlTemplate>
-          </Button.Template>
-        </Button>
-        <Button x:Name="B" Canvas.Top="370" Canvas.Left="219" HorizontalAlignment="Left" VerticalAlignment="Top" Width="42" Height="42">
-          <i:Interaction.Triggers>
-            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-              <i:InvokeCommandAction Command="{Binding ButtonBDownCommand}" />
-            </i:EventTrigger>
-            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
-              <i:InvokeCommandAction Command="{Binding ButtonBUpCommand}" />
-            </i:EventTrigger>
-          </i:Interaction.Triggers>
-          <Button.Template>
-            <ControlTemplate TargetType="{x:Type Button}">
-              <Grid>
-                <VisualStateManager.VisualStateGroups>
-                  <VisualStateGroup x:Name="CommonStates">
-                    <VisualState x:Name="Normal"/>
-                    <VisualState x:Name="MouseOver">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
-                      </Storyboard>
-                    </VisualState>
-                    <VisualState x:Name="Pressed">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </VisualState>
-                    <VisualState x:Name="Disabled">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </VisualState>
-                  </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
-                <Ellipse Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
-                <Ellipse Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
-                <Ellipse Stroke="Black" Fill="Transparent"/>
-                <ContentPresenter HorizontalAlignment="Center"
+                                </Grid>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button x:Name="B" Canvas.Top="370" Canvas.Left="219" HorizontalAlignment="Left" VerticalAlignment="Top" Width="42" Height="42">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                <i:InvokeCommandAction Command="{Binding ButtonBDownCommand}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                <i:InvokeCommandAction Command="{Binding ButtonBUpCommand}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                        <Button.Template>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <Grid>
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal"/>
+                                            <VisualState x:Name="MouseOver">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Pressed">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Disabled">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                                                </Storyboard>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <Ellipse Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
+                                    <Ellipse Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
+                                    <Ellipse Stroke="Black" Fill="Transparent"/>
+                                    <ContentPresenter HorizontalAlignment="Center"
       					VerticalAlignment="Center"/>
-              </Grid>
-            </ControlTemplate>
-          </Button.Template>
-        </Button>
-        <Button x:Name="L" Canvas.Top="371" Canvas.Left="32" HorizontalAlignment="Left" VerticalAlignment="Top" Width="25" Height="25">
-          <i:Interaction.Triggers>
-            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-              <i:InvokeCommandAction Command="{Binding ButtonLeftDownCommand}" />
-            </i:EventTrigger>
-            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
-              <i:InvokeCommandAction Command="{Binding ButtonLeftUpCommand}" />
-            </i:EventTrigger>
-          </i:Interaction.Triggers>
-          <Button.Template>
-            <ControlTemplate TargetType="{x:Type Button}">
-              <Grid>
-                <VisualStateManager.VisualStateGroups>
-                  <VisualStateGroup x:Name="CommonStates">
-                    <VisualState x:Name="Normal"/>
-                    <VisualState x:Name="MouseOver">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
-                      </Storyboard>
-                    </VisualState>
-                    <VisualState x:Name="Pressed">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </VisualState>
-                    <VisualState x:Name="Disabled">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </VisualState>
-                  </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
-                <Rectangle Stroke="Black" Fill="Transparent"/>
-                <ContentPresenter HorizontalAlignment="Center"
+                                </Grid>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button x:Name="L" Canvas.Top="371" Canvas.Left="32" HorizontalAlignment="Left" VerticalAlignment="Top" Width="25" Height="25">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                <i:InvokeCommandAction Command="{Binding ButtonLeftDownCommand}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                <i:InvokeCommandAction Command="{Binding ButtonLeftUpCommand}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                        <Button.Template>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <Grid>
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal"/>
+                                            <VisualState x:Name="MouseOver">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Pressed">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Disabled">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                                                </Storyboard>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
+                                    <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
+                                    <Rectangle Stroke="Black" Fill="Transparent"/>
+                                    <ContentPresenter HorizontalAlignment="Center"
       					VerticalAlignment="Center"/>
-              </Grid>
-            </ControlTemplate>
-          </Button.Template>
-        </Button>
-        <Button x:Name="R" Canvas.Top="370" Canvas.Left="87" HorizontalAlignment="Left" VerticalAlignment="Top" Width="25" Height="25">
-          <i:Interaction.Triggers>
-            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-              <i:InvokeCommandAction Command="{Binding ButtonRightDownCommand}" />
-            </i:EventTrigger>
-            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
-              <i:InvokeCommandAction Command="{Binding ButtonRightUpCommand}" />
-            </i:EventTrigger>
-          </i:Interaction.Triggers>
-          <Button.Template>
-            <ControlTemplate TargetType="{x:Type Button}">
-              <Grid>
-                <VisualStateManager.VisualStateGroups>
-                  <VisualStateGroup x:Name="CommonStates">
-                    <VisualState x:Name="Normal"/>
-                    <VisualState x:Name="MouseOver">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
-                      </Storyboard>
-                    </VisualState>
-                    <VisualState x:Name="Pressed">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </VisualState>
-                    <VisualState x:Name="Disabled">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </VisualState>
-                  </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
-                <Rectangle Stroke="Black" Fill="Transparent"/>
-                <ContentPresenter HorizontalAlignment="Center"
+                                </Grid>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button x:Name="R" Canvas.Top="370" Canvas.Left="87" HorizontalAlignment="Left" VerticalAlignment="Top" Width="25" Height="25">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                <i:InvokeCommandAction Command="{Binding ButtonRightDownCommand}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                <i:InvokeCommandAction Command="{Binding ButtonRightUpCommand}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                        <Button.Template>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <Grid>
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal"/>
+                                            <VisualState x:Name="MouseOver">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Pressed">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Disabled">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                                                </Storyboard>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
+                                    <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
+                                    <Rectangle Stroke="Black" Fill="Transparent"/>
+                                    <ContentPresenter HorizontalAlignment="Center"
       					VerticalAlignment="Center"/>
-              </Grid>
-            </ControlTemplate>
-          </Button.Template>
-        </Button>
-        <Button x:Name="U" Canvas.Top="345" Canvas.Left="59" HorizontalAlignment="Left" VerticalAlignment="Top" Width="25" Height="25">
-          <i:Interaction.Triggers>
-            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-              <i:InvokeCommandAction Command="{Binding ButtonUpDownCommand}" />
-            </i:EventTrigger>
-            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
-              <i:InvokeCommandAction Command="{Binding ButtonUpUpCommand}" />
-            </i:EventTrigger>
-          </i:Interaction.Triggers>
-          <Button.Template>
-            <ControlTemplate TargetType="{x:Type Button}">
-              <Grid>
-                <VisualStateManager.VisualStateGroups>
-                  <VisualStateGroup x:Name="CommonStates">
-                    <VisualState x:Name="Normal"/>
-                    <VisualState x:Name="MouseOver">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
-                      </Storyboard>
-                    </VisualState>
-                    <VisualState x:Name="Pressed">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </VisualState>
-                    <VisualState x:Name="Disabled">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </VisualState>
-                  </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
-                <Rectangle Stroke="Black" Fill="Transparent"/>
-                <ContentPresenter HorizontalAlignment="Center"
+                                </Grid>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button x:Name="U" Canvas.Top="345" Canvas.Left="59" HorizontalAlignment="Left" VerticalAlignment="Top" Width="25" Height="25">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                <i:InvokeCommandAction Command="{Binding ButtonUpDownCommand}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                <i:InvokeCommandAction Command="{Binding ButtonUpUpCommand}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                        <Button.Template>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <Grid>
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal"/>
+                                            <VisualState x:Name="MouseOver">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Pressed">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Disabled">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                                                </Storyboard>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
+                                    <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
+                                    <Rectangle Stroke="Black" Fill="Transparent"/>
+                                    <ContentPresenter HorizontalAlignment="Center"
       					VerticalAlignment="Center"/>
-              </Grid>
-            </ControlTemplate>
-          </Button.Template>
-        </Button>
-        <Button x:Name="D" Command="{Binding ButtonDownCommand}" Canvas.Top="395" Canvas.Left="59" HorizontalAlignment="Left" VerticalAlignment="Top" Width="25" Height="25">
-          <i:Interaction.Triggers>
-            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-              <i:InvokeCommandAction Command="{Binding ButtonDownDownCommand}" />
-            </i:EventTrigger>
-            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
-              <i:InvokeCommandAction Command="{Binding ButtonDownUpCommand}" />
-            </i:EventTrigger>
-          </i:Interaction.Triggers>
-          <Button.Template>
-            <ControlTemplate TargetType="{x:Type Button}">
-              <Grid>
-                <VisualStateManager.VisualStateGroups>
-                  <VisualStateGroup x:Name="CommonStates">
-                    <VisualState x:Name="Normal"/>
-                    <VisualState x:Name="MouseOver">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
-                      </Storyboard>
-                    </VisualState>
-                    <VisualState x:Name="Pressed">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </VisualState>
-                    <VisualState x:Name="Disabled">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </VisualState>
-                  </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
-                <Rectangle Stroke="Black" Fill="Transparent"/>
-                <ContentPresenter HorizontalAlignment="Center"
+                                </Grid>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button x:Name="D" Command="{Binding ButtonDownCommand}" Canvas.Top="395" Canvas.Left="59" HorizontalAlignment="Left" VerticalAlignment="Top" Width="25" Height="25">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                <i:InvokeCommandAction Command="{Binding ButtonDownDownCommand}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                <i:InvokeCommandAction Command="{Binding ButtonDownUpCommand}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                        <Button.Template>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <Grid>
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal"/>
+                                            <VisualState x:Name="MouseOver">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Pressed">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Disabled">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                                                </Storyboard>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
+                                    <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
+                                    <Rectangle Stroke="Black" Fill="Transparent"/>
+                                    <ContentPresenter HorizontalAlignment="Center"
       					VerticalAlignment="Center"/>
-              </Grid>
-            </ControlTemplate>
-          </Button.Template>
-        </Button>
-        <Button x:Name="Start" Command="{Binding ButtonStartCommand}" Canvas.Top="456" Canvas.Left="159" HorizontalAlignment="Left" VerticalAlignment="Top" Width="48" Height="16" RenderTransformOrigin="0.559,-0.172">
-          <i:Interaction.Triggers>
-            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-              <i:InvokeCommandAction Command="{Binding ButtonStartDownCommand}" />
-            </i:EventTrigger>
-            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
-              <i:InvokeCommandAction Command="{Binding ButtonStartUpCommand}" />
-            </i:EventTrigger>
-          </i:Interaction.Triggers>
-          <Button.RenderTransform>
-            <TransformGroup>
-              <ScaleTransform/>
-              <SkewTransform/>
-              <RotateTransform Angle="-26.076"/>
-              <TranslateTransform X="-5.58" Y="0.089"/>
-            </TransformGroup>
-          </Button.RenderTransform>
-          <Button.Template>
-            <ControlTemplate TargetType="{x:Type Button}">
-              <Grid>
-                <VisualStateManager.VisualStateGroups>
-                  <VisualStateGroup x:Name="CommonStates">
-                    <VisualState x:Name="Normal"/>
-                    <VisualState x:Name="MouseOver">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
-                      </Storyboard>
-                    </VisualState>
-                    <VisualState x:Name="Pressed">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </VisualState>
-                    <VisualState x:Name="Disabled">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </VisualState>
-                  </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
-                <Rectangle Stroke="#AEAEAE" Fill="Transparent" />
-                <ContentPresenter HorizontalAlignment="Center"
+                                </Grid>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button x:Name="Start" Command="{Binding ButtonStartCommand}" Canvas.Top="456" Canvas.Left="159" HorizontalAlignment="Left" VerticalAlignment="Top" Width="48" Height="16" RenderTransformOrigin="0.559,-0.172">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                <i:InvokeCommandAction Command="{Binding ButtonStartDownCommand}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                <i:InvokeCommandAction Command="{Binding ButtonStartUpCommand}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                        <Button.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform Angle="-26.076"/>
+                                <TranslateTransform X="-5.58" Y="0.089"/>
+                            </TransformGroup>
+                        </Button.RenderTransform>
+                        <Button.Template>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <Grid>
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal"/>
+                                            <VisualState x:Name="MouseOver">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Pressed">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Disabled">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                                                </Storyboard>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
+                                    <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
+                                    <Rectangle Stroke="#AEAEAE" Fill="Transparent" />
+                                    <ContentPresenter HorizontalAlignment="Center"
       					VerticalAlignment="Center"/>
-              </Grid>
-            </ControlTemplate>
-          </Button.Template>
-        </Button>
-        <Button x:Name="Select" Command="{Binding ButtonSelectCommand}" Canvas.Top="459" Canvas.Left="99" HorizontalAlignment="Left" VerticalAlignment="Top" Width="53" Height="17" RenderTransformOrigin="0.314,0.569">
-          <i:Interaction.Triggers>
-            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-              <i:InvokeCommandAction Command="{Binding ButtonSelectDownCommand}" />
-            </i:EventTrigger>
-            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
-              <i:InvokeCommandAction Command="{Binding ButtonSelectUpCommand}" />
-            </i:EventTrigger>
-          </i:Interaction.Triggers>
-          <Button.RenderTransform>
-            <TransformGroup>
-              <ScaleTransform/>
-              <SkewTransform/>
-              <RotateTransform Angle="-26.549"/>
-              <TranslateTransform/>
-            </TransformGroup>
-          </Button.RenderTransform>
-          <Button.Template>
-            <ControlTemplate TargetType="{x:Type Button}">
-              <Grid>
-                <VisualStateManager.VisualStateGroups>
-                  <VisualStateGroup x:Name="CommonStates">
-                    <VisualState x:Name="Normal"/>
-                    <VisualState x:Name="MouseOver">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
-                      </Storyboard>
-                    </VisualState>
-                    <VisualState x:Name="Pressed">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </VisualState>
-                    <VisualState x:Name="Disabled">
-                      <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
-                      </Storyboard>
-                    </VisualState>
-                  </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
-                <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
-                <Rectangle Stroke="#AEAEAE" Fill="Transparent" />
-                <ContentPresenter HorizontalAlignment="Center"
+                                </Grid>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button x:Name="Select" Command="{Binding ButtonSelectCommand}" Canvas.Top="459" Canvas.Left="99" HorizontalAlignment="Left" VerticalAlignment="Top" Width="53" Height="17" RenderTransformOrigin="0.314,0.569">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                <i:InvokeCommandAction Command="{Binding ButtonSelectDownCommand}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                <i:InvokeCommandAction Command="{Binding ButtonSelectUpCommand}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                        <Button.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform Angle="-26.549"/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Button.RenderTransform>
+                        <Button.Template>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <Grid>
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal"/>
+                                            <VisualState x:Name="MouseOver">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="MouseOverBorder" Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.2"/>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Pressed">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="PressedBorder" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="Disabled">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="ContainmentGrid" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                                                </Storyboard>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <Rectangle Fill="{StaticResource HoverBrush}" Name="MouseOverBorder" Opacity="0"/>
+                                    <Rectangle Fill="{StaticResource HoverBrush}" Name="PressedBorder" Opacity="0"/>
+                                    <Rectangle Stroke="#AEAEAE" Fill="Transparent" />
+                                    <ContentPresenter HorizontalAlignment="Center"
       					VerticalAlignment="Center"/>
-              </Grid>
-            </ControlTemplate>
-          </Button.Template>
-        </Button>
-        <Image Height="144" Canvas.Left="91" Canvas.Top="86" Width="160" Source="{Binding Screen}"/>
+                                </Grid>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Image Height="144" Canvas.Left="91" Canvas.Top="86" Width="160" Source="{Binding Screen}"/>
 
-      </Canvas>
+                </Canvas>
+            </Grid>
+        </Grid>
+        <ToggleButton Grid.Row="3" Content="Screen Only" IsChecked="{Binding ScreenOnly}"></ToggleButton>
+        <ToggleButton Grid.Row="4" Content="Ascii Mode" IsChecked="{Binding AsciiMode}"></ToggleButton>
     </Grid>
-    <ToggleButton Grid.Row="3" Content="Screen Only" IsChecked="{Binding ScreenOnly}"></ToggleButton>
-  </Grid>
 </UserControl>
