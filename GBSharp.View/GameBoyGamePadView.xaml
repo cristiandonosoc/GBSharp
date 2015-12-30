@@ -21,14 +21,14 @@
         </Grid.RowDefinitions>
         <CheckBox Grid.Row="0" Content="Release Buttons"  Foreground="White" Visibility="Hidden"  IsChecked="{Binding ReleaseButtons}" />
         <TextBlock Grid.Row="1" Foreground="White" Text="{Binding FPS}"></TextBlock>
-        <TextBox Grid.Row="2" TextWrapping="Wrap" AcceptsReturn="True" Text="{Binding TextScreen}" Foreground="White" Background="Black" FontSize="4" FontFamily="Courier New"
+        <TextBox VerticalAlignment="Center" Grid.Row="2" TextWrapping="Wrap" AcceptsReturn="True" Text="{Binding TextScreen}" Foreground="White" Background="Black" FontSize="4" FontFamily="Courier New"
                  Visibility="{Binding AsciiMode, Converter={StaticResource BoolToVis}}">
-            <!--<TextBox.LayoutTransform>
+            <TextBox.LayoutTransform>
                 <ScaleTransform 
                         CenterX="0" CenterY="0"
                         ScaleX="1"
                         ScaleY="0.5"/>
-            </TextBox.LayoutTransform>-->
+            </TextBox.LayoutTransform>
         </TextBox>
         <Grid Style="{DynamicResource MedGridNoMargin}" Grid.Row="2" Visibility="{Binding AsciiMode, Converter={StaticResource BoolToHid}}">
             <Image  Visibility="{Binding ScreenOnly, Converter={StaticResource BoolToVis}}" Source="{Binding Screen}"/>
