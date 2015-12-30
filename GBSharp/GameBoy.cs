@@ -334,12 +334,12 @@ namespace GBSharp
           NotifyFrameCompleted();
 
           // We see if we have to output wav
-          if(apu.WavBufferReady)
+          if (apu.WavBufferReady)
           {
-            if(_firstWavWrite)
+            if (_firstWavWrite)
             {
-              
-              _wavWritter.Write(new char[] { 'R', 'I', 'F', 'F' }); 
+
+              _wavWritter.Write(new char[] { 'R', 'I', 'F', 'F' });
               _wavWritter.Write(0);                                   // File size (added later)
               _wavWritter.Write(new char[] { 'W', 'A', 'V', 'E' });
 
@@ -360,13 +360,16 @@ namespace GBSharp
             short[] wavBuffer = apu.BackWavBuffer;
             int byteSample = 0;
             byte[] byteBuffer = new byte[wavBuffer.Length * 2];
-            foreach(short sample in wavBuffer)
+            int i = 0;
+            while (i < wavBuffer.Length)
             {
+              short sample = wavBuffer[i++];
               byteBuffer[byteSample++] = (byte)sample;
               byteBuffer[byteSample++] = (byte)(sample >> 8);
+
             }
 
-            _wavWritter.Write(byteBuffer, 0, byteSample);
+            _wavWritter.Write(byteBuffer);
             ++_wavBuffersWritten;
 
             apu.WavBufferReady = false;

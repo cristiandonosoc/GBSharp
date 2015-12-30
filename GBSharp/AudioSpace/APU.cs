@@ -52,10 +52,10 @@ namespace GBSharp.AudioSpace
 
     private bool _channel1Run = true;
     private bool _channel2Run = true;
-    private bool _channel3Run = true;
+    private bool _channel3Run = false;
 
     private int _currentWavSamples = 0;
-    private const int _wavBufferLength = 44000 * 2 / 10;
+    private const int _wavBufferLength = 44000 * 2 / 1;
     private short[] _wavBuffer1 = new short[_wavBufferLength];
     private short[] _wavBuffer2 = new short[_wavBufferLength];
     private bool _wavBuffer1Active = true;
@@ -238,12 +238,14 @@ namespace GBSharp.AudioSpace
         ActiveWavBuffer[_currentWavSamples++] = leftSample;
         ActiveWavBuffer[_currentWavSamples++] = rightSample;
 
-        if (_currentWavSamples >= _wavBufferLength - 1)
+        // We check if we have to change the buffers
+        if (_currentWavSamples >= _wavBufferLength)
         {
           _wavBuffer1Active = !_wavBuffer1Active;
           _currentWavSamples = 0;
           WavBufferReady = true;
         }
+
       }
     }
 
