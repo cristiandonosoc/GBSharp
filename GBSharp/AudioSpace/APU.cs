@@ -44,15 +44,15 @@ namespace GBSharp.AudioSpace
 
     SquareChannel _channel1;
     SquareChannel _channel2;
+    WaveChannel _channel3;
 
     public bool Enabled { get; private set; }
     public bool LeftChannelEnabled { get; private set; }
     public bool RightChannelEnabled { get; private set; }
 
     private bool _channel1Run = true;
-    private bool _channel2Run = false;
-
-
+    private bool _channel2Run = true;
+    private bool _channel3Run = true;
 
     private int _currentWavSamples = 0;
     private const int _wavBufferLength = 44000 * 2 / 10;
@@ -85,11 +85,14 @@ namespace GBSharp.AudioSpace
       _buffer = new byte[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
       _tempBuffer = new short[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
 
+      // We setup the channels
       _channel1 = new SquareChannel(sampleRate, numChannels, sampleSize, 0,
                                     MMR.NR10, MMR.NR11, MMR.NR12, MMR.NR13, MMR.NR14);
       // NOTE(Cristian): Channel 2 doesn't have frequency sweep
       _channel2 = new SquareChannel(sampleRate, numChannels, sampleSize, 1,
                                     0, MMR.NR21, MMR.NR22, MMR.NR23, MMR.NR24);
+      _channel3 = new WaveChannel(_memory, sampleRate, numChannels, sampleSize, 2);
+
       LeftChannelEnabled = true;
       RightChannelEnabled = true;
 
@@ -103,6 +106,8 @@ namespace GBSharp.AudioSpace
       // We store previous channel status
       bool channel1Enabled = _channel1.Enabled;
       bool channel2Enabled = _channel2.Enabled;
+      bool channel3Enabled = _channel3.Enabled;
+      bool prevEnabled = Enabled;
 
       switch (register)
       {
@@ -119,7 +124,14 @@ namespace GBSharp.AudioSpace
         case MMR.NR24:
           _channel2.HandleMemoryChange(register, value);
           break;
-        // TODO(Cristian): Handle Channel 3/4 changes
+        case MMR.NR30:
+        case MMR.NR31:
+        case MMR.NR32:
+        case MMR.NR33:
+        case MMR.NR34:
+          _channel3.HandleMemoryChange(register, value);
+          break;
+        // TODO(Cristian): Handle channel 4 memory change
         case MMR.NR50:
           break;
         case MMR.NR51:
@@ -131,10 +143,13 @@ namespace GBSharp.AudioSpace
 
       // We compare to see if we have to change the NR52 byte
       if ((channel1Enabled != _channel1.Enabled) ||
-          (channel2Enabled != _channel2.Enabled))
+          (channel2Enabled != _channel2.Enabled) ||
+          (channel3Enabled != _channel3.Enabled) ||
+          (prevEnabled != Enabled))
       {
         byte nr52 = (byte)((_channel1.Enabled ? 0x1 : 0) |  // bit 0
                            (_channel2.Enabled ? 0x2 : 0) |  // bit 1
+                           (_channel3.Enabled ? 0x4 : 0) |  // bit 2
                            (Enabled ? 0x80 : 0));           // bit 7
         _memory.LowLevelWrite((ushort)MMR.NR52, nr52);
       }
@@ -146,15 +161,19 @@ namespace GBSharp.AudioSpace
 
       int sc = sampleCount / _sampleSize;
 
-      if(Enabled)
+      if (Enabled)
       {
-        if(_channel1Run && _channel1.Enabled)
+        if (_channel1Run && _channel1.Enabled)
         {
           _channel1.GenerateSamples(sc);
         }
-        if(_channel2Run && _channel2.Enabled)
+        if (_channel2Run && _channel2.Enabled)
         {
           _channel2.GenerateSamples(sc);
+        }
+        if (_channel3Run && _channel3.Enabled)
+        {
+          _channel3.GenerateSamples(sc);
         }
       }
 
@@ -165,16 +184,26 @@ namespace GBSharp.AudioSpace
 
         // LEFT CHANNEL
         short leftSample = 0;
+        short c1Sample;
+        short c2Sample;
+        short c3Sample;
         if (Enabled && LeftChannelEnabled)
         {
           // We add the correspondant samples
           if (_channel1Run && _channel1.Enabled)
           {
-            leftSample += _channel1.Buffer[_channelSampleIndex];
+            c1Sample = _channel1.Buffer[_channelSampleIndex];
+            leftSample += c1Sample;
           }
           if (_channel2Run && _channel2.Enabled)
           {
-            leftSample += _channel2.Buffer[_channelSampleIndex];
+            c2Sample = _channel2.Buffer[_channelSampleIndex];
+            leftSample += c2Sample;
+          }
+          if (_channel3Run && _channel3.Enabled)
+          {
+            c3Sample = _channel3.Buffer[_channelSampleIndex];
+            leftSample += c3Sample;
           }
         }
         ++_channelSampleIndex;
@@ -187,13 +216,17 @@ namespace GBSharp.AudioSpace
         if (Enabled && RightChannelEnabled)
         {
           // We add the correspondant samples
-          if (_channel1.Enabled)
+          if (_channel1Run && _channel1.Enabled)
           {
             rightSample += _channel1.Buffer[_channelSampleIndex];
           }
-          if (_channel2.Enabled)
+          if (_channel2Run && _channel2.Enabled)
           {
             rightSample += _channel2.Buffer[_channelSampleIndex];
+          }
+          if (_channel3Run && _channel3.Enabled)
+          {
+            rightSample += _channel3.Buffer[_channelSampleIndex];
           }
         }
         ++_channelSampleIndex;
@@ -205,7 +238,7 @@ namespace GBSharp.AudioSpace
         ActiveWavBuffer[_currentWavSamples++] = leftSample;
         ActiveWavBuffer[_currentWavSamples++] = rightSample;
 
-        if(_currentWavSamples >= _wavBufferLength - 1)
+        if (_currentWavSamples >= _wavBufferLength - 1)
         {
           _wavBuffer1Active = !_wavBuffer1Active;
           _currentWavSamples = 0;
@@ -219,6 +252,7 @@ namespace GBSharp.AudioSpace
       _sampleIndex = 0;
       _channel1.ClearBuffer();
       _channel2.ClearBuffer();
+      _channel3.ClearBuffer();
     }
 
 #if SoundTiming
