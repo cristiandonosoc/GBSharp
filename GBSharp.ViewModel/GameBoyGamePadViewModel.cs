@@ -154,7 +154,7 @@ namespace GBSharp.ViewModel
       Array.Copy(target, _frame, target.Length);
       Utils.TransferBytesToWriteableBitmap(_screen, _frame);
       if (AsciiMode)
-        TextScreen = Utils.DisplayBytesToString(_frame, new []{' ', '-', '*','@'}, _screen.PixelWidth);
+        TextScreen = Utils.DisplayBytesToString(_frame, new []{' ', ':', '*','@'}, _screen.PixelWidth);
       OnPropertyChanged(() => Screen);
 
       UpdateFPS();
