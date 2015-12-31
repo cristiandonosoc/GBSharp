@@ -49,7 +49,6 @@ namespace GBSharp
 
     private bool _firstWavWrite = true;
     int _wavBuffersWritten = 0;
-    private BinaryWriter _wavWritter;
 
 #if TIMING
     private long[] timingSamples;
@@ -105,10 +104,7 @@ namespace GBSharp
 #endif
       var disDef = display.GetDisplayDefinition();
       ScreenFrame = new uint[disDef.ScreenPixelCountX * disDef.ScreenPixelCountY];
-
-      _wavWritter = new BinaryWriter(new FileStream("output.wav", FileMode.Create));
     }
-
 
     public ICPU CPU
     {
@@ -230,6 +226,8 @@ namespace GBSharp
       this.tickCounter = 0;
       this.stopwatch.Restart();
       this.clockThread.Start();
+
+      apu.StartRecording();
     }
 
     /// <summary>
@@ -330,51 +328,11 @@ namespace GBSharp
           this.stepCounter = 0;
           this.frameReady = false;
 
+          // We see if the APU needs to close things this frame
+          apu.EndFrame();
+
           // Finally here we trigger the notification
           NotifyFrameCompleted();
-
-          // We see if we have to output wav
-          if (apu.WavBufferReady)
-          {
-            if (_firstWavWrite)
-            {
-              _wavWritter.Write(new char[] { 'R', 'I', 'F', 'F' });
-              _wavWritter.Write(0);                                   // File size (added later)
-              _wavWritter.Write(new char[] { 'W', 'A', 'V', 'E' });
-
-              _wavWritter.Write(new char[] { 'f', 'm', 't', ' ' });
-              _wavWritter.Write(16);                                  // Pre header size
-              _wavWritter.Write((short)1);                            // Type: PCM
-              _wavWritter.Write((short)2);                            // Num Channels
-              _wavWritter.Write(44000);                               // Sample Rate
-              _wavWritter.Write(44000 * 16 * 2 / 8);                  // SampleRate*BitsPerSample*NumChannels/8
-              _wavWritter.Write((short)4);                            // 16-bit stereo
-              _wavWritter.Write((short)16);                           // Bits per sample
-
-              _wavWritter.Write(new char[] { 'd', 'a', 't', 'a' });
-              _wavWritter.Write(0);                                   // Data size (added later)
-
-              _firstWavWrite = false;
-            }
-
-
-            short[] wavBuffer = apu.BackWavBuffer;
-            int byteSample = 0;
-            byte[] byteBuffer = new byte[wavBuffer.Length * 2];
-            int i = 0;
-            while (i < wavBuffer.Length)
-            {
-              short sample = wavBuffer[i++];
-              byteBuffer[byteSample++] = (byte)sample;
-              byteBuffer[byteSample++] = (byte)(sample >> 8);
-
-            }
-
-            _wavWritter.Write(byteBuffer);
-            ++_wavBuffersWritten;
-
-            apu.WavBufferReady = false;
-          }
 
         }
       }
@@ -465,9 +423,7 @@ namespace GBSharp
 
         FrameCompleted();
       }
-
     }
-      
 
     public Dictionary<MMR, ushort> GetRegisterDic()
     {
@@ -487,15 +443,7 @@ namespace GBSharp
 
     public void Dispose()
     {
-      // We close the wav buffer
-      _wavWritter.Seek(4, SeekOrigin.Begin);
-      int dataLenght = _wavBuffersWritten * apu.BackWavBuffer.Length * 2;
-      _wavWritter.Write(dataLenght + 44 - 8);
-
-      _wavWritter.Seek(40, SeekOrigin.Begin);
-      _wavWritter.Write(dataLenght);
-
-      _wavWritter.Close();
+      apu.Dispose();
     }
 
     ~GameBoy()

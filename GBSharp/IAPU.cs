@@ -14,5 +14,9 @@ namespace GBSharp
 
     void GenerateSamples(int sampleCount);
     void ClearBuffer();
+
+    bool RecordSeparateChannels { get; set; }
+    void StartRecording();
+    void EndRecording();
   }
 }

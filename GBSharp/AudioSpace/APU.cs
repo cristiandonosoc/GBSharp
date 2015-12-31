@@ -11,7 +11,7 @@ namespace GBSharp.AudioSpace
   /// <summary>
   /// Audio Processing Unit
   /// </summary>
-  class APU : IAPU
+  class APU : IAPU, IDisposable
   {
 
     /// <summary>
@@ -54,25 +54,14 @@ namespace GBSharp.AudioSpace
     private bool _channel2Run = true;
     private bool _channel3Run = false;
 
-    private int _currentWavSamples = 0;
-    private const int _wavBufferLength = 44000 * 2 / 10;
-    private short[] _wavBuffer1 = new short[_wavBufferLength];
-    private short[] _wavBuffer2 = new short[_wavBufferLength];
-    private bool _wavBuffer1Active = true;
-    private short[] ActiveWavBuffer
-    {
-      get { return _wavBuffer1Active ? _wavBuffer1 : _wavBuffer2; }
-    }
-
-    internal bool WavBufferReady { get; set; }
-    internal short[] BackWavBuffer
-    {
-      get { return _wavBuffer1Active ? _wavBuffer2 : _wavBuffer1; }
-    }
+    public bool RecordSeparateChannels { get; set; }
+    internal bool Recording { get; private set; }
 
 #if SoundTiming
     public static Stopwatch swAPU = new Stopwatch();
 #endif
+
+    private WavExporter _wavExporter;
 
     internal APU(Memory memory, int sampleRate, int numChannels, int sampleSize)
     {
@@ -99,6 +88,8 @@ namespace GBSharp.AudioSpace
 #if SoundTiming
       swAPU.Start();
 #endif
+
+      _wavExporter = new WavExporter();
     }
 
     internal void HandleMemoryChange(MMR register, byte value)
@@ -234,20 +225,18 @@ namespace GBSharp.AudioSpace
         _buffer[_sampleIndex++] = (byte)rightSample;
         _buffer[_sampleIndex++] = (byte)(rightSample >> 8);
 
-        // We output the wav
-        ActiveWavBuffer[_currentWavSamples++] = leftSample;
-        ActiveWavBuffer[_currentWavSamples++] = rightSample;
-
-        // We check if we have to change the buffers
-        if (_currentWavSamples >= _wavBufferLength)
+        if(_wavExporter.Recording)
         {
-          _wavBuffer1Active = !_wavBuffer1Active;
-          _currentWavSamples = 0;
-          WavBufferReady = true;
+          _wavExporter.WriteSamples(leftSample, rightSample);
         }
-
       }
     }
+
+    internal void EndFrame()
+    {
+      _wavExporter.UpdateExporter();
+    }
+
 
     public void ClearBuffer()
     {
@@ -263,6 +252,21 @@ namespace GBSharp.AudioSpace
       _channel1.WriteOutput();
     }
 #endif
+
+    public void StartRecording()
+    {
+      _wavExporter.StartRecording();
+    }
+
+    public void EndRecording()
+    {
+      _wavExporter.EndRecording();
+    }
+
+    public void Dispose()
+    {
+      _wavExporter.Dispose();
+    }
   }
 
 }

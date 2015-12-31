@@ -67,6 +67,7 @@
     <Compile Include="AudioSpace\IChannel.cs" />
     <Compile Include="AudioSpace\SquareChannel.cs" />
     <Compile Include="AudioSpace\WaveChannel.cs" />
+    <Compile Include="AudioSpace\WavExporter.cs" />
     <Compile Include="Cartridge\Cartridge.cs" />
     <Compile Include="CartridgeType.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionLengths.cs" />
