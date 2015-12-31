@@ -167,7 +167,7 @@ namespace GBSharp.ViewModel
     {
       FilePath = filePath;
       var data = File.ReadAllBytes(filePath);
-      _gameBoy.LoadCartridge(data);
+      _gameBoy.LoadCartridge(Path.GetFileNameWithoutExtension(FilePath), data);
       CartridgeTitle = _gameBoy.Cartridge.Title;
     }
 

@@ -96,7 +96,7 @@ namespace GBSharpTest.CPUSpace
         cartridgeData[memoryAddress] = value;
       }
 
-      gameboy.LoadCartridge(cartridgeData);
+      gameboy.LoadCartridge("test", cartridgeData);
     }
 
     internal void TestFlagsAndMemory(DataRow row, CPU cpu)

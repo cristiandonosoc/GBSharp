@@ -25,7 +25,10 @@ namespace GBSharp
     private CPUSpace.CPU cpu;
     private CPUSpace.InterruptController interruptController;
     private MemorySpace.Memory memory;
+
+    private string cartridgeFilename;
     private Cartridge.Cartridge cartridge;
+
     private VideoSpace.Display display;
     private AudioSpace.APU apu;
     private bool run;
@@ -47,8 +50,6 @@ namespace GBSharp
     private long totalFrameTicks = 0;
     public double FPS { get; private set; }
 
-    private bool _firstWavWrite = true;
-    int _wavBuffersWritten = 0;
 
 #if TIMING
     private long[] timingSamples;
@@ -146,9 +147,10 @@ namespace GBSharp
     /// Connects to the gameboy a new cartridge with the given contents.
     /// </summary>
     /// <param name="cartridgeData"></param>
-    public void LoadCartridge(byte[] cartridgeData)
+    public void LoadCartridge(string cartridgeFilename, byte[] cartridgeData)
     {
       if (this.run) { Stop(); }
+      this.cartridgeFilename = cartridgeFilename;
       this.cartridge = new Cartridge.Cartridge();
       this.cartridge.Load(cartridgeData);
       // We create the MemoryHandler according to the data
@@ -227,7 +229,7 @@ namespace GBSharp
       this.stopwatch.Restart();
       this.clockThread.Start();
 
-      apu.StartRecording();
+      apu.StartRecording(cartridgeFilename);
     }
 
     /// <summary>

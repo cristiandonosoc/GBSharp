@@ -13,7 +13,7 @@ namespace GBSharp
     ICartridge Cartridge { get; }
     IDisplay Display { get; }
     IAPU APU { get; }
-    void LoadCartridge(byte[] cartridgeData);
+    void LoadCartridge(string filename, byte[] cartridgeData);
     void Run();
     void Pause();
     void Stop();

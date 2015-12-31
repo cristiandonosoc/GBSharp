@@ -253,9 +253,9 @@ namespace GBSharp.AudioSpace
     }
 #endif
 
-    public void StartRecording()
+    public void StartRecording(string filename)
     {
-      _wavExporter.StartRecording();
+      _wavExporter.StartRecording(filename);
     }
 
     public void EndRecording()
