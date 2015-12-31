@@ -54,14 +54,35 @@ namespace GBSharp.AudioSpace
     private bool _channel2Run = true;
     private bool _channel3Run = false;
 
-    public bool RecordSeparateChannels { get; set; }
-    internal bool Recording { get; private set; }
+    private bool _recordSeparateChannels;
+    public bool RecordSeparateChannels
+    {
+      get
+      {
+        return _recordSeparateChannels;
+      }
+      set
+      {
+        // NOTE(Cristian): If we're recording, we don't want to change the channel exporting
+        //                 It's more complicated than it's worth to support
+        if(Recording) { return; }
+        _recordSeparateChannels = value;
+      }
+    }
+
+    public bool Recording
+    {
+      get { return _wavExporter.Recording; }
+    }
 
 #if SoundTiming
     public static Stopwatch swAPU = new Stopwatch();
 #endif
 
     private WavExporter _wavExporter;
+    private WavExporter _channel1WavExporter;
+    private WavExporter _channel2WavExporter;
+    private WavExporter _channel3WavExporter;
 
     internal APU(Memory memory, int sampleRate, int numChannels, int sampleSize)
     {
@@ -90,6 +111,9 @@ namespace GBSharp.AudioSpace
 #endif
 
       _wavExporter = new WavExporter();
+      _channel1WavExporter = new WavExporter();
+      _channel2WavExporter = new WavExporter();
+      _channel3WavExporter = new WavExporter();
     }
 
     internal void HandleMemoryChange(MMR register, byte value)
@@ -175,26 +199,26 @@ namespace GBSharp.AudioSpace
 
         // LEFT CHANNEL
         short leftSample = 0;
-        short c1Sample;
-        short c2Sample;
-        short c3Sample;
+        short c1LeftSample = 0;
+        short c2LeftSample = 0;
+        short c3LeftSample = 0;
         if (Enabled && LeftChannelEnabled)
         {
           // We add the correspondant samples
           if (_channel1Run && _channel1.Enabled)
           {
-            c1Sample = _channel1.Buffer[_channelSampleIndex];
-            leftSample += c1Sample;
+            c1LeftSample = _channel1.Buffer[_channelSampleIndex];
+            leftSample += c1LeftSample;
           }
           if (_channel2Run && _channel2.Enabled)
           {
-            c2Sample = _channel2.Buffer[_channelSampleIndex];
-            leftSample += c2Sample;
+            c2LeftSample = _channel2.Buffer[_channelSampleIndex];
+            leftSample += c2LeftSample;
           }
           if (_channel3Run && _channel3.Enabled)
           {
-            c3Sample = _channel3.Buffer[_channelSampleIndex];
-            leftSample += c3Sample;
+            c3LeftSample = _channel3.Buffer[_channelSampleIndex];
+            leftSample += c3LeftSample;
           }
         }
         ++_channelSampleIndex;
@@ -204,20 +228,26 @@ namespace GBSharp.AudioSpace
 
         // RIGHT CHANNEL
         short rightSample = 0;
+        short c1RightSample = 0;
+        short c2RightSample = 0;
+        short c3RightSample = 0;
         if (Enabled && RightChannelEnabled)
         {
           // We add the correspondant samples
           if (_channel1Run && _channel1.Enabled)
           {
-            rightSample += _channel1.Buffer[_channelSampleIndex];
+            c1RightSample = _channel1.Buffer[_channelSampleIndex];
+            rightSample += c1RightSample;
           }
           if (_channel2Run && _channel2.Enabled)
           {
-            rightSample += _channel2.Buffer[_channelSampleIndex];
+            c2RightSample = _channel2.Buffer[_channelSampleIndex];
+            rightSample += c2RightSample;
           }
           if (_channel3Run && _channel3.Enabled)
           {
-            rightSample += _channel3.Buffer[_channelSampleIndex];
+            c3RightSample = _channel3.Buffer[_channelSampleIndex];
+            rightSample += c3RightSample;
           }
         }
         ++_channelSampleIndex;
@@ -228,6 +258,13 @@ namespace GBSharp.AudioSpace
         if(_wavExporter.Recording)
         {
           _wavExporter.WriteSamples(leftSample, rightSample);
+
+          if(RecordSeparateChannels)
+          {
+            _channel1WavExporter.WriteSamples(c1LeftSample, c1RightSample);
+            _channel2WavExporter.WriteSamples(c2LeftSample, c2RightSample);
+            _channel3WavExporter.WriteSamples(c3LeftSample, c3RightSample);
+          }
         }
       }
     }
@@ -235,6 +272,12 @@ namespace GBSharp.AudioSpace
     internal void EndFrame()
     {
       _wavExporter.UpdateExporter();
+      if(RecordSeparateChannels)
+      {
+        _channel1WavExporter.UpdateExporter();
+        _channel2WavExporter.UpdateExporter();
+        _channel3WavExporter.UpdateExporter();
+      }
     }
 
 
@@ -255,17 +298,31 @@ namespace GBSharp.AudioSpace
 
     public void StartRecording(string filename)
     {
-      _wavExporter.StartRecording(filename);
+      if(Recording) { return; }
+      string finalFilename = _wavExporter.StartRecording(filename);
+
+      if (RecordSeparateChannels)
+      {
+        _channel1WavExporter.StartRecording(finalFilename, 1);
+        _channel2WavExporter.StartRecording(finalFilename, 2);
+        _channel3WavExporter.StartRecording(finalFilename, 3);
+      }
     }
 
     public void EndRecording()
     {
       _wavExporter.EndRecording();
+      _channel1WavExporter.EndRecording();
+      _channel2WavExporter.EndRecording();
+      _channel3WavExporter.EndRecording();
     }
 
     public void Dispose()
     {
       _wavExporter.Dispose();
+      _channel1WavExporter.Dispose();
+      _channel2WavExporter.Dispose();
+      _channel3WavExporter.Dispose();
     }
   }
 

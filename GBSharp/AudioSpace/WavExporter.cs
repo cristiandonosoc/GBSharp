@@ -99,23 +99,37 @@ namespace GBSharp.AudioSpace
       }
     }
 
-    internal void StartRecording(string filename)
+    internal string StartRecording(string filename)
     {
+      if (Recording) { return ""; }
+      Recording = true;
+
       int fileCounter = 0;
-      string newFilename = filename + ".wav";
+      string newFilenameWithoutExtension = filename;
+      string newFilename = String.Format("{0}.wav", newFilenameWithoutExtension);
       while(File.Exists(newFilename))
       {
-        newFilename = String.Format("{0}_{1}.wav", filename, fileCounter);
+        newFilenameWithoutExtension = String.Format("{0}_{1}", filename, fileCounter);
+        newFilename = String.Format("{0}.wav", newFilenameWithoutExtension);
         ++fileCounter;
       }
 
       _wavWritter = new BinaryWriter(new FileStream(newFilename, FileMode.Create));
       WriteWavHeader();
-      Recording = true;
+
+      return newFilenameWithoutExtension;
+    }
+
+    internal string StartRecording(string filename, int channelNum)
+    {
+      return StartRecording(String.Format("{0}_channel{1}", filename, channelNum));
     }
 
     internal void EndRecording()
     {
+      if (!Recording) { return; }
+      Recording = false;
+
       // We close the wav buffer
       // File Size 
       _wavWritter.Seek(4, SeekOrigin.Begin);
@@ -125,8 +139,6 @@ namespace GBSharp.AudioSpace
       _wavWritter.Seek(40, SeekOrigin.Begin);
       _wavWritter.Write(dataLenght);
       _wavWritter.Close();
-
-      Recording = false;
     }
 
     public void Dispose()
