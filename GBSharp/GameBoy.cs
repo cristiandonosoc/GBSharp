@@ -338,7 +338,6 @@ namespace GBSharp
           {
             if (_firstWavWrite)
             {
-
               _wavWritter.Write(new char[] { 'R', 'I', 'F', 'F' });
               _wavWritter.Write(0);                                   // File size (added later)
               _wavWritter.Write(new char[] { 'W', 'A', 'V', 'E' });
@@ -354,6 +353,8 @@ namespace GBSharp
 
               _wavWritter.Write(new char[] { 'd', 'a', 't', 'a' });
               _wavWritter.Write(0);                                   // Data size (added later)
+
+              _firstWavWrite = false;
             }
 
 

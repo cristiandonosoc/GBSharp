@@ -55,7 +55,7 @@ namespace GBSharp.AudioSpace
     private bool _channel3Run = false;
 
     private int _currentWavSamples = 0;
-    private const int _wavBufferLength = 44000 * 2 / 1;
+    private const int _wavBufferLength = 44000 * 2 / 10;
     private short[] _wavBuffer1 = new short[_wavBufferLength];
     private short[] _wavBuffer2 = new short[_wavBufferLength];
     private bool _wavBuffer1Active = true;
