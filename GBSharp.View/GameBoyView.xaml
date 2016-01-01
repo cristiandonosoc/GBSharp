@@ -28,6 +28,13 @@
                 </ScrollViewer>
             </Grid>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:SoundRecordingViewModel}">
+            <Grid Style="{StaticResource SubContentGrid}">
+                <ScrollViewer>
+                    <view:SoundRecordingView></view:SoundRecordingView>
+                </ScrollViewer>
+            </Grid>
+        </DataTemplate>
         <DataTemplate DataType="{x:Type viewModel:InterruptManagerViewModel}">
             <Grid Style="{StaticResource SubContentGrid}">
                 <ScrollViewer>
@@ -138,7 +145,16 @@
                                 <ContentPresenter Content="{Binding GameBoyController}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=ControllerSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
                             </avalonDock:LayoutAnchorable>
                             <avalonDock:LayoutAnchorable Title="Dissasembler">
-                                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding Dissasemble}"/>
+                                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
+                                                  Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, 
+                                                  Converter={StaticResource BoolToVis}}" 
+                                                  Content="{Binding Dissasemble}"/>
+                            </avalonDock:LayoutAnchorable>
+                            <avalonDock:LayoutAnchorable Title="Sound Recording">
+                                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
+                                                  Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, 
+                                                  Converter={StaticResource BoolToVis}}" 
+                                                  Content="{Binding SoundRecording}"/>
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
                         <avalonDock:LayoutAnchorablePane DockHeight="2*">

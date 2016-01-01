@@ -20,6 +20,7 @@ namespace GBSharp.ViewModel
     private readonly InstructionHistogramViewModel _instructionHistogram;
     private readonly APUViewModel _apu;
     private readonly MemoryImageViewModel _memoryImage;
+    private readonly SoundRecordingViewModel _soundRecording;
 
 
     public MemoryViewModel Memory
@@ -105,6 +106,7 @@ namespace GBSharp.ViewModel
       _instructionHistogram = new InstructionHistogramViewModel(_gameBoy, _dispatcher);
       _apu = new APUViewModel(_gameBoy, _dispatcher);
       _memoryImage = new MemoryImageViewModel(_gameBoy, _dispatcher);
+      _soundRecording = new SoundRecordingViewModel(_gameBoy.APU);
     }
 
     public void OnClosed()
@@ -153,6 +155,7 @@ namespace GBSharp.ViewModel
       _display.CopyFromDomain();
       _cpu.CopyFromDomain();
       _dissasemble.DissasembleCommandWrapper();
+      _soundRecording.CartridgeLoaded = true;
     }
 
     private void HandleClosing()

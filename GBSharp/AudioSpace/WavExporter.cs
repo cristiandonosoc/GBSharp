@@ -125,7 +125,7 @@ namespace GBSharp.AudioSpace
       return StartRecording(String.Format("{0}_channel{1}", filename, channelNum));
     }
 
-    internal void EndRecording()
+    internal void StopRecording()
     {
       if (!Recording) { return; }
       Recording = false;
@@ -145,7 +145,7 @@ namespace GBSharp.AudioSpace
     {
       if(Recording)
       {
-        EndRecording();
+        StopRecording();
       }
     }
   }

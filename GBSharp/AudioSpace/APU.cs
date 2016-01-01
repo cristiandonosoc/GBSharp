@@ -14,6 +14,8 @@ namespace GBSharp.AudioSpace
   class APU : IAPU, IDisposable
   {
 
+    internal string CartridgeFilename { get; set; }
+
     /// <summary>
     /// This is the amount of ticks needed to output a single sample
     /// ~ 22 kHz max frequency
@@ -296,9 +298,10 @@ namespace GBSharp.AudioSpace
     }
 #endif
 
-    public void StartRecording(string filename)
+    public void StartRecording(string filename = null)
     {
       if(Recording) { return; }
+      if(filename == null) { filename = CartridgeFilename; }
       string finalFilename = _wavExporter.StartRecording(filename);
 
       if (RecordSeparateChannels)
@@ -309,12 +312,12 @@ namespace GBSharp.AudioSpace
       }
     }
 
-    public void EndRecording()
+    public void StopRecording()
     {
-      _wavExporter.EndRecording();
-      _channel1WavExporter.EndRecording();
-      _channel2WavExporter.EndRecording();
-      _channel3WavExporter.EndRecording();
+      _wavExporter.StopRecording();
+      _channel1WavExporter.StopRecording();
+      _channel2WavExporter.StopRecording();
+      _channel3WavExporter.StopRecording();
     }
 
     public void Dispose()

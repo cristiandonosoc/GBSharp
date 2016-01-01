@@ -16,7 +16,7 @@ namespace GBSharp
     void ClearBuffer();
 
     bool RecordSeparateChannels { get; set; }
-    void StartRecording(string filename);
-    void EndRecording();
+    void StartRecording(string filename = null);
+    void StopRecording();
   }
 }

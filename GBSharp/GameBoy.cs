@@ -151,6 +151,7 @@ namespace GBSharp
     {
       if (this.run) { Stop(); }
       this.cartridgeFilename = cartridgeFilename;
+      this.apu.CartridgeFilename = cartridgeFilename;
       this.cartridge = new Cartridge.Cartridge();
       this.cartridge.Load(cartridgeData);
       // We create the MemoryHandler according to the data

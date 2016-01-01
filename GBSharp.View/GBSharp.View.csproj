@@ -110,6 +110,9 @@
     </Compile>
     <Compile Include="OpenFileDialogAdapter.cs" />
     <Compile Include="OpenFileDialogAdapterFactory.cs" />
+    <Compile Include="SoundRecordingView.xaml.cs">
+      <DependentUpon>SoundRecordingView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SpriteLayerView.xaml.cs">
       <DependentUpon>SpriteLayerView.xaml</DependentUpon>
     </Compile>
@@ -205,6 +208,10 @@
     </Page>
     <Page Include="MemoryView.xaml">
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SoundRecordingView.xaml">
+      <SubType>Form</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="SpriteLayerView.xaml">
