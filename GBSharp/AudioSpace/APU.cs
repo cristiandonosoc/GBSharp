@@ -124,6 +124,8 @@ namespace GBSharp.AudioSpace
 
     internal void HandleMemoryChange(MMR register, byte value)
     {
+      if(!Enabled && register != MMR.NR52) { return; }
+
       // We store previous channel status
       bool channel1Enabled = _channel1.Enabled;
       bool channel2Enabled = _channel2.Enabled;

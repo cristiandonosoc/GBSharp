@@ -135,6 +135,7 @@ namespace GBSharp.AudioSpace
       _freqHighRegister = freqHighRegister;
     }
 
+    private bool _sweepEnabled = false;
     private ushort _sweepFrequencyFactor;
     private int _sweepShiftNumber;
     private bool _sweepUp;
@@ -192,22 +193,39 @@ namespace GBSharp.AudioSpace
 
         _continuousOutput = (Utils.UtilFuncs.TestBit(value, 6) == 0);
 
-        Enabled = (Utils.UtilFuncs.TestBit(value, 7) != 0);
+        bool init = (Utils.UtilFuncs.TestBit(value, 7) != 0);
 
         /**
          * Bit 7 is called a channel INIT. On this event the following occurs:
          * - The Volume Envelope values value are changed
          */
 
-        if (Enabled)
+        if (init)
         {
+          Enabled = true;
+
+          // Tick Counter is restarted
+          _tickCounter = 0;
+
+          // Frequency Sweep
+          _sweepFrequencyFactor = FrequencyFactor;
+          _sweepTicksCounter = 0;
+          _sweepEnabled = ((_sweepShiftNumber != 0) && (_sweepTicks != 0));
+          // Apparently frequency change is runned immediately if there is a
+          // shift number
+          if(_sweepShiftNumber > 0)
+          {
+            _sweepTicksCounter = _sweepTicks;
+          }
+
+          // Sound Length timer is reloaded
           _soundLengthTickCounter = 0;
 
-          _sweepFrequencyFactor = FrequencyFactor;
-
+          // Envelope is reloaded
           _currentEnvelopeTicks = _envelopeTicks;
           _currentEnvelopeUp = _envelopeUp;
           _currentEnvelopeValue = _defaultEnvelopeValue;
+          _envelopeTickCounter = 0;
         }
       }
       else if (register == MMR.NR52)
