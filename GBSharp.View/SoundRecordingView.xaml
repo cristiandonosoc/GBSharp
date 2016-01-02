@@ -6,20 +6,38 @@
              xmlns:viewModel="clr-namespace:GBSharp.ViewModel;assembly=GBSharp.ViewModel"
              xmlns:view="clr-namespace:GBSharp.View"
              mc:Ignorable="d">
-    <Grid Style="{StaticResource SubContentGrid}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="Auto"></RowDefinition>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-        <Button Grid.Row="0" Grid.Column="0" Content="Start Recording"
+  <Grid Style="{StaticResource SubContentGrid}">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"></RowDefinition>
+      <RowDefinition Height="Auto"></RowDefinition>
+      <RowDefinition Height="10"></RowDefinition>
+      <RowDefinition Height="Auto"></RowDefinition>
+      <RowDefinition Height="Auto"></RowDefinition>
+      <RowDefinition Height="Auto"></RowDefinition>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="100"></ColumnDefinition>
+      <ColumnDefinition Width="100"></ColumnDefinition>
+      <ColumnDefinition Width="100"></ColumnDefinition>
+      <ColumnDefinition Width="100"></ColumnDefinition>
+    </Grid.ColumnDefinitions>
+
+    <TextBlock Grid.Row="0" Grid.Column="0" Text="Play Channels:"></TextBlock>
+    <CheckBox Grid.Row="1" Grid.Column="0" Content="Channel 1"
+              IsChecked="{Binding PlayChannel1}"></CheckBox>
+    <CheckBox Grid.Row="1" Grid.Column="1" Content="Channel 2"
+              IsChecked="{Binding PlayChannel2}"></CheckBox>
+    <CheckBox Grid.Row="1" Grid.Column="2" Content="Channel 3"
+              IsChecked="{Binding PlayChannel3}"></CheckBox>
+
+
+    <TextBlock Grid.Row="3" Grid.Column="0" Text="Recording:"></TextBlock>
+    
+    <Button Grid.Row="4" Grid.Column="0" Content="Start Recording"
             Command="{Binding StartRecordingCommand}"></Button>
-        <Button Grid.Row="0" Grid.Column="1" Content="Stop Recording"
+    <Button Grid.Row="4" Grid.Column="1" Content="Stop Recording"
             Command="{Binding StopRecordingCommand}"></Button>
-        <CheckBox Grid.Row="1" Grid.Column="0" Content="Record Separate Channels"
+    <CheckBox Grid.Row="5" Grid.Column="0" Content="Record Separate Channels"
               IsChecked="{Binding RecordSeparateChannels}"></CheckBox>
-    </Grid>
+  </Grid>
 </UserControl>

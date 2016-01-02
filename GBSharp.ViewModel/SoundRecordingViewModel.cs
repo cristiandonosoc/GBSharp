@@ -11,6 +11,45 @@ namespace GBSharp.ViewModel
   public class SoundRecordingViewModel : ViewModelBase
   {
 
+    private bool _playChannel1 = true;
+    public bool PlayChannel1
+    {
+      get { return _playChannel1; }
+      set
+      {
+        if(_playChannel1 == value) { return; }
+        _playChannel1 = value;
+        _apu.Channel1Run = value;
+        OnPropertyChanged(() => PlayChannel1);
+      }
+    }
+
+    private bool _playChannel2 = true;
+    public bool PlayChannel2
+    {
+      get { return _playChannel2; }
+      set
+      {
+        if(_playChannel2 == value) { return; }
+        _playChannel2 = value;
+        _apu.Channel2Run = value;
+        OnPropertyChanged(() => PlayChannel2);
+      }
+    }
+
+    private bool _playChannel3 = true;
+    public bool PlayChannel3
+    {
+      get { return _playChannel3; }
+      set
+      {
+        if(_playChannel3 == value) { return; }
+        _playChannel3 = value;
+        _apu.Channel3Run = value;
+        OnPropertyChanged(() => PlayChannel3);
+      }
+    }
+
     private readonly IAPU _apu;
 
     private bool _recordSeparateChannels;

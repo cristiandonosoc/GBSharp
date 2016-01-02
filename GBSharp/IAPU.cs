@@ -18,5 +18,9 @@ namespace GBSharp
     bool RecordSeparateChannels { get; set; }
     void StartRecording(string filename = null);
     void StopRecording();
+
+    bool Channel1Run { get; set; }
+    bool Channel2Run { get; set; }
+    bool Channel3Run { get; set; }
   }
 }
