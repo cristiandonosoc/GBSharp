@@ -6,20 +6,20 @@
              xmlns:viewModel="clr-namespace:GBSharp.ViewModel;assembly=GBSharp.ViewModel"
              xmlns:view="clr-namespace:GBSharp.View"
              mc:Ignorable="d">
-  <Grid Margin="5">
-    <Grid.RowDefinitions>
-      <RowDefinition Height="Auto"></RowDefinition>
-      <RowDefinition Height="Auto"></RowDefinition>
-    </Grid.RowDefinitions>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="Auto"></ColumnDefinition>
-      <ColumnDefinition Width="Auto"/>
-    </Grid.ColumnDefinitions>
-    <Button Grid.Row="0" Grid.Column="0" Content="Start Recording"
+    <Grid Style="{StaticResource SubContentGrid}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Button Grid.Row="0" Grid.Column="0" Content="Start Recording"
             Command="{Binding StartRecordingCommand}"></Button>
-    <Button Grid.Row="0" Grid.Column="1" Content="Stop Recording"
+        <Button Grid.Row="0" Grid.Column="1" Content="Stop Recording"
             Command="{Binding StopRecordingCommand}"></Button>
-    <CheckBox Grid.Row="1" Grid.Column="0" Content="Record Separate Channels"
+        <CheckBox Grid.Row="1" Grid.Column="0" Content="Record Separate Channels"
               IsChecked="{Binding RecordSeparateChannels}"></CheckBox>
-  </Grid>
+    </Grid>
 </UserControl>

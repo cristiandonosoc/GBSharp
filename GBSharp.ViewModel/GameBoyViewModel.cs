@@ -78,6 +78,11 @@ namespace GBSharp.ViewModel
       get { return _memoryImage; }
     }
 
+    public SoundRecordingViewModel SoundRecording
+    {
+      get { return _soundRecording; }
+    }
+
 
     public GameBoyViewModel(IGameBoy gameBoy, IDispatcher dispatcher, IWindow window, IOpenFileDialogFactory fileDialogFactory, IKeyboardHandler keyboardHandler)
     {
