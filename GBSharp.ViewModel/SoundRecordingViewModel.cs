@@ -21,6 +21,7 @@ namespace GBSharp.ViewModel
       {
         if(_recordSeparateChannels == value) { return; }
         _recordSeparateChannels = value;
+        _apu.RecordSeparateChannels = value;
         OnPropertyChanged(() => RecordSeparateChannels);
       }
     }

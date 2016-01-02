@@ -229,8 +229,6 @@ namespace GBSharp
       this.tickCounter = 0;
       this.stopwatch.Restart();
       this.clockThread.Start();
-      apu.RecordSeparateChannels = true;
-      apu.StartRecording(cartridgeFilename);
     }
 
     /// <summary>
