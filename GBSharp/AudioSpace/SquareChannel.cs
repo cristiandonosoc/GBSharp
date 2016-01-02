@@ -18,6 +18,8 @@ namespace GBSharp.AudioSpace
 
   internal class SquareChannel : IChannel
   {
+    private Memory _memory;
+
     #region BUFFER DEFINITION
 
 #if SoundTiming
@@ -57,11 +59,6 @@ namespace GBSharp.AudioSpace
         HighFreqByte = (byte)((_frequencyFactor >> 8) & 0x7);
         Frequency = (double)0x20000 / (double)(0x800 - _frequencyFactor);
         _tickThreshold = (int)(GameBoy.ticksPerMillisecond * (1000.0 / (2 * Frequency)));
-
-#if SoundTiming
-        Timeline[TimelineCount++] = APU.swAPU.ElapsedTicks;
-        Timeline[TimelineCount++] = (long)TimelineEvents.FREQUENCY_CHANGE;
-#endif
       }
     }
 
@@ -115,10 +112,13 @@ namespace GBSharp.AudioSpace
 
     #endregion
 
-    internal SquareChannel(int sampleRate, int numChannels, int sampleSize, int channelIndex,
-                           MMR sweepRegister, MMR wavePatternDutyRegister, MMR volumeEnvelopeRegister, 
+    internal SquareChannel(Memory memory,
+                           int sampleRate, int numChannels, int sampleSize, int channelIndex,
+                           MMR sweepRegister, MMR wavePatternDutyRegister, MMR volumeEnvelopeRegister,
                            MMR freqLowRegister, MMR freqHighRegister)
     {
+      _memory = memory;
+
       SampleRate = sampleRate;
       _msSampleRate = SampleRate / 1000;
       NumChannels = numChannels;
@@ -149,6 +149,12 @@ namespace GBSharp.AudioSpace
 
     public void HandleMemoryChange(MMR register, byte value)
     {
+      byte before = _memory.LowLevelRead((ushort)register);
+#if SoundTiming
+      Timeline[TimelineCount++] = (long)register;
+      Timeline[TimelineCount++] = value;
+#endif
+
       if (register == _sweepRegister)
       {
         // Sweep Shift Number (Bits 0-2)
@@ -162,7 +168,10 @@ namespace GBSharp.AudioSpace
         double sweepTimeMs = 1000 * ((double)sweepTime / (double)0x200);
         _sweepTicks = (int)(GameBoy.ticksPerMillisecond * sweepTimeMs);
         _sweepTicksCounter = 0;
-      }       
+
+        // NR10 is read as ORed with 0x80
+        _memory.LowLevelWrite((ushort)register, (byte)(value | 0x80));
+      }
       else if (register == _wavePatternDutyRegister)
       {
         // TODO(Cristian): Wave Pattern Duty
@@ -170,10 +179,8 @@ namespace GBSharp.AudioSpace
         double soundLengthMs = (double)(0x40 - soundLenghtFactor) / (double)0x100;
         _soundLengthTicks = (int)(GameBoy.ticksPerMillisecond * soundLengthMs);
 
-#if SoundTiming
-        Timeline[TimelineCount++] = APU.swAPU.ElapsedTicks;
-        Timeline[TimelineCount++] = (long)TimelineEvents.SOUND_LENGTH_SET;
-#endif
+        // NR(1,2)1 values are read ORed with 0x3F
+        _memory.LowLevelWrite((ushort)register, (byte)(value | 0x3F));
       }
       else if (register == _volumeEnvelopeRegister)
       {
@@ -182,10 +189,18 @@ namespace GBSharp.AudioSpace
         _envelopeTicks = (int)(GameBoy.ticksPerMillisecond * envelopeMsLength);
         _envelopeUp = (value & 0x8) != 0;
         _defaultEnvelopeValue = value >> 4;
+
+        // NR(1,2)2 values are read ORed with 0x00
+        _memory.LowLevelWrite((ushort)register, value);
       }
       else if (register == _freqLowRegister)
       {
         FrequencyFactor = (ushort)(((HighFreqByte & 0x7) << 8) | value);
+
+        _memory.LowLevelWrite((ushort)register, value);
+
+        // NR(1,2)3 values are read ORed with 0xFF
+        _memory.LowLevelWrite((ushort)register, 0xFF);
       }
       else if (register == _freqHighRegister)
       {
@@ -213,7 +228,7 @@ namespace GBSharp.AudioSpace
           _sweepEnabled = ((_sweepShiftNumber != 0) && (_sweepTicks != 0));
           // Apparently frequency change is runned immediately if there is a
           // shift number
-          if(_sweepShiftNumber > 0)
+          if (_sweepShiftNumber > 0)
           {
             _sweepTicksCounter = _sweepTicks;
           }
@@ -227,15 +242,24 @@ namespace GBSharp.AudioSpace
           _currentEnvelopeValue = _defaultEnvelopeValue;
           _envelopeTickCounter = 0;
         }
+
+        // NRx4 values are read ORed with 0xBF
+        _memory.LowLevelWrite((ushort)register, (byte)(value | 0xBF));
       }
       else if (register == MMR.NR52)
       {
+        // NOTE(Cristian): This register is written at the APU level
         Enabled = (Utils.UtilFuncs.TestBit(value, _channelIndex) != 0);
       }
       else
       {
         throw new InvalidProgramException("Invalid register received");
       }
+
+#if SoundTiming
+      Timeline[TimelineCount++] = before;
+      Timeline[TimelineCount++] = _memory.LowLevelRead((ushort)register);
+#endif
     }
 
     public void GenerateSamples(int sampleCount)
@@ -312,12 +336,6 @@ namespace GBSharp.AudioSpace
           if (_soundLengthTickCounter >= _soundLengthTicks)
           {
             Enabled = false;
-            // TODO(Cristian): Trigger a change to ouput the correct enabled bit
-            //                 NR52
-#if SoundTiming
-                    Timeline[TimelineCount++] = APU.swAPU.ElapsedTicks;
-                		Timeline[TimelineCount++] = (long)TimelineEvents.SOUND_LENGTH_END;
-#endif
           }
         }
 
@@ -355,11 +373,17 @@ namespace GBSharp.AudioSpace
     {
       using (var file = new System.IO.StreamWriter("sound_events.csv", false))
       {
-        for (uint i = 0; i < TimelineCount; i += 2)
+        file.WriteLine("{0},{1},{2},{3}", "Register",
+                                          "Value",
+                                          "Before",
+                                          "After");
+        for (uint i = 0; i < TimelineCount; i += 4)
         {
-          file.WriteLine("{0}, {1}",
-                         Timeline[i],
-                         ((TimelineEvents)Timeline[i + 1]).ToString());
+          file.WriteLine("{0},{1},{2},{3}",
+                         ((MMR)Timeline[i]).ToString(),
+                         "0x" + ((byte)Timeline[i + 1]).ToString("x2"),
+                         "0x" + ((byte)Timeline[i + 2]).ToString("x2"),
+                         "0x" + ((byte)Timeline[i + 3]).ToString("x2"));
         }
       }
     }

@@ -89,6 +89,7 @@ namespace GBSharp.AudioSpace
     internal APU(Memory memory, int sampleRate, int numChannels, int sampleSize)
     {
       _memory = memory;
+      InitializeMemory();
 
       _sampleRate = sampleRate;
       _msSampleRate = _sampleRate / 1000;
@@ -98,10 +99,12 @@ namespace GBSharp.AudioSpace
       _tempBuffer = new short[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
 
       // We setup the channels
-      _channel1 = new SquareChannel(sampleRate, numChannels, sampleSize, 0,
+      _channel1 = new SquareChannel(_memory, 
+                                    sampleRate, numChannels, sampleSize, 0,
                                     MMR.NR10, MMR.NR11, MMR.NR12, MMR.NR13, MMR.NR14);
       // NOTE(Cristian): Channel 2 doesn't have frequency sweep
-      _channel2 = new SquareChannel(sampleRate, numChannels, sampleSize, 1,
+      _channel2 = new SquareChannel(_memory, 
+                                    sampleRate, numChannels, sampleSize, 1,
                                     0, MMR.NR21, MMR.NR22, MMR.NR23, MMR.NR24);
       _channel3 = new WaveChannel(_memory, sampleRate, numChannels, sampleSize, 2);
 
@@ -120,6 +123,35 @@ namespace GBSharp.AudioSpace
       _channel1WavExporter = new WavExporter();
       _channel2WavExporter = new WavExporter();
       _channel3WavExporter = new WavExporter();
+    }
+
+    internal void InitializeMemory()
+    {
+      _memory.LowLevelWrite((ushort)MMR.NR10, 0x80);
+      _memory.LowLevelWrite((ushort)MMR.NR11, 0xBF);
+      _memory.LowLevelWrite((ushort)MMR.NR12, 0xF3);
+      _memory.LowLevelWrite((ushort)MMR.NR13, 0xFF);
+      _memory.LowLevelWrite((ushort)MMR.NR14, 0xBF);
+
+      _memory.LowLevelWrite((ushort)MMR.NR21, 0x3F);
+      _memory.LowLevelWrite((ushort)MMR.NR22, 0x00);
+      _memory.LowLevelWrite((ushort)MMR.NR23, 0xFF);
+      _memory.LowLevelWrite((ushort)MMR.NR24, 0xBF);
+
+      _memory.LowLevelWrite((ushort)MMR.NR30, 0x7F);
+      _memory.LowLevelWrite((ushort)MMR.NR31, 0xFF);
+      _memory.LowLevelWrite((ushort)MMR.NR32, 0x9F);
+      _memory.LowLevelWrite((ushort)MMR.NR33, 0xBF);
+      //_memory.LowLevelWrite((ushort)MMR.NR34, 0x00); // No info
+
+      _memory.LowLevelWrite((ushort)MMR.NR41, 0xFF);
+      _memory.LowLevelWrite((ushort)MMR.NR42, 0x00);
+      _memory.LowLevelWrite((ushort)MMR.NR43, 0x00);
+      //_memory.LowLevelWrite((ushort)MMR.NR44, 0x00); // No info
+
+      _memory.LowLevelWrite((ushort)MMR.NR50, 0x77);
+      _memory.LowLevelWrite((ushort)MMR.NR51, 0xF3);
+      _memory.LowLevelWrite((ushort)MMR.NR52, 0xF1);
     }
 
     internal void HandleMemoryChange(MMR register, byte value)
@@ -145,7 +177,8 @@ namespace GBSharp.AudioSpace
         case MMR.NR22:
         case MMR.NR23:
         case MMR.NR24:
-          _channel2.HandleMemoryChange(register, value);
+          //_channel2.HandleMemoryChange(register, value);
+          _memory.LowLevelWrite((ushort)register, value);
           break;
         case MMR.NR30:
         case MMR.NR31:
@@ -153,6 +186,7 @@ namespace GBSharp.AudioSpace
         case MMR.NR33:
         case MMR.NR34:
           _channel3.HandleMemoryChange(register, value);
+          _memory.LowLevelWrite((ushort)register, value);
           break;
         // TODO(Cristian): Handle channel 4 memory change
         case MMR.NR50:

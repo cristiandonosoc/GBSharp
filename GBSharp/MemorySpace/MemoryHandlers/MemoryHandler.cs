@@ -128,7 +128,10 @@ namespace GBSharp.MemorySpace.MemoryHandlers
         /* [0xFF10 - 0xFF26]: Sound registers */
         else if ((0xFF10 <= address) && (address <= 0xFF26))
         {
-          this.memoryData[address] = value;
+          // NOTE(Cristian): Memory change in the sound register area
+          //                 is very specific, so all the changes to the
+          //                 actual values are made by the APU and sound channels
+          //                 themselves
           this.apu.HandleMemoryChange((MMR)address, value);
         }
 
