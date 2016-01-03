@@ -26,7 +26,8 @@ namespace GBSharp
     private CPUSpace.InterruptController interruptController;
     private MemorySpace.Memory memory;
 
-    private string cartridgeFilename;
+    internal string CartridgeDirectory { get; private set; }
+    internal string CartridgeFilename { get; private set; }
     private Cartridge.Cartridge cartridge;
 
     private VideoSpace.Display display;
@@ -147,11 +148,13 @@ namespace GBSharp
     /// Connects to the gameboy a new cartridge with the given contents.
     /// </summary>
     /// <param name="cartridgeData"></param>
-    public void LoadCartridge(string cartridgeFilename, byte[] cartridgeData)
+    public void LoadCartridge(string cartridgeFullFilename, byte[] cartridgeData)
     {
       if (this.run) { Stop(); }
-      this.cartridgeFilename = cartridgeFilename;
-      this.apu.CartridgeFilename = cartridgeFilename;
+      this.CartridgeFilename = Path.GetFileNameWithoutExtension(cartridgeFullFilename);
+      this.CartridgeDirectory = Path.GetDirectoryName(cartridgeFullFilename);
+      // TODO(Cristian): 
+      this.apu.CartridgeFilename = this.CartridgeFilename; 
       this.cartridge = new Cartridge.Cartridge();
       this.cartridge.Load(cartridgeData);
       // We create the MemoryHandler according to the data

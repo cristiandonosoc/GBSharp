@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -47,11 +48,15 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     private byte[] ramBanksData;
     private byte[] romBanksData;
 
+    private bool hasBattery;
+
+    private string saveFilePath = "";
+
     /// <summary>
     /// Class constructor. Performs the loading of the current cartridge into memory.
     /// </summary>
     /// <param name="gameboy"></param>
-    internal MBC1MemoryHandler(GameBoy gameboy)
+    internal MBC1MemoryHandler(GameBoy gameboy, bool hasBattery = false)
       : base(gameboy)
     {
       this.currentRamBank = 0;
@@ -68,6 +73,20 @@ namespace GBSharp.MemorySpace.MemoryHandlers
       Buffer.BlockCopy(this.cartridge.Data, romBank0Start,
                        this.memoryData, romBank0Start,
                        Math.Min(this.cartridge.Data.Length, romBankLength * 2));
+
+      this.hasBattery = hasBattery;
+      if(hasBattery)
+      {
+
+        string saveFile = String.Format("{0}.sav", gameboy.CartridgeFilename);
+        saveFilePath = Path.Combine(gameboy.CartridgeDirectory, saveFile);
+        if(File.Exists(saveFilePath))
+        {
+          byte[] savedRAM = File.ReadAllBytes(saveFile);
+          Array.Copy(savedRAM, ramBanksData, ramBanksData.Length);
+        }
+      }
+
     }
 
     internal override void Write(ushort address, byte value)
