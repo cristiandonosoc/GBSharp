@@ -448,6 +448,7 @@ namespace GBSharp
     public void Dispose()
     {
       apu.Dispose();
+      memory.Dispose();
     }
 
     ~GameBoy()
