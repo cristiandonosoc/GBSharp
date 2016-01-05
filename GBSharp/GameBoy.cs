@@ -27,6 +27,7 @@ namespace GBSharp
     private Cartridge.Cartridge cartridge;
     private VideoSpace.Display display;
     private AudioSpace.APU apu;
+    private SerialSpace.SerialController serial;
     private bool run;
     private bool frameReady;
     private bool inBreakpoint;
@@ -69,6 +70,7 @@ namespace GBSharp
       this.interruptController = this.cpu.interruptController;
       this.display = new Display(this.interruptController, this.memory);
       this.apu = new AudioSpace.APU(this.memory, 44000, 2, 2);
+      this.serial = new SerialSpace.SerialController(this.interruptController, this.memory);
 
       this.disassembler = new Disassembler(cpu, memory);
 
@@ -196,11 +198,13 @@ namespace GBSharp
 #else
       this.display.Step(ticks);
 #endif
-
       this.tickCounter += ticks;
       this.stepCounter++;
 
-      //NotifyStepCompleted();
+      this.serial.Step(ticks);
+
+      // NOTE(Cristian): Check if something still needs this
+      // NotifyStepCompleted();
     }
 
     /// <summary>

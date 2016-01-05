@@ -89,6 +89,10 @@
     <Compile Include="MemorySpace\MemoryHandlers\RomOnlyMemoryHandler.cs" />
     <Compile Include="MemorySpace\MemoryMappedRegisters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SerialSpace\SerialAdapter.cs" />
+    <Compile Include="SerialSpace\SerialController.cs" />
+    <Compile Include="SerialSpace\UARTSerialAdapter.cs" />
+    <Compile Include="SerialSpace\LANSerialAdapter.cs" />
     <Compile Include="Utils\InvalidInstructionException.cs" />
     <Compile Include="Utils\Utils.cs" />
     <Compile Include="VideoSpace\Display.cs" />
