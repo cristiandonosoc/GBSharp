@@ -16,7 +16,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
   /// catdridges handle memory mapping and storing in
   /// different ways, but should be transparent to the CPU.
   /// </summary>
-  class MemoryHandler
+  class MemoryHandler : IDisposable
   {
 
     #region ATTRIBUTES
@@ -217,6 +217,11 @@ namespace GBSharp.MemorySpace.MemoryHandlers
       return this.memoryData[address];
     }
 
-#endregion
+    public virtual void Dispose()
+    {
+
+    }
+
+    #endregion
   }
 }

@@ -1,6 +1,7 @@
 ﻿using GBSharp.MemorySpace;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -371,20 +372,27 @@ namespace GBSharp.AudioSpace
 #if SoundTiming
     public void WriteOutput()
     {
-      using (var file = new System.IO.StreamWriter("sound_events.csv", false))
+      try
       {
-        file.WriteLine("{0},{1},{2},{3}", "Register",
-                                          "Value",
-                                          "Before",
-                                          "After");
-        for (uint i = 0; i < TimelineCount; i += 4)
+        using (var file = new StreamWriter("sound_events.csv", false))
         {
-          file.WriteLine("{0},{1},{2},{3}",
-                         ((MMR)Timeline[i]).ToString(),
-                         "0x" + ((byte)Timeline[i + 1]).ToString("x2"),
-                         "0x" + ((byte)Timeline[i + 2]).ToString("x2"),
-                         "0x" + ((byte)Timeline[i + 3]).ToString("x2"));
+          file.WriteLine("{0},{1},{2},{3}", "Register",
+                                            "Value",
+                                            "Before",
+                                            "After");
+          for (uint i = 0; i < TimelineCount; i += 4)
+          {
+            file.WriteLine("{0},{1},{2},{3}",
+                           ((MMR)Timeline[i]).ToString(),
+                           "0x" + ((byte)Timeline[i + 1]).ToString("x2"),
+                           "0x" + ((byte)Timeline[i + 2]).ToString("x2"),
+                           "0x" + ((byte)Timeline[i + 3]).ToString("x2"));
+          }
         }
+      }
+      catch(IOException)
+      {
+        // Probably because the csv is opened by a program. Whatever...
       }
     }
 #endif

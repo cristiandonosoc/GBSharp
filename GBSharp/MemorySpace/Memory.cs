@@ -8,7 +8,7 @@ using GBSharp.MemorySpace.MemoryHandlers;
 
 namespace GBSharp.MemorySpace
 {
-  class Memory : IMemory
+  class Memory : IMemory, IDisposable
   {
     public ushort MemoryChangedLow { get; private set; }
     public ushort MemoryChangedHigh { get; private set; }
@@ -133,6 +133,11 @@ namespace GBSharp.MemorySpace
     public void Load(byte[] data)
     {
       this.data = data;
+    }
+
+    public void Dispose()
+    {
+      memoryHandler.Dispose();
     }
 
     #endregion
