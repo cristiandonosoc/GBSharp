@@ -139,6 +139,8 @@ namespace GBSharp.AudioSpace
       _memory.LowLevelWrite((ushort)MMR.NR13, 0xFF);
       _memory.LowLevelWrite((ushort)MMR.NR14, 0xBF);
 
+      _memory.LowLevelWrite(0xFF15, 0xFF);
+
       _memory.LowLevelWrite((ushort)MMR.NR21, 0x3F);
       _memory.LowLevelWrite((ushort)MMR.NR22, 0x00);
       _memory.LowLevelWrite((ushort)MMR.NR23, 0xFF);
@@ -148,16 +150,24 @@ namespace GBSharp.AudioSpace
       _memory.LowLevelWrite((ushort)MMR.NR31, 0xFF);
       _memory.LowLevelWrite((ushort)MMR.NR32, 0x9F);
       _memory.LowLevelWrite((ushort)MMR.NR33, 0xBF);
-      //_memory.LowLevelWrite((ushort)MMR.NR34, 0x00); // No info
+      _memory.LowLevelWrite((ushort)MMR.NR34, 0xBF); // No info
+
+      _memory.LowLevelWrite(0xFF1F, 0xFF);
 
       _memory.LowLevelWrite((ushort)MMR.NR41, 0xFF);
       _memory.LowLevelWrite((ushort)MMR.NR42, 0x00);
       _memory.LowLevelWrite((ushort)MMR.NR43, 0x00);
-      //_memory.LowLevelWrite((ushort)MMR.NR44, 0x00); // No info
+      _memory.LowLevelWrite((ushort)MMR.NR44, 0xBF); // No info
 
       _memory.LowLevelWrite((ushort)MMR.NR50, 0x77);
       _memory.LowLevelWrite((ushort)MMR.NR51, 0xF3);
       _memory.LowLevelWrite((ushort)MMR.NR52, 0xF1);
+
+      // We fill 0xFF27-0xFF2F with 0xFF
+      for (ushort r = 0xFF27; r <= 0xFF2F; ++r)
+      {
+        _memory.LowLevelWrite(r, 0xFF);
+      }
     }
 
     internal void HandleMemoryChange(MMR register, byte value)
@@ -192,7 +202,6 @@ namespace GBSharp.AudioSpace
         case MMR.NR33:
         case MMR.NR34:
           _channel3.HandleMemoryChange(register, value);
-          _memory.LowLevelWrite((ushort)register, value);
           break;
         case MMR.NR41:
         case MMR.NR42:
@@ -201,8 +210,12 @@ namespace GBSharp.AudioSpace
           _channel4.HandleMemoryChange(register, value);
           break;
         case MMR.NR50:
+          // TODO(Cristian): Implement this logic
+          _memory.LowLevelWrite((ushort)register, value);
           break;
         case MMR.NR51:
+          // TODO(Cristian): Implement this logic
+          _memory.LowLevelWrite((ushort)register, value);
           break;
         case MMR.NR52:
           Enabled = (Utils.UtilFuncs.TestBit(value, 7) != 0);
@@ -220,6 +233,7 @@ namespace GBSharp.AudioSpace
                            (_channel2.Enabled ? 0x2 : 0) |  // bit 1
                            (_channel3.Enabled ? 0x4 : 0) |  // bit 2
                            (_channel4.Enabled ? 0x8 : 0) |  // bit 3
+                           0x70 |                           // bit 4-6 are 1
                            (Enabled ? 0x80 : 0));           // bit 7
         _memory.LowLevelWrite((ushort)MMR.NR52, nr52);
       }

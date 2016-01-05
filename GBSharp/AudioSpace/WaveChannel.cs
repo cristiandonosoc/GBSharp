@@ -59,9 +59,7 @@ namespace GBSharp.AudioSpace
 
     internal double Frequency { get; set; }
 
-
     private Memory _memory;
-
 
     internal WaveChannel(Memory memory, 
                          int sampleRate, int numChannels, 
@@ -93,11 +91,17 @@ namespace GBSharp.AudioSpace
         case MMR.NR30:  // Sound on/off
           // Last bit determines sound on/off
           Enabled = (Utils.UtilFuncs.TestBit(value, 7) != 0);
+
+          // NR30 is ORed with 0x7F
+          _memory.LowLevelWrite((ushort)register, (byte)(value | 0x7f));
           break;
         case MMR.NR31:  // Sound Length
           double soundLengthMs = (double)(0x100 - value) / (double)0x100;
           _soundLengthTicks = (int)(GameBoy.ticksPerMillisecond * soundLengthMs);
           _soundLengthTickCounter = 0;
+
+          // NR31 is ORed with 0xFF
+          _memory.LowLevelWrite((ushort)register, 0xFF);
           break;
         case MMR.NR32:  // Output Level (volume)
           // Basically, we shift by this amount.
@@ -105,9 +109,15 @@ namespace GBSharp.AudioSpace
           _volumeRightShift = ((value >> 5) & 0x3) - 1;
           // We reload the sample
           //_outputValue = (short)Volume;
+
+          // NR32 is ORed with 0x9F
+          _memory.LowLevelWrite((ushort)register, (byte)(value | 0x9F));
           break;
         case MMR.NR33:  // FrequencyFactor lower
           FrequencyFactor = (ushort)(((HighFreqByte & 0x7) << 8) | value);
+
+          // NR33 is ORed with 0xFF
+          _memory.LowLevelWrite((ushort)register, 0xFF);
           break;
         case MMR.NR34:  // FrequencyFactor higher
           FrequencyFactor = (ushort)(((value & 0x7) << 8) | LowFreqByte);
@@ -118,6 +128,9 @@ namespace GBSharp.AudioSpace
           {
             Enabled = true;
           }
+
+          // NR34 is ORed with 0xBF
+          _memory.LowLevelWrite((ushort)register, (byte)(value | 0xBF));
           break;
         default:
           throw new InvalidProgramException("Invalid register received.");

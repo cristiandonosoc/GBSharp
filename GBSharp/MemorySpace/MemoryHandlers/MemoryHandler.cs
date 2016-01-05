@@ -135,6 +135,11 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           this.apu.HandleMemoryChange((MMR)address, value);
         }
 
+        else if (address <= 0xFF2F)
+        {
+          // This addresses cannot be written
+        }
+
         /* [0xFF00 - 0xFF4B]: I/O Ports */
         else if (address < 0xFF4C)
         {
