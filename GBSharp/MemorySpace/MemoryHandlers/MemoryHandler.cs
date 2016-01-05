@@ -117,29 +117,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
         {
           this.memoryData[address] = value;
         }
-
-        else if(address == (ushort)MMR.IF)
-        {
-          this.memoryData[address] = value;
-          // Trigger interrupt check event
-          this.cpu.CheckForInterruptRequired();
-        }
-
-        /* [0xFF10 - 0xFF26]: Sound registers */
-        else if ((0xFF10 <= address) && (address <= 0xFF26))
-        {
-          // NOTE(Cristian): Memory change in the sound register area
-          //                 is very specific, so all the changes to the
-          //                 actual values are made by the APU and sound channels
-          //                 themselves
-          this.apu.HandleMemoryChange((MMR)address, value);
-        }
-
-        else if (address <= 0xFF2F)
-        {
-          // This addresses cannot be written
-        }
-
+        
         /* [0xFF00 - 0xFF4B]: I/O Ports */
         else if (address < 0xFF4C)
         {
@@ -154,6 +132,28 @@ namespace GBSharp.MemorySpace.MemoryHandlers
 
             // Request an interrupt if necessary
             this.gameboy.InterruptController.UpdateKeypadState();
+          }
+
+          else if (address == (ushort)MMR.IF)
+          {
+            this.memoryData[address] = value;
+            // Trigger interrupt check event
+            this.cpu.CheckForInterruptRequired();
+          }
+
+          /* [0xFF10 - 0xFF26]: Sound registers */
+          else if ((0xFF10 <= address) && (address <= 0xFF26))
+          {
+            // NOTE(Cristian): Memory change in the sound register area
+            //                 is very specific, so all the changes to the
+            //                 actual values are made by the APU and sound channels
+            //                 themselves
+            this.apu.HandleMemoryChange((MMR)address, value);
+          }
+
+          else if ((0xFF27 <= address) && (address <= 0xFF2F))
+          {
+            // This addresses cannot be written
           }
 
           // NOTE(Cristian): We start a DMA process.
@@ -171,7 +171,6 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           {
             this.memoryData[address] = value;
           }
-
         }
 
         /* [0xFF4C - 0xFF7F]: Empty but unusable for I/O */
