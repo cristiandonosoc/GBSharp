@@ -1527,7 +1527,6 @@ namespace GBSharp.CPUSpace
             }
             else
             {
-              // TODO(Cristian): See the double halt load
               halted = true;
               haltLoad = true;
             }
@@ -1609,7 +1608,6 @@ namespace GBSharp.CPUSpace
             // Update flags
             registers.FC = (byte)((sum > 255) ? 1 : 0);
             registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-            // TODO(ALL): Verify that this is is correct
             registers.FH = (byte)(((registers.A ^ toSum ^ initial) & 0x10) == 0 ? 0 : 1);
             registers.FN = 0;
             break;
@@ -1625,7 +1623,6 @@ namespace GBSharp.CPUSpace
             // Update flags
             registers.FC = (byte)((sum > 255) ? 1 : 0);
             registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-            // TODO(ALL): Verify that this is is correct
             registers.FH = (byte)(((registers.A ^ toSum ^ initial) & 0x10) == 0 ? 0 : 1);
             registers.FN = 0;
             break;
@@ -1641,7 +1638,6 @@ namespace GBSharp.CPUSpace
             // Update flags
             registers.FC = (byte)((sum > 255) ? 1 : 0);
             registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-            // TODO(ALL): Verify that this is is correct
             registers.FH = (byte)(((registers.A ^ toSum ^ initial) & 0x10) == 0 ? 0 : 1);
             registers.FN = 0;
             break;
@@ -1657,7 +1653,6 @@ namespace GBSharp.CPUSpace
             // Update flags
             registers.FC = (byte)((sum > 255) ? 1 : 0);
             registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-            // TODO(ALL): Verify that this is is correct
             registers.FH = (byte)(((registers.A ^ toSum ^ initial) & 0x10) == 0 ? 0 : 1);
             registers.FN = 0;
             break;
@@ -1673,7 +1668,6 @@ namespace GBSharp.CPUSpace
             // Update flags
             registers.FC = (byte)((sum > 255) ? 1 : 0);
             registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-            // TODO(ALL): Verify that this is is correct
             registers.FH = (byte)(((registers.A ^ toSum ^ initial) & 0x10) == 0 ? 0 : 1);
             registers.FN = 0;
             break;
@@ -1689,7 +1683,6 @@ namespace GBSharp.CPUSpace
             // Update flags
             registers.FC = (byte)((sum > 255) ? 1 : 0);
             registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-            // TODO(ALL): Verify that this is is correct
             registers.FH = (byte)(((registers.A ^ toSum ^ initial) & 0x10) == 0 ? 0 : 1);
             registers.FN = 0;
             break;
@@ -1705,7 +1698,6 @@ namespace GBSharp.CPUSpace
             // Update flags
             registers.FC = (byte)((sum > 255) ? 1 : 0);
             registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-            // TODO(ALL): Verify that this is is correct
             registers.FH = (byte)(((registers.A ^ toSum ^ initial) & 0x10) == 0 ? 0 : 1);
             registers.FN = 0;
             break;
@@ -1721,7 +1713,6 @@ namespace GBSharp.CPUSpace
             // Update flags
             registers.FC = (byte)((sum > 255) ? 1 : 0);
             registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-            // TODO(ALL): Verify that this is is correct
             registers.FH = (byte)(((registers.A ^ toSum ^ initial) & 0x10) == 0 ? 0 : 1);
             registers.FN = 0;
             break;
@@ -2548,7 +2539,6 @@ namespace GBSharp.CPUSpace
             // Update flags
             registers.FC = (byte)((sum > 255) ? 1 : 0);
             registers.FZ = (byte)(registers.A == 0 ? 1 : 0);
-            // TODO(ALL): Verify that this is is correct
             registers.FH = (byte)(((registers.A ^ toSum ^ initial) & 0x10) == 0 ? 0 : 1);
             registers.FN = 0;
             break;

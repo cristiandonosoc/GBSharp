@@ -34,7 +34,17 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'TIMING|AnyCPU'">
     <OutputPath>bin\TIMING\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;TIMING</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'SoundTiming|AnyCPU'">
+    <OutputPath>bin\SoundTiming\</OutputPath>
+    <DefineConstants>TRACE;SoundTiming</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -88,6 +98,7 @@
     <Compile Include="MemoryFormatViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DisplayViewModel.cs" />
+    <Compile Include="SoundRecordingViewModel.cs" />
     <Compile Include="SpriteLayerViewModel.cs" />
     <Compile Include="SpritesViewModel.cs" />
     <Compile Include="SpriteViewModel.cs" />

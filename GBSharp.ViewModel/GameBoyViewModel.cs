@@ -20,6 +20,7 @@ namespace GBSharp.ViewModel
     private readonly InstructionHistogramViewModel _instructionHistogram;
     private readonly APUViewModel _apu;
     private readonly MemoryImageViewModel _memoryImage;
+    private readonly SoundRecordingViewModel _soundRecording;
 
 
     public MemoryViewModel Memory
@@ -77,6 +78,11 @@ namespace GBSharp.ViewModel
       get { return _memoryImage; }
     }
 
+    public SoundRecordingViewModel SoundRecording
+    {
+      get { return _soundRecording; }
+    }
+
 
     public GameBoyViewModel(IGameBoy gameBoy, IDispatcher dispatcher, IWindow window, IOpenFileDialogFactory fileDialogFactory, IKeyboardHandler keyboardHandler)
     {
@@ -100,11 +106,12 @@ namespace GBSharp.ViewModel
       _interrupt = new InterruptManagerViewModel(_gameBoy, _dispatcher);
       _ioRegisters = new IORegistersManagerViewModel(_gameBoy, _dispatcher);
       _display = new DisplayViewModel(_gameBoy, _gameBoy.Display, _gameBoy.Memory, _dispatcher);
-      _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher, _display);
+      _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher);
       _dissasemble = new DissasembleViewModel(_gameBoy);
       _instructionHistogram = new InstructionHistogramViewModel(_gameBoy, _dispatcher);
       _apu = new APUViewModel(_gameBoy, _dispatcher);
       _memoryImage = new MemoryImageViewModel(_gameBoy, _dispatcher);
+      _soundRecording = new SoundRecordingViewModel(_gameBoy.APU);
     }
 
     public void OnClosed()
@@ -153,6 +160,7 @@ namespace GBSharp.ViewModel
       _display.CopyFromDomain();
       _cpu.CopyFromDomain();
       _dissasemble.DissasembleCommandWrapper();
+      _soundRecording.CartridgeLoaded = true;
     }
 
     private void HandleClosing()

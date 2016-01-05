@@ -6,10 +6,11 @@ using System;
 using GBSharp.VideoSpace;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.IO;
 
 namespace GBSharp
 {
-  public class GameBoy : IGameBoy
+  public class GameBoy : IGameBoy, IDisposable
   {
     internal static double targetFramerate = 60.0; // This is not the real gameboy framerate, but it's a nice number.
     internal static double stopwatchTicksPerFrame = Stopwatch.Frequency / targetFramerate;
@@ -24,7 +25,11 @@ namespace GBSharp
     private CPUSpace.CPU cpu;
     private CPUSpace.InterruptController interruptController;
     private MemorySpace.Memory memory;
+
+    internal string CartridgeDirectory { get; private set; }
+    internal string CartridgeFilename { get; private set; }
     private Cartridge.Cartridge cartridge;
+
     private VideoSpace.Display display;
     private AudioSpace.APU apu;
     private SerialSpace.SerialController serial;
@@ -32,6 +37,7 @@ namespace GBSharp
     private bool frameReady;
     private bool inBreakpoint;
     private Thread clockThread;
+
     private ManualResetEventSlim manualResetEvent;
     private Keypad buttons;
     private Disassembler disassembler;
@@ -42,10 +48,15 @@ namespace GBSharp
 
     public bool ReleaseButtons { get; set; }
 
+    private int frameCounter = 0;
+    private long totalFrameTicks = 0;
+    public double FPS { get; private set; }
+
+
 #if TIMING
     private long[] timingSamples;
 
-    private int frameCounter = 0;
+    private int timingFrameCounter = 0;
     private int sampleCounter = 0;
     private int maxSamples = 60 * 100;
     private int sampleAmount = 5;
@@ -54,7 +65,7 @@ namespace GBSharp
     private Stopwatch swDisplay;
     private Stopwatch swBlit;
     private Stopwatch swClockMem;
-
+    public static Stopwatch swBeginInvoke = new Stopwatch();
 #endif
 
     /// <summary>
@@ -91,13 +102,13 @@ namespace GBSharp
 
       this.swCPU = new Stopwatch();
       this.swDisplay = new Stopwatch();
+
       this.swBlit = new Stopwatch();
       this.swClockMem = new Stopwatch();
 #endif
       var disDef = display.GetDisplayDefinition();
-      ScreenFrame = new uint[disDef.screenPixelCountX * disDef.screenPixelCountY];
+      ScreenFrame = new uint[disDef.ScreenPixelCountX * disDef.ScreenPixelCountY];
     }
-
 
     public ICPU CPU
     {
@@ -139,9 +150,13 @@ namespace GBSharp
     /// Connects to the gameboy a new cartridge with the given contents.
     /// </summary>
     /// <param name="cartridgeData"></param>
-    public void LoadCartridge(byte[] cartridgeData)
+    public void LoadCartridge(string cartridgeFullFilename, byte[] cartridgeData)
     {
       if (this.run) { Stop(); }
+      this.CartridgeFilename = Path.GetFileNameWithoutExtension(cartridgeFullFilename);
+      this.CartridgeDirectory = Path.GetDirectoryName(cartridgeFullFilename);
+      // TODO(Cristian): 
+      this.apu.CartridgeFilename = this.CartridgeFilename; 
       this.cartridge = new Cartridge.Cartridge();
       this.cartridge.Load(cartridgeData);
       // We create the MemoryHandler according to the data
@@ -247,7 +262,6 @@ namespace GBSharp
       //throw new NotImplementedException();
     }
 
-
     /// <summary>
     /// Method that is going to be running in a separate thread, calling Step() forever.
     /// </summary>
@@ -277,11 +291,24 @@ namespace GBSharp
           long finalTicks = this.stopwatch.ElapsedTicks;
           while(finalTicks < stopwatchTicksPerFrame)
           {
+            // NOTE(Cristian): Sometimes the thread would be trapped here because when
+            //                 the process close signal gets, the timers stop working and
+            //                 the finalTicks variable would never update.
+            if(!this.run) { break; }
             finalTicks = this.stopwatch.ElapsedTicks;
           }
 
           drama = finalTicks - (long)stopwatchTicksPerFrame;
 
+          // We calculate how many FPS we're giving
+          totalFrameTicks += finalTicks;
+          ++frameCounter;
+          if (frameCounter >= 30)
+          {
+            FPS = Math.Round(60 * (double)(30 * stopwatchTicksPerFrame) / (double)totalFrameTicks);
+            frameCounter = 0;
+            totalFrameTicks = 0;
+          }
 
 
 #if TIMING
@@ -292,22 +319,25 @@ namespace GBSharp
             timingSamples[index + 1] = swClockMem.ElapsedTicks;
             timingSamples[index + 2] = swDisplay.ElapsedTicks;
             timingSamples[index + 3] = swBlit.ElapsedTicks;
-            //timingSamples[index + 4] = swBeginInvoke.ElapsedTicks;
+            timingSamples[index + 4] = swBeginInvoke.ElapsedTicks;
             ++sampleCounter;
           }
-          ++frameCounter;
+          ++timingFrameCounter;
 
           swCPU.Reset();
           swClockMem.Reset();
           swDisplay.Reset();
           swBlit.Reset();
-          //swBeginInvoke.Reset();
+          swBeginInvoke.Reset();
 #endif
 
           this.stopwatch.Restart();
           this.tickCounter = 0;
           this.stepCounter = 0;
           this.frameReady = false;
+
+          // We see if the APU needs to close things this frame
+          apu.EndFrame();
 
           // Finally here we trigger the notification
           NotifyFrameCompleted();
@@ -391,8 +421,6 @@ namespace GBSharp
     {
       if (FrameCompleted != null)
       {
-#warning TODO (wooo): Receive the frame here and trigger a new event instead of accessing directly to the display from the view.
-
 #if TIMING
         swBlit.Start();
         Array.Copy(display.Screen, ScreenFrame, ScreenFrame.Length);
@@ -403,7 +431,6 @@ namespace GBSharp
 
         FrameCompleted();
       }
-
     }
 
     public Dictionary<MMR, ushort> GetRegisterDic()
@@ -422,6 +449,12 @@ namespace GBSharp
       return disassembler.Disassamble(startAddress, permissive);
     }
 
+    public void Dispose()
+    {
+      apu.Dispose();
+      memory.Dispose();
+    }
+
     ~GameBoy()
     {
 #if TIMING
@@ -431,17 +464,12 @@ namespace GBSharp
         file.WriteLine("{0}", (int)stopwatchTicksPerFrame);
 
         // We write the header
-        file.WriteLine("{0},{1},{2},{3}", "CPU", "Clock & Mem", "Display", "Blit");
+        file.WriteLine("{0},{1},{2},{3},{4}", "CPU", "Clock & Mem", "Display", "Blit", "BeginInvoke");
 
         // We write the data
         for (int i = 0; i < sampleCounter; ++i)
         {
           int index = i * sampleAmount;
-          //long total = timingSamples[index + 2] +
-          //             timingSamples[index + 3] +
-          //             timingSamples[index + 4];
-          //long rest = timingSamples[index + 1] - total;
-          ////file.WriteLine("Frame {0}: {1}/{2} --> CPU: {3} ({4:N2}%), Display: {5} ({6:N2}%), Blit: {7} ({8:N2}%), Other: {9} ({10:N2}%)",
           file.WriteLine("{0},{1},{2},{3},{4}",
                          timingSamples[index + 0],
                          timingSamples[index + 1],

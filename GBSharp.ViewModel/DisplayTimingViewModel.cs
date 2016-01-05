@@ -96,7 +96,7 @@ namespace GBSharp.ViewModel
       _dispatcher = dispatcher;
 
       var disDef = _display.GetDisplayDefinition();
-      _displayTiming = new WriteableBitmap(disDef.timingPixelCountX, disDef.timingPixelCountY,
+      _displayTiming = new WriteableBitmap(disDef.TimingPixelCountX, disDef.TimingPixelCountY,
                                            96, 96, PixelFormats.Bgra32, null);
     }
 
@@ -111,11 +111,11 @@ namespace GBSharp.ViewModel
       if (UpdateDisplayTiming)
       {
         DisplayStatus disStat = _display.GetDisplayStatus();
-        Enabled = disStat.enabled;
-        CurrentLine = disStat.currentLine;
-        DisplayMode = disStat.displayMode;
-        PrevTickCount = disStat.prevTickCount;
-        CurrentTickCount = disStat.currentLineTickCount;
+        Enabled = disStat.Enabled;
+        CurrentLine = disStat.CurrentLine;
+        DisplayMode = disStat.DisplayMode;
+        PrevTickCount = disStat.PrevTickCount;
+        CurrentTickCount = disStat.CurrentLineTickCount;
         Utils.TransferBytesToWriteableBitmap(_displayTiming,
                                              _display.GetDebugTarget(DebugTargets.DisplayTiming));
         OnPropertyChanged(() => DisplayTiming);

@@ -29,8 +29,8 @@ namespace GBSharp.VideoSpace
         int index = pixelY * stride; // Only add every 2 bytes
         DisFuncs.GetPixelsFromTileBytes(pixelLookupTable,
                                         ref pixelBuffer,
-                                        disDef.tilePallete,
-                                        disDef.pixelPerTileX,
+                                        disDef.TilePallete,
+                                        disDef.PixelPerTileX,
                                         tileData[j], tileData[j + 1]);
         for (int i = 0; i < 8; i++)
         {
@@ -72,8 +72,8 @@ namespace GBSharp.VideoSpace
       {
         for (int x = 0; x < rWidth; x++)
         {
-          int pX = (rX + x) % disDef.framePixelCountX;
-          int pY = (rY + y) % disDef.framePixelCountY;
+          int pX = (rX + x) % disDef.FramePixelCountX;
+          int pY = (rY + y) % disDef.FramePixelCountY;
           if (fill ||
              x == 0 || x == (rWidth - 1) ||
              y == 0 || y == (rHeight - 1))

@@ -56,7 +56,7 @@ namespace GBSharp.ViewModel
     {
       _gameBoy = gameBoy;
       _dispatcher = dispatcher;
-      //_gameBoy.FrameCompleted += OnFrameCompleted;
+      _gameBoy.FrameCompleted += OnFrameCompleted;
       _spectrogram = new WriteableBitmap(_numberOfFramesPerImage, _fftSize, 96, 96, PixelFormats.Bgr32, null);
     }
 
@@ -64,27 +64,9 @@ namespace GBSharp.ViewModel
     {
       if (Update)
       {
-        _dispatcher.Invoke(CopyFromDomain);
+        _dispatcher.BeginInvoke(new Action(CopyFromDomain), null);
         _currentFrame = (_currentFrame + 1) % _numberOfFramesPerImage;
       }
-    }
-
-    private void CopyFakeFromDomain()
-    {
-      var sampleRate = 44000;
-      var frequency = 400;
-      var sampleCount = 1024;
-      var buffer = new Complex[sampleCount];
-      var t = 0.0;
-      for (int i = 0; i < sampleCount; i++)
-      {
-        var real = Math.Sin(2 * Math.PI * frequency * t);
-        buffer[i] = new Complex(real, 0);
-        t += 1.0 / sampleRate;
-      }
-      FourierTransform.FFT(buffer, FourierTransform.Direction.Forward);
-      CopyFFTToFrameColumn(buffer);
-      Utils.TransferBytesToWriteableBitmap(_spectrogram, _spectrogramData);
     }
 
     private void CopyFromDomain()

@@ -1,6 +1,9 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Windows.Media.Imaging;
 
 namespace GBSharp.ViewModel
@@ -21,6 +24,33 @@ namespace GBSharp.ViewModel
 
         return bitmapimage;
       }
+    }
+
+    public static string DisplayBytesToString(uint[] pixels, char[] characters, int width)
+    {
+      var dictionary = new Dictionary<uint, int>();
+      var index = 0;
+      foreach (uint pixel in pixels)
+      {
+        if (!dictionary.ContainsKey(pixel))
+        {
+          dictionary.Add(pixel, index);
+          index++;
+        }
+      }
+      var s = new StringBuilder();
+      var widthIndex = 0;
+      foreach (uint pixel in pixels)
+      {
+        s.Append(characters[dictionary[pixel]]);
+        widthIndex++;
+        if (widthIndex >= width)
+        {
+          s.Append('\n');
+          widthIndex = 0;
+        }
+      }
+      return s.ToString();
     }
 
     public static void TransferBytesToWriteableBitmap(WriteableBitmap bitmap, uint[] pixels)

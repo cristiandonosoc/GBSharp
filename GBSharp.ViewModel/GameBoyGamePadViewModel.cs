@@ -9,9 +9,9 @@ namespace GBSharp.ViewModel
     private readonly IGameBoy _gameBoy;
     private readonly IDisplay _display;
     private readonly IDispatcher _dispatcher;
-    private readonly DisplayViewModel _displayVm;
 
     private WriteableBitmap _screen;
+    private string _textScreen;
 
     private int _frameCount;
     private double _fps;
@@ -19,6 +19,7 @@ namespace GBSharp.ViewModel
     private bool _releaseButtons;
 
     private bool _screenOnly;
+    private bool _asciiMode;
 
     public WriteableBitmap Screen
     {
@@ -27,6 +28,16 @@ namespace GBSharp.ViewModel
       {
         _screen = value;
         OnPropertyChanged(() => Screen);
+      }
+    }
+
+    public string TextScreen
+    {
+      get { return _textScreen; }
+      set
+      {
+        _textScreen = value;
+        OnPropertyChanged(() => TextScreen);
       }
     }
 
@@ -94,68 +105,70 @@ namespace GBSharp.ViewModel
       }
     }
 
+    public bool AsciiMode
+    {
+      get { return _asciiMode; }
+      set
+      {
+        _asciiMode = value;
+        OnPropertyChanged(() => AsciiMode);
+      }
+    }
+
     private void ButtonStartDown() { _gameBoy.PressButton(Keypad.Start); }
     private void ButtonStartUp() { _gameBoy.ReleaseButton(Keypad.Start); }
 
-    public GameBoyGamePadViewModel(IGameBoy gameBoy, IDispatcher dispatcher, DisplayViewModel displayVM)
+    public GameBoyGamePadViewModel(IGameBoy gameBoy, IDispatcher dispatcher)
     {
       _dispatcher = dispatcher;
-      _displayVm = displayVM;
       _gameBoy = gameBoy;
       _display = _gameBoy.Display;
-      //_displayVm.UpdateDisplay += OnUpdateDisplay;
       _gameBoy.FrameCompleted += OnFrameCompleted;
 
       VideoSpace.DisplayDefinition disDef = _display.GetDisplayDefinition();
-      _screen = new WriteableBitmap(disDef.screenPixelCountX, disDef.screenPixelCountY,
+      _screen = new WriteableBitmap(disDef.ScreenPixelCountX, disDef.ScreenPixelCountY,
                                     96, 96,
                                     System.Windows.Media.PixelFormats.Bgra32, null);
-      _frame = new uint[disDef.screenPixelCountX * disDef.screenPixelCountY];
+      _frame = new uint[disDef.ScreenPixelCountX * disDef.ScreenPixelCountY];
     }
 
     uint[] _frame;
 
     private void OnFrameCompleted()
     {
-      //GameBoy.swBeginInvoke.Start();
-      _dispatcher.BeginInvoke(new Action(TransferImageToBitmap), null);
-      //GameBoy.swBeginInvoke.Stop();
-
-      //_dispatcher.Invoke(CopyFromDomain);
-      //_dispatcher.Invoke(UpdateFPS);
+#if TIMING
+      GameBoy.swBeginInvoke.Start();
+      _dispatcher.BeginInvoke(new Action(UpdateFromGameboy), null);
+      GameBoy.swBeginInvoke.Stop();
+#else
+      _dispatcher.BeginInvoke(new Action(UpdateFromGameboy), null);
+#endif
     }
 
-    private void CopyFromDomain()
+    private void UpdateFromGameboy()
     {
       ReleaseButtons = _gameBoy.ReleaseButtons;
-      // BeginInvoke returns immediatelly
-      _dispatcher.BeginInvoke(new Action(TransferImageToBitmap), null);
-    }
-
-    private void TransferImageToBitmap()
-    {
 
       // We copy the ready screen Frame
       var target = _gameBoy.ScreenFrame;
       Array.Copy(target, _frame, target.Length);
       Utils.TransferBytesToWriteableBitmap(_screen, _frame);
+      if (AsciiMode)
+        TextScreen = Utils.DisplayBytesToString(_frame, new []{' ', ':', '*','@'}, _screen.PixelWidth);
       OnPropertyChanged(() => Screen);
 
       UpdateFPS();
-
     }
 
     private void UpdateFPS()
     {
       _frameCount++;
-      if (_frameCount % 10 == 0)
+      if (_frameCount > 30)
       {
-        var currentTime = DateTime.Now;
-        var deltaTime = currentTime - _previousTime;
-        _previousTime = currentTime;
-        _fps = (float)(_frameCount) / (deltaTime.TotalSeconds);
-        _frameCount = 0;
+        _fps = _gameBoy.FPS;
         OnPropertyChanged(() => FPS);
+        _frameCount = 0;
+
       }
     }
 
@@ -167,7 +180,6 @@ namespace GBSharp.ViewModel
     public void Dispose()
     {
       _gameBoy.FrameCompleted -= OnFrameCompleted;
-      //_displayVm.UpdateDisplay -= OnUpdateDisplay;
     }
 
     public void KeyUp(KeyEventArgs args)

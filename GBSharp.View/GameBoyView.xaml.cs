@@ -26,6 +26,7 @@ namespace GBSharp.View
     protected override void OnClosed(System.EventArgs e)
     {
       _mainWindowViewModel.OnClosed();
+      _gameBoy.Dispose();
       base.OnClosed(e);
     }
 

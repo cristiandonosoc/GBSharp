@@ -16,7 +16,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
   /// catdridges handle memory mapping and storing in
   /// different ways, but should be transparent to the CPU.
   /// </summary>
-  class MemoryHandler
+  class MemoryHandler : IDisposable
   {
 
     #region ATTRIBUTES
@@ -112,15 +112,6 @@ namespace GBSharp.MemorySpace.MemoryHandlers
       {
         // During DMA transfer, the CPU can only access the High-RAM block
         // HRAM: 0xFF80-0xFE9F
-        if (this.dma.Active)
-        {
-          // TODO(Cristian): Investigate what the gameboy actually does on this event.
-          //                 Does it just return and the instruction took as much time?
-          //                 Does it crash and it's simply not done?
-          //                 Who knows...
-          //throw new InvalidOperationException("Can only access HRAM during DMA transfer");
-        }
-
         /* [0xFEA0 - 0xFEFF]: Empty but unusable for I/O */
         if (address < 0xFF00)
         {
@@ -137,8 +128,16 @@ namespace GBSharp.MemorySpace.MemoryHandlers
         /* [0xFF10 - 0xFF26]: Sound registers */
         else if ((0xFF10 <= address) && (address <= 0xFF26))
         {
-          this.memoryData[address] = value;
+          // NOTE(Cristian): Memory change in the sound register area
+          //                 is very specific, so all the changes to the
+          //                 actual values are made by the APU and sound channels
+          //                 themselves
           this.apu.HandleMemoryChange((MMR)address, value);
+        }
+
+        else if (address <= 0xFF2F)
+        {
+          // This addresses cannot be written
         }
 
         /* [0xFF00 - 0xFF4B]: I/O Ports */
@@ -223,6 +222,11 @@ namespace GBSharp.MemorySpace.MemoryHandlers
       return this.memoryData[address];
     }
 
-#endregion
+    public virtual void Dispose()
+    {
+
+    }
+
+    #endregion
   }
 }

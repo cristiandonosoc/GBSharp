@@ -24,6 +24,8 @@ namespace GBSharp.MemorySpace.MemoryHandlers
         case CartridgeType.ROM_MBC1:
         case CartridgeType.ROM_MBC1_RAM:
           return new MBC1MemoryHandler(gameboy);
+        case CartridgeType.ROM_MBC1_RAM_BATT:
+          return new MBC1MemoryHandler(gameboy, true);
         case CartridgeType.ROM_MBC3:
         case CartridgeType.ROM_MBC3_RAM:
         case CartridgeType.ROM_MBC3_RAM_BATT:

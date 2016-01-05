@@ -32,7 +32,7 @@ namespace GBSharp.Audio
 
       _soundOut = GetSoundOut();
       _soundOut.Initialize(_source);
-      _soundOut.Volume = 0.05f;
+      _soundOut.Volume = 0.2f;
 
       sw = new Stopwatch();
     }

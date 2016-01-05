@@ -48,6 +48,16 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'SoundTiming|AnyCPU'">
+    <OutputPath>bin\SoundTiming\</OutputPath>
+    <DefineConstants>TRACE;SoundTiming</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Expression.Interactions, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System" />
@@ -100,6 +110,9 @@
     </Compile>
     <Compile Include="OpenFileDialogAdapter.cs" />
     <Compile Include="OpenFileDialogAdapterFactory.cs" />
+    <Compile Include="SoundRecordingView.xaml.cs">
+      <DependentUpon>SoundRecordingView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SpriteLayerView.xaml.cs">
       <DependentUpon>SpriteLayerView.xaml</DependentUpon>
     </Compile>
@@ -195,6 +208,10 @@
     </Page>
     <Page Include="MemoryView.xaml">
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SoundRecordingView.xaml">
+      <SubType>Form</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="SpriteLayerView.xaml">

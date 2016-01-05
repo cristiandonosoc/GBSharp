@@ -276,11 +276,6 @@ namespace GBSharp.ViewModel
 
     public void CopyFromDomain()
     {
-      // TODO(Cristian): Apparently, the PC being displayed is the one
-      //                 that was already updated by the Step cycle,
-      //                 this showing the *NEXT* instruction instead
-      //                 of the one currently displayed.
-      //                 Verify if this is the case, and fix it.
       RegisterPC = "0x" + _cpu.Registers.PC.ToString("x2");
       RegisterPCOpcode = _cpu.CurrentInstruction.Name;
       RegisterPCDescription = _cpu.CurrentInstruction.Description;
