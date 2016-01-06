@@ -13,6 +13,7 @@ namespace GBSharp
     ICartridge Cartridge { get; }
     IDisplay Display { get; }
     IAPU APU { get; }
+    IDisassembler Disassembler { get; }
     void LoadCartridge(string filename, byte[] cartridgeData);
     void Run();
     void Pause();
@@ -23,9 +24,6 @@ namespace GBSharp
     bool ReleaseButtons { get; set; }
 
     Dictionary<MemorySpace.MMR, ushort> GetRegisterDic();
-
-    IEnumerable<IInstruction> Disassamble(ushort startAddress, 
-                                          bool permissive = true);
 
     uint[] ScreenFrame { get; }
     object LockObj { get; }

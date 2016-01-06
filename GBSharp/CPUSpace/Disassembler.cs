@@ -7,13 +7,24 @@ using GBSharp.CPUSpace.Dictionaries;
 
 namespace GBSharp.CPUSpace
 {
-  class Disassembler
+  class Disassembler : IDisassembler
   {
     public List<IInstruction> Disassembly { get { return _disInstructions; } }
 
     internal List<IInstruction> _disInstructions;
     internal HashSet<ushort> _disVisitedAddresses;
     internal Stack<ushort> _disAddressToVisit;
+
+    public int DisassembledCount { get; private set; }
+    private byte[][] _disassembledMatrix;
+    public byte[][] DisassembledMatrix
+    {
+      get
+      {
+        return _disassembledMatrix;
+      }
+    }
+    
 
     CPU _cpu;
     MemorySpace.Memory _memory;
@@ -26,6 +37,62 @@ namespace GBSharp.CPUSpace
       _disInstructions = new List<IInstruction>();
       _disVisitedAddresses = new HashSet<ushort>();
       _disAddressToVisit = new Stack<ushort>();
+
+      _disassembledMatrix = new byte[0xFFFF][];
+      for(int i = 0; i < 0xFFFF; ++i)
+      {
+        _disassembledMatrix[i] = new byte[6];
+      }
+    }
+
+    public void PoorManDisassemble()
+    {
+      DisassembledCount = 0;
+      int currentIndex = 0;
+      while(currentIndex < 0xFFFF)
+      {
+        var inst = _cpu.FetchAndDecode((ushort)currentIndex);
+        _disassembledMatrix[DisassembledCount][0] = inst.Length;
+        switch (inst.Length)
+        {
+          case 1:
+            _disassembledMatrix[DisassembledCount][1] = (byte)inst.OpCode;
+            _disassembledMatrix[DisassembledCount][2] = 0;
+            _disassembledMatrix[DisassembledCount][3] = 0;
+            break;
+          case 2:
+            if (inst.CB)
+            {
+              _disassembledMatrix[DisassembledCount][1] = (byte)inst.OpCode;
+              _disassembledMatrix[DisassembledCount][2] = (byte)(inst.OpCode >> 8);
+              _disassembledMatrix[DisassembledCount][3] = 0;
+            }
+            else
+            {
+              _disassembledMatrix[DisassembledCount][1] = (byte)inst.OpCode;
+              _disassembledMatrix[DisassembledCount][2] = (byte)inst.Literal;
+              _disassembledMatrix[DisassembledCount][3] = 0;
+            }
+            break;
+          case 3:
+            _disassembledMatrix[DisassembledCount][1] = (byte)inst.OpCode;
+            _disassembledMatrix[DisassembledCount][2] = (byte)inst.Literal;
+            _disassembledMatrix[DisassembledCount][3] = (byte)(inst.Literal >> 8);
+            break;
+        }
+        _disassembledMatrix[DisassembledCount][4] = (byte)(currentIndex >> 8);
+        _disassembledMatrix[DisassembledCount][5] = (byte)currentIndex;
+
+        if(inst.Length == 0)
+        {
+          ++currentIndex;
+        }
+        else
+        {
+          currentIndex += inst.Length;
+        }
+        ++DisassembledCount;
+      }
     }
 
 

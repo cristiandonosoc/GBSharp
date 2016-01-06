@@ -171,7 +171,7 @@ namespace GBSharp.AudioSpace
       }
     }
 
-    internal void HandleMemoryChange(MMR register, byte value)
+    internal void HandleMemoryChange(MMR register, byte value, bool updatedEnabledFlag = true)
     {
       if(!Enabled && register != MMR.NR52) { return; }
 
@@ -179,7 +179,7 @@ namespace GBSharp.AudioSpace
       bool channel1Enabled = _channel1.Enabled;
       bool channel2Enabled = _channel2.Enabled;
       bool channel3Enabled = _channel3.Enabled;
-      bool channel4Enabled = _channel3.Enabled;
+      bool channel4Enabled = _channel4.Enabled;
       bool prevEnabled = Enabled;
 
       switch (register)
@@ -220,8 +220,21 @@ namespace GBSharp.AudioSpace
           break;
         case MMR.NR52:
           Enabled = (Utils.UtilFuncs.TestBit(value, 7) != 0);
+          if(!Enabled)
+          {
+            // Powering down the APU should power down all the registers
+            for (ushort r = (ushort)MMR.NR10; r < (ushort)MMR.NR52; ++r)
+            {
+              HandleMemoryChange((MMR)r, 0, false);
+            }
+          }
           break;
       }
+
+      // NOTE(Cristian): This is an "optimization" for when NR52 is disabled,
+      //                 All the registers are set to 0. A normal recursive call
+      //                 would write the NR52 memory several times unnecessarily
+      if(!updatedEnabledFlag) { return; }
 
       // We compare to see if we have to change the NR52 byte
       if ((channel1Enabled != _channel1.Enabled) ||
@@ -230,12 +243,21 @@ namespace GBSharp.AudioSpace
           (channel4Enabled != _channel4.Enabled) ||
           (prevEnabled != Enabled))
       {
-        byte nr52 = (byte)((_channel1.Enabled ? 0x1 : 0) |  // bit 0
-                           (_channel2.Enabled ? 0x2 : 0) |  // bit 1
-                           (_channel3.Enabled ? 0x4 : 0) |  // bit 2
-                           (_channel4.Enabled ? 0x8 : 0) |  // bit 3
-                           0x70 |                           // bit 4-6 are 1
-                           (Enabled ? 0x80 : 0));           // bit 7
+        byte nr52 = 0x70;
+        if (Enabled)
+        {
+          if(register == MMR.NR52)
+          {
+            nr52 = 0x70;
+          }
+          nr52 = (byte)((_channel1.Enabled ? 0x1 : 0) |  // bit 0
+                        (_channel2.Enabled ? 0x2 : 0) |  // bit 1
+                        (_channel3.Enabled ? 0x4 : 0) |  // bit 2
+                        (_channel4.Enabled ? 0x8 : 0) |  // bit 3
+                        0xF0);                           // bit 4-7 are 1
+        }
+
+        // We know bit 7 is 1 because otherwise the whole register is 0x70
         _memory.LowLevelWrite((ushort)MMR.NR52, nr52);
       }
     }

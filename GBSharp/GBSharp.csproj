@@ -88,6 +88,7 @@
     <Compile Include="CPURegisters.cs" />
     <Compile Include="GameBoy.cs" />
     <Compile Include="ICPU.cs" />
+    <Compile Include="IDisassembler.cs" />
     <Compile Include="IDisplay.cs" />
     <Compile Include="IGameBoy.cs" />
     <Compile Include="IInstruction.cs" />

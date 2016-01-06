@@ -135,6 +135,11 @@ namespace GBSharp
       get { return apu; }
     }
 
+    public IDisassembler Disassembler
+    {
+      get { return disassembler; }
+    }
+
     /// <summary>
     /// Provides access to the interrupt controller to every component connected to the gameboy, so interrupts
     /// can be requested from memory handlers, the display controller, serial ports, etc.
@@ -441,12 +446,6 @@ namespace GBSharp
         registerDic.Add(registerEnum, memory.LowLevelRead((ushort)registerEnum));
       }
       return registerDic;
-    }
-
-    public IEnumerable<IInstruction>
-    Disassamble(ushort startAddress, bool permissive = true)
-    {
-      return disassembler.Disassamble(startAddress, permissive);
     }
 
     public void Dispose()
