@@ -76,15 +76,6 @@ namespace GBSharp.ViewModel
 
     public void Dissasemble(ushort currentAddress)
     {
-      //var dissasembledInstructions = _gameBoy.Disassamble(address);
-      //_instructions.Clear();
-      //foreach (var dissasembledInstruction in dissasembledInstructions)
-      //{
-      //  InstructionViewModel inst = new InstructionViewModel(dissasembledInstruction);
-      //  _instructions.Add(inst);
-      //  _addressToInstruction[dissasembledInstruction.Address] = inst;
-      //}
-      //SelectedInstruction = _addressToInstruction[address];
       _disassembler.PoorManDisassemble();
       _instructions.Clear();
       byte[][] matrix = _disassembler.DisassembledMatrix;
@@ -135,6 +126,7 @@ namespace GBSharp.ViewModel
         }
 
         _instructions.Add(vm);
+        _addressToInstruction[(ushort)address] = vm;
 
         if(address == currentAddress)
         {
