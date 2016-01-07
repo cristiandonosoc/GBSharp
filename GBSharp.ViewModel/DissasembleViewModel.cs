@@ -12,8 +12,9 @@ namespace GBSharp.ViewModel
     private readonly IGameBoy _gameBoy;
     private readonly ICPU _cpu;
     private readonly IDisassembler _disassembler;
-    private readonly ObservableCollection<InstructionViewModel> _instructions = new ObservableCollection<InstructionViewModel>();
-    private readonly Dictionary<ushort, InstructionViewModel> _addressToInstruction = new Dictionary<ushort, InstructionViewModel>();
+    private readonly ObservableCollection<InstructionViewModel> _instructions = 
+      new ObservableCollection<InstructionViewModel>();
+    private Dictionary<ushort, InstructionViewModel> _addressToInstruction;
     private InstructionViewModel _selectedInstruction;
 
     public string BreakPoint
@@ -58,11 +59,20 @@ namespace GBSharp.ViewModel
 
     public void SetCurrentSelectedInstruction()
     {
-      try
+      if(_addressToInstruction.ContainsKey(_cpu.Registers.PC))
       {
-        SelectedInstruction = _addressToInstruction[_cpu.Registers.PC];
+        var inst = _addressToInstruction[_cpu.Registers.PC];
+        // We need to check that the instruction is actually the same that what's in memory
+        if (_cpu.CurrentInstruction.OpCode == inst.originalOpcode)
+        {
+          SelectedInstruction = _addressToInstruction[_cpu.Registers.PC];
+        }
+        else
+        {
+          Dissasemble(0);
+        }
       }
-      catch(KeyNotFoundException e)
+      else
       {
         Dissasemble(_cpu.Registers.PC);
       }
@@ -76,6 +86,7 @@ namespace GBSharp.ViewModel
 
     public void Dissasemble(ushort currentAddress)
     {
+      _addressToInstruction = new Dictionary<ushort, InstructionViewModel>();
       _disassembler.PoorManDisassemble();
       _instructions.Clear();
       byte[][] matrix = _disassembler.DisassembledMatrix;
@@ -86,11 +97,11 @@ namespace GBSharp.ViewModel
         int intLength = entry[0];
         if(intLength == 0) { continue; }
         var vm = new InstructionViewModel();
-        // We fill it up
         // We check the length
         if (intLength == 1)
         {
           vm.Address = "0x" + address.ToString("x2");
+          vm.originalOpcode = entry[1];
           vm.Opcode = "0x" + entry[1].ToString("x2");
           vm.Name = CPUOpcodeNames.Get(entry[1]);
           vm.Description = CPUInstructionDescriptions.Get(entry[1]);
@@ -100,6 +111,7 @@ namespace GBSharp.ViewModel
           if (entry[1] != 0xCB)
           {
             vm.Address = "0x" + address.ToString("x2");
+            vm.originalOpcode = entry[1];
             vm.Opcode = "0x" + entry[1].ToString("x2");
             vm.Name = CPUOpcodeNames.Get(entry[1]);
             vm.Literal = "0x" + entry[2].ToString("x2");
@@ -109,6 +121,7 @@ namespace GBSharp.ViewModel
           {
             vm.Address = "0x" + address.ToString("x2");
             int instOpcode = ((entry[1] << 8) | entry[2]);
+            vm.originalOpcode = (ushort)instOpcode;
             vm.Opcode = "0x" + instOpcode.ToString("x2");
             vm.Name = CPUCBOpcodeNames.Get(entry[2]);
             vm.Literal = "0x" + entry[2].ToString("x2");
@@ -118,6 +131,7 @@ namespace GBSharp.ViewModel
         else
         {
           vm.Address = "0x" + address.ToString("x2");
+          vm.originalOpcode = entry[1];
           vm.Opcode = "0x" + entry[1].ToString("x2");
           vm.Name = CPUOpcodeNames.Get(entry[1]);
           int literal = ((entry[2] << 8) | entry[3]);

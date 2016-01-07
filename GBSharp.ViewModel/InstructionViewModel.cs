@@ -10,6 +10,7 @@
     //public string Literal { get { return "0x" + _instruction.Literal.ToString("x2"); } }
     //public string Description { get { return _instruction.Description; } }
 
+    internal ushort originalOpcode { get; set; }
     public string Address { get; set; }
     public string Opcode { get; set; }
     public string Name { get; set; }
