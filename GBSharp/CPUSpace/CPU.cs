@@ -47,6 +47,7 @@ namespace GBSharp.CPUSpace
     //                 one instruction behing because the PC advances after the Step.
     //                 What it's done is that the current PC is decoded on-demand by the view.
     private Instruction _currentInstruction = null;
+    private Instruction _exportInstruction = null;
     /// <summary>
     /// The current operands (extra bytes) used by the current instruction
     /// running in the CPU. This is (for now) mainly used to display this
@@ -55,7 +56,11 @@ namespace GBSharp.CPUSpace
     /// </summary>
     public IInstruction CurrentInstruction
     {
-      get { return FetchAndDecode(registers.PC); }
+      get
+      {
+        FetchAndDecode(ref _exportInstruction, registers.PC);
+        return _exportInstruction;
+      }
     }
 
     // Interrupt starting addresses
@@ -97,6 +102,7 @@ namespace GBSharp.CPUSpace
     public CPU(MemorySpace.Memory memory)
     {
       _currentInstruction = new Instruction();
+      _exportInstruction = new Instruction();
 
       this.memory = memory;
       this.interruptController = new InterruptController(this.memory);
@@ -233,7 +239,7 @@ namespace GBSharp.CPUSpace
         }
 
         // Otherwise we fetch as usual
-        _currentInstruction = FetchAndDecode(this.registers.PC, haltLoad);
+        FetchAndDecode(ref _currentInstruction, this.registers.PC, haltLoad);
         haltLoad = false;
       }
 
@@ -299,12 +305,18 @@ namespace GBSharp.CPUSpace
     /// <summary>
     /// Fetches and Decodes an instruction
     /// </summary>
+    /// <param name="instruction">
+    /// As FetchAndDecode gets called *several* times a frame (and many times during
+    /// disassembly), it is better to have a pre-allocated instruction and to replace
+    /// the values, instead of getting the overhead of allocating a new Instrucion
+    /// everytime.
+    /// </param>
     /// <param name="instructionAddress"></param>
     /// <param name="haltLoad"></param>
     /// <returns></returns>
-    internal Instruction FetchAndDecode(ushort instructionAddress, bool haltLoad = false)
+    internal Instruction FetchAndDecode(ref Instruction instruction, 
+                                        ushort instructionAddress, bool haltLoad = false)
     {
-      Instruction instruction = new Instruction();
       instruction.Address = instructionAddress;
       byte opcode = this.memory.LowLevelRead(instructionAddress);
       instruction.OpCode = opcode;

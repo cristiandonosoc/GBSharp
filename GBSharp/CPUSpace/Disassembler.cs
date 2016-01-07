@@ -29,6 +29,8 @@ namespace GBSharp.CPUSpace
     CPU _cpu;
     MemorySpace.Memory _memory;
 
+    private Instruction _tempInstruction;
+
     public Disassembler(CPU cpu, MemorySpace.Memory memory)
     {
       _cpu = cpu;
@@ -43,44 +45,47 @@ namespace GBSharp.CPUSpace
       {
         _disassembledMatrix[i] = new byte[5];
       }
+
+      _tempInstruction = new Instruction();
     }
 
-    private Instruction DisassembleInstruction(ushort address)
+
+    private bool DisassembleInstruction(ushort address)
     {
-      var inst = _cpu.FetchAndDecode(address);
-      _disassembledMatrix[address][0] = inst.Length;
+      _cpu.FetchAndDecode(ref _tempInstruction, address);
+      _disassembledMatrix[address][0] = _tempInstruction.Length;
       _disassembledMatrix[address][4] = 1;
-      switch (inst.Length)
+      switch (_tempInstruction.Length)
       {
         case 1:
-          _disassembledMatrix[address][1] = (byte)inst.OpCode;
+          _disassembledMatrix[address][1] = (byte)_tempInstruction.OpCode;
           _disassembledMatrix[address][2] = 0;
           _disassembledMatrix[address][3] = 0;
           break;
         case 2:
-          if (inst.CB)
+          if (_tempInstruction.CB)
           {
-            _disassembledMatrix[address][1] = (byte)(inst.OpCode >> 8);
-            _disassembledMatrix[address][2] = (byte)inst.OpCode;
+            _disassembledMatrix[address][1] = (byte)(_tempInstruction.OpCode >> 8);
+            _disassembledMatrix[address][2] = (byte)_tempInstruction.OpCode;
             _disassembledMatrix[address][3] = 0;
           }
           else
           {
-            _disassembledMatrix[address][1] = (byte)inst.OpCode;
-            _disassembledMatrix[address][2] = (byte)inst.Literal;
+            _disassembledMatrix[address][1] = (byte)_tempInstruction.OpCode;
+            _disassembledMatrix[address][2] = (byte)_tempInstruction.Literal;
             _disassembledMatrix[address][3] = 0;
           }
           break;
         case 3:
-          _disassembledMatrix[address][1] = (byte)inst.OpCode;
-          _disassembledMatrix[address][2] = (byte)(inst.Literal >> 8);
-          _disassembledMatrix[address][3] = (byte)inst.Literal;
+          _disassembledMatrix[address][1] = (byte)_tempInstruction.OpCode;
+          _disassembledMatrix[address][2] = (byte)(_tempInstruction.Literal >> 8);
+          _disassembledMatrix[address][3] = (byte)_tempInstruction.Literal;
           break;
         default:
-          return null;
+          return false;
       }
 
-      return inst;
+      return true;
     }
 
     public void PoorManDisassemble()
@@ -102,12 +107,10 @@ namespace GBSharp.CPUSpace
         if(_disassembledMatrix[address][4] != 0) { continue; }
 
         // We disassemble it and add it to out map
-        Instruction inst = DisassembleInstruction(address);
-        // Invalid address
-        if (inst == null) { continue; }
+        if(!DisassembleInstruction(address)) { continue; }
 
         // This are returns to functions
-        if (_stoppers.Contains(inst.OpCode))
+        if (_stoppers.Contains(_tempInstruction.OpCode))
         {
           // If full disassemble, should add the next instruction
           // to the second priority queue
@@ -115,50 +118,50 @@ namespace GBSharp.CPUSpace
         }
 
         // Direct Jumps. Conditionals add the next instruction
-        else if (_directJumps.ContainsKey(inst.OpCode))
+        else if (_directJumps.ContainsKey(_tempInstruction.OpCode))
         {
-          if (_directJumps[inst.OpCode])
+          if (_directJumps[_tempInstruction.OpCode])
           {
-            visitQueue.AddFirst(inst.Literal);
+            visitQueue.AddFirst(_tempInstruction.Literal);
           }
           else
           {
-            visitQueue.AddFirst(inst.Literal);
-            ushort next = (ushort)(address + inst.Length);
+            visitQueue.AddFirst(_tempInstruction.Literal);
+            ushort next = (ushort)(address + _tempInstruction.Length);
             visitQueue.AddFirst(next);
           }
         }
         // Relative Jumps. Conditionals add the next instruction
-        else if (_relativeJumps.ContainsKey(inst.OpCode))
+        else if (_relativeJumps.ContainsKey(_tempInstruction.OpCode))
         {
-          if (_relativeJumps[inst.OpCode])
+          if (_relativeJumps[_tempInstruction.OpCode])
           {
             sbyte signedLiteral;
-            unchecked { signedLiteral = (sbyte)inst.Literal; }
-            ushort relTarget = (ushort)(inst.Address + signedLiteral + inst.Length);
+            unchecked { signedLiteral = (sbyte)_tempInstruction.Literal; }
+            ushort relTarget = (ushort)(_tempInstruction.Address + signedLiteral + _tempInstruction.Length);
             visitQueue.AddFirst(relTarget);
           }
           else
           {
             sbyte signedLiteral;
-            unchecked { signedLiteral = (sbyte)inst.Literal; }
-            ushort relTarget = (ushort)(inst.Address + signedLiteral + inst.Length);
+            unchecked { signedLiteral = (sbyte)_tempInstruction.Literal; }
+            ushort relTarget = (ushort)(_tempInstruction.Address + signedLiteral + _tempInstruction.Length);
             visitQueue.AddFirst(relTarget);
 
-            var next = (ushort)(address + inst.Length);
+            var next = (ushort)(address + _tempInstruction.Length);
             visitQueue.AddFirst(next);
           }
         }
 
         // Restarts are a direct jump
-        else if (_restarts.ContainsKey(inst.OpCode))
+        else if (_restarts.ContainsKey(_tempInstruction.OpCode))
         {
-          visitQueue.AddFirst(_restarts[inst.OpCode]);
+          visitQueue.AddFirst(_restarts[_tempInstruction.OpCode]);
         }
         else
         {
           // It's a normal instruction and simply continues
-          ushort target = (ushort)(address + inst.Length);
+          ushort target = (ushort)(address + _tempInstruction.Length);
           visitQueue.AddFirst(target);
         }
       }
@@ -197,7 +200,9 @@ namespace GBSharp.CPUSpace
           try
           {
             // Get the instruction and added to the instruction list
-            var inst = _cpu.FetchAndDecode(address);
+            //var inst = _cpu.FetchAndDecode(address);
+            // TODO(Cristian): This code will NOT work!
+            Instruction inst = null;
             _disInstructions.Add(inst);
 
             // We get a list of possible next addresses to check
