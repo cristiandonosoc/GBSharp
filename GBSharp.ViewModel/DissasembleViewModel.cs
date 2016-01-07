@@ -74,7 +74,7 @@ namespace GBSharp.ViewModel
     }
 
 
-    public void Dissasemble(ushort address)
+    public void Dissasemble(ushort currentAddress)
     {
       //var dissasembledInstructions = _gameBoy.Disassamble(address);
       //_instructions.Clear();
@@ -88,27 +88,27 @@ namespace GBSharp.ViewModel
       _disassembler.PoorManDisassemble();
       _instructions.Clear();
       byte[][] matrix = _disassembler.DisassembledMatrix;
-      int instCount = _disassembler.DisassembledCount;
-      for (int i = 0; i < instCount; ++i)
+      int instCount = 0xFFFF;
+      for (int address = 0; address < instCount; ++address)
       {
+        byte[] entry = matrix[address];
+        int intLength = entry[0];
+        if(intLength == 0) { continue; }
         var vm = new InstructionViewModel();
         // We fill it up
-        byte[] entry = matrix[i];
         // We check the length
-        if (entry[0] == 1)
+        if (intLength == 1)
         {
-          int instAddress = ((entry[4] << 8) | entry[5]);
-          vm.Address = "0x" + instAddress.ToString("x2");
+          vm.Address = "0x" + address.ToString("x2");
           vm.Opcode = "0x" + entry[1].ToString("x2");
           vm.Name = CPUOpcodeNames.Get(entry[1]);
           vm.Description = CPUInstructionDescriptions.Get(entry[1]);
         }
-        else if (entry[0] == 2)
+        else if (intLength == 2)
         {
           if (entry[1] != 0xCB)
           {
-            int instAddress = ((entry[4] << 8) | entry[5]);
-            vm.Address = "0x" + instAddress.ToString("x2");
+            vm.Address = "0x" + address.ToString("x2");
             vm.Opcode = "0x" + entry[1].ToString("x2");
             vm.Name = CPUOpcodeNames.Get(entry[1]);
             vm.Literal = "0x" + entry[2].ToString("x2");
@@ -116,8 +116,7 @@ namespace GBSharp.ViewModel
           }
           else
           {
-            int instAddress = ((entry[4] << 8) | entry[5]);
-            vm.Address = "0x" + instAddress.ToString("x2");
+            vm.Address = "0x" + address.ToString("x2");
             int instOpcode = ((entry[1] << 8) | entry[2]);
             vm.Opcode = "0x" + instOpcode.ToString("x2");
             vm.Name = CPUCBOpcodeNames.Get(entry[2]);
@@ -127,8 +126,7 @@ namespace GBSharp.ViewModel
         }
         else
         {
-          int instAddress = ((entry[4] << 8) | entry[5]);
-          vm.Address = "0x" + instAddress.ToString("x2");
+          vm.Address = "0x" + address.ToString("x2");
           vm.Opcode = "0x" + entry[1].ToString("x2");
           vm.Name = CPUOpcodeNames.Get(entry[1]);
           int literal = ((entry[2] << 8) | entry[3]);
@@ -137,6 +135,11 @@ namespace GBSharp.ViewModel
         }
 
         _instructions.Add(vm);
+
+        if(address == currentAddress)
+        {
+          SelectedInstruction = vm;
+        }
       }
     }
 

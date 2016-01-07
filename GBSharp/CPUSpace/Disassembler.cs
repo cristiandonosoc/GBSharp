@@ -24,7 +24,7 @@ namespace GBSharp.CPUSpace
         return _disassembledMatrix;
       }
     }
-    
+
 
     CPU _cpu;
     MemorySpace.Memory _memory;
@@ -39,62 +39,135 @@ namespace GBSharp.CPUSpace
       _disAddressToVisit = new Stack<ushort>();
 
       _disassembledMatrix = new byte[0xFFFF][];
-      for(int i = 0; i < 0xFFFF; ++i)
+      for (int i = 0; i < 0xFFFF; ++i)
       {
-        _disassembledMatrix[i] = new byte[6];
+        _disassembledMatrix[i] = new byte[5];
       }
+    }
+
+    private Instruction DisassembleInstruction(ushort address)
+    {
+      var inst = _cpu.FetchAndDecode(address);
+      _disassembledMatrix[address][0] = inst.Length;
+      _disassembledMatrix[address][4] = 1;
+      switch (inst.Length)
+      {
+        case 1:
+          _disassembledMatrix[address][1] = (byte)inst.OpCode;
+          _disassembledMatrix[address][2] = 0;
+          _disassembledMatrix[address][3] = 0;
+          break;
+        case 2:
+          if (inst.CB)
+          {
+            _disassembledMatrix[address][1] = (byte)(inst.OpCode >> 8);
+            _disassembledMatrix[address][2] = (byte)inst.OpCode;
+            _disassembledMatrix[address][3] = 0;
+          }
+          else
+          {
+            _disassembledMatrix[address][1] = (byte)inst.OpCode;
+            _disassembledMatrix[address][2] = (byte)inst.Literal;
+            _disassembledMatrix[address][3] = 0;
+          }
+          break;
+        case 3:
+          _disassembledMatrix[address][1] = (byte)inst.OpCode;
+          _disassembledMatrix[address][2] = (byte)(inst.Literal >> 8);
+          _disassembledMatrix[address][3] = (byte)inst.Literal;
+          break;
+        default:
+          return null;
+      }
+
+      return inst;
     }
 
     public void PoorManDisassemble()
     {
-      DisassembledCount = 0;
-      int currentIndex = 0;
-      while(currentIndex < 0xFFFF)
+      // We mark all the addresses as unvisited
+      for (int i = 0; i < 0xFFFF; ++i)
       {
-        var inst = _cpu.FetchAndDecode((ushort)currentIndex);
-        _disassembledMatrix[DisassembledCount][0] = inst.Length;
-        switch (inst.Length)
-        {
-          case 1:
-            _disassembledMatrix[DisassembledCount][1] = (byte)inst.OpCode;
-            _disassembledMatrix[DisassembledCount][2] = 0;
-            _disassembledMatrix[DisassembledCount][3] = 0;
-            break;
-          case 2:
-            if (inst.CB)
-            {
-              _disassembledMatrix[DisassembledCount][1] = (byte)inst.OpCode;
-              _disassembledMatrix[DisassembledCount][2] = (byte)(inst.OpCode >> 8);
-              _disassembledMatrix[DisassembledCount][3] = 0;
-            }
-            else
-            {
-              _disassembledMatrix[DisassembledCount][1] = (byte)inst.OpCode;
-              _disassembledMatrix[DisassembledCount][2] = (byte)inst.Literal;
-              _disassembledMatrix[DisassembledCount][3] = 0;
-            }
-            break;
-          case 3:
-            _disassembledMatrix[DisassembledCount][1] = (byte)inst.OpCode;
-            _disassembledMatrix[DisassembledCount][2] = (byte)inst.Literal;
-            _disassembledMatrix[DisassembledCount][3] = (byte)(inst.Literal >> 8);
-            break;
-        }
-        _disassembledMatrix[DisassembledCount][4] = (byte)(currentIndex >> 8);
-        _disassembledMatrix[DisassembledCount][5] = (byte)currentIndex;
+        _disassembledMatrix[i][4] = 0;
+      }
 
-        if(inst.Length == 0)
+      LinkedList<ushort> visitQueue = new LinkedList<ushort>();
+      visitQueue.AddFirst(0x100);
+      while (visitQueue.Count > 0)
+      {
+        ushort address = visitQueue.First.Value;
+        visitQueue.RemoveFirst();
+
+        // We check that we didn't visit this address before
+        if(_disassembledMatrix[address][4] != 0) { continue; }
+
+        // We disassemble it and add it to out map
+        Instruction inst = DisassembleInstruction(address);
+        // Invalid address
+        if (inst == null) { continue; }
+
+        // This are returns to functions
+        if (_stoppers.Contains(inst.OpCode))
         {
-          ++currentIndex;
+          // If full disassemble, should add the next instruction
+          // to the second priority queue
+          continue;
+        }
+
+        // Direct Jumps. Conditionals add the next instruction
+        else if (_directJumps.ContainsKey(inst.OpCode))
+        {
+          if (_directJumps[inst.OpCode])
+          {
+            visitQueue.AddFirst(inst.Literal);
+          }
+          else
+          {
+            visitQueue.AddFirst(inst.Literal);
+            ushort next = (ushort)(address + inst.Length);
+            visitQueue.AddFirst(next);
+          }
+        }
+        // Relative Jumps. Conditionals add the next instruction
+        else if (_relativeJumps.ContainsKey(inst.OpCode))
+        {
+          if (_relativeJumps[inst.OpCode])
+          {
+            sbyte signedLiteral;
+            unchecked { signedLiteral = (sbyte)inst.Literal; }
+            ushort relTarget = (ushort)(inst.Address + signedLiteral + inst.Length);
+            visitQueue.AddFirst(relTarget);
+          }
+          else
+          {
+            sbyte signedLiteral;
+            unchecked { signedLiteral = (sbyte)inst.Literal; }
+            ushort relTarget = (ushort)(inst.Address + signedLiteral + inst.Length);
+            visitQueue.AddFirst(relTarget);
+
+            var next = (ushort)(address + inst.Length);
+            visitQueue.AddFirst(next);
+          }
+        }
+
+        // Restarts are a direct jump
+        else if (_restarts.ContainsKey(inst.OpCode))
+        {
+          visitQueue.AddFirst(_restarts[inst.OpCode]);
         }
         else
         {
-          currentIndex += inst.Length;
+          // It's a normal instruction and simply continues
+          ushort target = (ushort)(address + inst.Length);
+          visitQueue.AddFirst(target);
         }
-        ++DisassembledCount;
       }
     }
 
+    HashSet<ushort> _stoppers = GetShowStoppers();
+    Dictionary<ushort, bool> _directJumps = GetDirectJumps();
+    Dictionary<ushort, bool> _relativeJumps = GetRelativeJumps();
+    Dictionary<ushort, ushort> _restarts = GetRestarts();
 
     /// <summary>
     /// Poor man's dissambly (for now)
@@ -206,7 +279,7 @@ namespace GBSharp.CPUSpace
     /// (its an unconditional jump)
     /// </summary>
     /// <returns></returns>
-    private Dictionary<ushort, bool> GetDirectJumps()
+    private static Dictionary<ushort, bool> GetDirectJumps()
     {
       // Instructions in this set
       var jumps = new Dictionary<ushort, bool>();
@@ -234,14 +307,14 @@ namespace GBSharp.CPUSpace
     /// (its an unconditional jump)
     /// </summary>
     /// <returns></returns>
-    private Dictionary<ushort, bool> GetRelativeJumps()
+    private static Dictionary<ushort, bool> GetRelativeJumps()
     {
       var jumps = new Dictionary<ushort, bool>();
-      jumps.Add(0x18, true);
-      jumps.Add(0x20, false);
-      jumps.Add(0x28, false);
-      jumps.Add(0x30, false);
-      jumps.Add(0x38, false);
+      jumps.Add(0x18, true);    // JR n
+      jumps.Add(0x20, false);   // JR NZ, n
+      jumps.Add(0x28, false);   // JR Z, n
+      jumps.Add(0x30, false);   // JR NC, n
+      jumps.Add(0x38, false);   // JR C, n
       return jumps;
     }
 
@@ -252,7 +325,7 @@ namespace GBSharp.CPUSpace
     /// (and perhaps the program depends on that fact)
     /// </summary>
     /// <returns>HashSet of the instructions that stop the disassembler</returns>
-    private HashSet<ushort> GetShowStoppers()
+    private static HashSet<ushort> GetShowStoppers()
     {
       // Instructions in this set
       // RET NZ, RET Z, RET NC, RET C,      
@@ -266,7 +339,7 @@ namespace GBSharp.CPUSpace
       return jumps;
     }
 
-    private Dictionary<ushort, ushort> GetRestarts()
+    private static Dictionary<ushort, ushort> GetRestarts()
     {
       var restarts = new Dictionary<ushort, ushort>();
       restarts.Add(0xC7, 0x00);   // RST 00
