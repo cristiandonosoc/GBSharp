@@ -91,9 +91,11 @@ namespace GBSharp.CPUSpace
     public void PoorManDisassemble()
     {
       // We mark all the addresses as unvisited
+      int entryLength = _disassembledMatrix[0].Length;
       for (int i = 0; i < 0xFFFF; ++i)
       {
-        _disassembledMatrix[i][4] = 0;
+        for(int j = 0; j < entryLength; ++j)
+        _disassembledMatrix[i][j] = 0;
       }
 
       LinkedList<ushort> visitQueue = new LinkedList<ushort>();
@@ -102,6 +104,8 @@ namespace GBSharp.CPUSpace
       {
         ushort address = visitQueue.First.Value;
         visitQueue.RemoveFirst();
+
+        if (address >= 0xFFFF) { continue; }
 
         // We check that we didn't visit this address before
         if(_disassembledMatrix[address][4] != 0) { continue; }

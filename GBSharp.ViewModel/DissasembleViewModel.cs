@@ -69,7 +69,7 @@ namespace GBSharp.ViewModel
         }
         else
         {
-          Dissasemble(0);
+          Dissasemble(_cpu.Registers.PC);
         }
       }
       else
