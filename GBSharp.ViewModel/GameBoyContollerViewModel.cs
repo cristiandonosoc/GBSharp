@@ -148,6 +148,8 @@ namespace GBSharp.ViewModel
     private void Stop()
     {
       _gameBoy.Stop();
+      _gameBoy.Reset();
+
     }
 
     private void OnFileOpened(string filePath, int filterIndex)

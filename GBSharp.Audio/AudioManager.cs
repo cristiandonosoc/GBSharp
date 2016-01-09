@@ -35,6 +35,25 @@ namespace GBSharp.Audio
       _soundOut.Volume = 0.2f;
 
       sw = new Stopwatch();
+
+      gameBoy.PauseRequested += GameBoy_PauseRequested;
+      gameBoy.StopRequested += GameBoy_StopRequested;
+    }
+
+    private void GameBoy_PauseRequested()
+    {
+      if(_soundOut.PlaybackState == PlaybackState.Playing)
+      {
+        _soundOut.Pause();
+      }
+    }
+
+    private void GameBoy_StopRequested()
+    {
+      if(_soundOut.PlaybackState == PlaybackState.Playing)
+      {
+        _soundOut.Stop();
+      }
     }
 
     ~AudioManager()
@@ -104,14 +123,12 @@ namespace GBSharp.Audio
       sw.Start();
 
 #endif
-#endregion
+      #endregion
 
-      if(_firstRun)
+      if(_soundOut.PlaybackState != PlaybackState.Playing)
       {
         _soundOut.Play();
-        _firstRun = false;
       }
-
     }
 
     private static ISoundOut GetSoundOut()

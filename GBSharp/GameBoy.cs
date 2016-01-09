@@ -21,6 +21,8 @@ namespace GBSharp
 
     public event Action StepCompleted;
     public event Action FrameCompleted;
+    public event Action PauseRequested;
+    public event Action StopRequested;
 
     private CPUSpace.CPU cpu;
     private CPUSpace.InterruptController interruptController;
@@ -76,68 +78,20 @@ namespace GBSharp
     {
       this.run = false;
       this.stopwatch = new Stopwatch();
-      this.memory = new MemorySpace.Memory();
-      this.cpu = new CPUSpace.CPU(this.memory);
-      this.interruptController = this.cpu.interruptController;
-      this.display = new Display(this.interruptController, this.memory);
-      this.apu = new AudioSpace.APU(this.memory, 44000, 2, 2);
-      this.serial = new SerialSpace.SerialController(this.interruptController, this.memory);
 
-      this.disassembler = new Disassembler(cpu, memory);
-
-      this.buttons = Keypad.None;
-      this.manualResetEvent = new ManualResetEventSlim(false);
-
-      // Events
-      this.cpu.BreakpointFound += BreakpointHandler;
-      this.cpu.InterruptHappened += InterruptHandler;
-      this.display.FrameReady += FrameReadyHandler;
-
-      this.inBreakpoint = false;
-      this.ReleaseButtons = true;
-
-#if TIMING
-      this.timingSamples = new long[sampleAmount * maxSamples];
-
-      this.swCPU = new Stopwatch();
-      this.swDisplay = new Stopwatch();
-
-      this.swBlit = new Stopwatch();
-      this.swClockMem = new Stopwatch();
-#endif
-      var disDef = display.GetDisplayDefinition();
-      ScreenFrame = new uint[disDef.ScreenPixelCountX * disDef.ScreenPixelCountY];
+      Reset();
     }
 
-    public ICPU CPU
-    {
-      get { return cpu; }
-    }
+    #region INTERFACE GETTERS
 
-    public IMemory Memory
-    {
-      get { return memory; }
-    }
+    public ICPU CPU { get { return cpu; } }
+    public IMemory Memory { get { return memory; } }
+    public ICartridge Cartridge { get { return cartridge; } }
+    public IDisplay Display { get { return display; } }
+    public IAPU APU { get { return apu; } }
+    public IDisassembler Disassembler { get { return disassembler; } }
 
-    public ICartridge Cartridge
-    {
-      get { return cartridge; }
-    }
-
-    public IDisplay Display
-    {
-      get { return display; }
-    }
-
-    public IAPU APU
-    {
-      get { return apu; }
-    }
-
-    public IDisassembler Disassembler
-    {
-      get { return disassembler; }
-    }
+    #endregion
 
     /// <summary>
     /// Provides access to the interrupt controller to every component connected to the gameboy, so interrupts
@@ -157,18 +111,66 @@ namespace GBSharp
     public void LoadCartridge(string cartridgeFullFilename, byte[] cartridgeData)
     {
       if (this.run) { Stop(); }
+      this.cartridge = new Cartridge.Cartridge();
+      this.cartridge.Load(cartridgeData);
+
       this.CartridgeFilename = Path.GetFileNameWithoutExtension(cartridgeFullFilename);
       this.CartridgeDirectory = Path.GetDirectoryName(cartridgeFullFilename);
       this.apu.CartridgeFilename = this.CartridgeFilename; 
-      this.cartridge = new Cartridge.Cartridge();
-      this.cartridge.Load(cartridgeData);
       // We create the MemoryHandler according to the data
       // from the cartridge and set it to the memory.
       // From this point onwards, all the access to memory
       // are done throught the MemoryHandler
-      this.memory.SetMemoryHandler(
-        GBSharp.MemorySpace.MemoryHandlers.
-        MemoryHandlerFactory.CreateMemoryHandler(this));
+      this.memory.SetMemoryHandler(GBSharp.MemorySpace.MemoryHandlers.
+                                   MemoryHandlerFactory.CreateMemoryHandler(this));
+    }
+
+    public void Reset()
+    {
+      // NOTE(Cristian): It's responsability of the view (or the calling audio code) to
+      //                 handling and re-hooking correctly the audio on reset
+      if(this.run) { this.Pause(); }
+
+      // We recreate all the members of the gameboy
+      this.memory = new MemorySpace.Memory();
+      this.cpu = new CPUSpace.CPU(this.memory);
+      this.interruptController = this.cpu.interruptController;
+      this.display = new Display(this.interruptController, this.memory);
+      this.apu = new AudioSpace.APU(this.memory, 44000, 2, 2);
+      this.serial = new SerialSpace.SerialController(this.interruptController, this.memory);
+      this.disassembler = new Disassembler(cpu, memory);
+
+      // We re-hook information
+      if(this.cartridge != null)
+      {
+        this.apu.CartridgeFilename = this.CartridgeFilename; 
+        this.memory.SetMemoryHandler(GBSharp.MemorySpace.MemoryHandlers.
+                                     MemoryHandlerFactory.CreateMemoryHandler(this));
+      }
+
+      this.buttons = Keypad.None;
+      this.manualResetEvent = new ManualResetEventSlim(false);
+
+      // Events
+      this.cpu.BreakpointFound += BreakpointHandler;
+      this.cpu.InterruptHappened += InterruptHandler;
+      this.display.FrameReady += FrameReadyHandler;
+
+      this.inBreakpoint = false;
+      this.ReleaseButtons = true;
+
+      var disDef = display.GetDisplayDefinition();
+      ScreenFrame = new uint[disDef.ScreenPixelCountX * disDef.ScreenPixelCountY];
+
+#if TIMING
+      this.timingSamples = new long[sampleAmount * maxSamples];
+
+      this.swCPU = new Stopwatch();
+      this.swDisplay = new Stopwatch();
+
+      this.swBlit = new Stopwatch();
+      this.swClockMem = new Stopwatch();
+#endif
     }
 
     /// <summary>
@@ -261,13 +263,13 @@ namespace GBSharp
     /// </summary>
     public void Pause()
     {
-      this.stopwatch.Stop();
-      // Do not change this.run to false or simulation will be stopped!
-      this.manualResetEvent.Reset();
       this.run = false;
+      this.stopwatch.Stop();
+      this.manualResetEvent.Reset();
       this.gameLoopThread.Join();
       // We get rid of the current thread (a new will be created on restart)
       this.gameLoopThread = null;
+      PauseRequested();
     }
 
     /// <summary>
@@ -276,12 +278,14 @@ namespace GBSharp
     public void Stop()
     {
       if (!this.run) { return; }
+      this.run = false;
       this.stopwatch.Stop();
-      this.run = false; // Allow the thread to exit.
-      this.manualResetEvent.Set(); // Unlock the thread to make that happen.
-
-      // Dispose CPU and memory, create a new one and load rom again?
-      //throw new NotImplementedException();
+      this.manualResetEvent.Reset();
+      this.gameLoopThread.Join();
+      // We get rid of the current thread (a new will be created on restart)
+      this.gameLoopThread = null;
+      Reset();
+      StopRequested();
     }
 
     /// <summary>
