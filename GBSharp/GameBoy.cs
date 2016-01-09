@@ -87,7 +87,6 @@ namespace GBSharp
 
       this.buttons = Keypad.None;
       this.manualResetEvent = new ManualResetEventSlim(false);
-      this.gameLoopThread = new Thread(new ThreadStart(this.ThreadedRun));
 
       // Events
       this.cpu.BreakpointFound += BreakpointHandler;
@@ -250,6 +249,10 @@ namespace GBSharp
       this.stepCounter = 0;
       this.tickCounter = 0;
       this.stopwatch.Restart();
+      if(gameLoopThread == null)
+      {
+        this.gameLoopThread = new Thread(new ThreadStart(this.ThreadedRun));
+      }
       this.gameLoopThread.Start();
     }
 
@@ -261,6 +264,10 @@ namespace GBSharp
       this.stopwatch.Stop();
       // Do not change this.run to false or simulation will be stopped!
       this.manualResetEvent.Reset();
+      this.run = false;
+      this.gameLoopThread.Join();
+      // We get rid of the current thread (a new will be created on restart)
+      this.gameLoopThread = null;
     }
 
     /// <summary>
