@@ -36,7 +36,7 @@ namespace GBSharp
     private bool run;
     private bool frameReady;
     private bool inBreakpoint;
-    private Thread clockThread;
+    private Thread gameLoopThread;
 
     private ManualResetEventSlim manualResetEvent;
     private Keypad buttons;
@@ -87,7 +87,7 @@ namespace GBSharp
 
       this.buttons = Keypad.None;
       this.manualResetEvent = new ManualResetEventSlim(false);
-      this.clockThread = new Thread(new ThreadStart(this.ThreadedRun));
+      this.gameLoopThread = new Thread(new ThreadStart(this.ThreadedRun));
 
       // Events
       this.cpu.BreakpointFound += BreakpointHandler;
@@ -160,7 +160,6 @@ namespace GBSharp
       if (this.run) { Stop(); }
       this.CartridgeFilename = Path.GetFileNameWithoutExtension(cartridgeFullFilename);
       this.CartridgeDirectory = Path.GetDirectoryName(cartridgeFullFilename);
-      // TODO(Cristian): 
       this.apu.CartridgeFilename = this.CartridgeFilename; 
       this.cartridge = new Cartridge.Cartridge();
       this.cartridge.Load(cartridgeData);
@@ -228,6 +227,17 @@ namespace GBSharp
     }
 
     /// <summary>
+    /// Steps the Gameboy until a frame is ready
+    /// </summary>
+    private void CalculateFrame()
+    {
+      while(!this.frameReady)
+      {
+        Step(false);
+      }
+    }
+
+    /// <summary>
     /// Attempts to run until the heat death of the universe.
     /// </summary>
     public void Run()
@@ -240,7 +250,7 @@ namespace GBSharp
       this.stepCounter = 0;
       this.tickCounter = 0;
       this.stopwatch.Restart();
-      this.clockThread.Start();
+      this.gameLoopThread.Start();
     }
 
     /// <summary>
@@ -275,79 +285,77 @@ namespace GBSharp
       long drama = 0;
       while (this.run)
       {
-        this.manualResetEvent.Wait(); // Wait for pauses.
-        this.Step(false);
+        //this.manualResetEvent.Wait(); // Wait for pauses.
+
+        CalculateFrame();
 
         // Check timing issues
-        if (this.frameReady)
+        long ellapsedStopwatchTicks = this.stopwatch.ElapsedTicks;
+        ellapsedStopwatchTicks += drama;
+
+        // Should we sleep?
+        if (ellapsedStopwatchTicks < stopwatchTicksPerFrame)
         {
-          long ellapsedStopwatchTicks = this.stopwatch.ElapsedTicks;
-          ellapsedStopwatchTicks += drama;
+          this.manualResetEvent.Reset();
+          int timeToWait = (int)(/* 0.5 + */1000.0 * (stopwatchTicksPerFrame - ellapsedStopwatchTicks) / Stopwatch.Frequency);
+          this.manualResetEvent.Wait(timeToWait);
+          this.manualResetEvent.Set();
+        }
 
-          // Should we sleep?
-          if (ellapsedStopwatchTicks < stopwatchTicksPerFrame)
-          {
-            this.manualResetEvent.Reset();
-            int timeToWait = (int)(/* 0.5 + */1000.0 * (stopwatchTicksPerFrame - ellapsedStopwatchTicks) / Stopwatch.Frequency);
-            this.manualResetEvent.Wait(timeToWait);
-            this.manualResetEvent.Set();
-          }
+        long finalTicks = this.stopwatch.ElapsedTicks;
+        while (finalTicks < stopwatchTicksPerFrame)
+        {
+          // NOTE(Cristian): Sometimes the thread would be trapped here because when
+          //                 the process close signal gets, the timers stop working and
+          //                 the finalTicks variable would never update.
+          if (!this.run) { break; }
+          finalTicks = this.stopwatch.ElapsedTicks;
+        }
 
-          long finalTicks = this.stopwatch.ElapsedTicks;
-          while(finalTicks < stopwatchTicksPerFrame)
-          {
-            // NOTE(Cristian): Sometimes the thread would be trapped here because when
-            //                 the process close signal gets, the timers stop working and
-            //                 the finalTicks variable would never update.
-            if(!this.run) { break; }
-            finalTicks = this.stopwatch.ElapsedTicks;
-          }
+        drama = finalTicks - (long)stopwatchTicksPerFrame;
 
-          drama = finalTicks - (long)stopwatchTicksPerFrame;
-
-          // We calculate how many FPS we're giving
-          totalFrameTicks += finalTicks;
-          ++frameCounter;
-          if (frameCounter >= 30)
-          {
-            FPS = Math.Round(60 * (double)(30 * stopwatchTicksPerFrame) / (double)totalFrameTicks);
-            frameCounter = 0;
-            totalFrameTicks = 0;
-          }
+        // We calculate how many FPS we're giving
+        totalFrameTicks += finalTicks;
+        ++frameCounter;
+        if (frameCounter >= 30)
+        {
+          FPS = Math.Round(60 * (double)(30 * stopwatchTicksPerFrame) / (double)totalFrameTicks);
+          frameCounter = 0;
+          totalFrameTicks = 0;
+        }
 
 
 #if TIMING
-          if (sampleCounter < maxSamples)
-          {
-            int index = sampleCounter * sampleAmount;
-            timingSamples[index + 0] = swCPU.ElapsedTicks;
-            timingSamples[index + 1] = swClockMem.ElapsedTicks;
-            timingSamples[index + 2] = swDisplay.ElapsedTicks;
-            timingSamples[index + 3] = swBlit.ElapsedTicks;
-            timingSamples[index + 4] = swBeginInvoke.ElapsedTicks;
-            ++sampleCounter;
-          }
-          ++timingFrameCounter;
+        if (sampleCounter < maxSamples)
+        {
+          int index = sampleCounter * sampleAmount;
+          timingSamples[index + 0] = swCPU.ElapsedTicks;
+          timingSamples[index + 1] = swClockMem.ElapsedTicks;
+          timingSamples[index + 2] = swDisplay.ElapsedTicks;
+          timingSamples[index + 3] = swBlit.ElapsedTicks;
+          timingSamples[index + 4] = swBeginInvoke.ElapsedTicks;
+          ++sampleCounter;
+        }
+        ++timingFrameCounter;
 
-          swCPU.Reset();
-          swClockMem.Reset();
-          swDisplay.Reset();
-          swBlit.Reset();
-          swBeginInvoke.Reset();
+        swCPU.Reset();
+        swClockMem.Reset();
+        swDisplay.Reset();
+        swBlit.Reset();
+        swBeginInvoke.Reset();
 #endif
 
-          this.stopwatch.Restart();
-          this.tickCounter = 0;
-          this.stepCounter = 0;
-          this.frameReady = false;
+        this.stopwatch.Restart();
+        this.tickCounter = 0;
+        this.stepCounter = 0;
+        this.frameReady = false;
 
-          // We see if the APU needs to close things this frame
-          apu.EndFrame();
+        // We see if the APU needs to close things this frame
+        apu.EndFrame();
 
-          // Finally here we trigger the notification
-          NotifyFrameCompleted();
+        // Finally here we trigger the notification
+        NotifyFrameCompleted();
 
-        }
       }
     }
 
