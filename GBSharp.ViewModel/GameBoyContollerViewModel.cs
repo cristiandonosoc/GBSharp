@@ -94,6 +94,11 @@ namespace GBSharp.ViewModel
       get { return new DelegateCommand(Stop); }
     }
 
+    public ICommand ResetCommand
+    {
+      get { return new DelegateCommand(Reset); }
+    }
+
     public ICommand LoadCommand
     {
       get { return new DelegateCommand(Load); }
@@ -147,9 +152,13 @@ namespace GBSharp.ViewModel
 
     private void Stop()
     {
-      _gameBoy.Stop();
       _gameBoy.Reset();
+    }
 
+    private void Reset()
+    {
+      _gameBoy.Reset();
+      _gameBoy.Run();
     }
 
     private void OnFileOpened(string filePath, int filterIndex)

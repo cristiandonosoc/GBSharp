@@ -132,7 +132,7 @@ namespace GBSharp
     {
       // NOTE(Cristian): It's responsability of the view (or the calling audio code) to
       //                 handling and re-hooking correctly the audio on reset
-      if(this.run) { this.Pause(); }
+      if(this.run) { this.Stop(); }
 
       // We recreate all the members of the gameboy
       this.memory = new MemorySpace.Memory();
@@ -306,7 +306,6 @@ namespace GBSharp
       this.gameLoopThread.Join();
       // We get rid of the current thread (a new will be created on restart)
       this.gameLoopThread = null;
-      Reset();
       StopRequested();
     }
 
