@@ -113,7 +113,7 @@ namespace GBSharp
     /// <param name="cartridgeData"></param>
     public void LoadCartridge(string cartridgeFullFilename, byte[] cartridgeData)
     {
-      if (this.run) { Stop(); }
+      if (this.run) { Reset(); }
       this.cartridge = new Cartridge.Cartridge();
       this.cartridge.Load(cartridgeData);
 
