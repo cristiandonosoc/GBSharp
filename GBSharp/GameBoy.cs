@@ -35,12 +35,15 @@ namespace GBSharp
     private VideoSpace.Display display;
     private AudioSpace.APU apu;
     private SerialSpace.SerialController serial;
+    private bool pause;
     private bool run;
     private bool frameReady;
     private bool inBreakpoint;
     private Thread gameLoopThread;
 
+    private ManualResetEvent pauseEvent;
     private ManualResetEventSlim manualResetEvent;
+
     private Keypad buttons;
     private Disassembler disassembler;
 
@@ -149,6 +152,7 @@ namespace GBSharp
       }
 
       this.buttons = Keypad.None;
+      this.pauseEvent = new ManualResetEvent(true);
       this.manualResetEvent = new ManualResetEventSlim(false);
 
       // Events
@@ -173,11 +177,17 @@ namespace GBSharp
 #endif
     }
 
+    public void Step(bool ignoreBreakpoints)
+    {
+      Pause();
+      MachineStep(ignoreBreakpoints);
+    }
+
     /// <summary>
     /// Runs the simulation for the smallest amount of time possible.
     /// This should be 1 whole instruction, arbitrary machine and clock cycles.
     /// </summary>
-    public void Step(bool ignoreBreakpoints)
+    private void MachineStep(bool ignoreBreakpoints)
     {
       // NOTE(Cristian): if inBreakpoint is true, this is the first step since a
       //                 breakpoint. This next step must ignore the breakpoint
@@ -232,9 +242,9 @@ namespace GBSharp
     /// </summary>
     private void CalculateFrame()
     {
-      while(!this.frameReady)
+      while ((this.run) && (!this.frameReady))
       {
-        Step(false);
+        MachineStep(false);
       }
     }
 
@@ -243,19 +253,29 @@ namespace GBSharp
     /// </summary>
     public void Run()
     {
-      this.manualResetEvent.Set();
+      // We first try to unpause
+      if (this.pause)
+      {
+        this.pauseEvent.Set();
+        this.pause = false;
+      }
+
       // NOTE(cdonoso): If we're running, we shouldn't restart. Or should we?
       if (this.run) { return; }
       if (this.cartridge == null) { return; }
+
       this.run = true;
       this.stepCounter = 0;
       this.tickCounter = 0;
       this.stopwatch.Restart();
+      this.manualResetEvent.Set();
+
       if(gameLoopThread == null)
       {
+        // This is the case if the gameboy is started of has been stoped
         this.gameLoopThread = new Thread(new ThreadStart(this.ThreadedRun));
+        this.gameLoopThread.Start();
       }
-      this.gameLoopThread.Start();
     }
 
     /// <summary>
@@ -263,13 +283,11 @@ namespace GBSharp
     /// </summary>
     public void Pause()
     {
-      this.run = false;
+      if (!this.run) { return; }
+      if (this.pause) { return; }
+      this.pause = true;
       this.stopwatch.Stop();
-      this.manualResetEvent.Reset();
-      this.gameLoopThread.Join();
-      // We get rid of the current thread (a new will be created on restart)
-      this.gameLoopThread = null;
-      PauseRequested();
+      this.pauseEvent.Reset();
     }
 
     /// <summary>
@@ -280,7 +298,11 @@ namespace GBSharp
       if (!this.run) { return; }
       this.run = false;
       this.stopwatch.Stop();
-      this.manualResetEvent.Reset();
+
+      // We unpause if needed
+      this.manualResetEvent.Set();
+      this.pauseEvent.Set();
+
       this.gameLoopThread.Join();
       // We get rid of the current thread (a new will be created on restart)
       this.gameLoopThread = null;
@@ -290,13 +312,18 @@ namespace GBSharp
 
     /// <summary>
     /// Method that is going to be running in a separate thread, calling Step() forever.
-    /// </summary>
+    /// </summary>Infinite
     private void ThreadedRun()
     {
       long drama = 0;
       while (this.run)
       {
-        //this.manualResetEvent.Wait(); // Wait for pauses.
+        // We check if the thread has been paused
+        if (this.pause)
+        {
+          PauseRequested();
+          this.pauseEvent.WaitOne(Timeout.Infinite);
+        }
 
         CalculateFrame();
 
@@ -319,7 +346,7 @@ namespace GBSharp
           // NOTE(Cristian): Sometimes the thread would be trapped here because when
           //                 the process close signal gets, the timers stop working and
           //                 the finalTicks variable would never update.
-          if (!this.run) { break; }
+          if ((!this.run) || (this.pause)) { break; }
           finalTicks = this.stopwatch.ElapsedTicks;
         }
 

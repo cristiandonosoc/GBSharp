@@ -66,8 +66,7 @@ namespace GBSharp.Audio
         ReloadAPU();
       }
 
-
-      if (_soundOut.PlaybackState != PlaybackState.Playing) {
+      if ((_soundOut.PlaybackState != PlaybackState.Playing)) { 
         _soundOut.Play();
       }
    
