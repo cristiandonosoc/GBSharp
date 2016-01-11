@@ -87,7 +87,7 @@ namespace GBSharp.ViewModel
     public void Dissasemble(ushort currentAddress)
     {
       _addressToInstruction = new Dictionary<ushort, InstructionViewModel>();
-      _disassembler.PoorManDisassemble();
+      _disassembler.PoorManDisassemble(currentAddress);
       _instructions.Clear();
       byte[][] matrix = _disassembler.DisassembledMatrix;
       int instCount = 0xFFFF;
