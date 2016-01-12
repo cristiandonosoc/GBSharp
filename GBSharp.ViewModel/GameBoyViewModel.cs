@@ -111,7 +111,7 @@ namespace GBSharp.ViewModel
       _instructionHistogram = new InstructionHistogramViewModel(_gameBoy, _dispatcher);
       _apu = new APUViewModel(_gameBoy, _dispatcher);
       _memoryImage = new MemoryImageViewModel(_gameBoy, _dispatcher);
-      _soundRecording = new SoundRecordingViewModel(_gameBoy.APU);
+      _soundRecording = new SoundRecordingViewModel(_gameBoy);
     }
 
     public void OnClosed()

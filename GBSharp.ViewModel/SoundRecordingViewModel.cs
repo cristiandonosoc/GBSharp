@@ -2,12 +2,6 @@
 
 namespace GBSharp.ViewModel
 {
-  /// <summary>
-  /// This class contains properties that a View can data bind to.
-  /// <para>
-  /// See http://www.galasoft.ch/mvvm
-  /// </para>
-  /// </summary>
   public class SoundRecordingViewModel : ViewModelBase
   {
 
@@ -50,6 +44,7 @@ namespace GBSharp.ViewModel
       }
     }
 
+    private readonly IGameBoy _gameboy;
     private readonly IAPU _apu;
 
     private bool _recordSeparateChannels;
@@ -67,9 +62,19 @@ namespace GBSharp.ViewModel
 
     public bool CartridgeLoaded { get; set; }
 
-    public SoundRecordingViewModel(IAPU apu)
+    public SoundRecordingViewModel(IGameBoy gameboy)
     {
-      _apu = apu;
+      _gameboy = gameboy;
+      _apu = gameboy.APU;
+
+      _gameboy.StopRequested += _gameboy_StopRequested;
+    }
+
+    private void _gameboy_StopRequested()
+    {
+      PlayChannel1 = true;
+      PlayChannel2 = true;
+      PlayChannel3 = true;
     }
 
     public ICommand StartRecordingCommand
