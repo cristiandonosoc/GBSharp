@@ -104,7 +104,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
         // TODO(Cristian): This is to see if OAM table is changed without DMA.
         //                 Perhaps the only way to access it is through DMA.
         //                 If that is the case, sprite sorting is greatly simplified
-        throw new InvalidProgramException("OAM should be accessed through DMA");
+        //throw new InvalidProgramException("OAM should be accessed through DMA");
       } // < 0xFEA0
 
       /* [0xFEA0 - 0xFF7F]: */
