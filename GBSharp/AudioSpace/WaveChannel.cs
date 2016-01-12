@@ -21,7 +21,7 @@ namespace GBSharp.AudioSpace
     private int _sampleIndex;
     public int SampleCount { get { return _sampleIndex; } }
 
-    public bool Enabled { get; private set; }
+    public bool Enabled { get; internal set; }
 
     private const int _volumeConstant = 1023;
     public int Volume

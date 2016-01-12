@@ -230,6 +230,10 @@ namespace GBSharp.AudioSpace
             {
               HandleMemoryChange((MMR)r, 0, false);
             }
+            _channel1.Enabled = false;
+            _channel2.Enabled = false;
+            _channel3.Enabled = false;
+            _channel4.Enabled = false;
           }
           break;
       }
@@ -249,10 +253,6 @@ namespace GBSharp.AudioSpace
         byte nr52 = 0x70;
         if (Enabled)
         {
-          if(register == MMR.NR52)
-          {
-            nr52 = 0x70;
-          }
           nr52 = (byte)((_channel1.Enabled ? 0x1 : 0) |  // bit 0
                         (_channel2.Enabled ? 0x2 : 0) |  // bit 1
                         (_channel3.Enabled ? 0x4 : 0) |  // bit 2

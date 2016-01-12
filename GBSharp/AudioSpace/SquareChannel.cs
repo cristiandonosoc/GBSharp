@@ -40,7 +40,7 @@ namespace GBSharp.AudioSpace
     private int _sampleIndex;
     public int SampleCount { get { return _sampleIndex; } }
 
-    public bool Enabled { get; private set; }
+    public bool Enabled { get; internal set; }
 
     #endregion
 
