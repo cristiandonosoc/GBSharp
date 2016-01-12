@@ -23,9 +23,7 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type viewModel:DissasembleViewModel}">
             <Grid Style="{StaticResource SubContentGrid}">
-                <ScrollViewer>
-                    <view:DissasembleView></view:DissasembleView>
-                </ScrollViewer>
+                <view:DissasembleView></view:DissasembleView>
             </Grid>
         </DataTemplate>
         <DataTemplate DataType="{x:Type viewModel:SoundRecordingViewModel}">
