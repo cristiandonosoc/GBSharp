@@ -7,25 +7,92 @@
              xmlns:viewModel="clr-namespace:GBSharp.ViewModel;assembly=GBSharp.ViewModel"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <UserControl.Resources>
-        <DataTemplate DataType="{x:Type viewModel:MemoryMappedRegisterViewModel}">
-            <Grid  >
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="100"></ColumnDefinition>
-                    <ColumnDefinition Width="60"></ColumnDefinition>
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="{Binding Name}" Margin="2"/>
-                <TextBox Grid.Column="1" Text="{Binding Value}" Margin="2"/>
+  <UserControl.Resources>
+    <DataTemplate DataType="{x:Type viewModel:MemoryMappedRegisterViewModel}">
+      <Grid >
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="100"></ColumnDefinition>
+          <ColumnDefinition Width="60"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <TextBlock Text="{Binding Name}" Margin="2"/>
+        <TextBox Grid.Column="1" Text="{Binding Value}" Margin="2"/>
+      </Grid>
+    </DataTemplate>
+  </UserControl.Resources>
 
+  <Grid Style="{StaticResource SubContentGrid}">
+    <ScrollViewer>
+      <Grid Height="Auto">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="115"></RowDefinition>
+          <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto"></ColumnDefinition>
+          <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" BorderBrush="Black" BorderThickness="1">
+          <Grid Margin="5">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"></RowDefinition>
+              <RowDefinition Height="Auto"></RowDefinition>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" FontWeight="Bold" Text="Misc"></TextBlock>
+            <ItemsControl Grid.Row="1" ItemsSource="{Binding MiscRegisters}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <UniformGrid Rows="2" Columns="3"></UniformGrid>
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+            </ItemsControl>
+          </Grid>
+        </Border>
+
+
+        
+
+        <Border Grid.Row="1" Grid.Column="0" BorderBrush="Black" BorderThickness="1">
+          <Grid Margin="5">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"></RowDefinition>
+              <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" FontWeight="Bold" Text="Display"></TextBlock>
+            <ItemsControl Grid.Row="1" ItemsSource="{Binding DisplayRegisters}"></ItemsControl>
+          </Grid>
+        </Border>
+
+        <Border Grid.Row="1" Grid.Column="1" BorderBrush="Black" BorderThickness="1">
+          <Grid Margin="5">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"></RowDefinition>
+              <RowDefinition Height="Auto"></RowDefinition>
+              <RowDefinition Height="Auto"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"></ColumnDefinition>
+              <ColumnDefinition Width="Auto"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" FontWeight="Bold" Text="Sound"></TextBlock>
+            <ItemsControl Grid.Row="1" Grid.Column="0" ItemsSource="{Binding SoundRegistersSet1}"></ItemsControl>
+            <ItemsControl Grid.Row="1" Grid.Column="1" ItemsSource="{Binding SoundRegistersSet2}"></ItemsControl>
+            <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="0, 5, 0, 0">
+              <ItemsControl ItemsSource="{Binding SoundRegistersSet3}" >
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <UniformGrid Rows="2" Columns="2"></UniformGrid>
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+              </ItemsControl>
             </Grid>
-        </DataTemplate>
-    </UserControl.Resources>
-    <Grid Style="{StaticResource SubContentGrid}">
-        <ScrollViewer>
-            <Grid Margin="5">
-                <ItemsControl ItemsSource="{Binding MemoryMappedRegisterList}" ></ItemsControl>
-            </Grid>
-        </ScrollViewer>
-    </Grid>
+
+          </Grid>
+        </Border>
+
+        
+      </Grid>
+    </ScrollViewer>
+  </Grid>
 </UserControl>
 
