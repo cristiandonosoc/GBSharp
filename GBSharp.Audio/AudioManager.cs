@@ -36,7 +36,8 @@ namespace GBSharp.Audio
 
     private void GameBoy_PauseRequested()
     {
-      if(_soundOut.PlaybackState == PlaybackState.Playing)
+      if((_soundOut != null) && 
+         (_soundOut.PlaybackState == PlaybackState.Playing))
       {
         _soundOut.Pause();
       }
@@ -44,7 +45,8 @@ namespace GBSharp.Audio
 
     private void GameBoy_StopRequested()
     {
-      if(_soundOut.PlaybackState == PlaybackState.Playing)
+      if((_soundOut != null) && 
+         (_soundOut.PlaybackState == PlaybackState.Playing))
       {
         // The soundout will be reloaded after the first frame
         // of gameplay passes
