@@ -222,8 +222,8 @@ namespace GBSharp.AudioSpace
           _memory.LowLevelWrite((ushort)register, value);
           break;
         case MMR.NR52:
-          Enabled = (Utils.UtilFuncs.TestBit(value, 7) != 0);
-          if(!Enabled)
+          bool apuEnabled = (Utils.UtilFuncs.TestBit(value, 7) != 0);
+          if(!apuEnabled)
           {
             // Powering down the APU should power down all the registers
             for (ushort r = (ushort)MMR.NR10; r < (ushort)MMR.NR52; ++r)
@@ -235,6 +235,9 @@ namespace GBSharp.AudioSpace
             _channel3.Enabled = false;
             _channel4.Enabled = false;
           }
+          // We update at the end because otherwise the recursive calls would
+          // be rejected by the guard
+          Enabled = apuEnabled;
           break;
       }
 
