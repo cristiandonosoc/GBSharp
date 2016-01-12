@@ -264,6 +264,13 @@ namespace GBSharp
       display.StartFrame();
       while ((this.run) && (!this.frameReady))
       {
+        // We check if the thread has been paused
+        if (this.pause)
+        {
+          PauseRequested();
+          this.pauseEvent.WaitOne(Timeout.Infinite);
+        }
+
         MachineStep(false);
       }
       display.EndFrame();
@@ -279,6 +286,7 @@ namespace GBSharp
       {
         this.pauseEvent.Set();
         this.pause = false;
+        this.stopwatch.Start();
       }
 
       // NOTE(cdonoso): If we're running, we shouldn't restart. Or should we?
@@ -338,13 +346,6 @@ namespace GBSharp
       long drama = 0;
       while (this.run)
       {
-        // We check if the thread has been paused
-        if (this.pause)
-        {
-          PauseRequested();
-          this.pauseEvent.WaitOne(Timeout.Infinite);
-        }
-
         CalculateFrame();
 
         // Check timing issues
