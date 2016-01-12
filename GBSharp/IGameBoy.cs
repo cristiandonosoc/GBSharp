@@ -33,9 +33,6 @@ namespace GBSharp
 
     Dictionary<MemorySpace.MMR, ushort> GetRegisterDic();
 
-    uint[] ScreenFrame { get; }
-    object LockObj { get; }
-
     double FPS { get; }
     void Dispose();
     

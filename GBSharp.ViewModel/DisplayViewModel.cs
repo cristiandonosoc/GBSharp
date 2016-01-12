@@ -49,44 +49,21 @@ namespace GBSharp.ViewModel
       _dispatcher.BeginInvoke(new Action(CopyFromDomain), null);
     }
 
-    public BackgroundViewModel Background
-    {
-      get { return _background; }
-    }
-
-    public TileMapViewModel TileMap
-    {
-      get { return _tileMap; }
-    }
-
-    public WindowViewModel Window
-    {
-      get { return _window; }
-    }
-
-    public SpritesViewModel Sprites
-    {
-      get { return _sprites; }
-    }
-
-    public SpriteLayerViewModel SpriteLayer
-    {
-      get { return _spriteLayer; }
-    }
-
-    public DisplayTimingViewModel DisplayTiming
-    {
-      get { return _displayTiming; }
-    }
+    public BackgroundViewModel Background { get { return _background; } }
+    public TileMapViewModel TileMap { get { return _tileMap; } }
+    public WindowViewModel Window { get { return _window; } }
+    public SpritesViewModel Sprites { get { return _sprites; } }
+    public SpriteLayerViewModel SpriteLayer { get { return _spriteLayer; } }
+    public DisplayTimingViewModel DisplayTiming { get { return _displayTiming; } }
 
     public void CopyFromDomain()
     {
-      //_background.CopyFromDomain();
-      //_tileMap.CopyFromDomain();
-      //_window.CopyFromDomain();
-      //_sprites.CopyFromDomain();
-      //_spriteLayer.CopyFromDomain();
-      //_displayTiming.CopyFromDomain();
+      _background.CopyFromDomain();
+      _tileMap.CopyFromDomain();
+      _window.CopyFromDomain();
+      _sprites.CopyFromDomain();
+      _spriteLayer.CopyFromDomain();
+      _displayTiming.CopyFromDomain();
     }
 
     public void Dispose()

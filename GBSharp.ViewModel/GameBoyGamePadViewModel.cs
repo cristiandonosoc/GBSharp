@@ -150,7 +150,7 @@ namespace GBSharp.ViewModel
       ReleaseButtons = _gameBoy.ReleaseButtons;
 
       // We copy the ready screen Frame
-      var target = _gameBoy.ScreenFrame;
+      var target = _gameBoy.Display.Screen;
       Array.Copy(target, _frame, target.Length);
       Utils.TransferBytesToWriteableBitmap(_screen, _frame);
       if (AsciiMode)

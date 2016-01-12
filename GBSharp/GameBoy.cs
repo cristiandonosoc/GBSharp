@@ -139,7 +139,6 @@ namespace GBSharp
       this.ReleaseButtons = true;
 
       var disDef = display.GetDisplayDefinition();
-      ScreenFrame = new uint[disDef.ScreenPixelCountX * disDef.ScreenPixelCountY];
 
 #if TIMING
       this.timingSamples = new long[sampleAmount * maxSamples];
@@ -477,13 +476,6 @@ namespace GBSharp
       }
     }
 
-    private object _lockObj = new object();
-    public object LockObj
-    {
-      get { return _lockObj; }
-    }
-    public uint[] ScreenFrame { get; private set; }
-
     /// <summary>
     /// Notifies subscribers that a new frame has been completed.
     /// </summary>
@@ -493,10 +485,10 @@ namespace GBSharp
       {
 #if TIMING
         swBlit.Start();
-        Array.Copy(display.Screen, ScreenFrame, ScreenFrame.Length);
+        display.CopyTargets();
         swBlit.Stop();
 #else
-        Array.Copy(display.Screen, ScreenFrame, ScreenFrame.Length);
+        display.CopyTargets();
 #endif
 
         FrameCompleted();
