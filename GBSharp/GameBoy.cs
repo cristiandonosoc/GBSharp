@@ -261,10 +261,12 @@ namespace GBSharp
     /// </summary>
     private void CalculateFrame()
     {
+      display.StartFrame();
       while ((this.run) && (!this.frameReady))
       {
         MachineStep(false);
       }
+      display.EndFrame();
     }
 
     /// <summary>

@@ -430,7 +430,7 @@ namespace GBSharp.VideoSpace
                          _disDef.ScreenPixelCountX, _disDef.ScreenPixelCountY);
     }
 
-    private void StartFrame()
+    internal void StartFrame()
     {
       _disStat.CurrentLine = 0;
       _disStat.CurrentWY = _disStat.WY;
@@ -478,6 +478,7 @@ namespace GBSharp.VideoSpace
 
         if (_updateDebugTargets[(int)DebugTargets.Background])
         {
+          // TODO(Cristian): Draw the whole debug target
           DrawFuncs.DrawLine(_disDef, _debugInternalTargets[(int)DebugTargets.Background],
                              _disDef.FramePixelCountX,
                              _tempFrameLineBuffer,
@@ -503,7 +504,7 @@ namespace GBSharp.VideoSpace
       int rWX = _disStat.WX - 7; // The window pos is (WX - 7, WY)
 
       // TODO(Cristian): If BG display is off, it actually prints white
-      bool drawWindow = _disStat.LCDCBits[5];
+      bool drawWindow = _disStat.LCDCBits[5] && false;
       for (int row = rowBegin; row < rowEnd; row++)
       {
         if ((row >= _disStat.CurrentWY) && (row < 144))
@@ -529,7 +530,8 @@ namespace GBSharp.VideoSpace
           // Screen target
           if (drawWindow)
           {
-            DrawFuncs.DrawLine(_disDef, _screenInternalBuffer, _disDef.ScreenPixelCountX,
+            DrawFuncs.DrawLine(_disDef, _screenInternalBuffer, 
+                               _disDef.ScreenPixelCountX,
                                _tempFrameLineBuffer,
                                rWX, row,
                                0, _disDef.ScreenPixelCountX - rWX);
@@ -580,7 +582,7 @@ namespace GBSharp.VideoSpace
       #endregion
     }
 
-    private void EndFrame()
+    internal void EndFrame()
     {
       if (_disStat.Enabled)
       {
@@ -599,7 +601,6 @@ namespace GBSharp.VideoSpace
         }
       }
 
-      FrameReady();
     }
 
     public void DrawTiles()
@@ -714,8 +715,9 @@ namespace GBSharp.VideoSpace
             if (_disStat.CurrentLine >= 154)
             {
               ChangeDisplayMode(DisplayModes.Mode10);
-              EndFrame();
-              StartFrame();
+              FrameReady();
+              //EndFrame();
+              //StartFrame();
             }
           }
         }

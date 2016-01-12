@@ -58,7 +58,7 @@ namespace GBSharp.ViewModel
       {
         Utils.TransferBytesToWriteableBitmap(_window,
           _display.GetDebugTarget(DebugTargets.Window));
-        OnPropertyChanged(() => Window);
+        //OnPropertyChanged(() => Window);
       }
     }
 
