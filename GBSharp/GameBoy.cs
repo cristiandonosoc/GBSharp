@@ -82,8 +82,77 @@ namespace GBSharp
       this.run = false;
       this.stopwatch = new Stopwatch();
 
-      Reset();
+      this.memory = new MemorySpace.Memory();
+      this.cpu = new CPUSpace.CPU(this.memory);
+      this.interruptController = this.cpu.interruptController;
+      this.display = new Display(this.interruptController, this.memory);
+      this.apu = new AudioSpace.APU(this.memory, 44000, 2, 2);
+      this.serial = new SerialSpace.SerialController(this.interruptController, this.memory);
+      this.disassembler = new Disassembler(cpu, memory);
+
+      // Events
+      this.cpu.BreakpointFound += BreakpointHandler;
+      this.cpu.InterruptHappened += InterruptHandler;
+      this.display.FrameReady += FrameReadyHandler;
+
+      InternalReset(false);
     }
+
+    /// <summary>
+    /// Wrapper for the outside world
+    /// </summary>
+    public void Reset()
+    {
+      InternalReset(true);
+    }
+
+    public void InternalReset(bool resetComponents)
+    {
+      // NOTE(Cristian): It's responsability of the view (or the calling audio code) to
+      //                 handling and re-hooking correctly the audio on reset
+      if(this.run) { this.Stop(); }
+
+      if(resetComponents)
+      {
+        this.memory.Reset();
+        this.cpu.Reset();
+        this.interruptController.Reset();
+        this.display.Reset();
+        this.apu.Reset();
+        this.disassembler.Reset();
+        //this.serial = new SerialSpace.SerialController(this.interruptController, this.memory);
+      }
+
+      // We re-hook information
+      if(this.cartridge != null)
+      {
+        this.apu.CartridgeFilename = this.CartridgeFilename; 
+        this.memory.SetMemoryHandler(GBSharp.MemorySpace.MemoryHandlers.
+                                     MemoryHandlerFactory.CreateMemoryHandler(this));
+      }
+
+      this.buttons = Keypad.None;
+      this.pauseEvent = new ManualResetEvent(true);
+      this.manualResetEvent = new ManualResetEventSlim(false);
+
+      this.inBreakpoint = false;
+      this.ReleaseButtons = true;
+
+      var disDef = display.GetDisplayDefinition();
+      ScreenFrame = new uint[disDef.ScreenPixelCountX * disDef.ScreenPixelCountY];
+
+#if TIMING
+      this.timingSamples = new long[sampleAmount * maxSamples];
+
+      this.swCPU = new Stopwatch();
+      this.swDisplay = new Stopwatch();
+
+      this.swBlit = new Stopwatch();
+      this.swClockMem = new Stopwatch();
+#endif
+    }
+
+
 
     #region INTERFACE GETTERS
 
@@ -126,55 +195,6 @@ namespace GBSharp
       // are done throught the MemoryHandler
       this.memory.SetMemoryHandler(GBSharp.MemorySpace.MemoryHandlers.
                                    MemoryHandlerFactory.CreateMemoryHandler(this));
-    }
-
-    public void Reset()
-    {
-      // NOTE(Cristian): It's responsability of the view (or the calling audio code) to
-      //                 handling and re-hooking correctly the audio on reset
-      if(this.run) { this.Stop(); }
-
-      // We recreate all the members of the gameboy
-      this.memory = new MemorySpace.Memory();
-      this.cpu = new CPUSpace.CPU(this.memory);
-      this.interruptController = this.cpu.interruptController;
-      this.display = new Display(this.interruptController, this.memory);
-      this.apu = new AudioSpace.APU(this.memory, 44000, 2, 2);
-      this.serial = new SerialSpace.SerialController(this.interruptController, this.memory);
-      this.disassembler = new Disassembler(cpu, memory);
-
-      // We re-hook information
-      if(this.cartridge != null)
-      {
-        this.apu.CartridgeFilename = this.CartridgeFilename; 
-        this.memory.SetMemoryHandler(GBSharp.MemorySpace.MemoryHandlers.
-                                     MemoryHandlerFactory.CreateMemoryHandler(this));
-      }
-
-      this.buttons = Keypad.None;
-      this.pauseEvent = new ManualResetEvent(true);
-      this.manualResetEvent = new ManualResetEventSlim(false);
-
-      // Events
-      this.cpu.BreakpointFound += BreakpointHandler;
-      this.cpu.InterruptHappened += InterruptHandler;
-      this.display.FrameReady += FrameReadyHandler;
-
-      this.inBreakpoint = false;
-      this.ReleaseButtons = true;
-
-      var disDef = display.GetDisplayDefinition();
-      ScreenFrame = new uint[disDef.ScreenPixelCountX * disDef.ScreenPixelCountY];
-
-#if TIMING
-      this.timingSamples = new long[sampleAmount * maxSamples];
-
-      this.swCPU = new Stopwatch();
-      this.swDisplay = new Stopwatch();
-
-      this.swBlit = new Stopwatch();
-      this.swClockMem = new Stopwatch();
-#endif
     }
 
     public void Step(bool ignoreBreakpoints)

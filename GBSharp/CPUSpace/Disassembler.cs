@@ -36,6 +36,11 @@ namespace GBSharp.CPUSpace
       _cpu = cpu;
       _memory = memory;
 
+      Reset();
+    }
+
+    internal void Reset()
+    {
       _disInstructions = new List<IInstruction>();
       _disVisitedAddresses = new HashSet<ushort>();
       _disAddressToVisit = new Stack<ushort>();

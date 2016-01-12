@@ -79,10 +79,6 @@ namespace GBSharp.AudioSpace
       get { return _wavExporter.Recording; }
     }
 
-#if SoundTiming
-    public static Stopwatch swAPU = new Stopwatch();
-#endif
-
     private WavExporter _wavExporter;
     private WavExporter _channel1WavExporter;
     private WavExporter _channel2WavExporter;
@@ -92,48 +88,52 @@ namespace GBSharp.AudioSpace
     internal APU(Memory memory, int sampleRate, int numChannels, int sampleSize)
     {
       _memory = memory;
-      InitializeMemory();
 
       _sampleRate = sampleRate;
       _msSampleRate = _sampleRate / 1000;
       _numChannels = numChannels;
       _sampleSize = sampleSize;
-      _buffer = new byte[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
-      _tempBuffer = new short[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
+
+      Reset();
+    }
+
+    internal void Reset()
+    {
+      // Wav exporter
+      if((_wavExporter != null))
+      {
+        // We stop recording just in case
+        StopRecording();
+      }
+      else
+      {
+        _wavExporter = new WavExporter();
+        _channel1WavExporter = new WavExporter();
+        _channel2WavExporter = new WavExporter();
+        _channel3WavExporter = new WavExporter();
+        _channel4WavExporter = new WavExporter();
+      }
 
       // We setup the channels
       _channel1 = new SquareChannel(_memory, 
-                                    sampleRate, numChannels, sampleSize, 0,
+                                    SampleRate, NumChannels, SampleSize, 0,
                                     MMR.NR10, MMR.NR11, MMR.NR12, MMR.NR13, MMR.NR14);
       // NOTE(Cristian): Channel 2 doesn't have frequency sweep
       _channel2 = new SquareChannel(_memory, 
-                                    sampleRate, numChannels, sampleSize, 1,
+                                    SampleRate, NumChannels, SampleSize, 1,
                                     0, MMR.NR21, MMR.NR22, MMR.NR23, MMR.NR24);
 
-      _channel3 = new WaveChannel(_memory, sampleRate, numChannels, sampleSize, 2);
-      _channel4 = new NoiseChannel(_memory, sampleRate, numChannels, sampleSize, 3);
+      _channel3 = new WaveChannel(_memory, SampleRate, NumChannels, SampleSize, 2);
+      _channel4 = new NoiseChannel(_memory, SampleRate, NumChannels, SampleSize, 3);
 
       LeftChannelEnabled = true;
       RightChannelEnabled = true;
-
-#if SoundTiming
-      swAPU.Start();
-#endif
 
       Channel1Run = true;
       Channel2Run = true;
       Channel3Run = true;
       Channel4Run = true;
 
-      _wavExporter = new WavExporter();
-      _channel1WavExporter = new WavExporter();
-      _channel2WavExporter = new WavExporter();
-      _channel3WavExporter = new WavExporter();
-      _channel4WavExporter = new WavExporter();
-    }
-
-    internal void InitializeMemory()
-    {
       _memory.LowLevelWrite((ushort)MMR.NR10, 0x80);
       _memory.LowLevelWrite((ushort)MMR.NR11, 0xBF);
       _memory.LowLevelWrite((ushort)MMR.NR12, 0xF3);
@@ -169,6 +169,9 @@ namespace GBSharp.AudioSpace
       {
         _memory.LowLevelWrite(r, 0xFF);
       }
+
+      _buffer = new byte[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
+      _tempBuffer = new short[_sampleRate * _numChannels * _sampleSize * _milliseconds / 1000];
     }
 
     internal void HandleMemoryChange(MMR register, byte value, bool updatedEnabledFlag = true)

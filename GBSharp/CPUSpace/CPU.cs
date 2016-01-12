@@ -101,21 +101,22 @@ namespace GBSharp.CPUSpace
 
     public CPU(MemorySpace.Memory memory)
     {
-      _currentInstruction = new Instruction();
-      _exportInstruction = new Instruction();
-
       this.memory = memory;
       this.interruptController = new InterruptController(this.memory);
 
       // Initialize registers 
-      this.Initialize();
+      Reset();
+
+      // NOTE(Cristian): This address is not writable as a program,
+      //                 so this breakpoint *should* be inactive
+      this.Breakpoint = 0xFFFF;
     }
 
     /// <summary>
     /// Sets the initial values for the cpu registers and memory mapped registers.
     /// This is the equivalent to run the BIOS rom.
     /// </summary>
-    private void Initialize()
+    internal void Reset()
     {
       // Reset the clock state
       this.clock = 0;
@@ -165,9 +166,9 @@ namespace GBSharp.CPUSpace
       this.memory.LowLevelWrite(0xFF4B, 0x00); // WX
       this.memory.LowLevelWrite(0xFFFF, 0x00); // IE
 
-      // NOTE(Cristian): This address is not writable as a program,
-      //                 so this breakpoint *should* be inactive
-      this.Breakpoint = 0xFFFF;
+
+      _currentInstruction = new Instruction();
+      _exportInstruction = new Instruction();
     }
 
     public void ResetInstructionHistograms()

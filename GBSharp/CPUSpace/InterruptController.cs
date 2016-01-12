@@ -22,6 +22,10 @@ namespace GBSharp.CPUSpace
     internal InterruptController(MemorySpace.Memory memory)
     {
       this.memory = memory;
+    }
+
+    internal void Reset()
+    {
       #warning TODO: Find a source with the initial value for this.
       this.IME = true;
     }

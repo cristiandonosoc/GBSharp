@@ -185,10 +185,17 @@ namespace GBSharp.VideoSpace
     {
       _interruptController = interruptController;
       _memory = memory;
+      _disDef = new DisplayDefinition();
+      _disStat = new DisplayStatus();
+      GeneratePixelLookupTable();
 
+      Reset();
+    }
+
+    internal void Reset()
+    {
       /*** DISPLAY DEFINITION ***/
 
-      _disDef = new DisplayDefinition();
       _disDef.FramePixelCountX = 256;
       _disDef.FramePixelCountY = 256;
       _disDef.ScreenPixelCountX = 160;
@@ -234,7 +241,6 @@ namespace GBSharp.VideoSpace
 
       /*** DISPLAY STATUS ***/
 
-      _disStat = new DisplayStatus();
       _disStat.PrevTickCount = 0;
       _disStat.CurrentLineTickCount = 0;
       _disStat.CurrentLine = 0;
@@ -254,17 +260,17 @@ namespace GBSharp.VideoSpace
       _disStat.LCDCBits = new bool[8];
 
       // We start the registers correctly
-      HandleMemoryChange(MMR.LCDC, memory.LowLevelRead((ushort)MMR.LCDC));
-      HandleMemoryChange(MMR.LCDC, memory.LowLevelRead((ushort)MMR.LCDC));
-      HandleMemoryChange(MMR.SCY, memory.LowLevelRead((ushort)MMR.SCY));
-      HandleMemoryChange(MMR.SCX, memory.LowLevelRead((ushort)MMR.SCX));
-      HandleMemoryChange(MMR.LYC, memory.LowLevelRead((ushort)MMR.LYC));
-      HandleMemoryChange(MMR.DMA, memory.LowLevelRead((ushort)MMR.DMA));
-      HandleMemoryChange(MMR.BGP, memory.LowLevelRead((ushort)MMR.BGP));
-      HandleMemoryChange(MMR.OBP0, memory.LowLevelRead((ushort)MMR.OBP0));
-      HandleMemoryChange(MMR.OBP1, memory.LowLevelRead((ushort)MMR.OBP1));
-      HandleMemoryChange(MMR.WY, memory.LowLevelRead((ushort)MMR.WY));
-      HandleMemoryChange(MMR.WX, memory.LowLevelRead((ushort)MMR.WX));
+      HandleMemoryChange(MMR.LCDC, _memory.LowLevelRead((ushort)MMR.LCDC));
+      HandleMemoryChange(MMR.LCDC, _memory.LowLevelRead((ushort)MMR.LCDC));
+      HandleMemoryChange(MMR.SCY, _memory.LowLevelRead((ushort)MMR.SCY));
+      HandleMemoryChange(MMR.SCX, _memory.LowLevelRead((ushort)MMR.SCX));
+      HandleMemoryChange(MMR.LYC, _memory.LowLevelRead((ushort)MMR.LYC));
+      HandleMemoryChange(MMR.DMA, _memory.LowLevelRead((ushort)MMR.DMA));
+      HandleMemoryChange(MMR.BGP, _memory.LowLevelRead((ushort)MMR.BGP));
+      HandleMemoryChange(MMR.OBP0, _memory.LowLevelRead((ushort)MMR.OBP0));
+      HandleMemoryChange(MMR.OBP1, _memory.LowLevelRead((ushort)MMR.OBP1));
+      HandleMemoryChange(MMR.WY, _memory.LowLevelRead((ushort)MMR.WY));
+      HandleMemoryChange(MMR.WX, _memory.LowLevelRead((ushort)MMR.WX));
 
       /*** DRAW TARGETS ***/
 
@@ -292,8 +298,6 @@ namespace GBSharp.VideoSpace
 
       _tempPixelBuffer = new uint[_disDef.PixelPerTileX];
       _tempFrameLineBuffer = new uint[_disDef.FramePixelCountX];
-
-      GeneratePixelLookupTable();
 
       // We update the display status info
       UpdateDisplayLineInfo(false);

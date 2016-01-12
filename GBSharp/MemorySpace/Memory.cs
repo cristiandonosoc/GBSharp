@@ -29,8 +29,12 @@ namespace GBSharp.MemorySpace
     /// </summary>
     internal Memory()
     {
-      data = new byte[65536];
+      Reset();
+    }
 
+    internal void Reset()
+    {
+      data = new byte[65536];
       this.dma = new DMA(this.data);
     }
 
