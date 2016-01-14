@@ -95,6 +95,10 @@ namespace GBSharp.AudioSpace
       _sampleSize = sampleSize;
 
       Reset();
+
+      Channel2Run = false;
+      Channel3Run = false;
+      Channel4Run = false;
     }
 
     internal void Reset()
@@ -266,6 +270,11 @@ namespace GBSharp.AudioSpace
         // We know bit 7 is 1 because otherwise the whole register is 0x70
         _memory.LowLevelWrite((ushort)MMR.NR52, nr52);
       }
+    }
+
+    internal void Step(int ticks)
+    {
+      if (_channel1.Enabled) { _channel1.Step(ticks); }
     }
 
     public void GenerateSamples(int sampleCount)

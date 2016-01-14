@@ -29,9 +29,9 @@ namespace GBSharp.AudioSpace
       lock(_lockObj)
       {
         if (_elementCount == _bufferSize) { throw new Exception("Event Queue overflow"); }
-        ++_writeCursor;
         _ticksBuffer[_writeCursor] = ticks;
-        _outputValuesBuffer[_writeCursor++] = outputValue;
+        _outputValuesBuffer[_writeCursor] = outputValue;
+        ++_writeCursor;
         if(_writeCursor == _bufferSize) { _writeCursor = 0; }
         ++_elementCount;
       }
@@ -43,13 +43,13 @@ namespace GBSharp.AudioSpace
       {
         if (_elementCount == 0) { return false; }
         // If we have an element waiting, we unqueue
-        ++_readCursor;
-        if(_readCursor == _bufferSize) { _readCursor = 0; }
         --_elementCount;
       }
       eventId = _readCursor;
       ticks = _ticksBuffer[_readCursor];
       outputValue = _outputValuesBuffer[_readCursor];
+      ++_readCursor;
+      if(_readCursor == _bufferSize) { _readCursor = 0; }
       return true;
     }
   }

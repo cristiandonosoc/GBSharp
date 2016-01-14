@@ -8,18 +8,10 @@ using System.Threading.Tasks;
 
 namespace GBSharp.AudioSpace
 {
-#if SoundTiming
-  internal enum TimelineEvents
-  {
-    FREQUENCY_CHANGE,
-    SOUND_LENGTH_SET,
-    SOUND_LENGTH_END
-  }
-#endif
-
   internal class SquareChannel : IChannel
   {
     private Memory _memory;
+    private SoundEventQueue _eventsQueue;
 
     #region BUFFER DEFINITION
 
@@ -119,6 +111,7 @@ namespace GBSharp.AudioSpace
                            MMR freqLowRegister, MMR freqHighRegister)
     {
       _memory = memory;
+      _eventsQueue = new SoundEventQueue();
 
       SampleRate = sampleRate;
       _msSampleRate = SampleRate / 1000;
@@ -263,27 +256,157 @@ namespace GBSharp.AudioSpace
 #endif
     }
 
+    long _stepCounter = 0;
+    internal void Step(int ticks)
+    {
+      _stepCounter += ticks;
+
+      // The amount of ticks in a sample
+      _tickCounter += ticks;
+      if (_tickCounter >= _tickThreshold)
+      {
+        _up = !_up;
+        short outputValue = (short)(_up ? Volume : -Volume);
+        _eventsQueue.Queue(_stepCounter, outputValue);
+
+        _tickCounter -= _tickThreshold;
+        _stepCounter = _tickCounter;
+      }
+
+#if false
+      /* FREQUENCY SWEEP */
+      if (_runSweep && _sweepTicks > 0)
+      {
+        _sweepTicksCounter += APU.MinimumTickThreshold;
+        if (_sweepTicksCounter > _sweepTicks)
+        {
+          _sweepTicksCounter -= _sweepTicks;
+
+          if (_sweepShiftNumber == 0)
+          {
+            // If the shift number is 0, the channel stops when it's time to
+            // shift
+            Enabled = false;
+          }
+          else
+          {
+            if (_sweepUp)
+            {
+              int newFreqFactor = FrequencyFactor +
+                                  (_sweepFrequencyFactor >> _sweepShiftNumber);
+              if (newFreqFactor < 0x800) // Higher than an 11-bit number
+              {
+                _sweepFrequencyFactor = (ushort)newFreqFactor;
+                FrequencyFactor = _sweepFrequencyFactor;
+              }
+              else
+              {
+                // Overflow stops the channel
+                Enabled = false;
+              }
+            }
+            else
+            {
+              int newFreqFactor = FrequencyFactor -
+                                     (_sweepFrequencyFactor >> _sweepShiftNumber);
+              if (newFreqFactor > 0)
+              {
+                _sweepFrequencyFactor = (ushort)newFreqFactor;
+                FrequencyFactor = _sweepFrequencyFactor;
+              }
+            }
+          }
+        }
+      }
+
+      /* SOUND LENGTH DURATION */
+
+      if (_runSoundLength && !_continuousOutput)
+      {
+        _soundLengthTickCounter += APU.MinimumTickThreshold;
+        if (_soundLengthTickCounter >= _soundLengthTicks)
+        {
+          Enabled = false;
+        }
+      }
+
+      /* VOLUME ENVELOPE */
+      if (_runVolumeEnvelope && _envelopeTicks > 0)
+      {
+        _envelopeTickCounter += APU.MinimumTickThreshold;
+        if (_envelopeTickCounter > _envelopeTicks)
+        {
+          _envelopeTickCounter -= _envelopeTicks;
+          if (_envelopeUp)
+          {
+            ++_currentEnvelopeValue;
+            if (_currentEnvelopeValue > 15) { _currentEnvelopeValue = 15; }
+          }
+          else
+          {
+            --_currentEnvelopeValue;
+            if (_currentEnvelopeValue < 0) { _currentEnvelopeValue = 0; }
+          }
+
+          _outputValue = (short)(_up ? Volume : -Volume);
+        }
+      }
+#endif
+    }
+
+    long _samplesStepCounter = 0;
+
+    int _currentEventId = 999999999;
+    long _currentStepThreshold = 0;
+    short _currentOutputValue = 0;
+
+    int _nextEventId = 999999999;
+    long _nextStepThreshold = 0;
+    short _nextOutputValue = 0;
+
+    bool _waitingForNextEvent = true;
+
     public void GenerateSamples(int sampleCount)
     {
       while(sampleCount > 0)
       {
+        // We see if we need to change the output value according to the event queue
+        if (_waitingForNextEvent)
+        {
+          // GetNextEvent is true is there is one event in the loop
+          if (_eventsQueue.GetNextEvent(ref _nextEventId,
+                                        ref _nextStepThreshold,
+                                        ref _nextOutputValue))
+
+          {
+            _waitingForNextEvent = false;
+          }
+        }
+
+        // We see if the next event was met
         --sampleCount;
+        _samplesStepCounter += APU.MinimumTickThreshold;
+
+        // If we haven't passed the next event waiting, 
+        // we check if the threshold was met
+        if((!_waitingForNextEvent) &&
+           (_samplesStepCounter >= _nextStepThreshold))
+        {
+          _samplesStepCounter -= _nextStepThreshold;
+          _waitingForNextEvent = true;
+
+          // We copy the event
+          _currentEventId = _nextEventId;
+          _currentStepThreshold = _nextStepThreshold;
+          _currentOutputValue = _nextOutputValue;
+        }
 
         for(int c = 0; c < NumChannels; ++c)
         {
-          _buffer[_sampleIndex++] = _outputValue;
+          _buffer[_sampleIndex++] = _currentOutputValue;
         }
 
-        // The amount of ticks in a sample
-        _tickCounter -= APU.MinimumTickThreshold;
-        if(_tickCounter < 0)
-        {
-          _tickCounter = _tickThreshold + _tickCounter;
-          _up = !_up;
-
-          _outputValue = (short)(_up ? Volume : -Volume);
-        }
-
+#if false
         /* FREQUENCY SWEEP */
         if(_runSweep && _sweepTicks > 0)
         {
@@ -361,6 +484,7 @@ namespace GBSharp.AudioSpace
             _outputValue = (short)(_up ? Volume : -Volume);
           }
         }
+#endif
       }
     }
 

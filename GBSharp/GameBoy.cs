@@ -151,8 +151,6 @@ namespace GBSharp
 #endif
     }
 
-
-
     #region INTERFACE GETTERS
 
     public ICPU CPU { get { return cpu; } }
@@ -247,6 +245,9 @@ namespace GBSharp
 #else
       this.display.Step(ticks);
 #endif
+
+      this.apu.Step(ticks);
+
       this.tickCounter += ticks;
       this.stepCounter++;
 
