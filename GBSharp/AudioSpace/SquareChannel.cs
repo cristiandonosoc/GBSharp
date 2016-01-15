@@ -145,8 +145,8 @@ namespace GBSharp.AudioSpace
     {
       byte before = _memory.LowLevelRead((ushort)register);
 #if SoundTiming
-      Timeline[TimelineCount++] = (long)register;
-      Timeline[TimelineCount++] = value;
+      //Timeline[TimelineCount++] = (long)register;
+      //Timeline[TimelineCount++] = value;
 #endif
 
       if (register == _sweepRegister)
@@ -251,15 +251,17 @@ namespace GBSharp.AudioSpace
       }
 
 #if SoundTiming
-      Timeline[TimelineCount++] = before;
-      Timeline[TimelineCount++] = _memory.LowLevelRead((ushort)register);
+      //Timeline[TimelineCount++] = before;
+      //Timeline[TimelineCount++] = _memory.LowLevelRead((ushort)register);
 #endif
     }
 
     long _stepCounter = 0;
+    long _totalStepCounter = 0;
     internal void Step(int ticks)
     {
       _stepCounter += ticks;
+      _totalStepCounter += ticks;
 
       // The amount of ticks in a sample
       _tickCounter += ticks;
@@ -268,6 +270,10 @@ namespace GBSharp.AudioSpace
         _up = !_up;
         short outputValue = (short)(_up ? Volume : -Volume);
         _eventsQueue.Queue(_stepCounter, outputValue);
+#if SoundTiming
+        //Timeline[TimelineCount++] = _stepCounter;
+        //Timeline[TimelineCount++] = outputValue;
+#endif
 
         _tickCounter -= _tickThreshold;
         _stepCounter = _tickCounter;
@@ -355,6 +361,7 @@ namespace GBSharp.AudioSpace
     }
 
     long _samplesStepCounter = 0;
+    long _totalSamplesStepCounter = 0;
 
     int _currentEventId = 999999999;
     long _currentStepThreshold = 0;
@@ -379,26 +386,38 @@ namespace GBSharp.AudioSpace
                                         ref _nextOutputValue))
 
           {
+#if SoundTiming
+            //Timeline[TimelineCount++] = _samplesStepCounter;
+            //Timeline[TimelineCount++] = _nextStepThreshold;
+            //Timeline[TimelineCount++] = _eventsQueue.ElementCount;
+            Timeline[TimelineCount++] = _totalStepCounter;
+            Timeline[TimelineCount++] = _totalSamplesStepCounter;
+            Timeline[TimelineCount++] = _totalStepCounter - _totalSamplesStepCounter;
+#endif
             _waitingForNextEvent = false;
           }
         }
 
         // We see if the next event was met
         --sampleCount;
-        _samplesStepCounter += APU.MinimumTickThreshold;
-
-        // If we haven't passed the next event waiting, 
-        // we check if the threshold was met
-        if((!_waitingForNextEvent) &&
-           (_samplesStepCounter >= _nextStepThreshold))
+        _totalSamplesStepCounter += APU.MinimumTickThreshold;
+        if (!_waitingForNextEvent)
         {
-          _samplesStepCounter -= _nextStepThreshold;
-          _waitingForNextEvent = true;
 
-          // We copy the event
-          _currentEventId = _nextEventId;
-          _currentStepThreshold = _nextStepThreshold;
-          _currentOutputValue = _nextOutputValue;
+          _samplesStepCounter += APU.MinimumTickThreshold;
+
+          // If we haven't passed the next event waiting, 
+          // we check if the threshold was met
+          if (_samplesStepCounter >= _nextStepThreshold)
+          {
+            _samplesStepCounter %= _nextStepThreshold;
+            _waitingForNextEvent = true;
+
+            // We copy the event
+            _currentEventId = _nextEventId;
+            _currentStepThreshold = _nextStepThreshold;
+            _currentOutputValue = _nextOutputValue;
+          }
         }
 
         for(int c = 0; c < NumChannels; ++c)
@@ -423,7 +442,7 @@ namespace GBSharp.AudioSpace
             }
             else
             {
-              if (_sweepUp)
+              if (_sweepUp) 
               {
                 int newFreqFactor = FrequencyFactor +
                                     (_sweepFrequencyFactor >> _sweepShiftNumber);
@@ -500,17 +519,14 @@ namespace GBSharp.AudioSpace
       {
         using (var file = new StreamWriter("sound_events.csv", false))
         {
-          file.WriteLine("{0},{1},{2},{3}", "Register",
-                                            "Value",
-                                            "Before",
-                                            "After");
-          for (uint i = 0; i < TimelineCount; i += 4)
+          file.WriteLine("{0},{1}", "Ticks", "Value");
+          for (uint i = 0; i < TimelineCount; i += 3)
           {
-            file.WriteLine("{0},{1},{2},{3}",
-                           ((MMR)Timeline[i]).ToString(),
-                           "0x" + ((byte)Timeline[i + 1]).ToString("x2"),
-                           "0x" + ((byte)Timeline[i + 2]).ToString("x2"),
-                           "0x" + ((byte)Timeline[i + 3]).ToString("x2"));
+            file.WriteLine("{0},{1},{2}",
+                           Timeline[i],
+                           //"0x" + Timeline[i + 1].ToString("x2").ToUpper());
+                           Timeline[i + 1],
+                           Timeline[i + 2]);
           }
         }
       }
