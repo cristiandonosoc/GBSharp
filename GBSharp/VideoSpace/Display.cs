@@ -504,7 +504,7 @@ namespace GBSharp.VideoSpace
       int rWX = _disStat.WX - 7; // The window pos is (WX - 7, WY)
 
       // TODO(Cristian): If BG display is off, it actually prints white
-      bool drawWindow = _disStat.LCDCBits[5] && false;
+      bool drawWindow = _disStat.LCDCBits[5];
       for (int row = rowBegin; row < rowEnd; row++)
       {
         if ((row >= _disStat.CurrentWY) && (row < 144))
