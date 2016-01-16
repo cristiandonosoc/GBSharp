@@ -20,6 +20,8 @@ namespace GBSharp.Audio
       gameboy.FrameCompleted += gameBoy_FrameCompleted;
       gameboy.PauseRequested += GameBoy_PauseRequested;
       gameboy.StopRequested += GameBoy_StopRequested;
+
+      ReloadAPU();
     }
 
     private void ReloadAPU()
@@ -32,6 +34,9 @@ namespace GBSharp.Audio
       _soundOut = GetSoundOut();
       _soundOut.Initialize(_source);
       _soundOut.Volume = 0.2f;
+
+      // We set some ms of latency
+      _apu.Latency = 75;
     }
 
     private void GameBoy_PauseRequested()
@@ -53,6 +58,9 @@ namespace GBSharp.Audio
         _soundOut.Stop();
         _soundOut.Dispose();
         _soundOut = null;
+
+        // We Reload it
+        ReloadAPU();
       }
     }
 
@@ -63,15 +71,9 @@ namespace GBSharp.Audio
 
     void gameBoy_FrameCompleted()
     {
-      if (_soundOut == null)
-      {
-        ReloadAPU();
-      }
-
-      if ((_soundOut.PlaybackState != PlaybackState.Playing)) { 
+      if (_soundOut.PlaybackState != PlaybackState.Playing) { 
         _soundOut.Play();
       }
-   
     }
 
     private static ISoundOut GetSoundOut()

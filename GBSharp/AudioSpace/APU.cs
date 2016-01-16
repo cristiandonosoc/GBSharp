@@ -34,6 +34,19 @@ namespace GBSharp.AudioSpace
 
     private int _milliseconds = 1000; // ms of sample
 
+    private int _latency = 0;
+    public int Latency
+    {
+      get { return _latency; }
+      set
+      {
+        _latency = value;
+        int latencyTicks = _latency * GameBoy.ticksPerMillisecond;
+        _channel1.SetLatencyTicks(latencyTicks);
+        _channel2.SetLatencyTicks(latencyTicks);
+      }
+    }
+
     private short[] _tempBuffer;
     byte[] _buffer;
     public byte[] Buffer { get { return _buffer; } }
@@ -96,7 +109,7 @@ namespace GBSharp.AudioSpace
 
       Reset();
 
-      Channel2Run = false;
+      Channel2Run = true;
       Channel3Run = false;
       Channel4Run = false;
     }
@@ -202,7 +215,7 @@ namespace GBSharp.AudioSpace
         case MMR.NR22:
         case MMR.NR23:
         case MMR.NR24:
-          _channel2.HandleMemoryChange(register, value);
+         _channel2.HandleMemoryChange(register, value);
           break;
         case MMR.NR30:
         case MMR.NR31:
@@ -275,6 +288,7 @@ namespace GBSharp.AudioSpace
     internal void Step(int ticks)
     {
       if (_channel1.Enabled) { _channel1.Step(ticks); }
+      if (_channel2.Enabled) { _channel2.Step(ticks); }
     }
 
     public void GenerateSamples(int sampleCount)
@@ -417,7 +431,7 @@ namespace GBSharp.AudioSpace
       string finalFilename = _wavExporter.StartRecording(filename);
 
       if (RecordSeparateChannels)
-      {
+      { 
         _channel1WavExporter.StartRecording(finalFilename, 1);
         _channel2WavExporter.StartRecording(finalFilename, 2);
         _channel3WavExporter.StartRecording(finalFilename, 3);

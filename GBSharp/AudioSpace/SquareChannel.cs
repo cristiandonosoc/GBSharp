@@ -39,6 +39,17 @@ namespace GBSharp.AudioSpace
     internal byte LowFreqByte { get; private set; }
     internal byte HighFreqByte { get; private set; }
 
+    private int _latencyTicks;
+    private int _latencyTicksLeft;
+    private bool _latencySimulated;
+    internal void SetLatencyTicks(int latencyTicks)
+    {
+      _latencyTicks = latencyTicks;
+      _latencyTicksLeft = _latencyTicks;
+      _latencySimulated = false;
+    }
+
+
     private int _tickThreshold;
 
     private ushort _frequencyFactor;
@@ -263,6 +274,17 @@ namespace GBSharp.AudioSpace
       _stepCounter += ticks;
       _totalStepCounter += ticks;
 
+      // We check how much latency we need to simulate
+      if(_latencyTicksLeft > 0)
+      {
+        _latencyTicksLeft -= ticks;
+        if(_latencyTicksLeft <= 0)
+        {
+          _latencyTicksLeft = 0;
+          _latencySimulated = true;
+        }
+      }
+
       // The amount of ticks in a sample
       _tickCounter += ticks;
       if (_tickCounter >= _tickThreshold)
@@ -278,6 +300,8 @@ namespace GBSharp.AudioSpace
         _tickCounter -= _tickThreshold;
         _stepCounter = _tickCounter;
       }
+
+      
 
 #if false
       /* FREQUENCY SWEEP */
@@ -375,8 +399,22 @@ namespace GBSharp.AudioSpace
 
     public void GenerateSamples(int sampleCount)
     {
-      while(sampleCount > 0)
+      while (sampleCount > 0)
       {
+        // We see if the next event was met
+        --sampleCount;
+        if(!_waitingForNextEvent)
+        {
+          _totalSamplesStepCounter += APU.MinimumTickThreshold;
+        }
+
+        for (int c = 0; c < NumChannels; ++c)
+        {
+          _buffer[_sampleIndex++] = _currentOutputValue;
+        }
+
+        if(!_latencySimulated) { continue; }
+
         // We see if we need to change the output value according to the event queue
         if (_waitingForNextEvent)
         {
@@ -398,9 +436,6 @@ namespace GBSharp.AudioSpace
           }
         }
 
-        // We see if the next event was met
-        --sampleCount;
-        _totalSamplesStepCounter += APU.MinimumTickThreshold;
         if (!_waitingForNextEvent)
         {
 
@@ -418,11 +453,6 @@ namespace GBSharp.AudioSpace
             _currentStepThreshold = _nextStepThreshold;
             _currentOutputValue = _nextOutputValue;
           }
-        }
-
-        for(int c = 0; c < NumChannels; ++c)
-        {
-          _buffer[_sampleIndex++] = _currentOutputValue;
         }
 
 #if false

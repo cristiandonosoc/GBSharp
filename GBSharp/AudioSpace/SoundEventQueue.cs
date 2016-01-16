@@ -11,6 +11,7 @@ namespace GBSharp.AudioSpace
     private int _readCursor = 0;
     private int _writeCursor = 0;
     private int _elementCount = 0;
+    internal int ElementCount { get { return _elementCount; } }
     private object _lockObj = new object();
 
     private long[] _ticksBuffer;
