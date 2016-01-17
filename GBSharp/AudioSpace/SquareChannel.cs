@@ -267,194 +267,26 @@ namespace GBSharp.AudioSpace
 #endif
     }
 
-    long _stepCounter = 0;
-    long _totalStepCounter = 0;
+
+    private const int _stepSamplesBufferSize = 44000 * 2 * 3;
+    private short[] _stepSamplesBuffer = new short[_stepSamplesBufferSize];
+    private int _samplesWriteCursor = 0;
+    private int _samplesReadCursor = 0;
+    long _sampleCounter = 0;
+
     internal void Step(int ticks)
     {
-      _stepCounter += ticks;
-      _totalStepCounter += ticks;
-
-      // We check how much latency we need to simulate
-      if(_latencyTicksLeft > 0)
+      // If not enabled, we do not simulate the channel
+      if (Enabled)
       {
-        _latencyTicksLeft -= ticks;
-        if(_latencyTicksLeft <= 0)
+        // The amount of ticks in a sample
+        _tickCounter += ticks;
+        if (_tickCounter >= _tickThreshold)
         {
-          _latencyTicksLeft = 0;
-          _latencySimulated = true;
-        }
-      }
-
-      // The amount of ticks in a sample
-      _tickCounter += ticks;
-      if (_tickCounter >= _tickThreshold)
-      {
-        _up = !_up;
-        short outputValue = (short)(_up ? Volume : -Volume);
-        _eventsQueue.Queue(_stepCounter, outputValue);
-#if SoundTiming
-        //Timeline[TimelineCount++] = _stepCounter;
-        //Timeline[TimelineCount++] = outputValue;
-#endif
-
-        _tickCounter -= _tickThreshold;
-        _stepCounter = _tickCounter;
-      }
-
-      
-
-#if false
-      /* FREQUENCY SWEEP */
-      if (_runSweep && _sweepTicks > 0)
-      {
-        _sweepTicksCounter += APU.MinimumTickThreshold;
-        if (_sweepTicksCounter > _sweepTicks)
-        {
-          _sweepTicksCounter -= _sweepTicks;
-
-          if (_sweepShiftNumber == 0)
-          {
-            // If the shift number is 0, the channel stops when it's time to
-            // shift
-            Enabled = false;
-          }
-          else
-          {
-            if (_sweepUp)
-            {
-              int newFreqFactor = FrequencyFactor +
-                                  (_sweepFrequencyFactor >> _sweepShiftNumber);
-              if (newFreqFactor < 0x800) // Higher than an 11-bit number
-              {
-                _sweepFrequencyFactor = (ushort)newFreqFactor;
-                FrequencyFactor = _sweepFrequencyFactor;
-              }
-              else
-              {
-                // Overflow stops the channel
-                Enabled = false;
-              }
-            }
-            else
-            {
-              int newFreqFactor = FrequencyFactor -
-                                     (_sweepFrequencyFactor >> _sweepShiftNumber);
-              if (newFreqFactor > 0)
-              {
-                _sweepFrequencyFactor = (ushort)newFreqFactor;
-                FrequencyFactor = _sweepFrequencyFactor;
-              }
-            }
-          }
-        }
-      }
-
-      /* SOUND LENGTH DURATION */
-
-      if (_runSoundLength && !_continuousOutput)
-      {
-        _soundLengthTickCounter += APU.MinimumTickThreshold;
-        if (_soundLengthTickCounter >= _soundLengthTicks)
-        {
-          Enabled = false;
-        }
-      }
-
-      /* VOLUME ENVELOPE */
-      if (_runVolumeEnvelope && _envelopeTicks > 0)
-      {
-        _envelopeTickCounter += APU.MinimumTickThreshold;
-        if (_envelopeTickCounter > _envelopeTicks)
-        {
-          _envelopeTickCounter -= _envelopeTicks;
-          if (_envelopeUp)
-          {
-            ++_currentEnvelopeValue;
-            if (_currentEnvelopeValue > 15) { _currentEnvelopeValue = 15; }
-          }
-          else
-          {
-            --_currentEnvelopeValue;
-            if (_currentEnvelopeValue < 0) { _currentEnvelopeValue = 0; }
-          }
-
+          _up = !_up;
           _outputValue = (short)(_up ? Volume : -Volume);
+          _tickCounter -= _tickThreshold;
         }
-      }
-#endif
-    }
-
-    long _samplesStepCounter = 0;
-    long _totalSamplesStepCounter = 0;
-
-    int _currentEventId = 999999999;
-    long _currentStepThreshold = 0;
-    short _currentOutputValue = 0;
-
-    int _nextEventId = 999999999;
-    long _nextStepThreshold = 0;
-    short _nextOutputValue = 0;
-
-    bool _waitingForNextEvent = true;
-
-    public void GenerateSamples(int sampleCount)
-    {
-      while (sampleCount > 0)
-      {
-        // We see if the next event was met
-        --sampleCount;
-        if(!_waitingForNextEvent)
-        {
-          _totalSamplesStepCounter += APU.MinimumTickThreshold;
-        }
-
-        for (int c = 0; c < NumChannels; ++c)
-        {
-          _buffer[_sampleIndex++] = _currentOutputValue;
-        }
-
-        if(!_latencySimulated) { continue; }
-
-        // We see if we need to change the output value according to the event queue
-        if (_waitingForNextEvent)
-        {
-          // GetNextEvent is true is there is one event in the loop
-          if (_eventsQueue.GetNextEvent(ref _nextEventId,
-                                        ref _nextStepThreshold,
-                                        ref _nextOutputValue))
-
-          {
-#if SoundTiming
-            //Timeline[TimelineCount++] = _samplesStepCounter;
-            //Timeline[TimelineCount++] = _nextStepThreshold;
-            //Timeline[TimelineCount++] = _eventsQueue.ElementCount;
-            Timeline[TimelineCount++] = _totalStepCounter;
-            Timeline[TimelineCount++] = _totalSamplesStepCounter;
-            Timeline[TimelineCount++] = _totalStepCounter - _totalSamplesStepCounter;
-#endif
-            _waitingForNextEvent = false;
-          }
-        }
-
-        if (!_waitingForNextEvent)
-        {
-
-          _samplesStepCounter += APU.MinimumTickThreshold;
-
-          // If we haven't passed the next event waiting, 
-          // we check if the threshold was met
-          if (_samplesStepCounter >= _nextStepThreshold)
-          {
-            _samplesStepCounter %= _nextStepThreshold;
-            _waitingForNextEvent = true;
-
-            // We copy the event
-            _currentEventId = _nextEventId;
-            _currentStepThreshold = _nextStepThreshold;
-            _currentOutputValue = _nextOutputValue;
-          }
-        }
-
 #if false
         /* FREQUENCY SWEEP */
         if(_runSweep && _sweepTicks > 0)
@@ -534,6 +366,71 @@ namespace GBSharp.AudioSpace
           }
         }
 #endif
+      }
+
+      // We update the samples generated
+      _sampleCounter += ticks;
+      if (_sampleCounter >= APU.MinimumTickThreshold)
+      {
+        _sampleCounter -= APU.MinimumTickThreshold;
+
+        // We generate the samples
+        // We output the sample value
+        for (int c = 0; c < NumChannels; ++c)
+        {
+          short outputValue = Enabled ? _outputValue : (short)0;
+          _stepSamplesBuffer[_samplesWriteCursor++] = outputValue;
+          if(_samplesWriteCursor >= _stepSamplesBufferSize)
+          {
+            _samplesWriteCursor -= _stepSamplesBufferSize;
+          }
+        }
+      }
+
+      // We check how much latency we need to simulate
+      if(_latencyTicksLeft > 0)
+      {
+        _latencyTicksLeft -= ticks;
+        if(_latencyTicksLeft <= 0)
+        {
+          _latencyTicksLeft = 0;
+          _latencySimulated = true;
+        }
+      }
+    }
+
+    public void GenerateSamples(int samples)
+    {
+      if (!_latencySimulated)
+      {
+        while (samples > 0)
+        {
+          _buffer[_sampleIndex++] = 0;
+          --samples;
+        }
+
+        return;
+      }
+
+      // We check how many samples are available
+      int writeCursor = _samplesWriteCursor;
+      int readCursor = _samplesReadCursor;
+      int diff = writeCursor - readCursor;
+      if(diff < 0) { diff += _stepSamplesBufferSize; }
+
+      if(diff < samples)
+      {
+        throw new Exception("NOT ENOUGH SAMPLES!!!");
+      }
+
+      while(samples > 0)
+      {
+        _buffer[_sampleIndex++] = _stepSamplesBuffer[_samplesReadCursor++];
+        if(_samplesReadCursor >= _stepSamplesBufferSize)
+        {
+          _samplesReadCursor -= _stepSamplesBufferSize;
+        }
+        --samples;
       }
     }
 

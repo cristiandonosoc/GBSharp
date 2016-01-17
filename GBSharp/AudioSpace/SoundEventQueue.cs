@@ -17,7 +17,7 @@ namespace GBSharp.AudioSpace
     private long[] _ticksBuffer;
     private short[] _outputValuesBuffer;
 
-    private int _bufferSize = 1000;
+    private int _bufferSize = 10000;
 
     internal SoundEventQueue()
     {
@@ -25,7 +25,7 @@ namespace GBSharp.AudioSpace
       _outputValuesBuffer = new short[_bufferSize];
     }
 
-    public void Queue(long ticks, short outputValue)
+    internal void Queue(long ticks, short outputValue)
     {
       lock(_lockObj)
       {
@@ -38,7 +38,7 @@ namespace GBSharp.AudioSpace
       }
     }
 
-    public bool GetNextEvent(ref int eventId, ref long ticks, ref short outputValue)
+    internal bool GetNextEvent(ref int eventId, ref long ticks, ref short outputValue)
     {
       lock(_lockObj)
       {
@@ -52,6 +52,36 @@ namespace GBSharp.AudioSpace
       ++_readCursor;
       if(_readCursor == _bufferSize) { _readCursor = 0; }
       return true;
+    }
+
+    private long _currentTickCounter = 0;
+
+
+    internal short GetNextOutputValue(int advancedTicks)
+    {
+      if (_elementCount == 0)
+      {
+        return _outputValuesBuffer[_readCursor];
+      }
+      else
+      {
+        if (_currentTickCounter < _ticksBuffer[_readCursor])
+        {
+          return _outputValuesBuffer[_readCursor];
+        }
+        else
+        {
+          lock(_lockObj)
+          {
+            --_elementCount;
+          }
+          _currentTickCounter -= _ticksBuffer[_readCursor];
+
+        }
+
+      }
+
+      return 0;
     }
   }
 

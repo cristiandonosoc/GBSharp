@@ -109,9 +109,12 @@ namespace GBSharp.AudioSpace
 
       Reset();
 
-      Channel2Run = true;
+      Channel2Run = false;
       Channel3Run = false;
       Channel4Run = false;
+
+      //RecordSeparateChannels = true;
+      //StartRecording("TEST");
     }
 
     internal void Reset()
@@ -295,21 +298,25 @@ namespace GBSharp.AudioSpace
     {
       ClearBuffer();
 
-      int sc = sampleCount / _sampleSize;
 
-      if (Enabled)
-      {
-        if (_channel1.Enabled) { _channel1.GenerateSamples(sc); }
-        if (_channel2.Enabled) { _channel2.GenerateSamples(sc); }
-        if (_channel3.Enabled) { _channel3.GenerateSamples(sc); }
-        if (_channel4.Enabled) { _channel4.GenerateSamples(sc); }
-      }
+      //if (Enabled)
+      //{
+      //  if (_channel1.Enabled) { _channel1.GenerateSamples(sampleCount); }
+      //  if (_channel2.Enabled) { _channel2.GenerateSamples(sampleCount); }
+      //  if (_channel3.Enabled) { _channel3.GenerateSamples(sampleCount); }
+      //  if (_channel4.Enabled) { _channel4.GenerateSamples(sampleCount); }
+      //}
+      // If the channels are disabled, all the channels will output 0
+      _channel1.GenerateSamples(sampleCount);
+      _channel2.GenerateSamples(sampleCount);
+      _channel3.GenerateSamples(sampleCount);
+      _channel4.GenerateSamples(sampleCount);
 
       // We transformate the samples
+      int sc = sampleCount / _sampleSize;
       int _channelSampleIndex = 0;
       for (int i = 0; i < sc; ++i)
       {
-
         // LEFT CHANNEL
         short leftSample = 0;
         short c1LeftSample = 0;
