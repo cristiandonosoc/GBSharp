@@ -11,8 +11,6 @@ namespace GBSharp.AudioSpace
   internal class SquareChannel : IChannel
   {
     private Memory _memory;
-    private SoundEventQueue _eventsQueue;
-
     #region BUFFER DEFINITION
 
 #if SoundTiming
@@ -122,7 +120,6 @@ namespace GBSharp.AudioSpace
                            MMR freqLowRegister, MMR freqHighRegister)
     {
       _memory = memory;
-      _eventsQueue = new SoundEventQueue();
 
       SampleRate = sampleRate;
       _msSampleRate = SampleRate / 1000;
