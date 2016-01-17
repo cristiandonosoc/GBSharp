@@ -445,22 +445,33 @@ namespace GBSharp.AudioSpace
 #endif
 
       // diff is measured in samples, not fullSamples
+      int fullSamplesToGenerate = fullSamples;
       if (diff < fullSamples * 2)
       {
-        throw new Exception("NOT ENOUGH SAMPLES!!!");
-        return;
+        //throw new Exception("NOT ENOUGH SAMPLES!!!");
+        fullSamplesToGenerate = diff / 2;
       }
 
-      while(fullSamples > 0)
+      short lastValue = 0;
+      while(fullSamplesToGenerate > 0)
       {
         for (int c = 0; c < NumChannels; ++c)
         {
-          _buffer[_sampleIndex++] = _stepSamplesBuffer[_samplesReadCursor++];
+
+          lastValue = _stepSamplesBuffer[_samplesReadCursor++];
+          _buffer[_sampleIndex++] = lastValue;
           if (_samplesReadCursor >= _stepSamplesBufferSize)
           {
             _samplesReadCursor -= _stepSamplesBufferSize;
           }
         }
+        --fullSamplesToGenerate;
+      }
+
+      fullSamples -= fullSamplesToGenerate;
+      while(fullSamples > 0)
+      {
+        _buffer[_sampleIndex++] = lastValue;
         --fullSamples;
       }
     }
