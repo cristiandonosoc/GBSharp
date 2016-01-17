@@ -53,7 +53,9 @@ namespace GBSharp.Audio
     public int Read(byte[] buffer, int offset, int count)
     {
       // We generate the needed samples
-      _streamingSource.GenerateSamples(count / _streamingSource.NumChannels);
+      int generateCount = count / _streamingSource.NumChannels;
+      generateCount /= _streamingSource.SampleSize;
+      _streamingSource.GenerateSamples(generateCount);
       //if(_streamingSource.SampleCount != count)
       //{
       //  throw new InvalidProgramException("Samples should be the same");

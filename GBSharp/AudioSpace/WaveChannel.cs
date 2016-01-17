@@ -41,7 +41,7 @@ namespace GBSharp.AudioSpace
     internal byte HighFreqByte { get; private set; }
 
     private int _tickThreshold;
-    private int _tickCounter;
+    private double _tickCounter;
 
     private ushort _frequencyFactor;
     internal ushort FrequencyFactor
@@ -77,7 +77,7 @@ namespace GBSharp.AudioSpace
     }
 
     int _soundLengthTicks;
-    int _soundLengthTickCounter;
+    double _soundLengthTickCounter;
 
     int _volumeRightShift;
 

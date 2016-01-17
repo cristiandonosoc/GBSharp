@@ -1,6 +1,7 @@
 ﻿using GBSharp.MemorySpace;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,6 +17,7 @@ namespace GBSharp.AudioSpace
 #if SoundTiming
     static long[] Timeline = new long[10000 * 2];
     static uint TimelineCount = 0;
+    static Stopwatch sw = new Stopwatch();
 #endif
 
     private int _msSampleRate;
@@ -269,10 +271,22 @@ namespace GBSharp.AudioSpace
     private short[] _stepSamplesBuffer = new short[_stepSamplesBufferSize];
     private int _samplesWriteCursor = 0;
     private int _samplesReadCursor = 0;
-    long _sampleCounter = 0;
+    double _sampleCounter = 0;
 
+    private long _stepTime = 0;
+
+    private bool _firstRun = true;
     internal void Step(int ticks)
     {
+#if SoundTiming
+      if(_firstRun)
+      {
+        _firstRun = false;
+        sw.Start();
+      }
+#endif
+      _stepTime += ticks;
+
       // If not enabled, we do not simulate the channel
       if (Enabled)
       {
@@ -365,6 +379,7 @@ namespace GBSharp.AudioSpace
 #endif
       }
 
+
       // We update the samples generated
       _sampleCounter += ticks;
       if (_sampleCounter >= APU.MinimumTickThreshold)
@@ -396,18 +411,26 @@ namespace GBSharp.AudioSpace
       }
     }
 
-    public void GenerateSamples(int samples)
+    private double _sampleTime = 0;
+
+    public void GenerateSamples(int fullSamples)
     {
+
       if (!_latencySimulated)
       {
-        while (samples > 0)
+        while (fullSamples > 0)
         {
-          _buffer[_sampleIndex++] = 0;
-          --samples;
+          for (int c = 0; c < NumChannels; ++c)
+          {
+            _buffer[_sampleIndex++] = 0;
+          }
+          --fullSamples;
         }
 
         return;
       }
+
+      _sampleTime += APU.MinimumTickThreshold * fullSamples;
 
       // We check how many samples are available
       int writeCursor = _samplesWriteCursor;
@@ -415,19 +438,30 @@ namespace GBSharp.AudioSpace
       int diff = writeCursor - readCursor;
       if(diff < 0) { diff += _stepSamplesBufferSize; }
 
-      if(diff < samples)
+#if SoundTiming
+      Timeline[TimelineCount++] = _stepTime;
+      Timeline[TimelineCount++] = (long)_sampleTime;
+      Timeline[TimelineCount++] = sw.ElapsedMilliseconds;
+#endif
+
+      // diff is measured in samples, not fullSamples
+      if (diff < fullSamples * 2)
       {
         throw new Exception("NOT ENOUGH SAMPLES!!!");
+        return;
       }
 
-      while(samples > 0)
+      while(fullSamples > 0)
       {
-        _buffer[_sampleIndex++] = _stepSamplesBuffer[_samplesReadCursor++];
-        if(_samplesReadCursor >= _stepSamplesBufferSize)
+        for (int c = 0; c < NumChannels; ++c)
         {
-          _samplesReadCursor -= _stepSamplesBufferSize;
+          _buffer[_sampleIndex++] = _stepSamplesBuffer[_samplesReadCursor++];
+          if (_samplesReadCursor >= _stepSamplesBufferSize)
+          {
+            _samplesReadCursor -= _stepSamplesBufferSize;
+          }
         }
-        --samples;
+        --fullSamples;
       }
     }
 
@@ -443,14 +477,17 @@ namespace GBSharp.AudioSpace
       {
         using (var file = new StreamWriter("sound_events.csv", false))
         {
-          file.WriteLine("{0},{1}", "Ticks", "Value");
+          //file.WriteLine("{0},{1}", "Ticks", "Value");
           for (uint i = 0; i < TimelineCount; i += 3)
           {
-            file.WriteLine("{0},{1},{2}",
-                           Timeline[i],
-                           //"0x" + Timeline[i + 1].ToString("x2").ToUpper());
-                           Timeline[i + 1],
-                           Timeline[i + 2]);
+            //file.WriteLine("{0},{1},{2}",
+            //               Timeline[i],
+            //               //"0x" + Timeline[i + 1].ToString("x2").ToUpper());
+            //               Timeline[i + 1],
+            //               Timeline[i + 2]);
+            file.WriteLine("{0},{1},{2}", Timeline[i]*0.0002384,
+                                          Timeline[i + 1]*0.0002384,
+                                          Timeline[i + 2]);
           }
         }
       }

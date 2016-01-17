@@ -20,7 +20,7 @@ namespace GBSharp.AudioSpace
     /// This is the amount of ticks needed to output a single sample
     /// ~ 22 kHz max frequency
     /// </summary>
-    internal static int MinimumTickThreshold = 96; 
+    internal static double MinimumTickThreshold = 95.332; 
 
     private int _sampleRate;
     private int _msSampleRate;
@@ -294,7 +294,7 @@ namespace GBSharp.AudioSpace
       if (_channel2.Enabled) { _channel2.Step(ticks); }
     }
 
-    public void GenerateSamples(int sampleCount)
+    public void GenerateSamples(int fullSampleCount)
     {
       ClearBuffer();
 
@@ -307,15 +307,14 @@ namespace GBSharp.AudioSpace
       //  if (_channel4.Enabled) { _channel4.GenerateSamples(sampleCount); }
       //}
       // If the channels are disabled, all the channels will output 0
-      _channel1.GenerateSamples(sampleCount);
-      _channel2.GenerateSamples(sampleCount);
-      _channel3.GenerateSamples(sampleCount);
-      _channel4.GenerateSamples(sampleCount);
+      if (Channel1Run) { _channel1.GenerateSamples(fullSampleCount); }
+      if (Channel2Run) { _channel2.GenerateSamples(fullSampleCount); }
+      if (Channel3Run) { _channel3.GenerateSamples(fullSampleCount); }
+      if (Channel4Run) { _channel4.GenerateSamples(fullSampleCount); }
 
       // We transformate the samples
-      int sc = sampleCount / _sampleSize;
       int _channelSampleIndex = 0;
-      for (int i = 0; i < sc; ++i)
+      for (int i = 0; i < fullSampleCount; ++i)
       {
         // LEFT CHANNEL
         short leftSample = 0;
