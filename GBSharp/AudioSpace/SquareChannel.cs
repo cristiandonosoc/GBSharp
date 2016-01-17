@@ -83,7 +83,7 @@ namespace GBSharp.AudioSpace
     private int _channelIndex;
 
     private int _soundLengthTicks;
-    private double _soundLengthTickCounter;
+    private int _soundLengthTickCounter;
     private bool _continuousOutput;
 
 
@@ -94,7 +94,7 @@ namespace GBSharp.AudioSpace
      * These are the values that will become 'live' on the next channel INIT
      */
     private int _envelopeTicks;
-    private double _envelopeTickCounter;
+    private int _envelopeTickCounter;
     private bool _envelopeUp;
     private int _defaultEnvelopeValue;
 
@@ -144,7 +144,7 @@ namespace GBSharp.AudioSpace
     private int _sweepShiftNumber;
     private bool _sweepUp;
     private int _sweepTicks;
-    private double _sweepTicksCounter;
+    private int _sweepTicksCounter;
 
     // DEBUG FLAGS
     private bool _runSweep = true;
@@ -298,12 +298,12 @@ namespace GBSharp.AudioSpace
           _outputValue = (short)(_up ? Volume : -Volume);
           _tickCounter -= _tickThreshold;
         }
-#if true
+
         /* FREQUENCY SWEEP */
-        if(_runSweep && _sweepTicks > 0)
+        if (_runSweep && _sweepTicks > 0)
         {
-          _sweepTicksCounter += APU.MinimumTickThreshold;
-          if(_sweepTicksCounter > _sweepTicks)
+          _sweepTicksCounter += ticks;
+          if (_sweepTicksCounter > _sweepTicks)
           {
             _sweepTicksCounter -= _sweepTicks;
 
@@ -315,7 +315,7 @@ namespace GBSharp.AudioSpace
             }
             else
             {
-              if (_sweepUp) 
+              if (_sweepUp)
               {
                 int newFreqFactor = FrequencyFactor +
                                     (_sweepFrequencyFactor >> _sweepShiftNumber);
@@ -345,10 +345,9 @@ namespace GBSharp.AudioSpace
         }
 
         /* SOUND LENGTH DURATION */
-
         if (_runSoundLength && !_continuousOutput)
         {
-          _soundLengthTickCounter += APU.MinimumTickThreshold;
+          _soundLengthTickCounter += ticks;
           if (_soundLengthTickCounter >= _soundLengthTicks)
           {
             Enabled = false;
@@ -358,7 +357,7 @@ namespace GBSharp.AudioSpace
         /* VOLUME ENVELOPE */
         if (_runVolumeEnvelope && _envelopeTicks > 0)
         {
-          _envelopeTickCounter += APU.MinimumTickThreshold;
+          _envelopeTickCounter += ticks;
           if (_envelopeTickCounter > _envelopeTicks)
           {
             _envelopeTickCounter -= _envelopeTicks;
@@ -376,7 +375,6 @@ namespace GBSharp.AudioSpace
             _outputValue = (short)(_up ? Volume : -Volume);
           }
         }
-#endif
       }
 
 
