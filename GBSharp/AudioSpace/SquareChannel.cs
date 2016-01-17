@@ -83,7 +83,7 @@ namespace GBSharp.AudioSpace
     private int _channelIndex;
 
     private int _soundLengthTicks;
-    private int _soundLengthTickCounter;
+    private double _soundLengthTickCounter;
     private bool _continuousOutput;
 
 
@@ -94,7 +94,7 @@ namespace GBSharp.AudioSpace
      * These are the values that will become 'live' on the next channel INIT
      */
     private int _envelopeTicks;
-    private int _envelopeTickCounter;
+    private double _envelopeTickCounter;
     private bool _envelopeUp;
     private int _defaultEnvelopeValue;
 
@@ -144,7 +144,7 @@ namespace GBSharp.AudioSpace
     private int _sweepShiftNumber;
     private bool _sweepUp;
     private int _sweepTicks;
-    private int _sweepTicksCounter;
+    private double _sweepTicksCounter;
 
     // DEBUG FLAGS
     private bool _runSweep = true;
@@ -298,7 +298,7 @@ namespace GBSharp.AudioSpace
           _outputValue = (short)(_up ? Volume : -Volume);
           _tickCounter -= _tickThreshold;
         }
-#if false
+#if true
         /* FREQUENCY SWEEP */
         if(_runSweep && _sweepTicks > 0)
         {
