@@ -46,7 +46,7 @@ namespace GBSharp.AudioSpace
     {
       _latencyTicks = latencyTicks;
       _latencyTicksLeft = _latencyTicks;
-      _latencySimulated = false;
+      _latencySimulated = true;
     }
 
 
@@ -300,6 +300,7 @@ namespace GBSharp.AudioSpace
         }
 
         /* FREQUENCY SWEEP */
+#if true
         if (_runSweep && _sweepTicks > 0)
         {
           _sweepTicksCounter += ticks;
@@ -375,9 +376,10 @@ namespace GBSharp.AudioSpace
             _outputValue = (short)(_up ? Volume : -Volume);
           }
         }
+#endif
       }
 
-
+#if false
       // We update the samples generated
       _sampleCounter += ticks;
       if (_sampleCounter >= APU.MinimumTickThreshold)
@@ -396,7 +398,9 @@ namespace GBSharp.AudioSpace
           }
         }
       }
+#endif
 
+#if false
       // We check how much latency we need to simulate
       if(_latencyTicksLeft > 0)
       {
@@ -407,11 +411,12 @@ namespace GBSharp.AudioSpace
           _latencySimulated = true;
         }
       }
+#endif
     }
 
     private double _sampleTime = 0;
 
-    public void GenerateSamples(int fullSamples)
+    public void OldGenerateSamples(int fullSamples)
     {
 
       if (!_latencySimulated)
@@ -471,6 +476,46 @@ namespace GBSharp.AudioSpace
       {
         _buffer[_sampleIndex++] = lastValue;
         --fullSamples;
+      }
+    }
+
+    private int _sampleTickCount = 0;
+    private int _sampleTickThreshold = 0;
+    private bool _sampleUp = false;
+    private int _sampleVolume = 0;
+
+
+    public void GenerateSamples(int fullSamples)
+    {
+      // We obtain the status of the APU
+      int newTicksThreshold = _tickThreshold;
+      int newVolume = Volume;
+
+      int fullSamplesCount = fullSamples;
+      while(fullSamplesCount > 0)
+      {
+        if (Enabled)
+        {
+          _sampleTickCount += APU.MinimumTickThreshold;
+          if (_sampleTickCount >= _sampleTickThreshold)
+          {
+            _sampleTickThreshold = newTicksThreshold;
+            _sampleTickCount -= _sampleTickThreshold;
+            _sampleVolume = newVolume;
+            _sampleUp = !_sampleUp;
+          }
+
+          for(int c = 0; c < NumChannels; ++c)
+          {
+            _buffer[_sampleIndex++] = (short)(_sampleUp ? _sampleVolume : -_sampleVolume);
+          }
+        }
+        else
+        {
+          _buffer[_sampleIndex++] = 0;
+        }
+
+        --fullSamplesCount;
       }
     }
 
