@@ -46,7 +46,7 @@ namespace GBSharp.AudioSpace
     {
       _latencyTicks = latencyTicks;
       _latencyTicksLeft = _latencyTicks;
-      _latencySimulated = false;
+      _latencySimulated = true;
     }
 
 
@@ -266,27 +266,8 @@ namespace GBSharp.AudioSpace
 #endif
     }
 
-
-    private const int _stepSamplesBufferSize = 44000 * 2 * 3;
-    private short[] _stepSamplesBuffer = new short[_stepSamplesBufferSize];
-    private int _samplesWriteCursor = 0;
-    private int _samplesReadCursor = 0;
-    double _sampleCounter = 0;
-
-    private long _stepTime = 0;
-
-    private bool _firstRun = true;
     internal void Step(int ticks)
     {
-#if SoundTiming
-      if(_firstRun)
-      {
-        _firstRun = false;
-        sw.Start();
-      }
-#endif
-      _stepTime += ticks;
-
       // If not enabled, we do not simulate the channel
       if (Enabled)
       {
@@ -376,101 +357,44 @@ namespace GBSharp.AudioSpace
           }
         }
       }
-
-
-      // We update the samples generated
-      _sampleCounter += ticks;
-      if (_sampleCounter >= APU.MinimumTickThreshold)
-      {
-        _sampleCounter -= APU.MinimumTickThreshold;
-
-        // We generate the samples
-        // We output the sample value
-        for (int c = 0; c < NumChannels; ++c)
-        {
-          short outputValue = Enabled ? _outputValue : (short)0;
-          _stepSamplesBuffer[_samplesWriteCursor++] = outputValue;
-          if(_samplesWriteCursor >= _stepSamplesBufferSize)
-          {
-            _samplesWriteCursor -= _stepSamplesBufferSize;
-          }
-        }
-      }
-
-      // We check how much latency we need to simulate
-      if(_latencyTicksLeft > 0)
-      {
-        _latencyTicksLeft -= ticks;
-        if(_latencyTicksLeft <= 0)
-        {
-          _latencyTicksLeft = 0;
-          _latencySimulated = true;
-        }
-      }
     }
 
-    private double _sampleTime = 0;
+    private int _sampleTickCount = 0;
+    private int _sampleTickThreshold = 0;
+    private bool _sampleUp = false;
+    private int _sampleVolume = 0;
 
     public void GenerateSamples(int fullSamples)
     {
+      // We obtain the status of the APU
+      int newTicksThreshold = _tickThreshold;
+      int newVolume = Volume;
 
-      if (!_latencySimulated)
+      int fullSamplesCount = fullSamples;
+      while(fullSamplesCount > 0)
       {
-        while (fullSamples > 0)
+        if (Enabled)
         {
-          for (int c = 0; c < NumChannels; ++c)
+          _sampleTickCount += APU.MinimumTickThreshold;
+          if (_sampleTickCount >= _sampleTickThreshold)
           {
-            _buffer[_sampleIndex++] = 0;
+            _sampleTickThreshold = newTicksThreshold;
+            _sampleTickCount -= _sampleTickThreshold;
+            _sampleVolume = newVolume;
+            _sampleUp = !_sampleUp;
           }
-          --fullSamples;
-        }
 
-        return;
-      }
-
-      _sampleTime += APU.MinimumTickThreshold * fullSamples;
-
-      // We check how many samples are available
-      int writeCursor = _samplesWriteCursor;
-      int readCursor = _samplesReadCursor;
-      int diff = writeCursor - readCursor;
-      if(diff < 0) { diff += _stepSamplesBufferSize; }
-
-#if SoundTiming
-      Timeline[TimelineCount++] = _stepTime;
-      Timeline[TimelineCount++] = (long)_sampleTime;
-      Timeline[TimelineCount++] = sw.ElapsedMilliseconds;
-#endif
-
-      // diff is measured in samples, not fullSamples
-      int fullSamplesToGenerate = fullSamples;
-      if (diff < fullSamples * 2)
-      {
-        //throw new Exception("NOT ENOUGH SAMPLES!!!");
-        fullSamplesToGenerate = diff / 2;
-      }
-
-      short lastValue = 0;
-      while(fullSamplesToGenerate > 0)
-      {
-        for (int c = 0; c < NumChannels; ++c)
-        {
-
-          lastValue = _stepSamplesBuffer[_samplesReadCursor++];
-          _buffer[_sampleIndex++] = lastValue;
-          if (_samplesReadCursor >= _stepSamplesBufferSize)
+          for(int c = 0; c < NumChannels; ++c)
           {
-            _samplesReadCursor -= _stepSamplesBufferSize;
+            _buffer[_sampleIndex++] = (short)(_sampleUp ? _sampleVolume : -_sampleVolume);
           }
         }
-        --fullSamplesToGenerate;
-      }
+        else
+        {
+          _buffer[_sampleIndex++] = 0;
+        }
 
-      fullSamples -= fullSamplesToGenerate;
-      while(fullSamples > 0)
-      {
-        _buffer[_sampleIndex++] = lastValue;
-        --fullSamples;
+        --fullSamplesCount;
       }
     }
 
