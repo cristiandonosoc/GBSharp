@@ -55,8 +55,6 @@ namespace GBSharp.AudioSpace
       }
     }
 
-
-
     #endregion
 
     internal byte LowFreqByte { get; private set; }
@@ -291,95 +289,103 @@ namespace GBSharp.AudioSpace
 
     internal void Step(int ticks)
     {
-      // If not enabled, we do not simulate the channel
-      if (Enabled)
+      if (!Enabled) { return; }
+
+      // The amount of ticks in a sample
+      _tickCounter += ticks;
+      if (_tickCounter >= _tickThreshold)
       {
-        // The amount of ticks in a sample
-        _tickCounter += ticks;
-        if (_tickCounter >= _tickThreshold)
-        {
-          _up = !_up;
-          _outputValue = (short)(_up ? Volume : -Volume);
-          _tickCounter -= _tickThreshold;
-        }
+        _up = !_up;
+        _outputValue = (short)(_up ? Volume : -Volume);
+        _tickCounter -= _tickThreshold;
+      }
 
-        /* FREQUENCY SWEEP */
-        if (_runSweep && _sweepTicks > 0)
+      #region FREQUENCY SWEEP
+
+      if (_runSweep && _sweepTicks > 0)
+      {
+        _sweepTicksCounter += ticks;
+        if (_sweepTicksCounter > _sweepTicks)
         {
-          _sweepTicksCounter += ticks;
-          if (_sweepTicksCounter > _sweepTicks)
+          _sweepTicksCounter -= _sweepTicks;
+
+          if (_sweepShiftNumber == 0)
           {
-            _sweepTicksCounter -= _sweepTicks;
-
-            if (_sweepShiftNumber == 0)
+            // If the shift number is 0, the channel stops when it's time to
+            // shift
+            Enabled = false;
+          }
+          else
+          {
+            if (_sweepUp)
             {
-              // If the shift number is 0, the channel stops when it's time to
-              // shift
-              Enabled = false;
-            }
-            else
-            {
-              if (_sweepUp)
+              int newFreqFactor = FrequencyFactor +
+                                  (_sweepFrequencyFactor >> _sweepShiftNumber);
+              if (newFreqFactor < 0x800) // Higher than an 11-bit number
               {
-                int newFreqFactor = FrequencyFactor +
-                                    (_sweepFrequencyFactor >> _sweepShiftNumber);
-                if (newFreqFactor < 0x800) // Higher than an 11-bit number
-                {
-                  _sweepFrequencyFactor = (ushort)newFreqFactor;
-                  FrequencyFactor = _sweepFrequencyFactor;
-                }
-                else
-                {
-                  // Overflow stops the channel
-                  Enabled = false;
-                }
+                _sweepFrequencyFactor = (ushort)newFreqFactor;
+                FrequencyFactor = _sweepFrequencyFactor;
               }
               else
               {
-                int newFreqFactor = FrequencyFactor -
-                                       (_sweepFrequencyFactor >> _sweepShiftNumber);
-                if (newFreqFactor > 0)
-                {
-                  _sweepFrequencyFactor = (ushort)newFreqFactor;
-                  FrequencyFactor = _sweepFrequencyFactor;
-                }
+                // Overflow stops the channel
+                Enabled = false;
+              }
+            }
+            else
+            {
+              int newFreqFactor = FrequencyFactor -
+                                     (_sweepFrequencyFactor >> _sweepShiftNumber);
+              if (newFreqFactor > 0)
+              {
+                _sweepFrequencyFactor = (ushort)newFreqFactor;
+                FrequencyFactor = _sweepFrequencyFactor;
               }
             }
           }
         }
+      }
 
-        /* SOUND LENGTH DURATION */
-        if (_runSoundLength && !_continuousOutput)
+      #endregion
+
+      #region SOUND LENGTH DURATION
+
+      if (_runSoundLength && !_continuousOutput)
+      {
+        _soundLengthTickCounter += ticks;
+        if (_soundLengthTickCounter >= _soundLengthTicks)
         {
-          _soundLengthTickCounter += ticks;
-          if (_soundLengthTickCounter >= _soundLengthTicks)
-          {
-            Enabled = false;
-          }
-        }
-
-        /* VOLUME ENVELOPE */
-        if (_runVolumeEnvelope && _envelopeTicks > 0)
-        {
-          _envelopeTickCounter += ticks;
-          if (_envelopeTickCounter > _envelopeTicks)
-          {
-            _envelopeTickCounter -= _envelopeTicks;
-            if (_envelopeUp)
-            {
-              ++_currentEnvelopeValue;
-              if (_currentEnvelopeValue > 15) { _currentEnvelopeValue = 15; }
-            }
-            else
-            {
-              --_currentEnvelopeValue;
-              if (_currentEnvelopeValue < 0) { _currentEnvelopeValue = 0; }
-            }
-
-            _outputValue = (short)(_up ? Volume : -Volume);
-          }
+          _soundLengthTickCounter -= _soundLengthTicks;
+          Enabled = false;
         }
       }
+
+      #endregion
+
+      #region VOLUME ENVELOPE
+
+      if (_runVolumeEnvelope && _envelopeTicks > 0)
+      {
+        _envelopeTickCounter += ticks;
+        if (_envelopeTickCounter > _envelopeTicks)
+        {
+          _envelopeTickCounter -= _envelopeTicks;
+          if (_envelopeUp)
+          {
+            ++_currentEnvelopeValue;
+            if (_currentEnvelopeValue > 15) { _currentEnvelopeValue = 15; }
+          }
+          else
+          {
+            --_currentEnvelopeValue;
+            if (_currentEnvelopeValue < 0) { _currentEnvelopeValue = 0; }
+          }
+
+          _outputValue = (short)(_up ? Volume : -Volume);
+        }
+      }
+
+      #endregion
     }
 
     private int _sampleTickCount = 0;

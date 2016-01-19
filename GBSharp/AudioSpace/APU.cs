@@ -291,8 +291,9 @@ namespace GBSharp.AudioSpace
 
     internal void Step(int ticks)
     {
-      if (_channel1.Enabled) { _channel1.Step(ticks); }
-      if (_channel2.Enabled) { _channel2.Step(ticks); }
+      _channel1.Step(ticks);
+      _channel2.Step(ticks);
+      _channel3.Step(ticks);
     }
 
     public void GenerateSamples(int fullSampleCount)

@@ -158,11 +158,56 @@ namespace GBSharp.AudioSpace
       }
     }
 
+    internal void Step(int ticks)
+    {
+      if (!Enabled) { return; }
+
+      _tickCounter += ticks;
+      if (_tickCounter >= _tickThreshold)
+      {
+        _tickCounter -= _tickThreshold;
+
+        ++_currentSampleIndex;
+        if (_currentSampleIndex >= 32)
+        {
+          _currentSampleIndex = 0;
+        }
+
+        // We get the memory value
+        ushort waveRAM = (ushort)(0xFF30 + _currentSampleIndex / 2);
+        byte value = _memory.Read(waveRAM);
+        // Pair means the first 4 bits,
+        // Odd means the last 4 bits
+        if ((_currentSampleIndex & 1) == 0)
+        {
+          _currentSample = (byte)(value >> 4);
+        }
+        else
+        {
+          _currentSample = (byte)(value & 0xF);
+        }
+
+        _outputValue = (short)Volume;
+      }
+
+      /* SOUND LENGTH */
+      if (!_continuousOutput)
+      {
+        _soundLengthTickCounter += ticks;
+        if (_soundLengthTickCounter >= _soundLengthTicks)
+        {
+          _soundLengthTickCounter -= _soundLengthTicks;
+          Enabled = false;
+        }
+      }
+    }
+
     private byte _currentSampleIndex;
     private byte _currentSample;
 
     public void GenerateSamples(int sampleCount)
     {
+      return;
       while (sampleCount > 0)
       {
         --sampleCount;
@@ -172,42 +217,7 @@ namespace GBSharp.AudioSpace
           _buffer[_sampleIndex++] = _outputValue;
         }
 
-        _tickCounter -= APU.MinimumTickThreshold;
-        if (_tickCounter < 0)
-        {
-          _tickCounter = _tickThreshold + _tickCounter;
-          ++_currentSampleIndex;
-          if (_currentSampleIndex >= 32)
-          {
-            _currentSampleIndex = 0;
-          }
 
-          // We get the memory value
-          ushort waveRAM = (ushort)(0xFF30 + _currentSampleIndex / 2);
-          byte value = _memory.Read(waveRAM);
-          // Pair means the first 4 bits,
-          // Odd means the last 4 bits
-          if ((_currentSampleIndex & 1) == 0)
-          {
-            _currentSample = (byte)(value >> 4);
-          }
-          else
-          {
-            _currentSample = (byte)(value & 0xF);
-          }
-
-          _outputValue = (short)Volume;
-        }
-
-        /* SOUND LENGTH */
-        if (!_continuousOutput)
-        {
-          _soundLengthTickCounter += APU.MinimumTickThreshold;
-          if (_soundLengthTickCounter >= _soundLengthTicks)
-          {
-            Enabled = false;
-          }
-        }
       }
     }
 
