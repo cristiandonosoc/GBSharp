@@ -266,27 +266,8 @@ namespace GBSharp.AudioSpace
 #endif
     }
 
-
-    private const int _stepSamplesBufferSize = 44000 * 2 * 3;
-    private short[] _stepSamplesBuffer = new short[_stepSamplesBufferSize];
-    private int _samplesWriteCursor = 0;
-    private int _samplesReadCursor = 0;
-    double _sampleCounter = 0;
-
-    private long _stepTime = 0;
-
-    private bool _firstRun = true;
     internal void Step(int ticks)
     {
-#if SoundTiming
-      if(_firstRun)
-      {
-        _firstRun = false;
-        sw.Start();
-      }
-#endif
-      _stepTime += ticks;
-
       // If not enabled, we do not simulate the channel
       if (Enabled)
       {
@@ -300,7 +281,6 @@ namespace GBSharp.AudioSpace
         }
 
         /* FREQUENCY SWEEP */
-#if true
         if (_runSweep && _sweepTicks > 0)
         {
           _sweepTicksCounter += ticks;
@@ -376,106 +356,6 @@ namespace GBSharp.AudioSpace
             _outputValue = (short)(_up ? Volume : -Volume);
           }
         }
-#endif
-      }
-
-#if false
-      // We update the samples generated
-      _sampleCounter += ticks;
-      if (_sampleCounter >= APU.MinimumTickThreshold)
-      {
-        _sampleCounter -= APU.MinimumTickThreshold;
-
-        // We generate the samples
-        // We output the sample value
-        for (int c = 0; c < NumChannels; ++c)
-        {
-          short outputValue = Enabled ? _outputValue : (short)0;
-          _stepSamplesBuffer[_samplesWriteCursor++] = outputValue;
-          if(_samplesWriteCursor >= _stepSamplesBufferSize)
-          {
-            _samplesWriteCursor -= _stepSamplesBufferSize;
-          }
-        }
-      }
-#endif
-
-#if false
-      // We check how much latency we need to simulate
-      if(_latencyTicksLeft > 0)
-      {
-        _latencyTicksLeft -= ticks;
-        if(_latencyTicksLeft <= 0)
-        {
-          _latencyTicksLeft = 0;
-          _latencySimulated = true;
-        }
-      }
-#endif
-    }
-
-    private double _sampleTime = 0;
-
-    public void OldGenerateSamples(int fullSamples)
-    {
-
-      if (!_latencySimulated)
-      {
-        while (fullSamples > 0)
-        {
-          for (int c = 0; c < NumChannels; ++c)
-          {
-            _buffer[_sampleIndex++] = 0;
-          }
-          --fullSamples;
-        }
-
-        return;
-      }
-
-      _sampleTime += APU.MinimumTickThreshold * fullSamples;
-
-      // We check how many samples are available
-      int writeCursor = _samplesWriteCursor;
-      int readCursor = _samplesReadCursor;
-      int diff = writeCursor - readCursor;
-      if(diff < 0) { diff += _stepSamplesBufferSize; }
-
-#if SoundTiming
-      Timeline[TimelineCount++] = _stepTime;
-      Timeline[TimelineCount++] = (long)_sampleTime;
-      Timeline[TimelineCount++] = sw.ElapsedMilliseconds;
-#endif
-
-      // diff is measured in samples, not fullSamples
-      int fullSamplesToGenerate = fullSamples;
-      if (diff < fullSamples * 2)
-      {
-        //throw new Exception("NOT ENOUGH SAMPLES!!!");
-        fullSamplesToGenerate = diff / 2;
-      }
-
-      short lastValue = 0;
-      while(fullSamplesToGenerate > 0)
-      {
-        for (int c = 0; c < NumChannels; ++c)
-        {
-
-          lastValue = _stepSamplesBuffer[_samplesReadCursor++];
-          _buffer[_sampleIndex++] = lastValue;
-          if (_samplesReadCursor >= _stepSamplesBufferSize)
-          {
-            _samplesReadCursor -= _stepSamplesBufferSize;
-          }
-        }
-        --fullSamplesToGenerate;
-      }
-
-      fullSamples -= fullSamplesToGenerate;
-      while(fullSamples > 0)
-      {
-        _buffer[_sampleIndex++] = lastValue;
-        --fullSamples;
       }
     }
 
@@ -483,7 +363,6 @@ namespace GBSharp.AudioSpace
     private int _sampleTickThreshold = 0;
     private bool _sampleUp = false;
     private int _sampleVolume = 0;
-
 
     public void GenerateSamples(int fullSamples)
     {
