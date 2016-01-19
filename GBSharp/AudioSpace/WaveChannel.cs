@@ -21,7 +21,28 @@ namespace GBSharp.AudioSpace
     private int _sampleIndex;
     public int SampleCount { get { return _sampleIndex; } }
 
-    public bool Enabled { get; internal set; }
+    private bool _enabled;
+    public bool Enabled
+    {
+      get { return _enabled; }
+      internal set
+      {
+        _enabled = value;
+        // We update the NR52 byte
+        byte nr52 = _memory.LowLevelRead((ushort)MMR.NR52);
+        if(_enabled)
+        {
+          byte mask = (byte)(1 << _channelIndex);
+          nr52 |= mask;
+        }
+        else
+        {
+          byte mask = (byte)(~(1 << _channelIndex));
+          nr52 &= mask;
+        }
+        _memory.LowLevelWrite((ushort)MMR.NR52, nr52);
+      }
+    }
 
     private const int _volumeConstant = 1023;
     public int Volume
