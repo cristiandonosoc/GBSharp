@@ -98,7 +98,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           else
           // RTC access
           {
-            throw new NotImplementedException("MBC3+RTC Real time clock access not implemented.");
+            //throw new NotImplementedException("MBC3+RTC Real time clock access not implemented.");
           }
         }
         /* [0x6000 - 0x7FFF]: RTC registers latch */
