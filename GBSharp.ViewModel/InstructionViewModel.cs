@@ -1,14 +1,12 @@
-﻿namespace GBSharp.ViewModel
+﻿using System.Windows.Input;
+
+namespace GBSharp.ViewModel
 {
   public class InstructionViewModel : ViewModelBase
   {
-    private readonly IInstruction _instruction;
 
-    //public string Address { get { return "0x" + _instruction.Address.ToString("x2"); } }
-    //public string Opcode { get { return "0x" + _instruction.OpCode.ToString("x2"); } }
-    //public string Name { get { return _instruction.Name; } }
-    //public string Literal { get { return "0x" + _instruction.Literal.ToString("x2"); } }
-    //public string Description { get { return _instruction.Description; } }
+    private readonly ICPU _cpu;
+    private readonly IInstruction _instruction;
 
     internal ushort originalOpcode { get; set; }
     public string Address { get; set; }
@@ -17,8 +15,24 @@
     public string Literal { get; set; }
     public string Description { get; set; }
 
-    public InstructionViewModel(IInstruction instruction)
+    private bool _hasBreakpoint;
+    public bool HasBreakpoint
     {
+      get { return _hasBreakpoint; }
+      set
+      {
+        if(_hasBreakpoint == value) { return; }
+        _hasBreakpoint = value;
+        OnPropertyChanged(() => HasBreakpoint);
+      }
+    }
+
+
+
+    public InstructionViewModel(ICPU cpu, IInstruction instruction)
+    {
+      _cpu = cpu;
+
       _instruction = instruction;
       Address = "0x" + instruction.Address.ToString("x2");
       Opcode = "0x" + instruction.OpCode.ToString("x2");
@@ -27,6 +41,26 @@
       Description = instruction.Description;
     }
 
-    public InstructionViewModel() { }
+    public InstructionViewModel(ICPU cpu)
+    {
+      _cpu = cpu;
+    }
+
+    public ICommand ToggleBreakpointCommand()
+    {
+      return new DelegateCommand(ToggleBreakpoint);
+    }
+
+    public void ToggleBreakpoint()
+    {
+      if(_cpu.Breakpoints.Contains(originalOpcode))
+      {
+        _cpu.RemoveBreakpoint(originalOpcode);
+      }
+      else
+      {
+        _cpu.AddBreakpoint(originalOpcode);
+      }
+    }
   }
 }

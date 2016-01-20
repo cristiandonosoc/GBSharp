@@ -32,15 +32,28 @@ namespace GBSharp.CPUSpace
       {Interrupts.P10to13TerminalNegativeEdge, false}
     };
 
+    #region BREAKPOINTS
+
     public event Action BreakpointFound;
     public event Action<Interrupts> InterruptHappened;
 
-    public ushort Breakpoint
+    private List<ushort> _breakpoints;
+    public List<ushort> Breakpoints { get { return _breakpoints; } }
+
+    public void AddBreakpoint(ushort address)
     {
-      get;
-      set;
+      if (_breakpoints.Contains(address)) { return; }
+      _breakpoints.Add(address);
     }
 
+    public void RemoveBreakpoint(ushort address)
+    {
+      _breakpoints.Remove(address);
+    }
+
+    public ushort CurrentBreakpoint { get; private set; }
+
+    #endregion
 
     // NOTE(Cristian): This Instruction instance is no longer used to communicate
     //                 the current state to the CPUView. This is because it's always
@@ -106,10 +119,6 @@ namespace GBSharp.CPUSpace
 
       // Initialize registers 
       Reset();
-
-      // NOTE(Cristian): This address is not writable as a program,
-      //                 so this breakpoint *should* be inactive
-      this.Breakpoint = 0xFFFF;
     }
 
     /// <summary>
@@ -169,6 +178,8 @@ namespace GBSharp.CPUSpace
 
       _currentInstruction = new Instruction();
       _exportInstruction = new Instruction();
+
+      _breakpoints = new List<ushort>();
     }
 
     public void ResetInstructionHistograms()
@@ -245,8 +256,9 @@ namespace GBSharp.CPUSpace
       }
 
       // We see if there is an breakpoint to this address
-      if (!ignoreBreakpoints && (_currentInstruction.Address == Breakpoint))
+      if(!ignoreBreakpoints && Breakpoints.Contains(_currentInstruction.Address))
       {
+        CurrentBreakpoint = _currentInstruction.Address;
         BreakpointFound();
         return 0;
       }

@@ -207,7 +207,7 @@ namespace GBSharp.ViewModel
     {
       // TODO(aaecheve): put love to this input check :)
       ushort address = Convert.ToUInt16(Breakpoint, 16);
-      _gameBoy.CPU.Breakpoint = address;
+      _gameBoy.CPU.AddBreakpoint(address);
       CurrentBreakpoint = "0x" + address.ToString("x2");
     }
   }

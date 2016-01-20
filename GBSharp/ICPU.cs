@@ -13,7 +13,7 @@ namespace GBSharp
     CPURegisters Registers { get; }
     bool InterruptMasterEnable { get; }
     IInstruction CurrentInstruction { get; }
-    ushort Breakpoint { get; set; }
+    
     ushort[] InstructionHistogram { get; }
     ushort[] CbInstructionHistogram { get; }
     void ResetInstructionHistograms();
@@ -21,5 +21,10 @@ namespace GBSharp
     void SetInterruptBreakable(Interrupts interrupt, bool isBreakable);
 
     byte Step(bool ignoreBreakpoints);
+
+
+    List<ushort> Breakpoints { get; }
+    void AddBreakpoint(ushort address);
+    void RemoveBreakpoint(ushort address);
   }
 }

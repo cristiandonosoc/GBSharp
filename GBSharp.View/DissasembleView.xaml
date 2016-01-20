@@ -10,15 +10,26 @@
     <DataTemplate DataType="{x:Type viewModel:InstructionViewModel}">
       <Grid>
         <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="40"></ColumnDefinition>
           <ColumnDefinition Width="80"></ColumnDefinition>
           <ColumnDefinition Width="80"></ColumnDefinition>
           <ColumnDefinition Width="80"></ColumnDefinition>
           <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <TextBlock Text="{Binding Address}" Style="{StaticResource NumericText}"></TextBlock>
-        <TextBlock Grid.Column="1" Text="{Binding Opcode}" ></TextBlock>
-        <TextBlock Grid.Column="2" Text="{Binding Name}" ></TextBlock>
-        <TextBlock Grid.Column="3" Text="{Binding Literal}" ></TextBlock>
+
+        <Grid.ContextMenu>
+          <ContextMenu>
+            <MenuItem Header="Toggle Breakpoint" Command="{Binding ToggleBreakpointCommand}">
+            </MenuItem>
+          </ContextMenu>
+        </Grid.ContextMenu>
+
+
+        <TextBlock Grid.Column="1" Text="{Binding Address}" Style="{StaticResource NumericText}"></TextBlock>
+        <TextBlock Grid.Column="2" Text="{Binding Opcode}" >
+        </TextBlock>
+        <TextBlock Grid.Column="3" Text="{Binding Name}" ></TextBlock>
+        <TextBlock Grid.Column="4" Text="{Binding Literal}" ></TextBlock>
       </Grid>
     </DataTemplate>
   </UserControl.Resources>

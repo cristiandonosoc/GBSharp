@@ -20,7 +20,8 @@ namespace GBSharp.ViewModel
 
     public string BreakPoint
     {
-      get { return "0x" + _cpu.Breakpoint.ToString("x2"); }
+      //get { return "0x" + _cpu.Breakpoint.ToString("x2"); }
+      get { return ""; }
     }
 
     public ObservableCollection<InstructionViewModel> Instructions
@@ -110,9 +111,8 @@ namespace GBSharp.ViewModel
           continue;
         }
 
-
         string searchString = "";
-        var vm = new InstructionViewModel();
+        var vm = new InstructionViewModel(_cpu);
         // We check the length
         if (intLength == 1)
         {
@@ -176,7 +176,8 @@ namespace GBSharp.ViewModel
     {
       if (SelectedInstruction != null)
       {
-        _gameBoy.CPU.Breakpoint = ushort.Parse(SelectedInstruction.Address.Remove(0, 2), NumberStyles.HexNumber);
+        ushort address = ushort.Parse(SelectedInstruction.Address.Remove(0, 2), NumberStyles.HexNumber);
+        _cpu.AddBreakpoint(address);
         OnPropertyChanged(() => BreakPoint);
       }
     }
