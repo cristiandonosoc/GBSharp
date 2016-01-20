@@ -12,10 +12,11 @@ namespace GBSharp.ViewModel
     private readonly IGameBoy _gameBoy;
     private readonly ICPU _cpu;
     private readonly IDisassembler _disassembler;
+
     private readonly ObservableCollection<InstructionViewModel> _instructions = 
       new ObservableCollection<InstructionViewModel>();
     private Dictionary<ushort, InstructionViewModel> _addressToInstruction;
-    private InstructionViewModel _selectedInstruction;
+    private string[] searchStrings = new string[0xFFFF];
 
     public string BreakPoint
     {
@@ -27,16 +28,7 @@ namespace GBSharp.ViewModel
       get { return _instructions; }
     }
 
-    public ICommand DissasembleCommand
-    {
-      get { return new DelegateCommand(DissasembleCommandWrapper); }
-    }
-
-    public ICommand SetBreakPointCommand
-    {
-      get { return new DelegateCommand(SetBreakpoint); }
-    }
-
+    private InstructionViewModel _selectedInstruction;
     public InstructionViewModel SelectedInstruction
     {
       get { return _selectedInstruction; }
@@ -49,6 +41,22 @@ namespace GBSharp.ViewModel
         }
       }
     }
+
+    private string _searchField;
+    public string SearchField
+    {
+      get { return _searchField; }
+      set
+      {
+        if(_searchField == value) { return; }
+        _searchField = value;
+        OnPropertyChanged(() => SearchField);
+      }
+    }
+
+    public ICommand DissasembleCommand { get { return new DelegateCommand(DissasembleCommandWrapper); } }
+    public ICommand SetBreakPointCommand { get { return new DelegateCommand(SetBreakpoint); }}
+    public ICommand SearchCommand { get { return new DelegateCommand(Search); } }
 
     public DissasembleViewModel(IGameBoy gameBoy)
     {
@@ -95,7 +103,15 @@ namespace GBSharp.ViewModel
       {
         byte[] entry = matrix[address];
         int intLength = entry[0];
-        if(intLength == 0) { continue; }
+
+
+        if(intLength == 0) {
+          searchStrings[address] = ""; 
+          continue;
+        }
+
+
+        string searchString = "";
         var vm = new InstructionViewModel();
         // We check the length
         if (intLength == 1)
@@ -142,6 +158,13 @@ namespace GBSharp.ViewModel
         _instructions.Add(vm);
         _addressToInstruction[(ushort)address] = vm;
 
+        searchString += vm.Address.ToLower();
+        searchString += vm.Opcode.ToLower();
+        searchString += vm.Name.ToLower();
+        searchString += vm.Description.ToLower();
+
+        searchStrings[address] = searchString;
+
         if(address == currentAddress)
         {
           SelectedInstruction = vm;
@@ -157,6 +180,43 @@ namespace GBSharp.ViewModel
         OnPropertyChanged(() => BreakPoint);
       }
     }
-  
+
+    private int _currentSearchIndex = 0;
+    public void Search()
+    {
+      string searchString = _searchField.ToLower();
+
+      bool found = false;
+
+      // We search the the instructions after the current found
+      for(int address = _currentSearchIndex + 1; address < 0xFFFF; ++address)
+      {
+        if(_disassembler.DisassembledMatrix[address][0] == 0) { continue; }
+
+        if(searchStrings[address].Contains(searchString))
+        {
+          _currentSearchIndex = address;
+          SelectedInstruction = _addressToInstruction[(ushort)address];
+          found = true;
+          break;
+        }
+      }
+
+      if (found) { return; }
+
+      // We search the instructions before the current found
+      for(int address = 0; address < _currentSearchIndex + 1; ++address)
+      {
+        if(_disassembler.DisassembledMatrix[address][0] == 0) { continue; }
+
+        if(searchStrings[address].Contains(searchString))
+        {
+          _currentSearchIndex = address;
+          SelectedInstruction = _addressToInstruction[(ushort)address];
+          found = true;
+          break;
+        }
+      }
+    }
   }
 }
