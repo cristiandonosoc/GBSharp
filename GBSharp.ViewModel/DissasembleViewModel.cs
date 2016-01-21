@@ -55,9 +55,6 @@ namespace GBSharp.ViewModel
       }
     }
 
-    public ICommand DissasembleCommand { get { return new DelegateCommand(DissasembleCommandWrapper); } }
-    public ICommand SetBreakPointCommand { get { return new DelegateCommand(SetBreakpoint); }}
-    public ICommand SearchCommand { get { return new DelegateCommand(Search); } }
 
     public DissasembleViewModel(IGameBoy gameBoy)
     {
@@ -92,7 +89,7 @@ namespace GBSharp.ViewModel
       Dissasemble(0x100);
     }
 
-
+    public ICommand DissasembleCommand { get { return new DelegateCommand(DissasembleCommandWrapper); } }
     public void Dissasemble(ushort currentAddress)
     {
       _addressToInstruction = new Dictionary<ushort, InstructionViewModel>();
@@ -154,6 +151,7 @@ namespace GBSharp.ViewModel
           vm.Literal = "0x" + literal.ToString("x2");
           vm.Description = CPUInstructionDescriptions.Get(entry[1]);
         }
+        vm.originalAddress = (ushort)address;
 
         _instructions.Add(vm);
         _addressToInstruction[(ushort)address] = vm;
@@ -172,6 +170,7 @@ namespace GBSharp.ViewModel
       }
     }
 
+    public ICommand SetBreakpointCommand { get { return new DelegateCommand(SetBreakpoint); }}
     private void SetBreakpoint()
     {
       if (SelectedInstruction != null)
@@ -182,6 +181,7 @@ namespace GBSharp.ViewModel
       }
     }
 
+    public ICommand SearchCommand { get { return new DelegateCommand(Search); } }
     private int _currentSearchIndex = 0;
     public void Search()
     {

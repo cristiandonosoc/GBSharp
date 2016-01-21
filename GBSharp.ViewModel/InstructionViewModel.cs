@@ -9,6 +9,7 @@ namespace GBSharp.ViewModel
     private readonly IInstruction _instruction;
 
     internal ushort originalOpcode { get; set; }
+    internal ushort originalAddress { get; set; }
     public string Address { get; set; }
     public string Opcode { get; set; }
     public string Name { get; set; }
@@ -34,6 +35,7 @@ namespace GBSharp.ViewModel
       _cpu = cpu;
 
       _instruction = instruction;
+      originalAddress = instruction.Address;
       Address = "0x" + instruction.Address.ToString("x2");
       Opcode = "0x" + instruction.OpCode.ToString("x2");
       Name = instruction.Name;
@@ -46,20 +48,20 @@ namespace GBSharp.ViewModel
       _cpu = cpu;
     }
 
-    public ICommand ToggleBreakpointCommand()
+    public ICommand ToggleBreakpointCommand
     {
-      return new DelegateCommand(ToggleBreakpoint);
+      get { return new DelegateCommand(ToggleBreakpoint); }
     }
 
     public void ToggleBreakpoint()
     {
-      if(_cpu.Breakpoints.Contains(originalOpcode))
+      if(_cpu.Breakpoints.Contains(originalAddress))
       {
-        _cpu.RemoveBreakpoint(originalOpcode);
+        _cpu.RemoveBreakpoint(originalAddress);
       }
       else
       {
-        _cpu.AddBreakpoint(originalOpcode);
+        _cpu.AddBreakpoint(originalAddress);
       }
     }
   }
