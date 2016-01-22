@@ -58,10 +58,12 @@ namespace GBSharp.ViewModel
       if(_cpu.Breakpoints.Contains(originalAddress))
       {
         _cpu.RemoveBreakpoint(originalAddress);
+        HasBreakpoint = false;
       }
       else
       {
         _cpu.AddBreakpoint(originalAddress);
+        HasBreakpoint = true;
       }
     }
   }

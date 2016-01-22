@@ -24,7 +24,17 @@
           </ContextMenu>
         </Grid.ContextMenu>
 
-
+        <Image Width="16">
+          <Image.Style>
+            <Style TargetType="{x:Type Image}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding HasBreakpoint}" Value="True">
+                  <Setter Property="Source" Value="Images/breakpoint.png"></Setter>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Image.Style>
+        </Image>
         <TextBlock Grid.Column="1" Text="{Binding Address}" Style="{StaticResource NumericText}"></TextBlock>
         <TextBlock Grid.Column="2" Text="{Binding Opcode}" >
         </TextBlock>

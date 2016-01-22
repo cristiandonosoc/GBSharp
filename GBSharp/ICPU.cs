@@ -26,6 +26,6 @@ namespace GBSharp
     List<ushort> Breakpoints { get; }
     void AddBreakpoint(ushort address);
     void RemoveBreakpoint(ushort address);
-    void ResetBreakpoinst();
+    void ResetBreakpoints();
   }
 }
