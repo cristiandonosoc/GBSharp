@@ -51,6 +51,11 @@ namespace GBSharp.CPUSpace
       _breakpoints.Remove(address);
     }
 
+    public void ResetBreakpoints()
+    {
+      _breakpoints = new List<ushort>();
+    }
+
     public ushort CurrentBreakpoint { get; private set; }
 
     #endregion
@@ -119,6 +124,7 @@ namespace GBSharp.CPUSpace
 
       // Initialize registers 
       Reset();
+      ResetBreakpoints();
     }
 
     /// <summary>
@@ -175,11 +181,8 @@ namespace GBSharp.CPUSpace
       this.memory.LowLevelWrite(0xFF4B, 0x00); // WX
       this.memory.LowLevelWrite(0xFFFF, 0x00); // IE
 
-
       _currentInstruction = new Instruction();
       _exportInstruction = new Instruction();
-
-      _breakpoints = new List<ushort>();
     }
 
     public void ResetInstructionHistograms()

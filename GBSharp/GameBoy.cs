@@ -183,6 +183,7 @@ namespace GBSharp
       this.cartridge = new Cartridge.Cartridge();
       this.cartridge.Load(cartridgeData);
 
+      this.cpu.ResetBreakpoints();
       this.CartridgeFilename = Path.GetFileNameWithoutExtension(cartridgeFullFilename);
       this.CartridgeDirectory = Path.GetDirectoryName(cartridgeFullFilename);
       this.apu.CartridgeFilename = this.CartridgeFilename; 
