@@ -35,12 +35,23 @@ namespace GBSharp.ViewModel
       get { return _selectedInstruction; }
       set
       {
-        if (_selectedInstruction != value)
-        {
-          _selectedInstruction = value;
-          OnPropertyChanged(() => SelectedInstruction);
-        }
+        if (_selectedInstruction == value) { return; }
+        _selectedInstruction = value;
+        OnPropertyChanged(() => SelectedInstruction);
       }
+    }
+
+    private InstructionViewModel _current;
+    public void SetCurrentInstruction(InstructionViewModel instruction)
+    {
+      if(_current == instruction) { return; }
+      if (_current != null)
+      {
+        _current.IsCurrent = false;
+      }
+
+      _current = instruction;
+      _current.IsCurrent = true;
     }
 
     private string _searchField;
@@ -72,6 +83,7 @@ namespace GBSharp.ViewModel
         if (_cpu.CurrentInstruction.OpCode == inst.originalOpcode)
         {
           SelectedInstruction = _addressToInstruction[_cpu.Registers.PC];
+          SetCurrentInstruction(SelectedInstruction);
         }
         else
         {
@@ -166,6 +178,7 @@ namespace GBSharp.ViewModel
         if(address == currentAddress)
         {
           SelectedInstruction = vm;
+          SetCurrentInstruction(vm);
         }
       }
     }

@@ -10,21 +10,15 @@
     <DataTemplate DataType="{x:Type viewModel:InstructionViewModel}">
       <Grid>
         <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="40"></ColumnDefinition>
+          <ColumnDefinition Width="16"></ColumnDefinition>
+          <ColumnDefinition Width="16"></ColumnDefinition>
           <ColumnDefinition Width="80"></ColumnDefinition>
           <ColumnDefinition Width="80"></ColumnDefinition>
           <ColumnDefinition Width="80"></ColumnDefinition>
           <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
 
-        <Grid.ContextMenu>
-          <ContextMenu>
-            <MenuItem Header="Toggle Breakpoint" Command="{Binding ToggleBreakpointCommand}">
-            </MenuItem>
-          </ContextMenu>
-        </Grid.ContextMenu>
-
-        <Image Width="16">
+        <Image Grid.Column="0" Width="10">
           <Image.Style>
             <Style TargetType="{x:Type Image}">
               <Style.Triggers>
@@ -35,11 +29,34 @@
             </Style>
           </Image.Style>
         </Image>
-        <TextBlock Grid.Column="1" Text="{Binding Address}" Style="{StaticResource NumericText}"></TextBlock>
-        <TextBlock Grid.Column="2" Text="{Binding Opcode}" >
-        </TextBlock>
-        <TextBlock Grid.Column="3" Text="{Binding Name}" ></TextBlock>
-        <TextBlock Grid.Column="4" Text="{Binding Literal}" ></TextBlock>
+
+        <Image Grid.Column="1" Width="10">
+          <Image.Style>
+            <Style TargetType="{x:Type Image}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                  <Setter Property="Source" Value="Images/arrow.png"></Setter>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Image.Style>
+        </Image>
+
+        <TextBlock Grid.Column="2" Text="{Binding Address}" Style="{StaticResource NumericText}"></TextBlock>
+        <TextBlock Grid.Column="3" Text="{Binding Opcode}"></TextBlock>
+        <TextBlock Grid.Column="4" Text="{Binding Name}"></TextBlock>
+        <TextBlock Grid.Column="5" Text="{Binding Literal}"></TextBlock>
+
+        <Grid.ContextMenu>
+          <ContextMenu>
+            <MenuItem Header="Toggle Breakpoint" Command="{Binding ToggleBreakpointCommand}">
+              <MenuItem.Icon>
+                <Image Source="Images/breakpoint.png" Width="10"></Image>
+              </MenuItem.Icon>
+            </MenuItem>
+          </ContextMenu>
+        </Grid.ContextMenu>
+
       </Grid>
     </DataTemplate>
   </UserControl.Resources>
@@ -78,7 +95,6 @@
       <ListView MaxHeight="1000"  ItemsSource ="{Binding Instructions}" 
                 SelectedItem="{Binding SelectedInstruction}"
                 SelectionChanged="ListView_SelectionChanged">
-
       </ListView>
     </Grid>
 

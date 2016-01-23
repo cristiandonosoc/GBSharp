@@ -28,7 +28,17 @@ namespace GBSharp.ViewModel
       }
     }
 
-
+    private bool _isCurrent;
+    public bool IsCurrent
+    {
+      get { return _isCurrent; }
+      set
+      {
+        if (_isCurrent == value) { return; }
+        _isCurrent = value;
+        OnPropertyChanged(() => IsCurrent);
+      }
+    }
 
     public InstructionViewModel(ICPU cpu, IInstruction instruction)
     {
