@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows.Input;
 using GBSharp.CPUSpace.Dictionaries;
+using System;
 
 namespace GBSharp.ViewModel
 {
@@ -53,6 +54,20 @@ namespace GBSharp.ViewModel
       _current = instruction;
       _current.IsCurrent = true;
     }
+
+    private string _gotoField;
+    public string GotoField
+    {
+      get { return _gotoField; }
+      set
+      {
+        if(_gotoField == value) { return; }
+        _gotoField = value;
+        OnPropertyChanged(() => GotoField);
+      }
+    }
+
+
 
     private string _searchField;
     public string SearchField
@@ -192,6 +207,22 @@ namespace GBSharp.ViewModel
         _cpu.AddBreakpoint(address);
         OnPropertyChanged(() => BreakPoint);
       }
+    }
+
+    public ICommand GotoCommand { get { return new DelegateCommand(Goto); } }
+    public void Goto()
+    {
+      string gotoString = _gotoField.ToLower();
+      ushort address = 0;
+      try
+      {
+        address = Convert.ToUInt16(gotoString, 16);
+      }
+      catch(FormatException) { return; }
+
+      if (!_addressToInstruction.ContainsKey(address)) { return; }
+
+      SelectedInstruction = _addressToInstruction[address];
     }
 
     public ICommand SearchCommand { get { return new DelegateCommand(Search); } }

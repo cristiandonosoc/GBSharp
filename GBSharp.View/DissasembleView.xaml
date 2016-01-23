@@ -67,6 +67,11 @@
     </Grid.RowDefinitions>
 
     <Grid Margin="5" Grid.Row="0">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"></RowDefinition>
+        <RowDefinition Height="Auto"></RowDefinition>
+      </Grid.RowDefinitions>
+      
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
@@ -74,16 +79,11 @@
         <ColumnDefinition Width="Auto"></ColumnDefinition>
         <ColumnDefinition Width="Auto"></ColumnDefinition>
       </Grid.ColumnDefinitions>
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto"></RowDefinition>
-        <RowDefinition Height="Auto"></RowDefinition>
-      </Grid.RowDefinitions>
 
-      <TextBlock Grid.Row="0" Grid.Column="0" Text="BreakPoint:"/>
-      <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding BreakPoint}"/>
-      <Button Grid.Row="0" Grid.Column="3" Content="Set BreakPoint" 
-              Command="{Binding SetBreakpointCommand}"></Button>
-      <Button Grid.Row="0" Grid.Column="4" Content="Refresh" Command="{Binding DissasembleCommand}"></Button>
+      <TextBlock Grid.Row="0" Grid.Column="0" Text="Goto:"></TextBlock>
+      <TextBox   Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" 
+                 Text="{Binding GotoField, Mode=OneWayToSource}"></TextBox>
+      <Button    Grid.Row="0" Grid.Column="4" Content="Next" Command="{Binding GotoCommand}"></Button>
 
       <TextBlock Grid.Row="1" Grid.Column="0" Text="Search:"></TextBlock>
       <TextBox   Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" 
