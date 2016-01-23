@@ -196,6 +196,15 @@ namespace GBSharp.ViewModel
           SetCurrentInstruction(vm);
         }
       }
+
+      // We update the breakpoints
+      foreach(ushort breakpointAddress in _cpu.Breakpoints)
+      {
+        if (!_addressToInstruction.ContainsKey(breakpointAddress)) { continue; }
+
+        InstructionViewModel inst = _addressToInstruction[breakpointAddress];
+        inst.HasBreakpoint = true;
+      }
     }
 
     public ICommand SetBreakpointCommand { get { return new DelegateCommand(SetBreakpoint); }}

@@ -81,14 +81,14 @@
       </Grid.ColumnDefinitions>
 
       <TextBlock Grid.Row="0" Grid.Column="0" Text="Goto:"></TextBlock>
-      <TextBox   Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" 
-                 Text="{Binding GotoField, Mode=OneWayToSource}"></TextBox>
-      <Button    Grid.Row="0" Grid.Column="4" Content="Next" Command="{Binding GotoCommand}"></Button>
+      <TextBox Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" 
+               Text="{Binding GotoField, Mode=OneWayToSource}"></TextBox>
+      <Button Grid.Row="0" Grid.Column="4" Content="Go" Command="{Binding GotoCommand}"></Button>
 
       <TextBlock Grid.Row="1" Grid.Column="0" Text="Search:"></TextBlock>
-      <TextBox   Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" 
-                 Text="{Binding SearchField, Mode=OneWayToSource}"></TextBox>
-      <Button    Grid.Row="1" Grid.Column="4" Content="Next" Command="{Binding SearchCommand}"></Button>
+      <TextBox Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" 
+               Text="{Binding SearchField, Mode=OneWayToSource}"></TextBox>
+      <Button Grid.Row="1" Grid.Column="4" Content="Next" Command="{Binding SearchCommand}"></Button>
     </Grid>
 
     <Grid Grid.Row="1"  Style="{StaticResource SpacingGrid}">
