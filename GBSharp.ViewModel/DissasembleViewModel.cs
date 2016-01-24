@@ -20,6 +20,7 @@ namespace GBSharp.ViewModel
     private readonly ObservableCollection<InstructionViewModel> _instructions = 
       new ObservableCollection<InstructionViewModel>();
     private Dictionary<ushort, InstructionViewModel> _addressToInstruction;
+    private Dictionary<ushort, InstructionViewModel> _addressWithBreakpoints;
     private string[] searchStrings = new string[0xFFFF];
 
     public string BreakPoint
@@ -91,6 +92,8 @@ namespace GBSharp.ViewModel
       _gameBoy = gameBoy;
       _cpu = gameBoy.CPU;
       _disassembler = gameBoy.Disassembler;
+
+      _breakpoints.BreakpointChanged += _breakpoints_BreakpointChanged;
     }
 
     public void SetCurrentSelectedInstruction()
@@ -124,6 +127,8 @@ namespace GBSharp.ViewModel
     public void Dissasemble(ushort currentAddress)
     {
       _addressToInstruction = new Dictionary<ushort, InstructionViewModel>();
+      _addressWithBreakpoints = new Dictionary<ushort, InstructionViewModel>();
+
       _disassembler.PoorManDisassemble(currentAddress);
       _instructions.Clear();
       byte[][] matrix = _disassembler.DisassembledMatrix;
@@ -204,18 +209,54 @@ namespace GBSharp.ViewModel
       }
 
       // We update the breakpoints
-      foreach(ushort breakpointAddress in _cpu.Breakpoints)
+      List<ushort> execBreakpoints = _cpu.GetBreakpoints(BreakpointKinds.EXECUTION);
+      foreach(ushort breakpointAddress in execBreakpoints)
       {
         if (!_addressToInstruction.ContainsKey(breakpointAddress)) { continue; }
 
         InstructionViewModel inst = _addressToInstruction[breakpointAddress];
+        _addressWithBreakpoints[breakpointAddress] = inst;
         inst.HasBreakpoint = true;
       }
     }
 
     private void Vm_BreakpointChanged()
     {
+      // We recreate the instruction with breakpoints dictionary
+      _addressWithBreakpoints = new Dictionary<ushort, InstructionViewModel>();
+      List<ushort> execBreakpoints = _cpu.GetBreakpoints(BreakpointKinds.EXECUTION);
+      foreach(ushort breakpointAddress in execBreakpoints)
+      {
+        if (!_addressToInstruction.ContainsKey(breakpointAddress)) { continue; }
+
+        InstructionViewModel inst = _addressToInstruction[breakpointAddress];
+        _addressWithBreakpoints[breakpointAddress] = inst;
+      }
+
       _breakpoints.RecreateBreakpoints();
+    }
+
+    private void _breakpoints_BreakpointChanged()
+    {
+      // We remove the breakpoint icon
+      foreach(InstructionViewModel inst in _addressWithBreakpoints.Values)
+      {
+        inst.HasBreakpoint = false;
+      }
+
+      // We recreate the list
+      _addressWithBreakpoints = new Dictionary<ushort, InstructionViewModel>();
+
+      // We update the breakpoints
+      List<ushort> execBreakpoints = _cpu.GetBreakpoints(BreakpointKinds.EXECUTION);
+      foreach(ushort breakpointAddress in execBreakpoints)
+      {
+        if (!_addressToInstruction.ContainsKey(breakpointAddress)) { continue; }
+
+        InstructionViewModel inst = _addressToInstruction[breakpointAddress];
+        _addressWithBreakpoints[breakpointAddress] = inst;
+        inst.HasBreakpoint = true;
+      }
     }
 
     public ICommand SetBreakpointCommand { get { return new DelegateCommand(SetBreakpoint); }}

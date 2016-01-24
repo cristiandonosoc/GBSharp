@@ -1,5 +1,6 @@
 ﻿using GBSharp.CPUSpace;
 using System;
+using System.Collections.Generic;
 using System.Windows.Input;
 
 namespace GBSharp.ViewModel
@@ -68,7 +69,8 @@ namespace GBSharp.ViewModel
 
     public void ToggleBreakpoint()
     {
-      if(_cpu.Breakpoints.Contains(originalAddress))
+      List<ushort> execBreakpoints = _cpu.GetBreakpoints(BreakpointKinds.EXECUTION);
+      if(execBreakpoints.Contains(originalAddress))
       {
         _cpu.RemoveBreakpoint(BreakpointKinds.EXECUTION, originalAddress);
         HasBreakpoint = false;

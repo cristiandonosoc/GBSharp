@@ -12,11 +12,19 @@
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="80"></ColumnDefinition>
           <ColumnDefinition Width="80"></ColumnDefinition>
+
+          <ColumnDefinition Width="80"></ColumnDefinition>
+          <ColumnDefinition Width="80"></ColumnDefinition>
+          <ColumnDefinition Width="80"></ColumnDefinition>
           <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <TextBlock Grid.Column="0" Text="{Binding Address}" Style="{StaticResource NumericText}"></TextBlock>
         <TextBlock Grid.Column="1" Text="{Binding Name}"></TextBlock>
-        <CheckBox Grid.Column="2" Content="On Execute" IsChecked="{Binding OnExecute}"></CheckBox>
+
+        <CheckBox Grid.Column="2" Content="EXECUTE" IsChecked="{Binding OnExecute}"></CheckBox>
+        <CheckBox Grid.Column="3" Content="READ" IsChecked="{Binding OnRead}"></CheckBox>
+        <CheckBox Grid.Column="4" Content="WRITE" IsChecked="{Binding OnWrite}"></CheckBox>
+        <CheckBox Grid.Column="5" Content="JUMP" IsChecked="{Binding OnJump}"></CheckBox>
       </Grid>
     </DataTemplate>
   </UserControl.Resources>

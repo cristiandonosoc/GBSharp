@@ -1,10 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using GBSharp.CPUSpace;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace GBSharp.ViewModel
 {
   public class BreakpointsViewModel : ViewModelBase
   {
+    public event Action BreakpointChanged;
+
     private readonly IGameBoy _gameboy;
 
     private readonly ObservableCollection<BreakpointViewModel> _breakpoints 
@@ -21,17 +25,89 @@ namespace GBSharp.ViewModel
 
     public void RecreateBreakpoints()
     {
-      List<ushort> addresses = _gameboy.CPU.Breakpoints;
-      addresses.Sort();
+      Dictionary<ushort, int> breakpointKindMap = new Dictionary<ushort, int>();
+      
+      // We create the breakpoint mask
+      List<ushort> execBreakpoints = _gameboy.CPU.GetBreakpoints(BreakpointKinds.EXECUTION);
+      foreach (ushort execBreakpoint in execBreakpoints)
+      {
+        int mask = 0;
+        if (breakpointKindMap.ContainsKey(execBreakpoint))
+        {
+          mask = breakpointKindMap[execBreakpoint];
+        }
+        // We add the breakpoint mask
+        breakpointKindMap[execBreakpoint] = mask | 1;
+      }
+
+      List<ushort> readBreakpoints = _gameboy.CPU.GetBreakpoints(BreakpointKinds.READ);
+      foreach (ushort readBreakpoint in readBreakpoints)
+      {
+        int mask = 0;
+        if (breakpointKindMap.ContainsKey(readBreakpoint))
+        {
+          mask = breakpointKindMap[readBreakpoint];
+        }
+        // We add the breakpoint mask
+        breakpointKindMap[readBreakpoint] = mask | 2;
+      }
+
+      List<ushort> writeBreakpoints = _gameboy.CPU.GetBreakpoints(BreakpointKinds.WRITE);
+      foreach (ushort writeBreakpoint in writeBreakpoints)
+      {
+        int mask = 0;
+        if (breakpointKindMap.ContainsKey(writeBreakpoint))
+        {
+          mask = breakpointKindMap[writeBreakpoint];
+        }
+        // We add the breakpoint mask
+        breakpointKindMap[writeBreakpoint] = mask | 4;
+      }
+
+      List<ushort> jumpBreakpoints = _gameboy.CPU.GetBreakpoints(BreakpointKinds.JUMP);
+      foreach (ushort jumpBreakpoint in jumpBreakpoints)
+      {
+        int mask = 0;
+        if (breakpointKindMap.ContainsKey(jumpBreakpoint))
+        {
+          mask = breakpointKindMap[jumpBreakpoint];
+        }
+        // We add the breakpoint mask
+        breakpointKindMap[jumpBreakpoint] = mask | 8;
+      }
+
+      ushort[] keys = new ushort[breakpointKindMap.Count];
+      breakpointKindMap.Keys.CopyTo(keys, 0);
+      Array.Sort(keys);
+      
       _breakpoints.Clear();
 
-      foreach(ushort address in addresses)
+      foreach(ushort address in keys)
       {
         IInstruction inst = _gameboy.Disassembler.FetchAndDecode(address);
         BreakpointViewModel vm = new BreakpointViewModel(_gameboy, inst);
-        vm.OnExecute = true;
+
+        int mask = breakpointKindMap[address];
+
+        if((mask & 1) != 0) { vm.DirectOnExecute = true; }
+        if((mask & 2) != 0) { vm.DirectOnRead = true; }
+        if((mask & 4) != 0) { vm.DirectOnWrite = true; }
+        if((mask & 8) != 0) { vm.DirectOnJump = true; }
+
         _breakpoints.Add(vm);
+        vm.BreakpointChanged += Vm_BreakpointChanged;
       }
+    }
+
+    /// <summary>
+    /// This event is triggered when the user unchecked all the
+    /// breakpoints kind, so the breakpoint is deleted
+    /// </summary>
+    private void Vm_BreakpointChanged()
+    {
+      RecreateBreakpoints();
+      // We notify other views about this
+      BreakpointChanged();
     }
   }
 }

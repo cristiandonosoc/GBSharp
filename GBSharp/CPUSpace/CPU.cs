@@ -50,8 +50,6 @@ namespace GBSharp.CPUSpace
     private List<ushort> _writeBreakpoints;
     private List<ushort> _jumpBreakpoints;
 
-    public List<ushort> Breakpoints { get { return _executionBreakpoints; } }
-
     public List<ushort> GetBreakpoints(BreakpointKinds kind)
     {
       switch(kind)
@@ -322,7 +320,7 @@ namespace GBSharp.CPUSpace
       }
 
       // We see if there is an breakpoint to this address
-      if(!ignoreBreakpoints && Breakpoints.Contains(_currentInstruction.Address))
+      if(!ignoreBreakpoints && _executionBreakpoints.Contains(_currentInstruction.Address))
       {
         CurrentBreakpoint = _currentInstruction.Address;
         BreakpointFound();
