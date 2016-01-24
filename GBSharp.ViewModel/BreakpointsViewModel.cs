@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 namespace GBSharp.ViewModel
 {
@@ -17,6 +18,19 @@ namespace GBSharp.ViewModel
     {
       get { return _breakpoints; }
     }
+
+    private string _addressField;
+    public string AddressField
+    {
+      get { return _addressField; }
+      set
+      {
+        if(_addressField == value) { return; }
+        _addressField = value;
+        OnPropertyChanged(() => AddressField);
+      }
+    }
+
 
     public BreakpointsViewModel(IGameBoy gameboy)
     {
@@ -95,7 +109,7 @@ namespace GBSharp.ViewModel
         if((mask & 8) != 0) { vm.DirectOnJump = true; }
 
         _breakpoints.Add(vm);
-        vm.BreakpointChanged += Vm_BreakpointChanged;
+        vm.BreakpointChanged += UpdateBreakpoints;
       }
     }
 
@@ -103,11 +117,27 @@ namespace GBSharp.ViewModel
     /// This event is triggered when the user unchecked all the
     /// breakpoints kind, so the breakpoint is deleted
     /// </summary>
-    private void Vm_BreakpointChanged()
+    private void UpdateBreakpoints()
     {
       RecreateBreakpoints();
       // We notify other views about this
       BreakpointChanged();
     }
+
+    public ICommand AddBreakpointCommand { get { return new DelegateCommand(AddBreakpoint); } }
+    public void AddBreakpoint()
+    {
+      ushort address = 0;
+      try
+      {
+        address = Convert.ToUInt16(AddressField, 16);
+      }
+      catch(FormatException) { return; }
+
+      _gameboy.CPU.AddBreakpoint(BreakpointKinds.EXECUTION, address);
+      UpdateBreakpoints();
+    }
+
+
   }
 }
