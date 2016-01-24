@@ -342,15 +342,32 @@ namespace GBSharp.CPUSpace
       // NOTE(Cristian): This lambda could modify some fields of _currentInstruction
       //                 Most notably, change the ticks in the case of conditional jumps
 
+      bool breakpointTriggered = false;
       if(!_currentInstruction.CB)
       {
-        this.RunInstruction((byte)_currentInstruction.OpCode, _currentInstruction.Literal);
+        breakpointTriggered = this.RunInstruction((byte)_currentInstruction.OpCode, 
+                                                  _currentInstruction.Literal,
+                                                  ignoreBreakpoints);
       }
       else
       {
-        this.RunCBInstruction((byte)_currentInstruction.OpCode, _currentInstruction.Literal);
+        breakpointTriggered = this.RunCBInstruction((byte)_currentInstruction.OpCode, 
+                                                    _currentInstruction.Literal,
+                                                    ignoreBreakpoints);
       }
 
+      // We see if there is an breakpoint to this address
+      // NOTE(Cristian): ignoreBreakpoints is implicit in the RunInstruction
+      if(breakpointTriggered)
+      {
+        CurrentBreakpoint = _currentInstruction.Address;
+        BreakpointFound();
+        return 0;
+      }
+
+
+
+      // We check if the instruction triggered a breakpoint
 
       // Push the next program counter value into the real program counter!
       this.registers.PC = this.nextPC;
@@ -595,7 +612,13 @@ namespace GBSharp.CPUSpace
 
     #region Instruction Lambdas
 
-    private void RunInstruction(byte opcode, ushort n)
+    /// <summary>
+    /// Runs an normal opcode instruction
+    /// </summary>
+    /// <param name="opcode">The opcode to run</param>
+    /// <param name="n">The argument (if any) of the opcode</param>
+    /// <returns>Whether a breakpoint was found</returns>
+    private bool RunInstruction(byte opcode, ushort n, bool ignoreBreakpoints)
     {
       switch (opcode)
       {
@@ -692,6 +715,11 @@ namespace GBSharp.CPUSpace
         // LD A,(BC): Load A from address pointed to by BC
         case 0x0A:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.BC))
+            {
+              return true;
+            }
+            
             registers.A = memory.Read(registers.BC);
             break;
           }
@@ -841,6 +869,11 @@ namespace GBSharp.CPUSpace
         // LD A,(DE): Load A from address pointed to by DE
         case 0x1A:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.DE))
+            {
+              return true;
+            }
+
             registers.A = memory.Read(registers.DE);
             break;
           }
@@ -897,7 +930,7 @@ namespace GBSharp.CPUSpace
         // JR NZ,n: Relative jump by signed immediate if last result was not zero
         case 0x20:
           {
-            if (registers.FZ != 0) { return; }
+            if (registers.FZ != 0) { return false; }
             // We cast down the input, ignoring the overflows
             short sn = 0;
             unchecked { sn = (sbyte)n; }
@@ -988,7 +1021,7 @@ namespace GBSharp.CPUSpace
         // JR Z,n: Relative jump by signed immediate if last result was zero
         case 0x28:
           {
-            if (registers.FZ == 0) { return; }
+            if (registers.FZ == 0) { return false; }
             // We cast down the input, ignoring the overflows
             short sn = 0;
             unchecked { sn = (sbyte)n; }
@@ -1014,6 +1047,11 @@ namespace GBSharp.CPUSpace
         // LDI A,(HL): Load A from address pointed to by HL, and increment HL
         case 0x2A:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+
             registers.A = memory.Read(registers.HL++);
             break;
           }
@@ -1067,7 +1105,7 @@ namespace GBSharp.CPUSpace
         // JR NC,n: Relative jump by signed immediate if last result caused no carry
         case 0x30:
           {
-            if (registers.FC != 0) { return; }
+            if (registers.FC != 0) { return false; }
             // We cast down the input, ignoring the overflows
             short sn = 0;
             unchecked { sn = (sbyte)n; }
@@ -1142,7 +1180,7 @@ namespace GBSharp.CPUSpace
         // JR C,n: Relative jump by signed immediate if last result caused carry
         case 0x38:
           {
-            if (registers.FC == 0) { return; }
+            if (registers.FC == 0) { return false; }
             // We cast down the input, ignoring the overflows
             short sn = 0;
             unchecked { sn = (sbyte)n; }
@@ -1168,6 +1206,11 @@ namespace GBSharp.CPUSpace
         // LDD A,(HL): Load A from address pointed to by HL, and decrement HL
         case 0x3A:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+
             registers.A = memory.Read(registers.HL--);
             break;
           }
@@ -1264,6 +1307,11 @@ namespace GBSharp.CPUSpace
         // LD B,(HL): Copy value pointed by HL to B
         case 0x46:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+
             registers.B = memory.Read(registers.HL);
             break;
           }
@@ -1322,6 +1370,11 @@ namespace GBSharp.CPUSpace
         // LD C,(HL): Copy value pointed by HL to C
         case 0x4E:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+
             registers.C = memory.Read(registers.HL);
             break;
           }
@@ -1380,6 +1433,11 @@ namespace GBSharp.CPUSpace
         // LD D,(HL): Copy value pointed by HL to D
         case 0x56:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+
             registers.D = memory.Read(registers.HL);
             break;
           }
@@ -1438,6 +1496,11 @@ namespace GBSharp.CPUSpace
         // LD E,(HL): Copy value pointed by HL to E
         case 0x5E:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+
             registers.E = memory.Read(registers.HL);
             break;
           }
@@ -1496,6 +1559,11 @@ namespace GBSharp.CPUSpace
         // LD H,(HL): Copy value pointed by HL to H
         case 0x66:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+
             registers.H = memory.Read(registers.HL);
             break;
           }
@@ -1554,6 +1622,11 @@ namespace GBSharp.CPUSpace
         // LD L,(HL): Copy value pointed by HL to L
         case 0x6E:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+
             registers.L = memory.Read(registers.HL);
             break;
           }
@@ -1674,6 +1747,11 @@ namespace GBSharp.CPUSpace
         // LD A,(HL): Copy value pointed by HL to A
         case 0x7E:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+
             registers.A = memory.Read(registers.HL);
             break;
           }
@@ -2515,6 +2593,11 @@ namespace GBSharp.CPUSpace
         // CP (HL): Compare value pointed by HL against A
         case 0xBE:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+
             byte operand = memory.Read(registers.HL);
             registers.FN = 1;
             registers.FC = 0; // This flag might get changed
@@ -2563,7 +2646,7 @@ namespace GBSharp.CPUSpace
         // RET NZ: Return if last result was not zero
         case 0xC0:
           {
-            if (registers.FZ != 0) { return; }
+            if (registers.FZ != 0) { return false; }
             // We load the program counter (high byte is in higher address)
             this.nextPC = memory.Read(registers.SP++);
             this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
@@ -2583,7 +2666,7 @@ namespace GBSharp.CPUSpace
         // JP NZ,nn: Absolute jump to 16-bit location if last result was not zero
         case 0xC2:
           {
-            if (registers.FZ != 0) { return; }
+            if (registers.FZ != 0) { return false; }
             this.nextPC = n;
             _currentInstruction.Ticks = 16;
             break;
@@ -2599,7 +2682,7 @@ namespace GBSharp.CPUSpace
         // CALL NZ,nn: Call routine at 16-bit location if last result was not zero
         case 0xC4:
           {
-            if (registers.FZ != 0) { return; }
+            if (registers.FZ != 0) { return false; }
 
             registers.SP -= 2;
             memory.Write(registers.SP, this.nextPC);
@@ -2636,7 +2719,7 @@ namespace GBSharp.CPUSpace
         // RST 0: Call routine at address 0000h
         case 0xC7:
           {
-            this.RunInstruction(0xCD, 0);
+            this.RunInstruction(0xCD, 0, ignoreBreakpoints);
 
             break;
           }
@@ -2644,7 +2727,7 @@ namespace GBSharp.CPUSpace
         // RET Z: Return if last result was zero
         case 0xC8:
           {
-            if (registers.FZ == 0) { return; }
+            if (registers.FZ == 0) { return false; }
             // We load the program counter (high byte is in higher address)
             this.nextPC = memory.Read(registers.SP++);
             this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
@@ -2664,7 +2747,7 @@ namespace GBSharp.CPUSpace
         // JP Z,nn: Absolute jump to 16-bit location if last result was zero
         case 0xCA:
           {
-            if (registers.FZ == 0) { return; }
+            if (registers.FZ == 0) { return false; }
             this.nextPC = n;
             _currentInstruction.Ticks = 16;
             break;
@@ -2679,7 +2762,7 @@ namespace GBSharp.CPUSpace
         // CALL Z,nn: Call routine at 16-bit location if last result was zero
         case 0xCC:
           {
-            if (registers.FZ == 0) { return; }
+            if (registers.FZ == 0) { return false; }
 
             registers.SP -= 2;
             memory.Write(registers.SP, this.nextPC);
@@ -2721,14 +2804,14 @@ namespace GBSharp.CPUSpace
         // RST 8: Call routine at address 0008h
         case 0xCF:
           {
-            this.RunInstruction(0xCD, 0x08);
+            this.RunInstruction(0xCD, 0x08, ignoreBreakpoints);
             break;
           }
 
         // RET NC: Return if last result caused no carry
         case 0xD0:
           {
-            if (registers.FC != 0) { return; }
+            if (registers.FC != 0) { return false; }
             // We load the program counter (high byte is in higher address)
             this.nextPC = memory.Read(registers.SP++);
             this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
@@ -2748,7 +2831,7 @@ namespace GBSharp.CPUSpace
         // JP NC,nn: Absolute jump to 16-bit location if last result caused no carry
         case 0xD2:
           {
-            if (registers.FC != 0) { return; }
+            if (registers.FC != 0) { return false; }
             this.nextPC = n;
             _currentInstruction.Ticks = 16;
             break;
@@ -2763,7 +2846,7 @@ namespace GBSharp.CPUSpace
         // CALL NC,nn: Call routine at 16-bit location if last result caused no carry
         case 0xD4:
           {
-            if (registers.FC != 0) { return; }
+            if (registers.FC != 0) { return false; }
 
             registers.SP -= 2;
             memory.Write(registers.SP, this.nextPC);
@@ -2796,15 +2879,15 @@ namespace GBSharp.CPUSpace
         // RST 10: Call routine at address 0010h
         case 0xD7:
           {
-            this.RunInstruction(0xCD, 0x10);
+            this.RunInstruction(0xCD, 0x10, ignoreBreakpoints);
             break;
 
           }
-        // RET C: Return if last result caused carry
 
+        // RET C: Return if last result caused carry
         case 0xD8:
           {
-            if (registers.FC == 0) { return; }
+            if (registers.FC == 0) { return false; }
             // We load the program counter (high byte is in higher address)
             this.nextPC = memory.Read(registers.SP++);
             this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
@@ -2826,7 +2909,7 @@ namespace GBSharp.CPUSpace
         // JP C,nn: Absolute jump to 16-bit location if last result caused carry
         case 0xDA:
           {
-            if (registers.FC == 0) { return; }
+            if (registers.FC == 0) { return false; }
             this.nextPC = n;
             _currentInstruction.Ticks = 16;
             break;
@@ -2841,7 +2924,7 @@ namespace GBSharp.CPUSpace
         // CALL C,nn: Call routine at 16-bit location if last result caused carry
         case 0xDC:
           {
-            if (registers.FC == 0) { return; }
+            if (registers.FC == 0) { return false; }
 
             registers.SP -= 2;
             memory.Write(registers.SP, this.nextPC);
@@ -2873,7 +2956,7 @@ namespace GBSharp.CPUSpace
         // RST 18: Call routine at address 0018h
         case 0xDF:
           {
-            this.RunInstruction(0xCD, 0x18);
+            this.RunInstruction(0xCD, 0x18, ignoreBreakpoints);
             break;
           }
 
@@ -2934,7 +3017,7 @@ namespace GBSharp.CPUSpace
         // RST 20: Call routine at address 0020h
         case 0xE7:
           {
-            this.RunInstruction(0xCD, 0x20);
+            this.RunInstruction(0xCD, 0x20, ignoreBreakpoints);
             break;
           }
 
@@ -3005,14 +3088,20 @@ namespace GBSharp.CPUSpace
         // RST 28: Call routine at address 0028h
         case 0xEF:
           {
-            this.RunInstruction(0xCD, 0x28);
+            this.RunInstruction(0xCD, 0x28, ignoreBreakpoints);
             break;
           }
 
         // LDH A,(n): Load A from address pointed to by (FF00h + 8-bit immediate)
         case 0xF0:
           {
-            registers.A = memory.Read((ushort)(0xFF00 | (byte)n));
+            ushort address = (ushort)(0xFF00 | (byte)n);
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(address))
+            {
+              return true;
+            }
+
+            registers.A = memory.Read(address);
             break;
           }
 
@@ -3028,7 +3117,13 @@ namespace GBSharp.CPUSpace
         // LDH A, (C): Operation removed in this CPU? (Or Load into A memory from FF00 + C?)
         case 0xF2:
           {
-            registers.A = memory.Read((ushort)(0xFF00 | registers.C));
+            ushort address = (ushort)(0xFF00 | registers.C);
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(address))
+            {
+              return true;
+            }
+
+            registers.A = memory.Read(address);
             break;
           }
 
@@ -3067,7 +3162,7 @@ namespace GBSharp.CPUSpace
         // RST 30: Call routine at address 0030h
         case 0xF7:
           {
-            this.RunInstruction(0xCD, 0x30);
+            this.RunInstruction(0xCD, 0x30, ignoreBreakpoints);
             break;
           }
 
@@ -3101,6 +3196,11 @@ namespace GBSharp.CPUSpace
         // LD A,(nn): Load A from given 16-bit address
         case 0xFA:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(n))
+            {
+              return true;
+            }
+
             registers.A = memory.Read(n);
             break;
           }
@@ -3151,13 +3251,22 @@ namespace GBSharp.CPUSpace
         // RST 38: Call routine at address 0038h
         case 0xFF:
           {
-            this.RunInstruction(0xCD, 0x38);
+            this.RunInstruction(0xCD, 0x38, ignoreBreakpoints);
             break;
           }
       }
+
+      // No breakpoints found
+      return false;
     }
 
-    private void RunCBInstruction(byte opcode, ushort n)
+    /// <summary>
+    /// Runs an CB opcode instruction
+    /// </summary>
+    /// <param name="opcode">The opcode to run</param>
+    /// <param name="n">The argument (if any) of the opcode</param>
+    /// <returns>Whether a breakpoint was found</returns>
+    private bool RunCBInstruction(byte opcode, ushort n, bool ignoreBreakpoints)
     {
       switch (opcode)
       {
@@ -4049,6 +4158,11 @@ namespace GBSharp.CPUSpace
         // BIT 0,(HL): Test bit 0 of value pointed by HL
         case 0x46:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+
             registers.FZ = (byte)(UtilFuncs.TestBit(memory.Read(registers.HL), 0) == 0 ? 1 : 0);
             registers.FN = 0;
             registers.FH = 1;
@@ -4121,6 +4235,11 @@ namespace GBSharp.CPUSpace
         // BIT 1,(HL): Test bit 1 of value pointed by HL
         case 0x4E:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+
             registers.FZ = (byte)(UtilFuncs.TestBit(memory.Read(registers.HL), 1) == 0 ? 1 : 0);
             registers.FN = 0;
             registers.FH = 1;
@@ -4193,6 +4312,11 @@ namespace GBSharp.CPUSpace
         // BIT 2,(HL): Test bit 2 of value pointed by HL
         case 0x56:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+
             registers.FZ = (byte)(UtilFuncs.TestBit(memory.Read(registers.HL), 2) == 0 ? 1 : 0);
             registers.FN = 0;
             registers.FH = 1;
@@ -4265,6 +4389,11 @@ namespace GBSharp.CPUSpace
         // BIT 3,(HL): Test bit 3 of value pointed by HL
         case 0x5E:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+
             registers.FZ = (byte)(UtilFuncs.TestBit(memory.Read(registers.HL), 3) == 0 ? 1 : 0);
             registers.FN = 0;
             registers.FH = 1;
@@ -4337,6 +4466,11 @@ namespace GBSharp.CPUSpace
         // BIT 4,(HL): Test bit 4 of value pointed by HL
         case 0x66:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+
             registers.FZ = (byte)(UtilFuncs.TestBit(memory.Read(registers.HL), 4) == 0 ? 1 : 0);
             registers.FN = 0;
             registers.FH = 1;
@@ -4409,6 +4543,11 @@ namespace GBSharp.CPUSpace
         // BIT 5,(HL): Test bit 5 of value pointed by HL
         case 0x6E:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+
             registers.FZ = (byte)(UtilFuncs.TestBit(memory.Read(registers.HL), 5) == 0 ? 1 : 0);
             registers.FN = 0;
             registers.FH = 1;
@@ -4481,6 +4620,11 @@ namespace GBSharp.CPUSpace
         // BIT 6,(HL): Test bit 6 of value pointed by HL
         case 0x76:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+
             registers.FZ = (byte)(UtilFuncs.TestBit(memory.Read(registers.HL), 6) == 0 ? 1 : 0);
             registers.FN = 0;
             registers.FH = 1;
@@ -4553,6 +4697,11 @@ namespace GBSharp.CPUSpace
         // BIT 7,(HL): Test bit 7 of value pointed by HL
         case 0x7E:
           {
+            if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+
             registers.FZ = (byte)(UtilFuncs.TestBit(memory.Read(registers.HL), 7) == 0 ? 1 : 0);
             registers.FN = 0;
             registers.FH = 1;
@@ -5464,6 +5613,9 @@ namespace GBSharp.CPUSpace
             break;
           }
       }
+
+      // No breakpoints found
+      return false;
     }
 
     #endregion
