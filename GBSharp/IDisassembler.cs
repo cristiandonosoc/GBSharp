@@ -15,5 +15,6 @@ namespace GBSharp
     int DisassembledCount { get; }
     byte[][] DisassembledMatrix { get; }
 
+    IInstruction FetchAndDecode(ushort address);
   }
 }

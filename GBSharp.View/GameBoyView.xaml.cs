@@ -19,7 +19,11 @@ namespace GBSharp.View
       InitializeComponent();
       _gameBoy = new GameBoy();
       _keyboardHandler = new KeyboardHandler();
-      _mainWindowViewModel = new GameBoyViewModel(_gameBoy, new DispatcherAdapter(this), new WindowAdapter(this), new OpenFileDialogAdapterFactory(), _keyboardHandler);
+      _mainWindowViewModel = new GameBoyViewModel(_gameBoy, 
+                                                  new DispatcherAdapter(this), 
+                                                  new WindowAdapter(this), 
+                                                  new OpenFileDialogAdapterFactory(), 
+                                                  _keyboardHandler);
       this.DataContext = _mainWindowViewModel;
     }
 

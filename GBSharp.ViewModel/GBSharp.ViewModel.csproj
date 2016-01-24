@@ -71,6 +71,8 @@
   <ItemGroup>
     <Compile Include="APUViewModel.cs" />
     <Compile Include="BackgroundViewModel.cs" />
+    <Compile Include="BreakpointsViewModel.cs" />
+    <Compile Include="BreakpointViewModel.cs" />
     <Compile Include="CPUViewModel.cs" />
     <Compile Include="DelegateCommand.cs" />
     <Compile Include="DisplayTimingViewModel.cs" />

@@ -91,6 +91,9 @@
     </Compile>
     <Compile Include="BoolToVisibilityConverter.cs" />
     <Compile Include="BoolInverterConverter.cs" />
+    <Compile Include="BreakpointsView.xaml.cs">
+      <DependentUpon>BreakpointsView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DisplayTimingView.xaml.cs">
       <DependentUpon>DisplayTimingView.xaml</DependentUpon>
     </Compile>
@@ -132,6 +135,10 @@
     </Page>
     <Page Include="BackgroundView.xaml">
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="BreakpointsView.xaml">
+      <SubType>Form</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="CartridgeView.xaml">

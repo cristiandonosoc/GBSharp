@@ -26,6 +26,11 @@
                 <view:DissasembleView></view:DissasembleView>
             </Grid>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:BreakpointsViewModel}">
+            <Grid Style="{StaticResource SubContentGrid}">
+                <view:BreakpointsView></view:BreakpointsView>
+            </Grid>
+        </DataTemplate>
         <DataTemplate DataType="{x:Type viewModel:SoundRecordingViewModel}">
             <Grid Style="{StaticResource SubContentGrid}">
                 <ScrollViewer>
@@ -142,11 +147,19 @@
                             <avalonDock:LayoutAnchorable Title="Controller">
                                 <ContentPresenter Content="{Binding GameBoyController}" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=ControllerSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
                             </avalonDock:LayoutAnchorable>
-                            <avalonDock:LayoutAnchorable Title="Dissasembler">
+                            <avalonDock:LayoutAnchorable Title="Disassembler">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
-                                                  Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, 
+                                                  Visibility="{Binding ElementName=DisplaySectionCheck, 
+                                                  Path=IsChecked, 
                                                   Converter={StaticResource BoolToVis}}" 
                                                   Content="{Binding Dissasemble}"/>
+                            </avalonDock:LayoutAnchorable>
+                            <avalonDock:LayoutAnchorable Title="Breakpoints">
+                                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
+                                                  Visibility="{Binding ElementName=DisplaySectionCheck, 
+                                                  Path=IsChecked, 
+                                                  Converter={StaticResource BoolToVis}}" 
+                                                  Content="{Binding Breakpoints}"/>
                             </avalonDock:LayoutAnchorable>
                             <avalonDock:LayoutAnchorable Title="Sound Recording">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 

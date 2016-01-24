@@ -10,6 +10,8 @@ namespace GBSharp.ViewModel
 {
   public class DissasembleViewModel : ViewModelBase
   {
+    private readonly BreakpointsViewModel _breakpoints;
+
     private readonly IGameBoy _gameBoy;
     private readonly ICPU _cpu;
     private readonly IDisassembler _disassembler;
@@ -82,8 +84,9 @@ namespace GBSharp.ViewModel
     }
 
 
-    public DissasembleViewModel(IGameBoy gameBoy)
+    public DissasembleViewModel(BreakpointsViewModel breakpoints, IGameBoy gameBoy)
     {
+      _breakpoints = breakpoints;
       _gameBoy = gameBoy;
       _cpu = gameBoy.CPU;
       _disassembler = gameBoy.Disassembler;
@@ -180,8 +183,10 @@ namespace GBSharp.ViewModel
         }
         vm.originalAddress = (ushort)address;
 
+
         _instructions.Add(vm);
         _addressToInstruction[(ushort)address] = vm;
+        vm.BreakpointChanged += Vm_BreakpointChanged;
 
         searchString += vm.Address.ToLower();
         searchString += vm.Opcode.ToLower();
@@ -205,6 +210,11 @@ namespace GBSharp.ViewModel
         InstructionViewModel inst = _addressToInstruction[breakpointAddress];
         inst.HasBreakpoint = true;
       }
+    }
+
+    private void Vm_BreakpointChanged()
+    {
+      _breakpoints.RecreateBreakpoints();
     }
 
     public ICommand SetBreakpointCommand { get { return new DelegateCommand(SetBreakpoint); }}

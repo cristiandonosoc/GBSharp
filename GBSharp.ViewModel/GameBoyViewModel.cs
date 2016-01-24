@@ -17,72 +17,26 @@ namespace GBSharp.ViewModel
     private readonly GameBoyContollerViewModel _gameBoyController;
     private readonly GameBoyGamePadViewModel _gameBoyGamePad;
     private readonly DissasembleViewModel _dissasemble;
+    private readonly BreakpointsViewModel _breakpoints;
     private readonly InstructionHistogramViewModel _instructionHistogram;
     private readonly APUViewModel _apu;
     private readonly MemoryImageViewModel _memoryImage;
     private readonly SoundRecordingViewModel _soundRecording;
 
 
-    public MemoryViewModel Memory
-    {
-      get { return _memory; }
-    }
-
-    public CPUViewModel CPU
-    {
-      get { return _cpu; }
-    }
-
-    public InterruptManagerViewModel Interrupt
-    {
-      get { return _interrupt; }
-    }
-
-    public DisplayViewModel Display
-    {
-      get { return _display; }
-    }
-
-    public GameBoyContollerViewModel GameBoyController
-    {
-      get { return _gameBoyController; }
-    }
-
-    public GameBoyGamePadViewModel GameBoyGamePad
-    {
-      get { return _gameBoyGamePad; }
-    }
-
-    public DissasembleViewModel Dissasemble
-    {
-      get { return _dissasemble; }
-    }
-
-    public IORegistersManagerViewModel IORegisters
-    {
-      get { return _ioRegisters; }
-    }
-
-    public InstructionHistogramViewModel InstructionHistogram
-    {
-      get { return _instructionHistogram; }
-    }
-
-    public APUViewModel APU
-    {
-      get { return _apu; }
-    }
-
-    public MemoryImageViewModel MemoryImage
-    {
-      get { return _memoryImage; }
-    }
-
-    public SoundRecordingViewModel SoundRecording
-    {
-      get { return _soundRecording; }
-    }
-
+    public MemoryViewModel Memory { get { return _memory; } }
+    public CPUViewModel CPU { get { return _cpu; } }
+    public InterruptManagerViewModel Interrupt { get { return _interrupt; } }
+    public DisplayViewModel Display { get { return _display; } }
+    public GameBoyContollerViewModel GameBoyController { get { return _gameBoyController; } }
+    public GameBoyGamePadViewModel GameBoyGamePad { get { return _gameBoyGamePad; } }
+    public DissasembleViewModel Dissasemble { get { return _dissasemble; } }
+    public BreakpointsViewModel Breakpoints { get { return _breakpoints; } }
+    public IORegistersManagerViewModel IORegisters { get { return _ioRegisters; } }
+    public InstructionHistogramViewModel InstructionHistogram { get { return _instructionHistogram; } }
+    public APUViewModel APU { get { return _apu; } }
+    public MemoryImageViewModel MemoryImage { get { return _memoryImage; } }
+    public SoundRecordingViewModel SoundRecording { get { return _soundRecording; } }
 
     public GameBoyViewModel(IGameBoy gameBoy, IDispatcher dispatcher, IWindow window, IOpenFileDialogFactory fileDialogFactory, IKeyboardHandler keyboardHandler)
     {
@@ -107,7 +61,8 @@ namespace GBSharp.ViewModel
       _ioRegisters = new IORegistersManagerViewModel(_gameBoy, _dispatcher);
       _display = new DisplayViewModel(_gameBoy, _gameBoy.Display, _gameBoy.Memory, _dispatcher);
       _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher);
-      _dissasemble = new DissasembleViewModel(_gameBoy);
+      _breakpoints = new BreakpointsViewModel(_gameBoy);
+      _dissasemble = new DissasembleViewModel(_breakpoints, _gameBoy);
       _instructionHistogram = new InstructionHistogramViewModel(_gameBoy, _dispatcher);
       _apu = new APUViewModel(_gameBoy, _dispatcher);
       _memoryImage = new MemoryImageViewModel(_gameBoy, _dispatcher);

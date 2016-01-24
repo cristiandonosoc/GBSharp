@@ -292,6 +292,14 @@ namespace GBSharp.CPUSpace
       return _disInstructions.OrderBy(i => i.Address);
     }
 
+    public IInstruction FetchAndDecode(ushort address)
+    {
+      Instruction inst = new Instruction();
+      _cpu.FetchAndDecode(ref inst, address);
+      return inst;
+    }
+
+
     /// <summary>
     /// Return the jumps, classified by whether,
     /// the next instruction should not be followed

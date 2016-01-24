@@ -1,9 +1,11 @@
-﻿using System.Windows.Input;
+﻿using System;
+using System.Windows.Input;
 
 namespace GBSharp.ViewModel
 {
   public class InstructionViewModel : ViewModelBase
   {
+    public event Action BreakpointChanged;
 
     private readonly ICPU _cpu;
     private readonly IInstruction _instruction;
@@ -75,6 +77,8 @@ namespace GBSharp.ViewModel
         _cpu.AddBreakpoint(originalAddress);
         HasBreakpoint = true;
       }
+
+      if(BreakpointChanged != null) { BreakpointChanged(); }
     }
   }
 }
