@@ -302,6 +302,7 @@ namespace GBSharp.AudioSpace
 
       #region FREQUENCY SWEEP
 
+      _runSweep = false;
       if (_runSweep && _sweepTicks > 0)
       {
         _sweepTicksCounter += ticks;

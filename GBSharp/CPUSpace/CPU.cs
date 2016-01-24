@@ -7,6 +7,14 @@ using GBSharp.MemorySpace;
 
 namespace GBSharp.CPUSpace
 {
+  public enum BreakpointKinds
+  {
+    EXECUTION,
+    READ,
+    WRITE,
+    JUMP
+  }
+
   class CPU : ICPU
   {
 
@@ -37,23 +45,78 @@ namespace GBSharp.CPUSpace
     public event Action BreakpointFound;
     public event Action<Interrupts> InterruptHappened;
 
-    private List<ushort> _breakpoints;
-    public List<ushort> Breakpoints { get { return _breakpoints; } }
+    private List<ushort> _executionBreakpoints;
+    private List<ushort> _readBreakpoints;
+    private List<ushort> _writeBreakpoints;
+    private List<ushort> _jumpBreakpoints;
 
-    public void AddBreakpoint(ushort address)
+    public List<ushort> Breakpoints { get { return _executionBreakpoints; } }
+
+    public List<ushort> GetBreakpoints(BreakpointKinds kind)
     {
-      if (_breakpoints.Contains(address)) { return; }
-      _breakpoints.Add(address);
+      switch(kind)
+      {
+        case BreakpointKinds.EXECUTION:
+          return _executionBreakpoints;
+        case BreakpointKinds.READ:
+          return _readBreakpoints;
+        case BreakpointKinds.WRITE:
+          return _writeBreakpoints;
+        case BreakpointKinds.JUMP:
+          return _jumpBreakpoints;
+      }
+
+      throw new InvalidProgramException("Wrong Breakpoint kind");
     }
 
-    public void RemoveBreakpoint(ushort address)
+    public void AddBreakpoint(BreakpointKinds kind, ushort address)
     {
-      _breakpoints.Remove(address);
+      switch(kind)
+      {
+        case BreakpointKinds.EXECUTION:
+          if (_executionBreakpoints.Contains(address)) { return; }
+          _executionBreakpoints.Add(address);
+          break;
+        case BreakpointKinds.READ:
+          if (_readBreakpoints.Contains(address)) { return; }
+          _readBreakpoints.Add(address);
+          break;
+        case BreakpointKinds.WRITE:
+          if (_writeBreakpoints.Contains(address)) { return; }
+          _writeBreakpoints.Add(address);
+          break;
+        case BreakpointKinds.JUMP:
+          if (_jumpBreakpoints.Contains(address)) { return; }
+          _jumpBreakpoints.Add(address);
+          break;
+      }
+    }
+
+    public void RemoveBreakpoint(BreakpointKinds kind, ushort address)
+    {
+      switch(kind)
+      {
+        case BreakpointKinds.EXECUTION:
+          _executionBreakpoints.Remove(address);
+          break;
+        case BreakpointKinds.READ:
+          _readBreakpoints.Remove(address);
+          break;
+        case BreakpointKinds.WRITE:
+          _writeBreakpoints.Remove(address);
+          break;
+        case BreakpointKinds.JUMP:
+          _jumpBreakpoints.Remove(address);
+          break;
+      }
     }
 
     public void ResetBreakpoints()
     {
-      _breakpoints = new List<ushort>();
+      _executionBreakpoints = new List<ushort>();
+      _readBreakpoints = new List<ushort>();
+      _writeBreakpoints = new List<ushort>();
+      _jumpBreakpoints = new List<ushort>();
     }
 
     public ushort CurrentBreakpoint { get; private set; }

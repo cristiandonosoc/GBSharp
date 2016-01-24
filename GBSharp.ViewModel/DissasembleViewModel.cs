@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Input;
 using GBSharp.CPUSpace.Dictionaries;
 using System;
+using GBSharp.CPUSpace;
 
 namespace GBSharp.ViewModel
 {
@@ -223,7 +224,7 @@ namespace GBSharp.ViewModel
       if (SelectedInstruction != null)
       {
         ushort address = ushort.Parse(SelectedInstruction.Address.Remove(0, 2), NumberStyles.HexNumber);
-        _cpu.AddBreakpoint(address);
+        _cpu.AddBreakpoint(BreakpointKinds.EXECUTION, address);
         OnPropertyChanged(() => BreakPoint);
       }
     }

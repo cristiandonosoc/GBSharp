@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GBSharp.CPUSpace;
+using System;
 using System.Windows.Input;
 
 namespace GBSharp.ViewModel
@@ -69,12 +70,12 @@ namespace GBSharp.ViewModel
     {
       if(_cpu.Breakpoints.Contains(originalAddress))
       {
-        _cpu.RemoveBreakpoint(originalAddress);
+        _cpu.RemoveBreakpoint(BreakpointKinds.EXECUTION, originalAddress);
         HasBreakpoint = false;
       }
       else
       {
-        _cpu.AddBreakpoint(originalAddress);
+        _cpu.AddBreakpoint(BreakpointKinds.EXECUTION, originalAddress);
         HasBreakpoint = true;
       }
 
