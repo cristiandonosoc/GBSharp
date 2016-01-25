@@ -10,21 +10,77 @@
     <DataTemplate DataType="{x:Type viewModel:BreakpointViewModel}">
       <Grid>
         <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="80"></ColumnDefinition>
-          <ColumnDefinition Width="80"></ColumnDefinition>
 
           <ColumnDefinition Width="80"></ColumnDefinition>
+
+          <ColumnDefinition Width="16"></ColumnDefinition>
           <ColumnDefinition Width="80"></ColumnDefinition>
+
+          <ColumnDefinition Width="16"></ColumnDefinition>
+          <ColumnDefinition Width="80"></ColumnDefinition>
+
+          <ColumnDefinition Width="16"></ColumnDefinition>
+          <ColumnDefinition Width="80"></ColumnDefinition>
+
+          <ColumnDefinition Width="16"></ColumnDefinition>
           <ColumnDefinition Width="80"></ColumnDefinition>
           <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <TextBlock Grid.Column="0" Text="{Binding Address}" Style="{StaticResource NumericText}"></TextBlock>
-        <TextBlock Grid.Column="1" Text="{Binding Name}"></TextBlock>
 
+
+        <TextBlock Grid.Column="0" Text="{Binding Address}" Style="{StaticResource NumericText}"></TextBlock>
+
+        <Image Grid.Column="1" Width="10">
+          <Image.Style>
+            <Style TargetType="{x:Type Image}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsExecuteActive}" Value="True">
+                  <Setter Property="Source" Value="Images/arrow.png"></Setter>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Image.Style>
+        </Image>
         <CheckBox Grid.Column="2" Content="EXECUTE" IsChecked="{Binding OnExecute}"></CheckBox>
-        <CheckBox Grid.Column="3" Content="READ" IsChecked="{Binding OnRead}"></CheckBox>
-        <CheckBox Grid.Column="4" Content="WRITE" IsChecked="{Binding OnWrite}"></CheckBox>
-        <CheckBox Grid.Column="5" Content="JUMP" IsChecked="{Binding OnJump}"></CheckBox>
+
+        <Image Grid.Column="3" Width="10">
+          <Image.Style>
+            <Style TargetType="{x:Type Image}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsReadActive}" Value="True">
+                  <Setter Property="Source" Value="Images/arrow.png"></Setter>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Image.Style>
+        </Image>
+        <CheckBox Grid.Column="4" Content="READ" IsChecked="{Binding OnRead}"></CheckBox>
+
+        <Image Grid.Column="5" Width="10">
+          <Image.Style>
+            <Style TargetType="{x:Type Image}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsWriteActive}" Value="True">
+                  <Setter Property="Source" Value="Images/arrow.png"></Setter>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Image.Style>
+        </Image>
+        <CheckBox Grid.Column="6" Content="WRITE" IsChecked="{Binding OnWrite}"></CheckBox>
+
+        <Image Grid.Column="7" Width="10">
+          <Image.Style>
+            <Style TargetType="{x:Type Image}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsJumpActive}" Value="True">
+                  <Setter Property="Source" Value="Images/arrow.png"></Setter>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Image.Style>
+        </Image>
+        <CheckBox Grid.Column="8" Content="JUMP" IsChecked="{Binding OnJump}"></CheckBox>
       </Grid>
     </DataTemplate>
   </UserControl.Resources>

@@ -10,6 +10,7 @@ namespace GBSharp.ViewModel
     private readonly IGameBoy _gameboy;
     private readonly IInstruction _instruction;
 
+    public ushort OriginalAddress { get; private set; }
     public string Address { get; private set; }
     public string Name { get; private set; }
 
@@ -46,6 +47,17 @@ namespace GBSharp.ViewModel
         // that update according to this flag
         BreakpointChanged();
         OnPropertyChanged(() => OnExecute);
+      }
+    }
+    private bool _isExecuteActive;
+    public bool IsExecuteActive
+    {
+      get { return _isExecuteActive; }
+      set
+      {
+        if(_isExecuteActive == value) { return; }
+        _isExecuteActive = value;
+        OnPropertyChanged(() => IsExecuteActive);
       }
     }
 
@@ -89,11 +101,22 @@ namespace GBSharp.ViewModel
         OnPropertyChanged(() => OnRead);
       }
     }
+    private bool _isReadActive;
+    public bool IsReadActive
+    {
+      get { return _isReadActive; }
+      set
+      {
+        if(_isReadActive == value) { return; }
+        _isReadActive = value;
+        OnPropertyChanged(() => IsReadActive);
+      }
+    }
 
     #endregion
 
     #region WRITE
-
+ 
     private bool _onWrite;
     internal bool DirectOnWrite
     {
@@ -128,6 +151,17 @@ namespace GBSharp.ViewModel
         }
 
         OnPropertyChanged(() => OnWrite);
+      }
+    }
+    private bool _isWriteActive;
+    public bool IsWriteActive
+    {
+      get { return _isWriteActive; }
+      set
+      {
+        if(_isWriteActive == value) { return; }
+        _isWriteActive = value;
+        OnPropertyChanged(() => IsWriteActive);
       }
     }
 
@@ -171,6 +205,17 @@ namespace GBSharp.ViewModel
         OnPropertyChanged(() => OnJump);
       }
     }
+    private bool _isJumpActive;
+    public bool IsJumpActive
+    {
+      get { return _isJumpActive; }
+      set
+      {
+        if(_isJumpActive == value) { return; }
+        _isJumpActive = value;
+        OnPropertyChanged(() => IsJumpActive);
+      }
+    }
 
     #endregion
 
@@ -179,6 +224,7 @@ namespace GBSharp.ViewModel
       _gameboy = gameboy;
       _instruction = inst;
 
+      OriginalAddress = inst.Address;
       Address = "0x" + inst.Address.ToString("x2");
       Name = inst.Name;
     }

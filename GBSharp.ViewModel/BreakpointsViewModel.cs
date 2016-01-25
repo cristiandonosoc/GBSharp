@@ -31,10 +31,43 @@ namespace GBSharp.ViewModel
       }
     }
 
-
     public BreakpointsViewModel(IGameBoy gameboy)
     {
       _gameboy = gameboy;
+      _gameboy.CPU.BreakpointFound += CPU_BreakpointFound;
+    }
+
+    private void CPU_BreakpointFound()
+    {
+      Breakpoint breakpoint = _gameboy.CPU.CurrentBreakpoint;
+      foreach(BreakpointViewModel bpvm in _breakpoints)
+      {
+        if(bpvm.OriginalAddress == breakpoint.Address)
+        {
+          bpvm.IsExecuteActive = false;
+          bpvm.IsReadActive = false;
+          bpvm.IsWriteActive = false;
+          bpvm.IsJumpActive = false;
+
+          switch(breakpoint.Kind)
+          {
+            case BreakpointKinds.EXECUTION:
+              bpvm.IsExecuteActive = true;
+              break;
+            case BreakpointKinds.READ:
+              bpvm.IsReadActive = true;
+              break;
+            case BreakpointKinds.WRITE:
+              bpvm.IsWriteActive = true;
+              break;
+            case BreakpointKinds.JUMP:
+              bpvm.IsJumpActive = true;
+              break;
+          }
+
+          break;
+        }
+      }
     }
 
     public void RecreateBreakpoints()
