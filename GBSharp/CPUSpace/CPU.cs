@@ -864,7 +864,13 @@ namespace GBSharp.CPUSpace
             // We cast down the input, ignoring the overflows
             short sn = 0;
             unchecked { sn = (sbyte)n; }
-            this.nextPC = (ushort)(this.nextPC + sn);
+            ushort target = (ushort)(this.nextPC + sn);
+            if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
+            {
+              return true;
+            }
+ 
+            this.nextPC = target;
             break;
           }
 
@@ -946,10 +952,17 @@ namespace GBSharp.CPUSpace
         case 0x20:
           {
             if (registers.FZ != 0) { return false; }
+
             // We cast down the input, ignoring the overflows
             short sn = 0;
             unchecked { sn = (sbyte)n; }
-            this.nextPC = (ushort)(this.nextPC + sn);
+            ushort target = (ushort)(this.nextPC + sn);
+            if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
+            {
+              return true;
+            }
+
+            this.nextPC = target;
             _currentInstruction.Ticks = 12;
             break;
           }
@@ -1042,10 +1055,17 @@ namespace GBSharp.CPUSpace
         case 0x28:
           {
             if (registers.FZ == 0) { return false; }
+
             // We cast down the input, ignoring the overflows
             short sn = 0;
             unchecked { sn = (sbyte)n; }
-            this.nextPC = (ushort)(this.nextPC + sn);
+            ushort target = (ushort)(this.nextPC + sn);
+            if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
+            {
+              return true;
+            }
+
+            this.nextPC = target;
             _currentInstruction.Ticks = 12;
             break;
           }
@@ -1126,10 +1146,17 @@ namespace GBSharp.CPUSpace
         case 0x30:
           {
             if (registers.FC != 0) { return false; }
+
             // We cast down the input, ignoring the overflows
             short sn = 0;
             unchecked { sn = (sbyte)n; }
-            this.nextPC = (ushort)(this.nextPC + sn);
+            ushort target = (ushort)(this.nextPC + sn);
+            if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
+            {
+              return true;
+            }
+
+            this.nextPC = target;
             _currentInstruction.Ticks = 12;
             break;
           }
@@ -1221,10 +1248,17 @@ namespace GBSharp.CPUSpace
         case 0x38:
           {
             if (registers.FC == 0) { return false; }
+
             // We cast down the input, ignoring the overflows
             short sn = 0;
             unchecked { sn = (sbyte)n; }
-            this.nextPC = (ushort)(this.nextPC + sn);
+            ushort target = (ushort)(this.nextPC + sn);
+            if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
+            {
+              return true;
+            }
+
+            this.nextPC = target;
             _currentInstruction.Ticks = 12;
             break;
           }
@@ -2742,7 +2776,14 @@ namespace GBSharp.CPUSpace
         case 0xC2:
           {
             if (registers.FZ != 0) { return false; }
-            this.nextPC = n;
+
+            ushort target = n;
+            if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
+            {
+              return true;
+            }
+
+            this.nextPC = target;
             _currentInstruction.Ticks = 16;
             break;
           }
@@ -2750,7 +2791,13 @@ namespace GBSharp.CPUSpace
         // JP nn: Absolute jump to 16-bit location
         case 0xC3:
           {
-            this.nextPC = n;
+            ushort target = n;
+            if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
+            {
+              return true;
+            }
+
+            this.nextPC = target;
             break;
           }
 
@@ -2759,11 +2806,17 @@ namespace GBSharp.CPUSpace
           {
             if (registers.FZ != 0) { return false; }
 
+            ushort target = n;
+            if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
+            {
+              return true;
+            }
+
             registers.SP -= 2;
             memory.Write(registers.SP, this.nextPC);
 
             // We jump
-            this.nextPC = n;
+            this.nextPC = target;
             _currentInstruction.Ticks = 24;
             break;
           }
@@ -2823,7 +2876,14 @@ namespace GBSharp.CPUSpace
         case 0xCA:
           {
             if (registers.FZ == 0) { return false; }
-            this.nextPC = n;
+
+            ushort target = n;
+            if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
+            {
+              return true;
+            }
+
+            this.nextPC = target;
             _currentInstruction.Ticks = 16;
             break;
           }
@@ -2839,11 +2899,17 @@ namespace GBSharp.CPUSpace
           {
             if (registers.FZ == 0) { return false; }
 
+            ushort target = n;
+            if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
+            {
+              return true;
+            }
+
             registers.SP -= 2;
             memory.Write(registers.SP, this.nextPC);
 
             // We jump
-            this.nextPC = n;
+            this.nextPC = target;
             _currentInstruction.Ticks = 24;
             break;
           }
@@ -2851,11 +2917,17 @@ namespace GBSharp.CPUSpace
         // CALL nn: Call routine at 16-bit location
         case 0xCD:
           {
+            ushort target = n;
+            if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
+            {
+              return true;
+            }
+
             registers.SP -= 2;
             memory.Write(registers.SP, this.nextPC);
 
             // We jump
-            this.nextPC = n;
+            this.nextPC = target;
             break;
           }
 
@@ -2907,7 +2979,14 @@ namespace GBSharp.CPUSpace
         case 0xD2:
           {
             if (registers.FC != 0) { return false; }
-            this.nextPC = n;
+
+            ushort target = n;
+            if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
+            {
+              return true;
+            }
+
+            this.nextPC = target;
             _currentInstruction.Ticks = 16;
             break;
           }
@@ -2923,11 +3002,17 @@ namespace GBSharp.CPUSpace
           {
             if (registers.FC != 0) { return false; }
 
+            ushort target = n;
+            if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
+            {
+              return true;
+            }
+
             registers.SP -= 2;
             memory.Write(registers.SP, this.nextPC);
 
             // We jump
-            this.nextPC = n;
+            this.nextPC = target;
             _currentInstruction.Ticks = 24;
             break;
           }
@@ -2985,7 +3070,14 @@ namespace GBSharp.CPUSpace
         case 0xDA:
           {
             if (registers.FC == 0) { return false; }
-            this.nextPC = n;
+
+            ushort target = n;
+            if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
+            {
+              return true;
+            }
+
+            this.nextPC = target;
             _currentInstruction.Ticks = 16;
             break;
           }
@@ -3001,11 +3093,17 @@ namespace GBSharp.CPUSpace
           {
             if (registers.FC == 0) { return false; }
 
+            ushort target = n;
+            if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
+            {
+              return true;
+            }
+
             registers.SP -= 2;
             memory.Write(registers.SP, this.nextPC);
 
             // We jump
-            this.nextPC = n;
+            this.nextPC = target;
             _currentInstruction.Ticks = 24;
             break;
           }
@@ -3132,7 +3230,13 @@ namespace GBSharp.CPUSpace
         // JP (HL): Jump to 16-bit value pointed by HL
         case 0xE9:
           {
-            this.nextPC = registers.HL;
+            ushort target = registers.HL;
+            if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
+            {
+              return true;
+            }
+
+            this.nextPC = target;
             break;
           }
 
