@@ -9,10 +9,18 @@ namespace GBSharp.CPUSpace
 {
   public enum BreakpointKinds
   {
+    NONE,
     EXECUTION,
     READ,
     WRITE,
     JUMP
+  }
+
+  public class Breakpoint
+  {
+    public bool Valid { get; internal set; }
+    public ushort Address { get; internal set; }
+    public BreakpointKinds Kind { get; internal set; }
   }
 
   class CPU : ICPU
@@ -109,15 +117,16 @@ namespace GBSharp.CPUSpace
       }
     }
 
+    public Breakpoint CurrentBreakpoint { get; private set; }
+
     public void ResetBreakpoints()
     {
+      CurrentBreakpoint = new Breakpoint();
       _executionBreakpoints = new List<ushort>();
       _readBreakpoints = new List<ushort>();
       _writeBreakpoints = new List<ushort>();
       _jumpBreakpoints = new List<ushort>();
     }
-
-    public ushort CurrentBreakpoint { get; private set; }
 
     #endregion
 
@@ -322,7 +331,8 @@ namespace GBSharp.CPUSpace
       // We see if there is an breakpoint to this address
       if(!ignoreBreakpoints && _executionBreakpoints.Contains(_currentInstruction.Address))
       {
-        CurrentBreakpoint = _currentInstruction.Address;
+        CurrentBreakpoint.Address = _currentInstruction.Address;
+        CurrentBreakpoint.Kind = BreakpointKinds.EXECUTION;
         BreakpointFound();
         return 0;
       }
@@ -342,25 +352,26 @@ namespace GBSharp.CPUSpace
       // NOTE(Cristian): This lambda could modify some fields of _currentInstruction
       //                 Most notably, change the ticks in the case of conditional jumps
 
-      bool breakpointTriggered = false;
+      BreakpointKinds breakpointKind = BreakpointKinds.NONE;
       if(!_currentInstruction.CB)
       {
-        breakpointTriggered = this.RunInstruction((byte)_currentInstruction.OpCode, 
+        breakpointKind = this.RunInstruction((byte)_currentInstruction.OpCode, 
                                                   _currentInstruction.Literal,
                                                   ignoreBreakpoints);
       }
       else
       {
-        breakpointTriggered = this.RunCBInstruction((byte)_currentInstruction.OpCode, 
+        breakpointKind = this.RunCBInstruction((byte)_currentInstruction.OpCode, 
                                                     _currentInstruction.Literal,
                                                     ignoreBreakpoints);
       }
 
       // We see if there is an breakpoint to this address
       // NOTE(Cristian): ignoreBreakpoints is implicit in the RunInstruction
-      if(breakpointTriggered)
+      if(breakpointKind != BreakpointKinds.NONE)
       {
-        CurrentBreakpoint = _currentInstruction.Address;
+        CurrentBreakpoint.Address = _currentInstruction.Address;
+        CurrentBreakpoint.Kind = breakpointKind;
         BreakpointFound();
         return 0;
       }
@@ -618,7 +629,7 @@ namespace GBSharp.CPUSpace
     /// <param name="opcode">The opcode to run</param>
     /// <param name="n">The argument (if any) of the opcode</param>
     /// <returns>Whether a breakpoint was found</returns>
-    private bool RunInstruction(byte opcode, ushort n, bool ignoreBreakpoints)
+    private BreakpointKinds RunInstruction(byte opcode, ushort n, bool ignoreBreakpoints)
     {
       switch (opcode)
       {
@@ -640,7 +651,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.BC))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.BC, registers.A);
@@ -701,7 +712,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(n))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(n, registers.SP);
@@ -727,7 +738,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.BC))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
             
             registers.A = memory.Read(registers.BC);
@@ -802,7 +813,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.DE))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.DE, registers.A);
@@ -867,7 +878,7 @@ namespace GBSharp.CPUSpace
             ushort target = (ushort)(this.nextPC + sn);
             if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
             {
-              return true;
+              return BreakpointKinds.JUMP;
             }
  
             this.nextPC = target;
@@ -892,7 +903,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.DE))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.A = memory.Read(registers.DE);
@@ -951,7 +962,7 @@ namespace GBSharp.CPUSpace
         // JR NZ,n: Relative jump by signed immediate if last result was not zero
         case 0x20:
           {
-            if (registers.FZ != 0) { return false; }
+            if (registers.FZ != 0) { return BreakpointKinds.NONE; }
 
             // We cast down the input, ignoring the overflows
             short sn = 0;
@@ -959,7 +970,7 @@ namespace GBSharp.CPUSpace
             ushort target = (ushort)(this.nextPC + sn);
             if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
             {
-              return true;
+              return BreakpointKinds.JUMP;
             }
 
             this.nextPC = target;
@@ -979,7 +990,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL++, registers.A);
@@ -1054,7 +1065,7 @@ namespace GBSharp.CPUSpace
         // JR Z,n: Relative jump by signed immediate if last result was zero
         case 0x28:
           {
-            if (registers.FZ == 0) { return false; }
+            if (registers.FZ == 0) { return BreakpointKinds.NONE; }
 
             // We cast down the input, ignoring the overflows
             short sn = 0;
@@ -1062,7 +1073,7 @@ namespace GBSharp.CPUSpace
             ushort target = (ushort)(this.nextPC + sn);
             if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
             {
-              return true;
+              return BreakpointKinds.JUMP;
             }
 
             this.nextPC = target;
@@ -1089,7 +1100,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.A = memory.Read(registers.HL++);
@@ -1145,7 +1156,7 @@ namespace GBSharp.CPUSpace
         // JR NC,n: Relative jump by signed immediate if last result caused no carry
         case 0x30:
           {
-            if (registers.FC != 0) { return false; }
+            if (registers.FC != 0) { return BreakpointKinds.NONE; }
 
             // We cast down the input, ignoring the overflows
             short sn = 0;
@@ -1153,7 +1164,7 @@ namespace GBSharp.CPUSpace
             ushort target = (ushort)(this.nextPC + sn);
             if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
             {
-              return true;
+              return BreakpointKinds.JUMP;
             }
 
             this.nextPC = target;
@@ -1173,7 +1184,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL--, registers.A);
@@ -1192,7 +1203,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             byte value = memory.Read(registers.HL);
@@ -1210,7 +1221,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             byte value = memory.Read(registers.HL);
@@ -1228,7 +1239,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, (byte)n);
@@ -1247,7 +1258,7 @@ namespace GBSharp.CPUSpace
         // JR C,n: Relative jump by signed immediate if last result caused carry
         case 0x38:
           {
-            if (registers.FC == 0) { return false; }
+            if (registers.FC == 0) { return BreakpointKinds.NONE; }
 
             // We cast down the input, ignoring the overflows
             short sn = 0;
@@ -1255,7 +1266,7 @@ namespace GBSharp.CPUSpace
             ushort target = (ushort)(this.nextPC + sn);
             if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
             {
-              return true;
+              return BreakpointKinds.JUMP;
             }
 
             this.nextPC = target;
@@ -1282,7 +1293,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.A = memory.Read(registers.HL--);
@@ -1383,7 +1394,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.B = memory.Read(registers.HL);
@@ -1446,7 +1457,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.C = memory.Read(registers.HL);
@@ -1509,7 +1520,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.D = memory.Read(registers.HL);
@@ -1572,7 +1583,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.E = memory.Read(registers.HL);
@@ -1635,7 +1646,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.H = memory.Read(registers.HL);
@@ -1698,7 +1709,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.L = memory.Read(registers.HL);
@@ -1717,7 +1728,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, registers.B);
@@ -1729,7 +1740,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, registers.C);
@@ -1741,7 +1752,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, registers.D);
@@ -1753,7 +1764,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, registers.E);
@@ -1765,7 +1776,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, registers.H);
@@ -1777,7 +1788,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, registers.L);
@@ -1804,7 +1815,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, registers.A);
@@ -1858,7 +1869,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.A = memory.Read(registers.HL);
@@ -2704,7 +2715,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             byte operand = memory.Read(registers.HL);
@@ -2755,7 +2766,7 @@ namespace GBSharp.CPUSpace
         // RET NZ: Return if last result was not zero
         case 0xC0:
           {
-            if (registers.FZ != 0) { return false; }
+            if (registers.FZ != 0) { return BreakpointKinds.NONE; }
             // We load the program counter (high byte is in higher address)
             this.nextPC = memory.Read(registers.SP++);
             this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
@@ -2775,12 +2786,12 @@ namespace GBSharp.CPUSpace
         // JP NZ,nn: Absolute jump to 16-bit location if last result was not zero
         case 0xC2:
           {
-            if (registers.FZ != 0) { return false; }
+            if (registers.FZ != 0) { return BreakpointKinds.NONE; }
 
             ushort target = n;
             if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
             {
-              return true;
+              return BreakpointKinds.JUMP;
             }
 
             this.nextPC = target;
@@ -2794,7 +2805,7 @@ namespace GBSharp.CPUSpace
             ushort target = n;
             if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
             {
-              return true;
+              return BreakpointKinds.JUMP;
             }
 
             this.nextPC = target;
@@ -2804,12 +2815,12 @@ namespace GBSharp.CPUSpace
         // CALL NZ,nn: Call routine at 16-bit location if last result was not zero
         case 0xC4:
           {
-            if (registers.FZ != 0) { return false; }
+            if (registers.FZ != 0) { return BreakpointKinds.NONE; }
 
             ushort target = n;
             if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
             {
-              return true;
+              return BreakpointKinds.JUMP;
             }
 
             registers.SP -= 2;
@@ -2855,7 +2866,7 @@ namespace GBSharp.CPUSpace
         // RET Z: Return if last result was zero
         case 0xC8:
           {
-            if (registers.FZ == 0) { return false; }
+            if (registers.FZ == 0) { return BreakpointKinds.NONE; }
             // We load the program counter (high byte is in higher address)
             this.nextPC = memory.Read(registers.SP++);
             this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
@@ -2875,12 +2886,12 @@ namespace GBSharp.CPUSpace
         // JP Z,nn: Absolute jump to 16-bit location if last result was zero
         case 0xCA:
           {
-            if (registers.FZ == 0) { return false; }
+            if (registers.FZ == 0) { return BreakpointKinds.NONE; }
 
             ushort target = n;
             if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
             {
-              return true;
+              return BreakpointKinds.JUMP;
             }
 
             this.nextPC = target;
@@ -2897,12 +2908,12 @@ namespace GBSharp.CPUSpace
         // CALL Z,nn: Call routine at 16-bit location if last result was zero
         case 0xCC:
           {
-            if (registers.FZ == 0) { return false; }
+            if (registers.FZ == 0) { return BreakpointKinds.NONE; }
 
             ushort target = n;
             if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
             {
-              return true;
+              return BreakpointKinds.JUMP;
             }
 
             registers.SP -= 2;
@@ -2920,7 +2931,7 @@ namespace GBSharp.CPUSpace
             ushort target = n;
             if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
             {
-              return true;
+              return BreakpointKinds.JUMP;
             }
 
             registers.SP -= 2;
@@ -2958,7 +2969,7 @@ namespace GBSharp.CPUSpace
         // RET NC: Return if last result caused no carry
         case 0xD0:
           {
-            if (registers.FC != 0) { return false; }
+            if (registers.FC != 0) { return BreakpointKinds.NONE; }
             // We load the program counter (high byte is in higher address)
             this.nextPC = memory.Read(registers.SP++);
             this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
@@ -2978,12 +2989,12 @@ namespace GBSharp.CPUSpace
         // JP NC,nn: Absolute jump to 16-bit location if last result caused no carry
         case 0xD2:
           {
-            if (registers.FC != 0) { return false; }
+            if (registers.FC != 0) { return BreakpointKinds.NONE; }
 
             ushort target = n;
             if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
             {
-              return true;
+              return BreakpointKinds.JUMP;
             }
 
             this.nextPC = target;
@@ -3000,12 +3011,12 @@ namespace GBSharp.CPUSpace
         // CALL NC,nn: Call routine at 16-bit location if last result caused no carry
         case 0xD4:
           {
-            if (registers.FC != 0) { return false; }
+            if (registers.FC != 0) { return BreakpointKinds.NONE; }
 
             ushort target = n;
             if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
             {
-              return true;
+              return BreakpointKinds.JUMP;
             }
 
             registers.SP -= 2;
@@ -3047,7 +3058,7 @@ namespace GBSharp.CPUSpace
         // RET C: Return if last result caused carry
         case 0xD8:
           {
-            if (registers.FC == 0) { return false; }
+            if (registers.FC == 0) { return BreakpointKinds.NONE; }
             // We load the program counter (high byte is in higher address)
             this.nextPC = memory.Read(registers.SP++);
             this.nextPC += (ushort)(memory.Read(registers.SP++) << 8);
@@ -3069,12 +3080,12 @@ namespace GBSharp.CPUSpace
         // JP C,nn: Absolute jump to 16-bit location if last result caused carry
         case 0xDA:
           {
-            if (registers.FC == 0) { return false; }
+            if (registers.FC == 0) { return BreakpointKinds.NONE; }
 
             ushort target = n;
             if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
             {
-              return true;
+              return BreakpointKinds.JUMP;
             }
 
             this.nextPC = target;
@@ -3091,12 +3102,12 @@ namespace GBSharp.CPUSpace
         // CALL C,nn: Call routine at 16-bit location if last result caused carry
         case 0xDC:
           {
-            if (registers.FC == 0) { return false; }
+            if (registers.FC == 0) { return BreakpointKinds.NONE; }
 
             ushort target = n;
             if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
             {
-              return true;
+              return BreakpointKinds.JUMP;
             }
 
             registers.SP -= 2;
@@ -3139,7 +3150,7 @@ namespace GBSharp.CPUSpace
             ushort address = (ushort)(0xFF00 | (byte)n);
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(address))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(address, registers.A);
@@ -3161,7 +3172,7 @@ namespace GBSharp.CPUSpace
             ushort address = (ushort)(0xFF00 | registers.C);
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(address))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(address, registers.A);
@@ -3233,7 +3244,7 @@ namespace GBSharp.CPUSpace
             ushort target = registers.HL;
             if (!ignoreBreakpoints && _jumpBreakpoints.Contains(target))
             {
-              return true;
+              return BreakpointKinds.JUMP;
             }
 
             this.nextPC = target;
@@ -3245,7 +3256,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(n))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(n, registers.A);
@@ -3294,7 +3305,7 @@ namespace GBSharp.CPUSpace
             ushort address = (ushort)(0xFF00 | (byte)n);
             if (!ignoreBreakpoints && _readBreakpoints.Contains(address))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.A = memory.Read(address);
@@ -3316,7 +3327,7 @@ namespace GBSharp.CPUSpace
             ushort address = (ushort)(0xFF00 | registers.C);
             if (!ignoreBreakpoints && _readBreakpoints.Contains(address))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.A = memory.Read(address);
@@ -3394,7 +3405,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(n))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.A = memory.Read(n);
@@ -3453,7 +3464,7 @@ namespace GBSharp.CPUSpace
       }
 
       // No breakpoints found
-      return false;
+      return BreakpointKinds.NONE;
     }
 
     /// <summary>
@@ -3462,7 +3473,7 @@ namespace GBSharp.CPUSpace
     /// <param name="opcode">The opcode to run</param>
     /// <param name="n">The argument (if any) of the opcode</param>
     /// <returns>Whether a breakpoint was found</returns>
-    private bool RunCBInstruction(byte opcode, ushort n, bool ignoreBreakpoints)
+    private BreakpointKinds RunCBInstruction(byte opcode, ushort n, bool ignoreBreakpoints)
     {
       switch (opcode)
       {
@@ -3549,7 +3560,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             var rotateCarry = UtilFuncs.RotateLeftAndCarry(memory.Read(registers.HL));
@@ -3658,7 +3669,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             var rotateCarry = UtilFuncs.RotateRightAndCarry(memory.Read(registers.HL));
@@ -3767,7 +3778,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             var rotateCarry = UtilFuncs.RotateLeftThroughCarry(memory.Read(registers.HL), 1, registers.FC);
@@ -3876,7 +3887,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             var rotateCarry = UtilFuncs.RotateRightThroughCarry(memory.Read(registers.HL), 1, registers.FC);
@@ -3985,7 +3996,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             var shiftCarry = UtilFuncs.ShiftLeft(memory.Read(registers.HL));
@@ -4093,7 +4104,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             var shiftCarry = UtilFuncs.ShiftRightArithmetic(memory.Read(registers.HL));
@@ -4202,7 +4213,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             byte result = UtilFuncs.SwapNibbles(memory.Read(registers.HL));
@@ -4311,7 +4322,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             var shiftCarry = UtilFuncs.ShiftRightLogic(memory.Read(registers.HL));
@@ -4396,7 +4407,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.FZ = (byte)(UtilFuncs.TestBit(memory.Read(registers.HL), 0) == 0 ? 1 : 0);
@@ -4473,7 +4484,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.FZ = (byte)(UtilFuncs.TestBit(memory.Read(registers.HL), 1) == 0 ? 1 : 0);
@@ -4550,7 +4561,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.FZ = (byte)(UtilFuncs.TestBit(memory.Read(registers.HL), 2) == 0 ? 1 : 0);
@@ -4627,7 +4638,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.FZ = (byte)(UtilFuncs.TestBit(memory.Read(registers.HL), 3) == 0 ? 1 : 0);
@@ -4704,7 +4715,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.FZ = (byte)(UtilFuncs.TestBit(memory.Read(registers.HL), 4) == 0 ? 1 : 0);
@@ -4781,7 +4792,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.FZ = (byte)(UtilFuncs.TestBit(memory.Read(registers.HL), 5) == 0 ? 1 : 0);
@@ -4858,7 +4869,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.FZ = (byte)(UtilFuncs.TestBit(memory.Read(registers.HL), 6) == 0 ? 1 : 0);
@@ -4935,7 +4946,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _readBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.READ;
             }
 
             registers.FZ = (byte)(UtilFuncs.TestBit(memory.Read(registers.HL), 7) == 0 ? 1 : 0);
@@ -5000,7 +5011,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, UtilFuncs.ClearBit(memory.Read(registers.HL), 0));
@@ -5061,7 +5072,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, UtilFuncs.ClearBit(memory.Read(registers.HL), 1));
@@ -5122,7 +5133,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, UtilFuncs.ClearBit(memory.Read(registers.HL), 2));
@@ -5183,7 +5194,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, UtilFuncs.ClearBit(memory.Read(registers.HL), 3));
@@ -5244,7 +5255,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, UtilFuncs.ClearBit(memory.Read(registers.HL), 4));
@@ -5305,7 +5316,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, UtilFuncs.ClearBit(memory.Read(registers.HL), 5));
@@ -5366,7 +5377,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, UtilFuncs.ClearBit(memory.Read(registers.HL), 6));
@@ -5427,7 +5438,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, UtilFuncs.ClearBit(memory.Read(registers.HL), 7));
@@ -5488,7 +5499,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, UtilFuncs.SetBit(memory.Read(registers.HL), 0));
@@ -5549,7 +5560,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, UtilFuncs.SetBit(memory.Read(registers.HL), 1));
@@ -5610,7 +5621,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, UtilFuncs.SetBit(memory.Read(registers.HL), 2));
@@ -5671,7 +5682,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, UtilFuncs.SetBit(memory.Read(registers.HL), 3));
@@ -5732,7 +5743,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, UtilFuncs.SetBit(memory.Read(registers.HL), 4));
@@ -5793,7 +5804,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, UtilFuncs.SetBit(memory.Read(registers.HL), 5));
@@ -5854,7 +5865,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, UtilFuncs.SetBit(memory.Read(registers.HL), 6));
@@ -5915,7 +5926,7 @@ namespace GBSharp.CPUSpace
           {
             if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
             {
-              return true;
+              return BreakpointKinds.WRITE;
             }
  
             memory.Write(registers.HL, UtilFuncs.SetBit(memory.Read(registers.HL), 7));
@@ -5931,7 +5942,7 @@ namespace GBSharp.CPUSpace
       }
 
       // No breakpoints found
-      return false;
+      return BreakpointKinds.NONE;
     }
 
     #endregion

@@ -22,6 +22,7 @@ namespace GBSharp
 
     byte Step(bool ignoreBreakpoints);
 
+    Breakpoint CurrentBreakpoint { get; }
     List<ushort> GetBreakpoints(BreakpointKinds kind);
     void AddBreakpoint(BreakpointKinds kind, ushort address);
     void RemoveBreakpoint(BreakpointKinds kind, ushort address);
