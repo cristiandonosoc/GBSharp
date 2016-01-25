@@ -638,6 +638,11 @@ namespace GBSharp.CPUSpace
         // LD (BC),A: Save A to address pointed by BC
         case 0x02:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.BC))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.BC, registers.A);
             break;
           }
@@ -694,6 +699,11 @@ namespace GBSharp.CPUSpace
         // LD (nn),SP: Save SP to given address
         case 0x08:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(n))
+            {
+              return true;
+            }
+ 
             memory.Write(n, registers.SP);
             break;
           }
@@ -790,6 +800,11 @@ namespace GBSharp.CPUSpace
         // LD (DE),A: Save A to address pointed by DE
         case 0x12:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.DE))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.DE, registers.A);
             break;
           }
@@ -949,6 +964,11 @@ namespace GBSharp.CPUSpace
         // LDI (HL),A: Save A to address pointed by HL, and increment HL
         case 0x22:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL++, registers.A);
             break;
           }
@@ -1124,6 +1144,11 @@ namespace GBSharp.CPUSpace
         // LDD (HL),A: Save A to address pointed by HL, and decrement HL
         case 0x32:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL--, registers.A);
             break;
           }
@@ -1138,6 +1163,11 @@ namespace GBSharp.CPUSpace
         // INC (HL): Increment value pointed by HL
         case 0x34:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             byte value = memory.Read(registers.HL);
             ++value;
             memory.Write(registers.HL, value);
@@ -1151,6 +1181,11 @@ namespace GBSharp.CPUSpace
         // DEC (HL): Decrement value pointed by HL
         case 0x35:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             byte value = memory.Read(registers.HL);
             --value;
             memory.Write(registers.HL, value);
@@ -1164,6 +1199,11 @@ namespace GBSharp.CPUSpace
         // LD (HL),n: Load 8-bit immediate into address pointed by HL
         case 0x36:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, (byte)n);
             break;
           }
@@ -1641,6 +1681,11 @@ namespace GBSharp.CPUSpace
         // LD (HL),B: Copy B to address pointed by HL
         case 0x70:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, registers.B);
             break;
           }
@@ -1648,6 +1693,11 @@ namespace GBSharp.CPUSpace
         // LD (HL),C: Copy C to address pointed by HL
         case 0x71:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, registers.C);
             break;
           }
@@ -1655,6 +1705,11 @@ namespace GBSharp.CPUSpace
         // LD (HL),D: Copy D to address pointed by HL
         case 0x72:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, registers.D);
             break;
           }
@@ -1662,6 +1717,11 @@ namespace GBSharp.CPUSpace
         // LD (HL),E: Copy E to address pointed by HL
         case 0x73:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, registers.E);
             break;
           }
@@ -1669,6 +1729,11 @@ namespace GBSharp.CPUSpace
         // LD (HL),H: Copy H to address pointed by HL
         case 0x74:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, registers.H);
             break;
           }
@@ -1676,6 +1741,11 @@ namespace GBSharp.CPUSpace
         // LD (HL),L: Copy L to address pointed by HL
         case 0x75:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, registers.L);
             break;
           }
@@ -1698,6 +1768,11 @@ namespace GBSharp.CPUSpace
         // LD (HL),A: Copy A to address pointed by HL
         case 0x77:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, registers.A);
             break;
           }
@@ -2963,7 +3038,13 @@ namespace GBSharp.CPUSpace
         // LDH (n),A: Save A at address pointed to by (FF00h + 8-bit immediate)
         case 0xE0:
           {
-            memory.Write((ushort)(0xFF00 | (byte)n), registers.A);
+            ushort address = (ushort)(0xFF00 | (byte)n);
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(address))
+            {
+              return true;
+            }
+ 
+            memory.Write(address, registers.A);
             break;
           }
 
@@ -2979,7 +3060,13 @@ namespace GBSharp.CPUSpace
         // LDH (C),A: Save A at address pointed to by (FF00h + C)
         case 0xE2:
           {
-            memory.Write((ushort)(0xFF00 | registers.C), registers.A);
+            ushort address = (ushort)(0xFF00 | registers.C);
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(address))
+            {
+              return true;
+            }
+ 
+            memory.Write(address, registers.A);
             break;
           }
 
@@ -3052,6 +3139,11 @@ namespace GBSharp.CPUSpace
         // LD (nn),A: Save A at given 16-bit address
         case 0xEA:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(n))
+            {
+              return true;
+            }
+ 
             memory.Write(n, registers.A);
             break;
           }
@@ -3351,6 +3443,11 @@ namespace GBSharp.CPUSpace
         // RLC (HL): Rotate value pointed by HL left with carry
         case 0x06:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             var rotateCarry = UtilFuncs.RotateLeftAndCarry(memory.Read(registers.HL));
             memory.Write(registers.HL, rotateCarry.Item1);
 
@@ -3455,6 +3552,11 @@ namespace GBSharp.CPUSpace
         // RRC (HL): Rotate value pointed by HL right with carry
         case 0x0E:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             var rotateCarry = UtilFuncs.RotateRightAndCarry(memory.Read(registers.HL));
             memory.Write(registers.HL, rotateCarry.Item1);
 
@@ -3559,6 +3661,11 @@ namespace GBSharp.CPUSpace
         // RL (HL): Rotate value pointed by HL left
         case 0x16:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             var rotateCarry = UtilFuncs.RotateLeftThroughCarry(memory.Read(registers.HL), 1, registers.FC);
             memory.Write(registers.HL, rotateCarry.Item1);
 
@@ -3663,6 +3770,11 @@ namespace GBSharp.CPUSpace
         // RR (HL): Rotate value pointed by HL right
         case 0x1E:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             var rotateCarry = UtilFuncs.RotateRightThroughCarry(memory.Read(registers.HL), 1, registers.FC);
             memory.Write(registers.HL, rotateCarry.Item1);
 
@@ -3767,6 +3879,11 @@ namespace GBSharp.CPUSpace
         // SLA (HL): Shift value pointed by HL left preserving sign
         case 0x26:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             var shiftCarry = UtilFuncs.ShiftLeft(memory.Read(registers.HL));
             memory.Write(registers.HL, shiftCarry.Item1);
 
@@ -3870,6 +3987,11 @@ namespace GBSharp.CPUSpace
         // SRA (HL): Shift value pointed by HL right preserving sign
         case 0x2E:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             var shiftCarry = UtilFuncs.ShiftRightArithmetic(memory.Read(registers.HL));
             memory.Write(registers.HL, shiftCarry.Item1);
 
@@ -3974,6 +4096,11 @@ namespace GBSharp.CPUSpace
         // SWAP (HL): Swap nybbles in value pointed by HL
         case 0x36:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             byte result = UtilFuncs.SwapNibbles(memory.Read(registers.HL));
             memory.Write(registers.HL, result);
 
@@ -4078,6 +4205,11 @@ namespace GBSharp.CPUSpace
         // SRL (HL): Shift value pointed by HL right
         case 0x3E:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             var shiftCarry = UtilFuncs.ShiftRightLogic(memory.Read(registers.HL));
             memory.Write(registers.HL, shiftCarry.Item1);
 
@@ -4762,6 +4894,11 @@ namespace GBSharp.CPUSpace
         // RES 0,(HL): Clear (reset) bit 0 of value pointed by HL
         case 0x86:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, UtilFuncs.ClearBit(memory.Read(registers.HL), 0));
             break;
           }
@@ -4818,6 +4955,11 @@ namespace GBSharp.CPUSpace
         // RES 1,(HL): Clear (reset) bit 1 of value pointed by HL
         case 0x8E:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, UtilFuncs.ClearBit(memory.Read(registers.HL), 1));
             break;
           }
@@ -4874,6 +5016,11 @@ namespace GBSharp.CPUSpace
         // RES 2,(HL): Clear (reset) bit 2 of value pointed by HL
         case 0x96:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, UtilFuncs.ClearBit(memory.Read(registers.HL), 2));
             break;
           }
@@ -4930,6 +5077,11 @@ namespace GBSharp.CPUSpace
         // RES 3,(HL): Clear (reset) bit 3 of value pointed by HL
         case 0x9E:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, UtilFuncs.ClearBit(memory.Read(registers.HL), 3));
             break;
           }
@@ -4986,6 +5138,11 @@ namespace GBSharp.CPUSpace
         // RES 4,(HL): Clear (reset) bit 4 of value pointed by HL
         case 0xA6:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, UtilFuncs.ClearBit(memory.Read(registers.HL), 4));
             break;
           }
@@ -5042,6 +5199,11 @@ namespace GBSharp.CPUSpace
         // RES 5,(HL): Clear (reset) bit 5 of value pointed by HL
         case 0xAE:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, UtilFuncs.ClearBit(memory.Read(registers.HL), 5));
             break;
           }
@@ -5098,6 +5260,11 @@ namespace GBSharp.CPUSpace
         // RES 6,(HL): Clear (reset) bit 6 of value pointed by HL
         case 0xB6:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, UtilFuncs.ClearBit(memory.Read(registers.HL), 6));
             break;
           }
@@ -5154,6 +5321,11 @@ namespace GBSharp.CPUSpace
         // RES 7,(HL): Clear (reset) bit 7 of value pointed by HL
         case 0xBE:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, UtilFuncs.ClearBit(memory.Read(registers.HL), 7));
             break;
           }
@@ -5210,6 +5382,11 @@ namespace GBSharp.CPUSpace
         // SET 0,(HL): Set bit 0 of value pointed by HL
         case 0xC6:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, UtilFuncs.SetBit(memory.Read(registers.HL), 0));
             break;
           }
@@ -5266,6 +5443,11 @@ namespace GBSharp.CPUSpace
         // SET 1,(HL): Set bit 1 of value pointed by HL
         case 0xCE:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, UtilFuncs.SetBit(memory.Read(registers.HL), 1));
             break;
           }
@@ -5322,6 +5504,11 @@ namespace GBSharp.CPUSpace
         // SET 2,(HL): Set bit 2 of value pointed by HL
         case 0xD6:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, UtilFuncs.SetBit(memory.Read(registers.HL), 2));
             break;
           }
@@ -5378,6 +5565,11 @@ namespace GBSharp.CPUSpace
         // SET 3,(HL): Set bit 3 of value pointed by HL
         case 0xDE:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, UtilFuncs.SetBit(memory.Read(registers.HL), 3));
             break;
           }
@@ -5434,6 +5626,11 @@ namespace GBSharp.CPUSpace
         // SET 4,(HL): Set bit 4 of value pointed by HL
         case 0xE6:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, UtilFuncs.SetBit(memory.Read(registers.HL), 4));
             break;
           }
@@ -5490,6 +5687,11 @@ namespace GBSharp.CPUSpace
         // SET 5,(HL): Set bit 5 of value pointed by HL
         case 0xEE:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, UtilFuncs.SetBit(memory.Read(registers.HL), 5));
             break;
           }
@@ -5546,6 +5748,11 @@ namespace GBSharp.CPUSpace
         // SET 6,(HL): Set bit 6 of value pointed by HL
         case 0xF6:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, UtilFuncs.SetBit(memory.Read(registers.HL), 6));
             break;
           }
@@ -5602,6 +5809,11 @@ namespace GBSharp.CPUSpace
         // SET 7,(HL): Set bit 7 of value pointed by HL
         case 0xFE:
           {
+            if (!ignoreBreakpoints && _writeBreakpoints.Contains(registers.HL))
+            {
+              return true;
+            }
+ 
             memory.Write(registers.HL, UtilFuncs.SetBit(memory.Read(registers.HL), 7));
             break;
           }
