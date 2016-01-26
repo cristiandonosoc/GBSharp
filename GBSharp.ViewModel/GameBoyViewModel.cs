@@ -81,6 +81,15 @@ namespace GBSharp.ViewModel
 
     private void OnKeyDown(KeyEventArgs args)
     {
+      // NOTE(Cristian): Very hacky F10 step
+      if (args.Key == Key.System)
+      {
+        if (args.SystemKey == Key.F10)
+        {
+          _gameBoyController.Step();
+        }
+      }
+
       _gameBoyGamePad.KeyDown(args);
     }
 

@@ -73,41 +73,13 @@ namespace GBSharp.ViewModel
       }
     }
 
-    public ICommand RunCommand
-    {
-      get { return new DelegateCommand(Run); }
-    }
-
-    public ICommand StepCommand
-    {
-      get { return new DelegateCommand(Step); }
-    }
-
-
-    public ICommand PauseCommand
-    {
-      get { return new DelegateCommand(Pause); }
-    }
-
-    public ICommand StopCommand
-    {
-      get { return new DelegateCommand(Stop); }
-    }
-
-    public ICommand ResetCommand
-    {
-      get { return new DelegateCommand(Reset); }
-    }
-
-    public ICommand LoadCommand
-    {
-      get { return new DelegateCommand(Load); }
-    }
-
-    public ICommand SetBreakpointCommand
-    {
-      get { return new DelegateCommand(SetBreakpoint); }
-    }
+    public ICommand RunCommand { get { return new DelegateCommand(Run); } }
+    public ICommand StepCommand { get { return new DelegateCommand(Step); } }
+    public ICommand PauseCommand { get { return new DelegateCommand(Pause); } }
+    public ICommand StopCommand { get { return new DelegateCommand(Stop); } }
+    public ICommand ResetCommand { get { return new DelegateCommand(Reset); } }
+    public ICommand LoadCommand { get { return new DelegateCommand(Load); } }
+    public ICommand SetBreakpointCommand { get { return new DelegateCommand(SetBreakpoint); } }
 
     public GameBoyContollerViewModel(IGameBoy gameBoy, IOpenFileDialogFactory fileDialogFactory)
     {
@@ -139,7 +111,7 @@ namespace GBSharp.ViewModel
       audioManager.Dispose();
     }
 
-    private void Step()
+    public void Step()
     {
       _gameBoy.Step(true);
       NotifyStep();

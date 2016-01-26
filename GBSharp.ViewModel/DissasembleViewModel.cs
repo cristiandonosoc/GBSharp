@@ -194,10 +194,10 @@ namespace GBSharp.ViewModel
         _addressToInstruction[(ushort)address] = vm;
         vm.BreakpointChanged += Vm_BreakpointChanged;
 
-        searchString += vm.Address.ToLower();
-        searchString += vm.Opcode.ToLower();
-        searchString += vm.Name.ToLower();
-        searchString += vm.Description.ToLower();
+        searchString += vm.Address;
+        searchString += vm.Opcode;
+        searchString += vm.Name;
+        searchString += vm.Description;
 
         searchStrings[address] = searchString;
 
@@ -290,7 +290,7 @@ namespace GBSharp.ViewModel
     private int _currentSearchIndex = 0;
     public void Search()
     {
-      string searchString = _searchField.ToLower();
+      string searchString = _searchField;
 
       bool found = false;
 
@@ -299,7 +299,8 @@ namespace GBSharp.ViewModel
       {
         if(_disassembler.DisassembledMatrix[address][0] == 0) { continue; }
 
-        if(searchStrings[address].Contains(searchString))
+        string ss = searchStrings[address];
+        if(ss.Contains(searchString))
         {
           _currentSearchIndex = address;
           SelectedInstruction = _addressToInstruction[(ushort)address];
@@ -315,7 +316,8 @@ namespace GBSharp.ViewModel
       {
         if(_disassembler.DisassembledMatrix[address][0] == 0) { continue; }
 
-        if(searchStrings[address].Contains(searchString))
+        string ss = searchStrings[address];
+        if(ss.Contains(searchString))
         {
           _currentSearchIndex = address;
           SelectedInstruction = _addressToInstruction[(ushort)address];
