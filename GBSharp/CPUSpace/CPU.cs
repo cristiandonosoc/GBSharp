@@ -571,13 +571,13 @@ namespace GBSharp.CPUSpace
       switch (clockSelect)
       {
         case 1:
-          timerMask = 0x000F; // f/2^4 0000 0000 0000 1111, (262144 Hz)
+          timerMask = 0x000F; // f/2^4  0000 0000 0000 1111, (262144 Hz)
           break;
         case 2:
-          timerMask = 0x003F; // f/2^6 0000 0000 0011 1111, (65536 Hz)
+          timerMask = 0x003F; // f/2^6  0000 0000 0011 1111, (65536 Hz)
           break;
         case 3:
-          timerMask = 0x00FF; // f/2^8 0000 0000 1111 1111, (16384 Hz)
+          timerMask = 0x00FF; // f/2^8  0000 0000 1111 1111, (16384 Hz)
           break;
         default:
           timerMask = 0x03FF; // f/2^10 0000 0011 1111 1111, (4096 Hz)

@@ -134,6 +134,17 @@ namespace GBSharp.MemorySpace.MemoryHandlers
             this.gameboy.InterruptController.UpdateKeypadState();
           }
 
+          else if (address == (ushort)MMR.DIV)
+          {
+            this.memoryData[address] = 0;
+          }
+
+          else if (address == (ushort)MMR.TAC)
+          {
+            // TAC has a 0xF8 mask
+            this.memoryData[address] = (byte)(0xF8 | value);
+          }
+
           else if (address == (ushort)MMR.IF)
           {
             this.memoryData[address] = value;
