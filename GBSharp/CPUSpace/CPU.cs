@@ -539,6 +539,12 @@ namespace GBSharp.CPUSpace
       }
     }
 
+    private ushort _divCounter = 0;
+    private byte _timaCounter = 0;
+    private int _tacCounter = 0;
+    private int _tacMask = 0;
+    private byte _tmaValue = 0;
+
     /// <summary>
     /// Adjusts the this.clock counter to the right value after an instruction execution and updates the status of
     /// the code-controlled timer system TIMA/TMA/TAC, setting the right flags if an overflow interrupt is required.
@@ -559,62 +565,74 @@ namespace GBSharp.CPUSpace
       this.clock += ticks;
 
       // Upper 8 bits of the clock should be accessible through DIV register.
-      this.memory.LowLevelWrite((ushort)MMR.DIV, (byte)(this.clock >> 8));
+      _divCounter += ticks;
+      this.memory.LowLevelWrite((ushort)MMR.DIV, (byte)(_divCounter >> 8));
 
       // Configurable timer TIMA/TMA/TAC system:
       byte TAC = this.memory.LowLevelRead((ushort)MMR.TAC);
-
-      byte clockSelect = (byte)(TAC & 0x03); // Clock select is the bits 0 and 1 of the TAC register
       bool runTimer = (TAC & 0x04) == 0x04; // Run timer is the bit 2 of the TAC register
-
-      ushort timerMask;
-      switch (clockSelect)
-      {
-        case 1:
-          timerMask = 0x000F; // f/2^4  0000 0000 0000 1111, (262144 Hz)
-          break;
-        case 2:
-          timerMask = 0x003F; // f/2^6  0000 0000 0011 1111, (65536 Hz)
-          break;
-        case 3:
-          timerMask = 0x00FF; // f/2^8  0000 0000 1111 1111, (16384 Hz)
-          break;
-        default:
-          timerMask = 0x03FF; // f/2^10 0000 0011 1111 1111, (4096 Hz)
-          break;
-      }
-
       if (runTimer)
       {
         // Simulate every tick that occurred during the execution of the instruction
         for (int i = 1; i <= ticks; ++i)
         {
+          ++_tacCounter;
           // Maybe there is a faster way to do this without checking every clock value (??)
-          if (((initialClock + i) & timerMask) == 0x0000)
+          if ((_tacCounter & _tacMask) == 0x0000)
           {
-            // We have a perfect match! The number of oscilations is now a multiple of clock selected by TAC
+            ++_timaCounter;
 
-            // Fetch current TIMA value
-            byte TIMA = this.memory.LowLevelRead((ushort)MMR.TIMA);
-
-            // TIMA-tick
-            TIMA += 1;
-
-            if (TIMA == 0x0000)
+            // If overflow, we trigger the event
+            if (_timaCounter == 0x0000)
             {
-              // TIMA overflow, load TMA into TIMA
-              TIMA = this.memory.LowLevelRead((ushort)MMR.TMA);
-
-              // Set the interrupt request flag
+              _timaCounter = _tmaValue;
               this.interruptController.SetInterrupt(Interrupts.TimerOverflow);
             }
 
             // Update memory mapped timer
-            this.memory.LowLevelWrite((ushort)MemorySpace.MMR.TIMA, TIMA);
+            this.memory.LowLevelWrite((ushort)MemorySpace.MMR.TIMA, _timaCounter);
           }
         }
       }
     }
+
+    internal void HandleMemoryChange(MMR register, byte value)
+    {
+      switch (register)
+      {
+        case MMR.DIV:
+          break;
+        case MMR.TIMA:
+          _timaCounter = value;
+          break;
+        case MMR.TMA:
+          _tmaValue = value;
+          break;
+        case MMR.TAC:
+          // Clock select is the bits 0 and 1 of the TAC register
+          byte clockSelect = (byte)(value & 0x03); 
+          switch (clockSelect)
+          {
+            case 1:
+              _tacMask = 0x000F; // f/2^4  0000 0000 0000 1111, (262144 Hz)
+              break;
+            case 2:
+              _tacMask = 0x003F; // f/2^6  0000 0000 0011 1111, (65536 Hz)
+              break;
+            case 3:
+              _tacMask = 0x00FF; // f/2^8  0000 0000 1111 1111, (16384 Hz)
+              break;
+            default:
+              _tacMask = 0x03FF; // f/2^10 0000 0011 1111 1111, (4096 Hz)
+              break;
+          }
+
+          // We restart the counter
+          _tacCounter = 0;
+          break;
+      }
+    }
+     
 
     public override string ToString()
     {

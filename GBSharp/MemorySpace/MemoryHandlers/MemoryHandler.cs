@@ -137,12 +137,15 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           else if (address == (ushort)MMR.DIV)
           {
             this.memoryData[address] = 0;
+            this.cpu.HandleMemoryChange(MMR.DIV, 0);
           }
 
-          else if (address == (ushort)MMR.TAC)
+          else if ((address == (ushort)MMR.TIMA) ||
+                   (address == (ushort)MMR.TMA) ||
+                   (address == (ushort)MMR.TAC))
           {
-            // TAC has a 0xF8 mask
-            this.memoryData[address] = (byte)(0xF8 | value);
+            this.memoryData[address] = value;
+            this.cpu.HandleMemoryChange((MMR)address, value);
           }
 
           else if (address == (ushort)MMR.IF)
