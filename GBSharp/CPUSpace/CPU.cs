@@ -519,12 +519,10 @@ namespace GBSharp.CPUSpace
       int interruptEnable = this.memory.LowLevelRead((ushort)MMR.IE);
 
       int interrupt = interruptEnable & interruptRequest;
+      interrupt &= 0x1F; // 0x1F masks the useful bits of IE and IF, there is only 5 interrupts.
 
-      if ((interrupt & 0x1F) == 0x00) // 0x1F masks the useful bits of IE and IF, there is only 5 interrupts.
-      {
-        // Nothing, or disabled, who cares
-        return;
-      }
+      // We check if no interrupt have happeded, or are disabled, who cares
+      if (interrupt == 0x00)  { return; }
 
       if (this.interruptController.InterruptMasterEnable)
       {
@@ -541,6 +539,7 @@ namespace GBSharp.CPUSpace
 
     private ushort _divCounter = 0;
     private byte _timaCounter = 0;
+    private bool _timaChangedThisInstruction = false;
     private int _tacCounter = 0;
     private int _tacMask = 0;
     private byte _tmaValue = 0;
@@ -580,7 +579,10 @@ namespace GBSharp.CPUSpace
           // Maybe there is a faster way to do this without checking every clock value (??)
           if ((_tacCounter & _tacMask) == 0x0000)
           {
-            ++_timaCounter;
+            if(!_timaChangedThisInstruction)
+            {
+              ++_timaCounter;
+            }
 
             // If overflow, we trigger the event
             if (_timaCounter == 0x0000)
@@ -594,19 +596,23 @@ namespace GBSharp.CPUSpace
           }
         }
       }
+
+      _timaChangedThisInstruction = false;
     }
+
 
     internal void HandleMemoryChange(MMR register, byte value)
     {
       switch (register)
       {
-        case MMR.DIV:
-          break;
         case MMR.TIMA:
           _timaCounter = value;
+          _timaChangedThisInstruction = true;
+          this.memory.LowLevelWrite((ushort)MMR.TIMA, value);
           break;
         case MMR.TMA:
           _tmaValue = value;
+          this.memory.LowLevelWrite((ushort)MMR.TMA, value);
           break;
         case MMR.TAC:
           // Clock select is the bits 0 and 1 of the TAC register
@@ -626,9 +632,10 @@ namespace GBSharp.CPUSpace
               _tacMask = 0x03FF; // f/2^10 0000 0011 1111 1111, (4096 Hz)
               break;
           }
-
           // We restart the counter
           _tacCounter = 0;
+          // TAC has a 0xF8 mask (only lower 3 bits are useful)
+          this.memory.LowLevelWrite((ushort)MMR.TAC, (byte)(0xF8 | value));
           break;
       }
     }

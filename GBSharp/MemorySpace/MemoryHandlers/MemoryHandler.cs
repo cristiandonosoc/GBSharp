@@ -134,23 +134,24 @@ namespace GBSharp.MemorySpace.MemoryHandlers
             this.gameboy.InterruptController.UpdateKeypadState();
           }
 
+          // Any write to DIV restarts the timer
           else if (address == (ushort)MMR.DIV)
           {
             this.memoryData[address] = 0;
-            this.cpu.HandleMemoryChange(MMR.DIV, 0);
           }
 
           else if ((address == (ushort)MMR.TIMA) ||
                    (address == (ushort)MMR.TMA) ||
                    (address == (ushort)MMR.TAC))
           {
-            this.memoryData[address] = value;
+            // NOTE(Cristian): Changes to memory value are handled by the cpu handler
             this.cpu.HandleMemoryChange((MMR)address, value);
           }
 
           else if (address == (ushort)MMR.IF)
           {
-            this.memoryData[address] = value;
+            // IF has a 0xE0 mask
+            this.memoryData[address] = (byte)(0xE0 | value);
             // Trigger interrupt check event
             this.cpu.CheckForInterruptRequired();
           }
