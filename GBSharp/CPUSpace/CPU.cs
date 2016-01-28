@@ -48,6 +48,15 @@ namespace GBSharp.CPUSpace
       {Interrupts.P10to13TerminalNegativeEdge, false}
     };
 
+    // Timing
+
+    private ushort _divCounter;
+    private byte _timaCounter;
+    private bool _timaChangedThisInstruction;
+    private int _tacCounter;
+    private int _tacMask;
+    private byte _tmaValue;
+
     #region BREAKPOINTS
 
     public event Action BreakpointFound;
@@ -206,6 +215,7 @@ namespace GBSharp.CPUSpace
       // Reset the clock state
       this.clock = 0;
 
+
       this.halted = false;
       this.haltLoad = false;
       this.stopped = false;
@@ -218,7 +228,16 @@ namespace GBSharp.CPUSpace
       this.registers.PC = 0x0100;
       this.registers.SP = 0xFFFE;
 
+      // We restart the timer
+      _divCounter = 0xABFF;
+      _timaCounter = 0;
+      _timaChangedThisInstruction = false;
+      _tacCounter = 0;
+      _tacMask = 0;
+      _tmaValue = 0;
+
       // Initialize memory mapped registers
+      this.memory.LowLevelWrite(0xFF04, 0xAB); // DIV
       this.memory.LowLevelWrite(0xFF05, 0x00); // TIMA
       this.memory.LowLevelWrite(0xFF06, 0x00); // TMA
       this.memory.LowLevelWrite(0xFF07, 0x00); // TAC
@@ -536,13 +555,6 @@ namespace GBSharp.CPUSpace
         interruptToTrigger = (Interrupts)(interrupt & 0x1F);
       }
     }
-
-    private ushort _divCounter = 0;
-    private byte _timaCounter = 0;
-    private bool _timaChangedThisInstruction = false;
-    private int _tacCounter = 0;
-    private int _tacMask = 0;
-    private byte _tmaValue = 0;
 
     /// <summary>
     /// Adjusts the this.clock counter to the right value after an instruction execution and updates the status of
