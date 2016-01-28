@@ -139,8 +139,8 @@ namespace GBSharp.ViewModel
         int intLength = entry[0];
 
 
-        if(intLength == 0) {
-          searchStrings[address] = ""; 
+        if (intLength == 0) {
+          searchStrings[address] = "";
           continue;
         }
 
@@ -194,10 +194,9 @@ namespace GBSharp.ViewModel
         _addressToInstruction[(ushort)address] = vm;
         vm.BreakpointChanged += Vm_BreakpointChanged;
 
-        searchString += vm.Address;
-        searchString += vm.Opcode;
+        searchString += vm.Address + "_";
+        searchString += vm.Opcode + "_";
         searchString += vm.Name;
-        searchString += vm.Description;
 
         searchStrings[address] = searchString;
 

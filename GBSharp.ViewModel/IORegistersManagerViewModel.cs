@@ -105,9 +105,6 @@ namespace GBSharp.ViewModel
       SoundRegistersSet3.Add(new MemoryMappedRegisterViewModel("FF24: NR50", MMR.NR50, _gameBoy));
       SoundRegistersSet3.Add(new MemoryMappedRegisterViewModel("FF25: NR51", MMR.NR51, _gameBoy));
       SoundRegistersSet3.Add(new MemoryMappedRegisterViewModel("FF26: NR52", MMR.NR52, _gameBoy));
-
-
-
     }
 
     private void _gameBoy_PauseRequested()

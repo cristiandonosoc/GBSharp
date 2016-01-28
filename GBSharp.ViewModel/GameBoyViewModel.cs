@@ -107,19 +107,20 @@ namespace GBSharp.ViewModel
       _dispatcher.Invoke(StepHandler);
     }
 
+    // TODO(Cristian): Check if every viewmodel needs te step event or can it be all handled here
     private void StepHandler()
     {
       _cpu.CopyFromDomain();
+      _ioRegisters.CopyFromDomain();
       _display.CopyFromDomain();
       _dissasemble.SetCurrentSelectedInstruction();
       _interrupt.CopyFromDomain();
-      _ioRegisters.CopyFromDomain();
-
       _memory.StepHandler();
     }
 
     private void FileLoadedHandler()
     {
+      _ioRegisters.CopyFromDomain();
       _memory.CopyFromDomain();
       _display.CopyFromDomain();
       _cpu.CopyFromDomain();
