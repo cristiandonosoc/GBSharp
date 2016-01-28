@@ -18,8 +18,6 @@ namespace GBSharp.ViewModel
 
     private string _filePath;
     private string _cartridgeTitle;
-    private string _breakpoint;
-    private string _currentBreakpoint;
 
     public string FilePath
     {
@@ -47,39 +45,12 @@ namespace GBSharp.ViewModel
       }
     }
 
-    public string Breakpoint
-    {
-      get { return _breakpoint; }
-      set
-      {
-        if(_breakpoint != value)
-        {
-          _breakpoint = value;
-          OnPropertyChanged(() => Breakpoint);
-        }
-      }
-    }
-
-    public string CurrentBreakpoint
-    {
-      get { return _currentBreakpoint; }
-      set
-      {
-        if(_currentBreakpoint != value)
-        {
-          _currentBreakpoint = value;
-          OnPropertyChanged(() => CurrentBreakpoint);
-        }
-      }
-    }
-
     public ICommand RunCommand { get { return new DelegateCommand(Run); } }
     public ICommand StepCommand { get { return new DelegateCommand(Step); } }
     public ICommand PauseCommand { get { return new DelegateCommand(Pause); } }
     public ICommand StopCommand { get { return new DelegateCommand(Stop); } }
     public ICommand ResetCommand { get { return new DelegateCommand(Reset); } }
     public ICommand LoadCommand { get { return new DelegateCommand(Load); } }
-    public ICommand SetBreakpointCommand { get { return new DelegateCommand(SetBreakpoint); } }
 
     public GameBoyContollerViewModel(IGameBoy gameBoy, IOpenFileDialogFactory fileDialogFactory)
     {
@@ -173,14 +144,6 @@ namespace GBSharp.ViewModel
     {
       if (OnStep != null)
         OnStep();
-    }
-
-    private void SetBreakpoint()
-    {
-      // TODO(Cristian): REMOVE!
-      ushort address = Convert.ToUInt16(Breakpoint, 16);
-      //_gameBoy.CPU.AddBreakpoint(address);
-      CurrentBreakpoint = "0x" + address.ToString("x2");
     }
   }
 }
