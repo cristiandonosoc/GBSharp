@@ -582,7 +582,7 @@ namespace GBSharp.CPUSpace
       // Configurable timer TIMA/TMA/TAC system:
       byte TAC = this.memory.LowLevelRead((ushort)MMR.TAC);
       bool runTimer = (TAC & 0x04) == 0x04; // Run timer is the bit 2 of the TAC register
-      if (runTimer)
+      if (runTimer && !_tacChangedThisInstruction)
       {
         // Simulate every tick that occurred during the execution of the instruction
         for (int i = 1; i <= ticks; ++i)
@@ -610,8 +610,10 @@ namespace GBSharp.CPUSpace
       }
 
       _timaChangedThisInstruction = false;
+      _tacChangedThisInstruction = false;
     }
 
+    private bool _tacChangedThisInstruction = false;
 
     internal void HandleMemoryChange(MMR register, byte value)
     {
@@ -646,6 +648,7 @@ namespace GBSharp.CPUSpace
           }
           // We restart the counter
           _tacCounter = 0;
+          _tacChangedThisInstruction = true;
           // TAC has a 0xF8 mask (only lower 3 bits are useful)
           this.memory.LowLevelWrite((ushort)MMR.TAC, (byte)(0xF8 | value));
           break;
