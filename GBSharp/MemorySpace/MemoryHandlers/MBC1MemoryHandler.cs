@@ -162,6 +162,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     public override void Dispose()
     {
       base.Dispose();
+      if (!hasBattery) { return; }
 
       using (var file = new System.IO.BinaryWriter(new FileStream(saveFilePath, FileMode.Create)))
       {
