@@ -141,7 +141,10 @@ namespace GBSharp.MemorySpace
 
     public void Dispose()
     {
-      memoryHandler.Dispose();
+      if (memoryHandler != null)
+      {
+        memoryHandler.Dispose();
+      }
     }
 
     #endregion
