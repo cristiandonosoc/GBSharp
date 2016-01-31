@@ -52,7 +52,6 @@ namespace GBSharp.CPUSpace
 
     private ushort _divCounter;
     private byte _timaCounter;
-    private bool _timaChangedThisInstruction;
     private int _tacCounter;
     private int _tacMask;
     private byte _tmaValue;
@@ -231,7 +230,6 @@ namespace GBSharp.CPUSpace
       // We restart the timer
       _divCounter = 0xABFF;
       _timaCounter = 0;
-      _timaChangedThisInstruction = false;
       _tacCounter = 0;
       _tacMask = 0;
       _tmaValue = 0;
@@ -569,7 +567,6 @@ namespace GBSharp.CPUSpace
     /// execution times obtained from CPUInstructionClocks and CPUCBInstructionClocks dictionaries.</returns>
     internal void UpdateClockAndTimers(byte ticks)
     {
-      var initialClock = this.clock;
       // Update clock adding only base ticks. 
       // NOTE(Cristian): Conditional instructions times are already added at this point.
       //                 The instruction modifies the currentInstruction ticks
@@ -582,7 +579,7 @@ namespace GBSharp.CPUSpace
       // Configurable timer TIMA/TMA/TAC system:
       byte TAC = this.memory.LowLevelRead((ushort)MMR.TAC);
       bool runTimer = (TAC & 0x04) == 0x04; // Run timer is the bit 2 of the TAC register
-      if (runTimer && !_tacChangedThisInstruction)
+      if (runTimer)
       {
         // Simulate every tick that occurred during the execution of the instruction
         for (int i = 1; i <= ticks; ++i)
@@ -591,10 +588,7 @@ namespace GBSharp.CPUSpace
           // Maybe there is a faster way to do this without checking every clock value (??)
           if ((_tacCounter & _tacMask) == 0x0000)
           {
-            if(!_timaChangedThisInstruction)
-            {
-              ++_timaCounter;
-            }
+            ++_timaCounter;
 
             // If overflow, we trigger the event
             if (_timaCounter == 0x0000)
@@ -608,12 +602,7 @@ namespace GBSharp.CPUSpace
           }
         }
       }
-
-      _timaChangedThisInstruction = false;
-      _tacChangedThisInstruction = false;
     }
-
-    private bool _tacChangedThisInstruction = false;
 
     internal void HandleMemoryChange(MMR register, byte value)
     {
@@ -621,7 +610,6 @@ namespace GBSharp.CPUSpace
       {
         case MMR.TIMA:
           _timaCounter = value;
-          _timaChangedThisInstruction = true;
           this.memory.LowLevelWrite((ushort)MMR.TIMA, value);
           break;
         case MMR.TMA:
@@ -648,7 +636,6 @@ namespace GBSharp.CPUSpace
           }
           // We restart the counter
           _tacCounter = 0;
-          _tacChangedThisInstruction = true;
           // TAC has a 0xF8 mask (only lower 3 bits are useful)
           this.memory.LowLevelWrite((ushort)MMR.TAC, (byte)(0xF8 | value));
           break;
