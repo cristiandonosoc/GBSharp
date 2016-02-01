@@ -541,7 +541,7 @@ namespace GBSharp.CPUSpace
       // We check if no interrupt have happeded, or are disabled, who cares
       if (interrupt == 0x00)  { return; }
 
-      if (this.interruptController.InterruptMasterEnable)
+      if (this.interruptController.InterruptMasterEnable || this.halted)
       {
         // There is an interrupt waiting
         interruptRequired = true;
