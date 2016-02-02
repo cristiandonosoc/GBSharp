@@ -292,25 +292,7 @@ namespace GBSharp.CPUSpace
     public byte Step(bool ignoreBreakpoints)
     {
       if(stopped) { return 0; }
-
-      // Instruction fetch and decode
-      //bool interruptExists = false;
-      //Interrupts? interruptRequested = InterruptRequired(ref interruptExists);
-      //bool interruptInProgress = interruptRequested != null;
-
-      if (halted)
-      {
-        if (interruptRequired)
-        {
-          // An interrupt unhalts the CPU
-          halted = false;
-        }
-        else
-        {
-          // The CPU is halted, so it shouldn't decode
-          return 0;
-        }
-      }
+      if (halted) { return 0; }
 
       if (interruptRequired)
       {
@@ -541,7 +523,7 @@ namespace GBSharp.CPUSpace
       // We check if no interrupt have happeded, or are disabled, who cares
       if (interrupt == 0x00)  { return; }
 
-      if (this.interruptController.InterruptMasterEnable || this.halted)
+      if (this.interruptController.InterruptMasterEnable)
       {
         // There is an interrupt waiting
         interruptRequired = true;
@@ -552,6 +534,11 @@ namespace GBSharp.CPUSpace
         // Return the first interrupt
         interruptToTrigger = (Interrupts)(interrupt & 0x1F);
       }
+      else if(this.halted)
+      {
+        this.halted = false;
+      }
+
     }
 
     /// <summary>
