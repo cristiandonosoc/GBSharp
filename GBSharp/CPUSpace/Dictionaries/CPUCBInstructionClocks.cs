@@ -224,7 +224,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           result = 8;
           break;
         case 0x46:  // BIT 0,(HL)
-          result = 16;
+          result = 12;
           break;
         case 0x47:  // BIT 0,A
           result = 8;
@@ -248,7 +248,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           result = 8;
           break;
         case 0x4E:  // BIT 1,(HL)
-          result = 16;
+          result = 12;
           break;
         case 0x4F:  // BIT 1,A
           result = 8;
@@ -272,7 +272,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           result = 8;
           break;
         case 0x56:  // BIT 2,(HL)
-          result = 16;
+          result = 12;
           break;
         case 0x57:  // BIT 2,A
           result = 8;
@@ -296,7 +296,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           result = 8;
           break;
         case 0x5E:  // BIT 3,(HL)
-          result = 16;
+          result = 12;
           break;
         case 0x5F:  // BIT 3,A
           result = 8;
@@ -320,7 +320,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           result = 8;
           break;
         case 0x66:  // BIT 4,(HL)
-          result = 16;
+          result = 12;
           break;
         case 0x67:  // BIT 4,A
           result = 8;
@@ -344,7 +344,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           result = 8;
           break;
         case 0x6E:  // BIT 5,(HL)
-          result = 16;
+          result = 12;
           break;
         case 0x6F:  // BIT 5,A
           result = 8;
@@ -368,7 +368,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           result = 8;
           break;
         case 0x76:  // BIT 6,(HL)
-          result = 16;
+          result = 12;
           break;
         case 0x77:  // BIT 6,A
           result = 8;
@@ -392,7 +392,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           result = 8;
           break;
         case 0x7E:  // BIT 7,(HL)
-          result = 16;
+          result = 12;
           break;
         case 0x7F:  // BIT 7,A
           result = 8;

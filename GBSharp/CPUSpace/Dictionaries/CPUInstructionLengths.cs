@@ -725,7 +725,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           result = 1;
           break;
         case 0xF2:  // LDH A, (C)
-          result = 2;
+          result = 1;
           break;
         case 0xF3:  // DI
           result = 1;

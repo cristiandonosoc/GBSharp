@@ -291,7 +291,7 @@ namespace GBSharp.CPUSpace
     /// This can be 0 in STOP mode or even 24 for CALL Z, nn and other long CALL instructions.</returns>
     public byte Step(bool ignoreBreakpoints)
     {
-      if(stopped) { return 0; }
+      if (stopped) { return 0; }
       if (halted) { return 0; }
 
       if (interruptRequired)
