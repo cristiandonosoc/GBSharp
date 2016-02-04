@@ -24,6 +24,9 @@
 
           <ColumnDefinition Width="16"></ColumnDefinition>
           <ColumnDefinition Width="80"></ColumnDefinition>
+
+          <ColumnDefinition Width="80"></ColumnDefinition>
+
           <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
 
@@ -81,6 +84,8 @@
           </Image.Style>
         </Image>
         <CheckBox Grid.Column="8" Content="JUMP" IsChecked="{Binding OnJump}"></CheckBox>
+
+        <CheckBox Grid.Column="9" Content="ENABLED" IsChecked="{Binding Enabled}"></CheckBox>
       </Grid>
     </DataTemplate>
   </UserControl.Resources>

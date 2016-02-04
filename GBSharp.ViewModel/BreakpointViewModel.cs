@@ -14,6 +14,34 @@ namespace GBSharp.ViewModel
     public string Address { get; private set; }
     public string Name { get; private set; }
 
+    private bool _enabled;
+    public bool Enabled
+    {
+      get { return _enabled; }
+      set
+      {
+        if (_enabled == value) { return; }
+        _enabled = value;
+
+        if (_enabled)
+        {
+          if (_onExecute) { _gameboy.CPU.AddBreakpoint(BreakpointKinds.EXECUTION, _instruction.Address); }
+          if (_onRead) { _gameboy.CPU.AddBreakpoint(BreakpointKinds.READ, _instruction.Address); }
+          if (_onWrite) { _gameboy.CPU.AddBreakpoint(BreakpointKinds.WRITE, _instruction.Address); }
+          if (_onJump) { _gameboy.CPU.AddBreakpoint(BreakpointKinds.JUMP, _instruction.Address); }
+        }
+        else
+        {
+          // Remove doesn't do anything if not activated
+          _gameboy.CPU.RemoveBreakpoint(BreakpointKinds.EXECUTION, _instruction.Address);
+          _gameboy.CPU.RemoveBreakpoint(BreakpointKinds.READ, _instruction.Address);
+          _gameboy.CPU.RemoveBreakpoint(BreakpointKinds.WRITE, _instruction.Address);
+          _gameboy.CPU.RemoveBreakpoint(BreakpointKinds.JUMP, _instruction.Address);
+        }
+
+        OnPropertyChanged(() => Enabled);
+      }
+    }
 
     #region EXECUTE
 

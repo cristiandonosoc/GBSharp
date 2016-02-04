@@ -136,6 +136,7 @@ namespace GBSharp.ViewModel
 
         int mask = breakpointKindMap[address];
 
+        vm.Enabled = true;
         if((mask & 1) != 0) { vm.DirectOnExecute = true; }
         if((mask & 2) != 0) { vm.DirectOnRead = true; }
         if((mask & 4) != 0) { vm.DirectOnWrite = true; }
