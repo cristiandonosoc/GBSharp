@@ -221,31 +221,28 @@ namespace GBSharp
       swCPU.Start();
       byte ticks = this.cpu.Step(ignoreNextStep || ignoreBreakpoints);
       swCPU.Stop();
-#else
-      byte ticks = this.cpu.Step(ignoreNextStep || ignoreBreakpoints);
-#endif
 
-#if TIMING
       swClockMem.Start();
       // NOTE(Cristian): If the CPU is halted, the hardware carry on
       if (cpu.halted) { ticks = 4; }
       this.cpu.UpdateClockAndTimers(ticks);
       this.memory.Step(ticks);
       swClockMem.Stop();
-#else
-      // NOTE(Cristian): If the CPU is halted, the hardware carry on
-      if (cpu.halted) { ticks = 4; }
-      this.cpu.UpdateClockAndTimers(ticks);
-      this.memory.Step(ticks);
-#endif
 
-#if TIMING
       swDisplay.Start();
       this.display.Step(ticks);
       swDisplay.Stop();
 #else
+
+      //
+      byte ticks = this.cpu.Step(ignoreNextStep || ignoreBreakpoints);
+
+      // NOTE(Cristian): If the CPU is halted, the hardware carry on
+      if (cpu.halted) { ticks = 4; }
+      this.cpu.UpdateClockAndTimers(ticks);
+      this.memory.Step(ticks);
+
       this.display.Step(ticks);
-#endif
 
       this.apu.Step(ticks);
 
@@ -253,9 +250,7 @@ namespace GBSharp
       this.stepCounter++;
 
       this.serial.Step(ticks);
-
-      // NOTE(Cristian): Check if something still needs this
-      // NotifyStepCompleted();
+#endif
     }
 
     /// <summary>
