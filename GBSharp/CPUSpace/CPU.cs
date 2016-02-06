@@ -62,9 +62,13 @@ namespace GBSharp.CPUSpace
     public event Action<Interrupts> InterruptHappened;
 
     private List<ushort> _executionBreakpoints;
+    internal List<ushort> ExecutionBreakpoints { get { return _executionBreakpoints; } }
     private List<ushort> _readBreakpoints;
+    internal List<ushort> ReadBreakpoints { get { return _readBreakpoints; } }
     private List<ushort> _writeBreakpoints;
+    internal List<ushort> WriteBreakpoints { get { return _writeBreakpoints; } }
     private List<ushort> _jumpBreakpoints;
+    internal List<ushort> JumpBreakpoints { get { return _jumpBreakpoints; } }
 
     public List<ushort> GetBreakpoints(BreakpointKinds kind)
     {
@@ -354,6 +358,10 @@ namespace GBSharp.CPUSpace
       BreakpointKinds breakpointKind = BreakpointKinds.NONE;
       if(!_currentInstruction.CB)
       {
+        breakpointKind = CPUInstructionsBreakpoints.Check(this,
+                                                          (byte)_currentInstruction.OpCode, 
+                                                          _currentInstruction.Literal,
+                                                          ignoreBreakpoints);
         breakpointKind = this.RunInstruction((byte)_currentInstruction.OpCode, 
                                                   _currentInstruction.Literal,
                                                   ignoreBreakpoints);
