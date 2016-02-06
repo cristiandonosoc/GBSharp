@@ -362,15 +362,19 @@ namespace GBSharp.CPUSpace
                                                           (byte)_currentInstruction.OpCode, 
                                                           _currentInstruction.Literal,
                                                           ignoreBreakpoints);
-        breakpointKind = this.RunInstruction((byte)_currentInstruction.OpCode, 
-                                                  _currentInstruction.Literal,
-                                                  ignoreBreakpoints);
+        RunInstruction((byte)_currentInstruction.OpCode, 
+                       _currentInstruction.Literal,
+                       ignoreBreakpoints);
       }
       else
       {
-        breakpointKind = this.RunCBInstruction((byte)_currentInstruction.OpCode, 
-                                                    _currentInstruction.Literal,
-                                                    ignoreBreakpoints);
+        breakpointKind = CPUCBInstructionsBreakpoints.Check(this,
+                                                            (byte)_currentInstruction.OpCode,  
+                                                            _currentInstruction.Literal, 
+                                                            ignoreBreakpoints);
+        RunCBInstruction((byte)_currentInstruction.OpCode, 
+                         _currentInstruction.Literal,
+                         ignoreBreakpoints);
       }
 
       // We see if there is an breakpoint to this address
