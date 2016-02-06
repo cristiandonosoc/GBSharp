@@ -531,6 +531,9 @@ namespace GBSharp.CPUSpace
       // We check if no interrupt have happeded, or are disabled, who cares
       if (interrupt == 0x00)  { return; }
 
+      // Interrupts unhaltd the CPU *even* if the IME is disabled
+      this.halted = false;
+
       if (this.interruptController.InterruptMasterEnable)
       {
         // There is an interrupt waiting
@@ -542,11 +545,6 @@ namespace GBSharp.CPUSpace
         // Return the first interrupt
         interruptToTrigger = (Interrupts)(interrupt & 0x1F);
       }
-      else if(this.halted)
-      {
-        this.halted = false;
-      }
-
     }
 
     /// <summary>
