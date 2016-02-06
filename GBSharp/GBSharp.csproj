@@ -73,6 +73,7 @@
     <Compile Include="CartridgeType.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionLengths.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionClocks.cs" />
+    <Compile Include="CPUSpace\Dictionaries\CPUCBInstructions.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionsBreakpoints.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBOpcodeNames.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUInstructionClocks.cs" />
