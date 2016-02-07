@@ -20,8 +20,6 @@ namespace GBSharp
 
     void SetInterruptBreakable(Interrupts interrupt, bool isBreakable);
 
-    byte Step(bool ignoreBreakpoints);
-
     Breakpoint CurrentBreakpoint { get; }
     List<ushort> GetBreakpoints(BreakpointKinds kind);
     void AddBreakpoint(BreakpointKinds kind, ushort address);

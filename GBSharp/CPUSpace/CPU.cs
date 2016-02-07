@@ -297,7 +297,7 @@ namespace GBSharp.CPUSpace
     /// <param name="ignoreBreakpoints">If this step should check for breakpoints</param>
     /// <returns>The number of ticks that were required at the base clock frequency (2^22hz, ~4Mhz).
     /// This can be 0 in STOP mode or even 24 for CALL Z, nn and other long CALL instructions.</returns>
-    public byte Step(bool ignoreBreakpoints)
+    internal byte DetermineStep(bool ignoreBreakpoints)
     {
       if (stopped) { return 0; }
       if (halted) { return 0; }
@@ -344,21 +344,7 @@ namespace GBSharp.CPUSpace
         return 0;
       }
 
-      // Prepare for program counter movement, but wait for instruction execution.
-      // Overwrite nextPC in the instruction lambdas if you want to implement jumps.
-      // NOTE(Cristian): If we don't differentiate this case, the CALL instruction of the
-      //                 interrupt will be added to nextPC, which will in turn be written
-      //                 into the stack. This means that when we RET, we would have jumped
-      //                 into the address we *should* have jumped plus some meaningless offset!
-      if (!interruptInProgress)
-      {
-        this.nextPC = (ushort)(this.registers.PC + _currentInstruction.Length);
-      }
-
-      // Execute instruction
-      // NOTE(Cristian): This lambda could modify some fields of _currentInstruction
-      //                 Most notably, change the ticks in the case of conditional jumps
-
+      // We check to see if there is breakpoint to be triggered
       BreakpointKinds breakpointKind = BreakpointKinds.NONE;
       if(!_currentInstruction.CB)
       {
@@ -366,9 +352,6 @@ namespace GBSharp.CPUSpace
                                                           (byte)_currentInstruction.OpCode, 
                                                           _currentInstruction.Literal,
                                                           ignoreBreakpoints);
-        CPUInstructions.RunInstruction(this, 
-                                       (byte)_currentInstruction.OpCode, 
-                                       _currentInstruction.Literal);
       }
       else
       {
@@ -376,9 +359,6 @@ namespace GBSharp.CPUSpace
                                                             (byte)_currentInstruction.OpCode,  
                                                             _currentInstruction.Literal, 
                                                             ignoreBreakpoints);
-        CPUCBInstructions.RunCBInstruction(this,
-                                           (byte)_currentInstruction.OpCode,
-                                           _currentInstruction.Literal);
       }
 
       // We see if there is an breakpoint to this address
@@ -391,16 +371,51 @@ namespace GBSharp.CPUSpace
         return 0;
       }
 
+      // We return the ticks that the instruction took
+      return _currentInstruction.Ticks;
+    }
 
+    /// <summary>
+    /// Actually executes the instruction that was determine by the Step phase
+    /// </summary>
+    /// <param name="alreadyRunSteps">
+    /// How many steps occured before the instruction actually runs
+    /// </param>
+    /// <returns></returns>
+    internal byte ExecuteInstruction(byte alreadyRunSteps)
+    {
+      // Prepare for program counter movement, but wait for instruction execution.
+      // Overwrite nextPC in the instruction lambdas if you want to implement jumps.
+      // NOTE(Cristian): If we don't differentiate this case, the CALL instruction of the
+      //                 interrupt will be added to nextPC, which will in turn be written
+      //                 into the stack. This means that when we RET, we would have jumped
+      //                 into the address we *should* have jumped plus some meaningless offset!
+      if (!interruptInProgress)
+      {
+        this.nextPC = (ushort)(this.registers.PC + _currentInstruction.Length);
+      }
 
-      // We check if the instruction triggered a breakpoint
+      if(!_currentInstruction.CB)
+      {
+        CPUInstructions.RunInstruction(this, 
+                                       (byte)_currentInstruction.OpCode, 
+                                       _currentInstruction.Literal);
+      }
+      else
+      {
+        CPUCBInstructions.RunCBInstruction(this,
+                                           (byte)_currentInstruction.OpCode,
+                                           _currentInstruction.Literal);
+      }
 
       // Push the next program counter value into the real program counter!
       this.registers.PC = this.nextPC;
 
-      // We return the ticks that the instruction took
-      return _currentInstruction.Ticks;
+      // We calculate how many more ticks have to run
+      byte remainingSteps = (byte)(_currentInstruction.Ticks - alreadyRunSteps);
+      return remainingSteps;
     }
+
 
     private Instruction InterruptHandler(Interrupts interrupt)
     {

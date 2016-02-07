@@ -234,11 +234,37 @@ namespace GBSharp
       swDisplay.Stop();
 #else
 
-      //
-      byte ticks = this.cpu.Step(ignoreNextStep || ignoreBreakpoints);
+      byte prevTicks = this.cpu.DetermineStep(ignoreNextStep || ignoreBreakpoints);
 
       // NOTE(Cristian): If the CPU is halted, the hardware carry on
-      if (cpu.halted) { ticks = 4; }
+      if (cpu.halted)
+      {
+        prevTicks = 4;
+        StepPeripherals(prevTicks);
+      }
+      else
+      {
+        // We only need to run the rest of the machine if there where actually ticks
+        // stepped. A 0 ticks means the cpu didnt clock, probably due to a breakpoint
+        if (prevTicks > 0)
+        {
+          StepPeripherals(prevTicks);
+          // We simulate the rest of the instruction
+          byte postTicks = this.cpu.ExecuteInstruction(prevTicks);
+          // postTicks 0 means that the instruction run at its last clock
+          // so there is no postprocessing to be done
+          if (postTicks > 0)
+          {
+            StepPeripherals(postTicks);
+          }
+        }
+      }
+
+#endif
+    }
+
+    private void StepPeripherals(byte ticks)
+    {
       this.cpu.UpdateClockAndTimers(ticks);
       this.memory.Step(ticks);
 
@@ -250,7 +276,6 @@ namespace GBSharp
       this.stepCounter++;
 
       this.serial.Step(ticks);
-#endif
     }
 
     /// <summary>
