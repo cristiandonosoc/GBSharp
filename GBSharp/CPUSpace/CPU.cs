@@ -346,6 +346,7 @@ namespace GBSharp.CPUSpace
 
       // We check to see if there is breakpoint to be triggered
       BreakpointKinds breakpointKind = BreakpointKinds.NONE;
+      byte prevTicksRequired = 0;
       if(!_currentInstruction.CB)
       {
         breakpointKind = CPUInstructionsBreakpoints.Check(this,
@@ -372,7 +373,15 @@ namespace GBSharp.CPUSpace
       }
 
       // We return the ticks that the instruction took
-      return _currentInstruction.Ticks;
+      if(!_currentInstruction.CB)
+      {
+        prevTicksRequired = CPUInstructionPreClocks.Get((byte)_currentInstruction.OpCode);
+      }
+      else
+      {
+        prevTicksRequired = CPUCBInstructionPreClocks.Get((byte)_currentInstruction.OpCode);
+      }
+      return prevTicksRequired;
     }
 
     /// <summary>
