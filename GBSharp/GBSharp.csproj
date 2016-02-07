@@ -73,6 +73,8 @@
     <Compile Include="CartridgeType.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionLengths.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionClocks.cs" />
+    <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionPostClocks.cs" />
+    <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionPreClocks.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBInstructions.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionsBreakpoints.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBOpcodeNames.cs" />
@@ -80,6 +82,8 @@
     <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionDescriptions.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUInstructionLengths.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUInstructionDescriptions.cs" />
+    <Compile Include="CPUSpace\Dictionaries\CPUInstructionPostClocks.cs" />
+    <Compile Include="CPUSpace\Dictionaries\CPUInstructionPreClocks.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUInstructions.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUInstructionsBreakpoints.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUOpcodeNames.cs" />

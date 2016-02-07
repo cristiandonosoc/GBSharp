@@ -424,6 +424,27 @@ namespace GBSharp.CPUSpace
       byte remainingSteps = (byte)(_currentInstruction.Ticks - alreadyRunSteps);
       return remainingSteps;
     }
+    
+    internal byte GetPostTicks(byte alreadyRunSteps)
+    {
+      // We calculate how many more ticks have to run
+      byte remainingSteps = 0;
+      if(!_currentInstruction.CB)
+      {
+        remainingSteps = CPUInstructionPostClocks.Get(this,
+                                                      _currentInstruction.Ticks,
+                                                      (byte)_currentInstruction.OpCode,
+                                                      _currentInstruction.Literal);
+      }
+      else
+      {
+        remainingSteps = CPUCBInstructionPostClocks.Get(this,
+                                                      _currentInstruction.Ticks,
+                                                      (byte)_currentInstruction.OpCode,
+                                                      _currentInstruction.Literal);
+      }
+      return remainingSteps;
+    }
 
 
     private Instruction InterruptHandler(Interrupts interrupt)
