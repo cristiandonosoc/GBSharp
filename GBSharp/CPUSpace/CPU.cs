@@ -20,6 +20,7 @@ namespace GBSharp.CPUSpace
   {
     public bool Valid { get; internal set; }
     public ushort Address { get; internal set; }
+    public ushort Target { get; internal set; }
     public BreakpointKinds Kind { get; internal set; }
   }
 
@@ -339,6 +340,7 @@ namespace GBSharp.CPUSpace
       if(!ignoreBreakpoints && _executionBreakpoints.Contains(_currentInstruction.Address))
       {
         CurrentBreakpoint.Address = _currentInstruction.Address;
+        CurrentBreakpoint.Target = _currentInstruction.Address;
         CurrentBreakpoint.Kind = BreakpointKinds.EXECUTION;
         BreakpointFound();
         return 0;
