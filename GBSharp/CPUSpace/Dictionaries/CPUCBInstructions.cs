@@ -10,7 +10,11 @@ namespace GBSharp.CPUSpace.Dictionaries
   class CPUCBInstructions
   {
     /// <summary>
-    /// Runs an CB opcode instruction
+    /// Runs an CB opcode instruction. Notice some instructions have two-stage approach:
+    /// They read in the normal execution (and store the value in a temporary registers)
+    /// and actually write in a post-execution step. This is because some instruction
+    /// read and write on different clock ticks
+    /// The code for the post is in CPUCBInstructionPostCode
     /// </summary>
     /// <param name="opcode">The opcode to run</param>
     /// <param name="n">The argument (if any) of the opcode</param>
@@ -97,6 +101,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // RLC (HL): Rotate value pointed by HL left with carry
+        // NOTE: two-stage opcode
         case 0x06:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -195,6 +200,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // RRC (HL): Rotate value pointed by HL right with carry
+        // NOTE: two-stage opcode
         case 0x0E:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -293,6 +299,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // RL (HL): Rotate value pointed by HL left
+        // NOTE: two-stage opcode
         case 0x16:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -391,6 +398,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // RR (HL): Rotate value pointed by HL right
+        // NOTE: two-stage opcode
         case 0x1E:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -489,6 +497,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // SLA (HL): Shift value pointed by HL left preserving sign
+        // NOTE: two-stage opcode
         case 0x26:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -586,6 +595,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // SRA (HL): Shift value pointed by HL right preserving sign
+        // NOTE: two-stage opcode
         case 0x2E:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -684,6 +694,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // SWAP (HL): Swap nybbles in value pointed by HL
+        // NOTE: two-stage opcode
         case 0x36:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -782,6 +793,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // SRL (HL): Shift value pointed by HL right
+        // NOTE: two-stage opcode
         case 0x3E:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -1420,6 +1432,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // RES 0,(HL): Clear (reset) bit 0 of value pointed by HL
+        // NOTE: two-stage opcode
         case 0x86:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -1476,6 +1489,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // RES 1,(HL): Clear (reset) bit 1 of value pointed by HL
+        // NOTE: two-stage opcode
         case 0x8E:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -1532,6 +1546,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // RES 2,(HL): Clear (reset) bit 2 of value pointed by HL
+        // NOTE: two-stage opcode
         case 0x96:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -1588,6 +1603,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // RES 3,(HL): Clear (reset) bit 3 of value pointed by HL
+        // NOTE: two-stage opcode
         case 0x9E:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -1644,6 +1660,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // RES 4,(HL): Clear (reset) bit 4 of value pointed by HL
+        // NOTE: two-stage opcode
         case 0xA6:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -1700,6 +1717,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // RES 5,(HL): Clear (reset) bit 5 of value pointed by HL
+        // NOTE: two-stage opcode
         case 0xAE:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -1756,6 +1774,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // RES 6,(HL): Clear (reset) bit 6 of value pointed by HL
+        // NOTE: two-stage opcode
         case 0xB6:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -1812,6 +1831,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // RES 7,(HL): Clear (reset) bit 7 of value pointed by HL
+        // NOTE: two-stage opcode
         case 0xBE:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -1868,6 +1888,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // SET 0,(HL): Set bit 0 of value pointed by HL
+        // NOTE: two-stage opcode
         case 0xC6:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -1924,6 +1945,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // SET 1,(HL): Set bit 1 of value pointed by HL
+        // NOTE: two-stage opcode
         case 0xCE:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -1980,6 +2002,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // SET 2,(HL): Set bit 2 of value pointed by HL
+        // NOTE: two-stage opcode
         case 0xD6:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -2036,6 +2059,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // SET 3,(HL): Set bit 3 of value pointed by HL
+        // NOTE: two-stage opcode
         case 0xDE:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -2092,6 +2116,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // SET 4,(HL): Set bit 4 of value pointed by HL
+        // NOTE: two-stage opcode
         case 0xE6:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -2148,6 +2173,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // SET 5,(HL): Set bit 5 of value pointed by HL
+        // NOTE: two-stage opcode
         case 0xEE:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -2204,6 +2230,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // SET 6,(HL): Set bit 6 of value pointed by HL
+        // NOTE: two-stage opcode
         case 0xF6:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
@@ -2260,6 +2287,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // SET 7,(HL): Set bit 7 of value pointed by HL
+        // NOTE: two-stage opcode
         case 0xFE:
           {
             cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);

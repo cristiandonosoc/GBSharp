@@ -8,6 +8,14 @@ namespace GBSharp.CPUSpace.Dictionaries
 {
   class CPUInstructionPreClocks
   {
+    /// <summary>
+    /// This are the clock ticks to be run *before* the instruction execution.
+    /// In most cases, it is equal to the nominal clock lengths. But for some cases
+    /// (conditional jumps and some special two-stage instructions), some clock runs
+    /// after the instruction (and even some code)
+    /// </summary>
+    /// <param name="opcode">intruction opcode</param>
+    /// <returns>clock ticks</returns>
     internal static byte Get(byte opcode)
     {
       byte result;
@@ -170,10 +178,10 @@ namespace GBSharp.CPUSpace.Dictionaries
           result = 8;
           break;
         case 0x34:  // INC (HL)
-          result = 12;
+          result = 8;
           break;
         case 0x35:  // DEC (HL)
-          result = 12;
+          result = 8;
           break;
         case 0x36:  // LD (HL),n
           result = 12;

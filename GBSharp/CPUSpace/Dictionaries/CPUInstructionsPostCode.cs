@@ -10,7 +10,8 @@ namespace GBSharp.CPUSpace.Dictionaries
   class CPUInstructionsPostCode
   {
     /// <summary>
-    /// Runs an normal opcode instruction
+    /// Runs an opcode post code. This is for instruction that read an write
+    /// on different clock cycles
     /// </summary>
     /// <param name="opcode">The opcode to run</param>
     /// <param name="n">The argument (if any) of the opcode</param>
@@ -123,9 +124,31 @@ namespace GBSharp.CPUSpace.Dictionaries
         // INC SP: Increment 16-bit HL
         case 0x33: { break; }
         // INC (HL): Increment value pointed by HL
-        case 0x34: { break; }
+        // NOTE: Two-stage opcode
+        case 0x34:
+          {
+            byte value = cpu.registers.TEMP;
+            ++value;
+            cpu.memory.Write(cpu.registers.HL, value);
+
+            cpu.registers.FZ = (byte)(value == 0 ? 1 : 0);
+            cpu.registers.FN = 0;
+            cpu.registers.FH = (byte)((value & 0x0F) == 0x00 ? 1 : 0);
+            break;
+          }
         // DEC (HL): Decrement value pointed by HL
-        case 0x35: { break; }
+        // NOTE: Two-stage opcode
+        case 0x35:
+          {
+            byte value = cpu.registers.TEMP;
+            --value;
+            cpu.memory.Write(cpu.registers.HL, value);
+
+            cpu.registers.FZ = (byte)(value == 0 ? 1 : 0);
+            cpu.registers.FN = 1;
+            cpu.registers.FH = (byte)((value & 0x0F) == 0x0F ? 1 : 0);
+            break;
+          }
         // LD (HL),n: Load 8-bit immediate into address pointed by HL
         case 0x36: { break; }
         // SCF: Set carry flag

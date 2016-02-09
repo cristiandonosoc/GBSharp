@@ -9,6 +9,16 @@ namespace GBSharp.CPUSpace.Dictionaries
 {
   class CPUInstructionPostClocks
   {
+    /// <summary>
+    /// This are the clocks to be run *after* the instruction execution. This is mainly
+    /// for conditional jumps (hence why we need the n argument) and some special two-stage
+    /// opcodes. In the two-stage case, some post code will be run after this post clock ticks
+    /// happen
+    /// </summary>
+    /// <param name="cpu">CPU reference so we can access registers values</param>
+    /// <param name="opcode">opcode to check</param>
+    /// <param name="n">argument of the instruction</param>
+    /// <returns>clock ticks to run after</returns>
     internal static byte Get(CPU cpu, byte opcode, ushort n)
     {
       byte result = 0;
@@ -134,9 +144,17 @@ namespace GBSharp.CPUSpace.Dictionaries
         // INC SP: Increment 16-bit HL
         case 0x33: { break; }
         // INC (HL): Increment value pointed by HL
-        case 0x34: { break; }
+        case 0x34:
+          {
+            result = 4;
+            break;
+          }
         // DEC (HL): Decrement value pointed by HL
-        case 0x35: { break; }
+        case 0x35:
+          {
+            result = 4;
+            break;
+          }
         // LD (HL),n: Load 8-bit immediate into address pointed by HL
         case 0x36: { break; }
         // SCF: Set carry flag

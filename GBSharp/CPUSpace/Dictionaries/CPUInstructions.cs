@@ -10,7 +10,11 @@ namespace GBSharp.CPUSpace.Dictionaries
   class CPUInstructions
   {
     /// <summary>
-    /// Runs an normal opcode instruction
+    /// Runs an normal opcode instruction. Notice some instructions have two-stage approach:
+    /// They read in the normal execution (and store the value in a temporary registers)
+    /// and actually write in a post-execution step. This is because some instruction
+    /// read and write on different clock ticks
+    /// The code for the post is in CPUInstructionPostCode
     /// </summary>
     /// <param name="opcode">The opcode to run</param>
     /// <param name="n">The argument (if any) of the opcode</param>
@@ -524,28 +528,18 @@ namespace GBSharp.CPUSpace.Dictionaries
           }
 
         // INC (HL): Increment value pointed by HL
+        // NOTE: Two-stage opcode
         case 0x34:
           {
-            byte value = cpu.memory.Read(cpu.registers.HL);
-            ++value;
-            cpu.memory.Write(cpu.registers.HL, value);
-
-            cpu.registers.FZ = (byte)(value == 0 ? 1 : 0);
-            cpu.registers.FN = 0;
-            cpu.registers.FH = (byte)((value & 0x0F) == 0x00 ? 1 : 0);
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
         // DEC (HL): Decrement value pointed by HL
+        // NOTE: Two-stage opcode
         case 0x35:
           {
-            byte value = cpu.memory.Read(cpu.registers.HL);
-            --value;
-            cpu.memory.Write(cpu.registers.HL, value);
-
-            cpu.registers.FZ = (byte)(value == 0 ? 1 : 0);
-            cpu.registers.FN = 1;
-            cpu.registers.FH = (byte)((value & 0x0F) == 0x0F ? 1 : 0);
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 

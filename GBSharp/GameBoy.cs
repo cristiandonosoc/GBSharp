@@ -233,10 +233,24 @@ namespace GBSharp
       this.display.Step(ticks);
       swDisplay.Stop();
 #else
+      /**
+       * The CPU Step works as following
+       * 1. Setup instruction and determine pre-execution ticks
+       * 2. Advance gameboy the pre-execution ticks
+       * 3. Execute the opcode
+       * 4. Advance gameboy the post-execution ticks (if any)
+       * 5. Execute the opcode post-execution code (if any)
+       *
+       * See the CPUSpace/Dictionaries to see how many clocks each pre/post opcode
+       * has and what code is run at pre/post stage (in the case of pre stage, the 
+       * dictionary is simply CPU*Instructions, no "Pre" appended)
+       */
 
+      // Sets the current instruction and obtain how many ticks the peripherals have
+      // to be simulated before opcode execution
       byte prevTicks = this.cpu.DetermineStep(ignoreNextStep || ignoreBreakpoints);
 
-      // NOTE(Cristian): If the CPU is halted, the hardware carry on
+      // NOTE(Cristian): If the CPU is halted, the hardware carry on at a simulated clock
       if (cpu.halted)
       {
         prevTicks = 4;
@@ -250,13 +264,16 @@ namespace GBSharp
         {
           StepPeripherals(prevTicks);
 
-          // We simulate the rest of the instruction
+          // We execute the opcode. Returns the amount of ticks that have to be
+          // simulated after the opcode execution
           byte postTicks = this.cpu.ExecuteInstruction();
           // postTicks 0 means that the instruction run at its last clock
           // so there is no postprocessing to be done
           if (postTicks > 0)
           {
             StepPeripherals(postTicks);
+            // Some opcodes run some code after execution (this is for two-stage opcodes
+            // that read and write at different clocks)
             this.cpu.PostExecuteInstruction();
           }
         }

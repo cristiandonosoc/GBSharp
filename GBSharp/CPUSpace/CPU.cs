@@ -336,11 +336,15 @@ namespace GBSharp.CPUSpace
     }
 
     /// <summary>
-    /// Executes one instruction, requiring arbitrary machine and clock cycles.
+    /// Sets the current instruction to be executed. Note that this DOES NOT execute the opcode,
+    /// but sets the CPU internal state so it can be executed when the correct clock ticks happen
+    /// before the execution has to runb.
     /// </summary>
     /// <param name="ignoreBreakpoints">If this step should check for breakpoints</param>
-    /// <returns>The number of ticks that were required at the base clock frequency (2^22hz, ~4Mhz).
-    /// This can be 0 in STOP mode or even 24 for CALL Z, nn and other long CALL instructions.</returns>
+    /// <returns>
+    /// The number of ticks that have to run before the opcode is executed. 
+    /// The base clock frequency (2^22hz, ~4Mhz).
+    /// </returns>
     internal byte DetermineStep(bool ignoreBreakpoints)
     {
       if (stopped) { return 0; }
@@ -420,12 +424,13 @@ namespace GBSharp.CPUSpace
     }
 
     /// <summary>
-    /// Actually executes the instruction that was determine by the Step phase
+    /// Actually executes the instruction that was determine by the Step phase.
+    /// In most cases, the whole of the instrucftion is run, but for some opcodes, 
+    /// some additional code has to be run.
+    /// It is possible for those cases (and conditional jumps) that some extra clock
+    /// ticks have to run after execution.
     /// </summary>
-    /// <param name="alreadyRunSteps">
-    /// How many steps occured before the instruction actually runs
-    /// </param>
-    /// <returns></returns>
+    /// <returns>How many clock ticks have to run after the opcode execution</returns>
     internal byte ExecuteInstruction()
     {
       // Prepare for program counter movement, but wait for instruction execution.
@@ -460,6 +465,11 @@ namespace GBSharp.CPUSpace
       return remainingSteps;
     }
 
+    /// <summary>
+    /// Some instructions have a two-stage approach: the read at one clock cycle
+    /// and write at the next. For this we need some post-execution code to be run
+    /// in the step process.
+    /// </summary>
     internal void PostExecuteInstruction()
     {
       if(!_currentInstruction.CB)

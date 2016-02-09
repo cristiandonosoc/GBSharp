@@ -84,6 +84,7 @@
     <Compile Include="CPUSpace\Dictionaries\CPUInstructionLengths.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUInstructionDescriptions.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUInstructionPostClocks.cs" />
+    <Compile Include="CPUSpace\Dictionaries\CPUInstructionPostCode.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUInstructionPreClocks.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUInstructions.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUInstructionsBreakpoints.cs" />
