@@ -257,6 +257,7 @@ namespace GBSharp
           if (postTicks > 0)
           {
             StepPeripherals(postTicks);
+            this.cpu.PostExecuteInstruction();
           }
         }
       }

@@ -460,6 +460,22 @@ namespace GBSharp.CPUSpace
       return remainingSteps;
     }
 
+    internal void PostExecuteInstruction()
+    {
+      if(!_currentInstruction.CB)
+      {
+        CPUInstructionsPostCode.Run(this,
+                                    (byte)_currentInstruction.OpCode,
+                                    _currentInstruction.Literal);
+      }
+      else
+      {
+        CPUCBInstructionPostCode.Run(this,
+                                     (byte)_currentInstruction.OpCode,
+                                     _currentInstruction.Literal);
+      }
+    }
+
     private Instruction InterruptHandler(Interrupts interrupt)
     {
       // Handle interrupt with a CALL instruction to the interrupt handler

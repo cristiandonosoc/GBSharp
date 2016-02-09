@@ -39,6 +39,14 @@ namespace GBSharp
     [FieldOffset(10)]
     public ushort PC;
 
+    /// <summary>
+    /// Internal register used for two-stages instructions
+    /// (read on one clock and write on another). Some of these instruction
+    /// don't read into any register, so we need a temporary one)
+    /// </summary>
+    [FieldOffset(12)]
+    internal byte TEMP;
+
     // 2 byte "union" registers
     [FieldOffset(0)]
     private ushort _AF;

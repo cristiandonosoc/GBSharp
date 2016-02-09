@@ -74,6 +74,7 @@
     <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionLengths.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionClocks.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionPostClocks.cs" />
+    <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionPostCode.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionPreClocks.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBInstructions.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUCBInstructionsBreakpoints.cs" />
@@ -86,6 +87,7 @@
     <Compile Include="CPUSpace\Dictionaries\CPUInstructionPreClocks.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUInstructions.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUInstructionsBreakpoints.cs" />
+    <Compile Include="CPUSpace\Dictionaries\CPUInstructionsPostCode.cs" />
     <Compile Include="CPUSpace\Dictionaries\CPUOpcodeNames.cs" />
     <Compile Include="CPUSpace\Disassembler.cs" />
     <Compile Include="CPUSpace\InterruptController.cs" />

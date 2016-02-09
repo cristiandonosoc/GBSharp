@@ -99,13 +99,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RLC (HL): Rotate value pointed by HL left with carry
         case 0x06:
           {
-            var rotateCarry = UtilFuncs.RotateLeftAndCarry(cpu.memory.Read(cpu.registers.HL));
-            cpu.memory.Write(cpu.registers.HL, rotateCarry.Item1);
-
-            cpu.registers.FC = rotateCarry.Item2;
-            cpu.registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
-            cpu.registers.FN = 0;
-            cpu.registers.FH = 0;
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -203,13 +197,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RRC (HL): Rotate value pointed by HL right with carry
         case 0x0E:
           {
-            var rotateCarry = UtilFuncs.RotateRightAndCarry(cpu.memory.Read(cpu.registers.HL));
-            cpu.memory.Write(cpu.registers.HL, rotateCarry.Item1);
-
-            cpu.registers.FC = rotateCarry.Item2;
-            cpu.registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
-            cpu.registers.FN = 0;
-            cpu.registers.FH = 0;
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -307,13 +295,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RL (HL): Rotate value pointed by HL left
         case 0x16:
           {
-            var rotateCarry = UtilFuncs.RotateLeftThroughCarry(cpu.memory.Read(cpu.registers.HL), 1, cpu.registers.FC);
-            cpu.memory.Write(cpu.registers.HL, rotateCarry.Item1);
-
-            cpu.registers.FC = rotateCarry.Item2;
-            cpu.registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
-            cpu.registers.FN = 0;
-            cpu.registers.FH = 0;
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -411,13 +393,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RR (HL): Rotate value pointed by HL right
         case 0x1E:
           {
-            var rotateCarry = UtilFuncs.RotateRightThroughCarry(cpu.memory.Read(cpu.registers.HL), 1, cpu.registers.FC);
-            cpu.memory.Write(cpu.registers.HL, rotateCarry.Item1);
-
-            cpu.registers.FC = rotateCarry.Item2;
-            cpu.registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
-            cpu.registers.FN = 0;
-            cpu.registers.FH = 0;
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -515,13 +491,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SLA (HL): Shift value pointed by HL left preserving sign
         case 0x26:
           {
-            var shiftCarry = UtilFuncs.ShiftLeft(cpu.memory.Read(cpu.registers.HL));
-            cpu.memory.Write(cpu.registers.HL, shiftCarry.Item1);
-
-            cpu.registers.FC = shiftCarry.Item2;
-            cpu.registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
-            cpu.registers.FN = 0;
-            cpu.registers.FH = 0;
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -618,13 +588,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SRA (HL): Shift value pointed by HL right preserving sign
         case 0x2E:
           {
-            var shiftCarry = UtilFuncs.ShiftRightArithmetic(cpu.memory.Read(cpu.registers.HL));
-            cpu.memory.Write(cpu.registers.HL, shiftCarry.Item1);
-
-            cpu.registers.FC = shiftCarry.Item2;
-            cpu.registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
-            cpu.registers.FN = 0;
-            cpu.registers.FH = 0;
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -722,13 +686,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SWAP (HL): Swap nybbles in value pointed by HL
         case 0x36:
           {
-            byte result = UtilFuncs.SwapNibbles(cpu.memory.Read(cpu.registers.HL));
-            cpu.memory.Write(cpu.registers.HL, result);
-
-            cpu.registers.FZ = (byte)(result == 0 ? 1 : 0);
-            cpu.registers.FN = 0;
-            cpu.registers.FH = 0;
-            cpu.registers.FC = 0;
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -826,13 +784,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SRL (HL): Shift value pointed by HL right
         case 0x3E:
           {
-            var shiftCarry = UtilFuncs.ShiftRightLogic(cpu.memory.Read(cpu.registers.HL));
-            cpu.memory.Write(cpu.registers.HL, shiftCarry.Item1);
-
-            cpu.registers.FC = shiftCarry.Item2;
-            cpu.registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
-            cpu.registers.FN = 0;
-            cpu.registers.FH = 0;
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -1470,7 +1422,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 0,(HL): Clear (reset) bit 0 of value pointed by HL
         case 0x86:
           {
-            cpu.memory.Write(cpu.registers.HL, UtilFuncs.ClearBit(cpu.memory.Read(cpu.registers.HL), 0));
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -1526,7 +1478,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 1,(HL): Clear (reset) bit 1 of value pointed by HL
         case 0x8E:
           {
-            cpu.memory.Write(cpu.registers.HL, UtilFuncs.ClearBit(cpu.memory.Read(cpu.registers.HL), 1));
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -1582,7 +1534,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 2,(HL): Clear (reset) bit 2 of value pointed by HL
         case 0x96:
           {
-            cpu.memory.Write(cpu.registers.HL, UtilFuncs.ClearBit(cpu.memory.Read(cpu.registers.HL), 2));
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -1638,7 +1590,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 3,(HL): Clear (reset) bit 3 of value pointed by HL
         case 0x9E:
           {
-            cpu.memory.Write(cpu.registers.HL, UtilFuncs.ClearBit(cpu.memory.Read(cpu.registers.HL), 3));
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -1694,7 +1646,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 4,(HL): Clear (reset) bit 4 of value pointed by HL
         case 0xA6:
           {
-            cpu.memory.Write(cpu.registers.HL, UtilFuncs.ClearBit(cpu.memory.Read(cpu.registers.HL), 4));
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -1750,7 +1702,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 5,(HL): Clear (reset) bit 5 of value pointed by HL
         case 0xAE:
           {
-            cpu.memory.Write(cpu.registers.HL, UtilFuncs.ClearBit(cpu.memory.Read(cpu.registers.HL), 5));
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -1806,7 +1758,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 6,(HL): Clear (reset) bit 6 of value pointed by HL
         case 0xB6:
           {
-            cpu.memory.Write(cpu.registers.HL, UtilFuncs.ClearBit(cpu.memory.Read(cpu.registers.HL), 6));
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -1862,7 +1814,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 7,(HL): Clear (reset) bit 7 of value pointed by HL
         case 0xBE:
           {
-            cpu.memory.Write(cpu.registers.HL, UtilFuncs.ClearBit(cpu.memory.Read(cpu.registers.HL), 7));
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -1918,7 +1870,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 0,(HL): Set bit 0 of value pointed by HL
         case 0xC6:
           {
-            cpu.memory.Write(cpu.registers.HL, UtilFuncs.SetBit(cpu.memory.Read(cpu.registers.HL), 0));
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -1974,7 +1926,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 1,(HL): Set bit 1 of value pointed by HL
         case 0xCE:
           {
-            cpu.memory.Write(cpu.registers.HL, UtilFuncs.SetBit(cpu.memory.Read(cpu.registers.HL), 1));
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -2030,7 +1982,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 2,(HL): Set bit 2 of value pointed by HL
         case 0xD6:
           {
-            cpu.memory.Write(cpu.registers.HL, UtilFuncs.SetBit(cpu.memory.Read(cpu.registers.HL), 2));
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -2086,7 +2038,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 3,(HL): Set bit 3 of value pointed by HL
         case 0xDE:
           {
-            cpu.memory.Write(cpu.registers.HL, UtilFuncs.SetBit(cpu.memory.Read(cpu.registers.HL), 3));
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -2142,7 +2094,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 4,(HL): Set bit 4 of value pointed by HL
         case 0xE6:
           {
-            cpu.memory.Write(cpu.registers.HL, UtilFuncs.SetBit(cpu.memory.Read(cpu.registers.HL), 4));
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -2198,7 +2150,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 5,(HL): Set bit 5 of value pointed by HL
         case 0xEE:
           {
-            cpu.memory.Write(cpu.registers.HL, UtilFuncs.SetBit(cpu.memory.Read(cpu.registers.HL), 5));
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -2254,7 +2206,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 6,(HL): Set bit 6 of value pointed by HL
         case 0xF6:
           {
-            cpu.memory.Write(cpu.registers.HL, UtilFuncs.SetBit(cpu.memory.Read(cpu.registers.HL), 6));
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
@@ -2310,7 +2262,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 7,(HL): Set bit 7 of value pointed by HL
         case 0xFE:
           {
-            cpu.memory.Write(cpu.registers.HL, UtilFuncs.SetBit(cpu.memory.Read(cpu.registers.HL), 7));
+            cpu.registers.TEMP = cpu.memory.Read(cpu.registers.HL);
             break;
           }
 
