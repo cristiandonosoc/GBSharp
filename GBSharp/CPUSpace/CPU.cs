@@ -396,14 +396,14 @@ namespace GBSharp.CPUSpace
       BreakpointKinds breakpointKind = BreakpointKinds.NONE;
       if(!_currentInstruction.CB)
       {
-        breakpointKind = CPUInstructionsBreakpoints.Check(this,
+        breakpointKind = CPUInstructionBreakpoints.Check(this,
                                                           (byte)_currentInstruction.OpCode, 
                                                           _currentInstruction.Literal,
                                                           ignoreBreakpoints);
       }
       else
       {
-        breakpointKind = CPUCBInstructionsBreakpoints.Check(this,
+        breakpointKind = CPUCBInstructionBreakpoints.Check(this,
                                                             (byte)_currentInstruction.OpCode,  
                                                             _currentInstruction.Literal, 
                                                             ignoreBreakpoints);
@@ -474,7 +474,7 @@ namespace GBSharp.CPUSpace
     {
       if(!_currentInstruction.CB)
       {
-        CPUInstructionsPostCode.Run(this,
+        CPUInstructionPostCode.Run(this,
                                     (byte)_currentInstruction.OpCode,
                                     _currentInstruction.Literal);
       }
@@ -495,7 +495,7 @@ namespace GBSharp.CPUSpace
       instruction.Length = CPUInstructionLengths.Get(lowOpcode);
       instruction.Literal = this.interruptHandlers[(Interrupts)interrupt];
       instruction.Ticks = CPUInstructionClocks.Get(lowOpcode);
-      instruction.Name = CPUOpcodeNames.Get(lowOpcode);
+      instruction.Name = CPUInstructionNames.Get(lowOpcode);
       instruction.Description = CPUInstructionDescriptions.Get(lowOpcode);
 
       // Disable interrupts during interrupt handling and clear the current one
@@ -562,7 +562,7 @@ namespace GBSharp.CPUSpace
         }
 
         instruction.Ticks = CPUInstructionClocks.Get(lowOpcode);
-        instruction.Name = CPUOpcodeNames.Get(lowOpcode);
+        instruction.Name = CPUInstructionNames.Get(lowOpcode);
         instruction.Description = CPUInstructionDescriptions.Get(lowOpcode);
       }
       else
@@ -590,7 +590,7 @@ namespace GBSharp.CPUSpace
 
         //instruction.Lambda = this.CBInstructionLambdas[lowOpcode];
         instruction.Ticks = CPUCBInstructionClocks.Get(lowOpcode);
-        instruction.Name = CPUCBOpcodeNames.Get(lowOpcode);
+        instruction.Name = CPUCBInstructionNames.Get(lowOpcode);
         instruction.Description = CPUCBInstructionDescriptions.Get(lowOpcode);
       }
 

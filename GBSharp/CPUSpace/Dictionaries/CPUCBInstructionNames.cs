@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GBSharp.CPUSpace.Dictionaries
 {
-  public class CPUCBOpcodeNames
+  public class CPUCBInstructionNames
   {
     public static string Get(byte opcode)
     {

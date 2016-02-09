@@ -7,15 +7,9 @@ using System.Threading.Tasks;
 
 namespace GBSharp.CPUSpace.Dictionaries
 {
-  class CPUInstructionsBreakpoints
+  class CPUInstructionPostCode
   {
-    /// <summary>
-    /// Runs an normal opcode instruction
-    /// </summary>
-    /// <param name="opcode">The opcode to run</param>
-    /// <param name="n">The argument (if any) of the opcode</param>
-    /// <returns>Whether a breakpoint was found</returns>
-    internal static BreakpointKinds Check(CPU cpu, byte opcode, ushort n, bool ignoreBreakpoints)
+    internal static void Run(CPU cpu, byte opcode, ushort n)
     {
       switch (opcode)
       {
@@ -24,15 +18,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD BC,nn: Load 16-bit immediate into BC
         case 0x01: { break; }
         // LD (BC),A: Save A to address pointed by BC
-        case 0x02:
-          {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.BC))
-            {
-              return BreakpointKinds.WRITE;
-            }
- 
-            break;
-          }
+        case 0x02: { break; }
         // INC BC: Increment 16-bit BC
         case 0x03: { break; }
         // INC B: Increment B
@@ -44,27 +30,11 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RLC A: Rotate A left with carry
         case 0x07: { break; }
         // LD (nn),SP: Save SP to given address
-        case 0x08:
-          {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(n))
-            {
-              return BreakpointKinds.WRITE;
-            }
- 
-            break;
-          }
+        case 0x08: { break; }
         // ADD HL,BC: Add 16-bit BC to HL
         case 0x09: { break; }
         // LD A,(BC): Load A from address pointed to by BC
-        case 0x0A:
-          {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.BC))
-            {
-              return BreakpointKinds.READ;
-            }
-            
-            break;
-          }
+        case 0x0A: { break; }
         // DEC BC: Decrement 16-bit BC
         case 0x0B: { break; }
         // INC C: Increment C
@@ -80,15 +50,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD DE,nn: Load 16-bit immediate into DE
         case 0x11: { break; }
         // LD (DE),A: Save A to address pointed by DE
-        case 0x12:
-          {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.DE))
-            {
-              return BreakpointKinds.WRITE;
-            }
- 
-            break;
-          }
+        case 0x12: { break; }
         // INC DE: Increment 16-bit DE
         case 0x13: { break; }
         // INC D: Increment D
@@ -100,30 +62,11 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RL A: Rotate A left
         case 0x17: { break; }
         // JR n: Relative jump by signed immediate
-        case 0x18:
-          {
-            // We cast down the input, ignoring the overflows
-            short sn = 0;
-            unchecked { sn = (sbyte)n; }
-            ushort target = (ushort)(cpu.nextPC + sn);
-            if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
-            {
-              return BreakpointKinds.JUMP;
-            }
- 
-            break;
-          }
+        case 0x18: { break; }
         // ADD HL,DE: Add 16-bit DE to HL
         case 0x19: { break; }
         // LD A,(DE): Load A from address pointed to by DE
-        case 0x1A:
-          {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.DE))
-            {
-              return BreakpointKinds.READ;
-            }
-            break;
-          }
+        case 0x1A: { break; }
         // DEC DE: Decrement 16-bit DE
         case 0x1B: { break; }
         // INC E: Increment E
@@ -135,32 +78,11 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RR A: Rotate A right
         case 0x1F: { break; }
         // JR NZ,n: Relative jump by signed immediate if last result was not zero
-        case 0x20:
-          {
-            if (cpu.registers.FZ != 0) { return BreakpointKinds.NONE; }
-
-            // We cast down the input, ignoring the overflows
-            short sn = 0;
-            unchecked { sn = (sbyte)n; }
-            ushort target = (ushort)(cpu.nextPC + sn);
-            if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
-            {
-              return BreakpointKinds.JUMP;
-            }
-
-            break;
-          }
+        case 0x20: { break; }
         // LD HL,nn: Load 16-bit immediate into HL
         case 0x21: { break; }
         // LDI (HL),A: Save A to address pointed by HL, and increment HL
-        case 0x22:
-          {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.WRITE;
-            }
-            break;
-          }
+        case 0x22: { break; }
         // INC HL: Increment 16-bit HL
         case 0x23: { break; }
         // INC H: Increment H
@@ -172,29 +94,11 @@ namespace GBSharp.CPUSpace.Dictionaries
         // DAA: Adjust A for BCD addition
         case 0x27: { break; }
         // JR Z,n: Relative jump by signed immediate if last result was zero
-        case 0x28:
-          {
-            // We cast down the input, ignoring the overflows
-            short sn = 0;
-            unchecked { sn = (sbyte)n; }
-            ushort target = (ushort)(cpu.nextPC + sn);
-            if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
-            {
-              return BreakpointKinds.JUMP;
-            }
-            break;
-          }
+        case 0x28: { break; }
         // ADD HL,HL: Add 16-bit HL to HL
         case 0x29: { break; }
         // LDI A,(HL): Load A from address pointed to by HL, and increment HL
-        case 0x2A:
-          {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.READ;
-            }
-            break;
-          }
+        case 0x2A: { break; }
         // DEC HL: Decrement 16-bit HL
         case 0x2B: { break; }
         // INC L: Increment L
@@ -206,84 +110,47 @@ namespace GBSharp.CPUSpace.Dictionaries
         // CPL: Complement (logical NOT) on A
         case 0x2F: { break; }
         // JR NC,n: Relative jump by signed immediate if last result caused no carry
-        case 0x30:
-          {
-            // We cast down the input, ignoring the overflows
-            short sn = 0;
-            unchecked { sn = (sbyte)n; }
-            ushort target = (ushort)(cpu.nextPC + sn);
-            if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
-            {
-              return BreakpointKinds.JUMP;
-            }
-            break;
-          }
+        case 0x30: { break; }
         // LD SP,nn: Load 16-bit immediate into SP
         case 0x31: { break; }
         // LDD (HL),A: Save A to address pointed by HL, and decrement HL
-        case 0x32:
-          {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.WRITE;
-            }
-            break;
-          }
+        case 0x32: { break; }
         // INC SP: Increment 16-bit HL
         case 0x33: { break; }
         // INC (HL): Increment value pointed by HL
         case 0x34:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.WRITE;
-            }
+            byte value = cpu.registers.TEMP;
+            ++value;
+            cpu.memory.Write(cpu.registers.HL, value);
+
+            cpu.registers.FZ = (byte)(value == 0 ? 1 : 0);
+            cpu.registers.FN = 0;
+            cpu.registers.FH = (byte)((value & 0x0F) == 0x00 ? 1 : 0);
             break;
           }
         // DEC (HL): Decrement value pointed by HL
         case 0x35:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.WRITE;
-            }
+            byte value = cpu.registers.TEMP;
+            --value;
+            cpu.memory.Write(cpu.registers.HL, value);
+
+            cpu.registers.FZ = (byte)(value == 0 ? 1 : 0);
+            cpu.registers.FN = 1;
+            cpu.registers.FH = (byte)((value & 0x0F) == 0x0F ? 1 : 0);
             break;
           }
         // LD (HL),n: Load 8-bit immediate into address pointed by HL
-        case 0x36:
-          {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.WRITE;
-            }
-            break;
-          }
+        case 0x36: { break; }
         // SCF: Set carry flag
         case 0x37: { break; }
         // JR C,n: Relative jump by signed immediate if last result caused carry
-        case 0x38:
-          {
-            // We cast down the input, ignoring the overflows
-            short sn = 0;
-            unchecked { sn = (sbyte)n; }
-            ushort target = (ushort)(cpu.nextPC + sn);
-            if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
-            {
-              return BreakpointKinds.JUMP;
-            }
-            break;
-          }
+        case 0x38: { break; }
         // ADD HL,SP: Add 16-bit SP to HL
         case 0x39: { break; }
         // LDD A,(HL): Load A from address pointed to by HL, and decrement HL
-        case 0x3A:
-          {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.READ;
-            }
-            break;
-          }
+        case 0x3A: { break; }
         // DEC SP: Decrement 16-bit SP
         case 0x3B: { break; }
         // INC A: Increment A
@@ -307,14 +174,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD B,L: Copy L to B
         case 0x45: { break; }
         // LD B,(HL): Copy value pointed by HL to B
-        case 0x46:
-          {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.READ;
-            }
-            break;
-          }
+        case 0x46: { break; }
         // LD B,A: Copy A to B
         case 0x47: { break; }
         // LD C,B: Copy B to C
@@ -330,14 +190,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD C,L: Copy L to C
         case 0x4D: { break; }
         // LD C,(HL): Copy value pointed by HL to C
-        case 0x4E:
-          {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.READ;
-            }
-            break;
-          }
+        case 0x4E: { break; }
         // LD C,A: Copy A to C
         case 0x4F: { break; }
         // LD D,B: Copy B to D
@@ -353,14 +206,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD D,L: Copy L to D
         case 0x55: { break; }
         // LD D,(HL): Copy value pointed by HL to D
-        case 0x56:
-          {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.READ;
-            }
-            break;
-          }
+        case 0x56: { break; }
         // LD D,A: Copy A to D
         case 0x57: { break; }
         // LD E,B: Copy B to E
@@ -376,14 +222,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD E,L: Copy L to E
         case 0x5D: { break; }
         // LD E,(HL): Copy value pointed by HL to E
-        case 0x5E:
-          {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.READ;
-            }
-            break;
-          }
+        case 0x5E: { break; }
         // LD E,A: Copy A to E
         case 0x5F: { break; }
         // LD H,B: Copy B to H
@@ -399,14 +238,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD H,L: Copy L to H
         case 0x65: { break; }
         // LD H,(HL): Copy value pointed by HL to H
-        case 0x66:
-          {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.READ;
-            }
-            break;
-          }
+        case 0x66: { break; }
         // LD H,A: Copy A to H
         case 0x67: { break; }
         // LD L,B: Copy B to L
@@ -422,81 +254,25 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD L,L: Copy L to L
         case 0x6D: { break; }
         // LD L,(HL): Copy value pointed by HL to L
-        case 0x6E:
-          {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.READ;
-            }
-            break;
-          }
+        case 0x6E: { break; }
         // LD L,A: Copy A to L
         case 0x6F: { break; }
         // LD (HL),B: Copy B to address pointed by HL
-        case 0x70:
-          {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.WRITE;
-            }
-            break;
-          }
+        case 0x70: { break; }
         // LD (HL),C: Copy C to address pointed by HL
-        case 0x71:
-          {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.WRITE;
-            }
-            break;
-          }
+        case 0x71: { break; }
         // LD (HL),D: Copy D to address pointed by HL
-        case 0x72:
-          {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.WRITE;
-            }
-            break;
-          }
+        case 0x72: { break; }
         // LD (HL),E: Copy E to address pointed by HL
-        case 0x73:
-          {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.WRITE;
-            }
-            break;
-          }
+        case 0x73: { break; }
         // LD (HL),H: Copy H to address pointed by HL
-        case 0x74:
-          {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.WRITE;
-            }
-            break;
-          }
+        case 0x74: { break; }
         // LD (HL),L: Copy L to address pointed by HL
-        case 0x75:
-          {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.WRITE;
-            }
-            break;
-          }
+        case 0x75: { break; }
         // HALT: Halt processor
         case 0x76: { break; }
         // LD (HL),A: Copy A to address pointed by HL
-        case 0x77:
-          {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.WRITE;
-            }
-            break;
-          }
+        case 0x77: { break; }
         // LD A,B: Copy B to A
         case 0x78: { break; }
         // LD A,C: Copy C to A
@@ -510,14 +286,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD A,L: Copy L to A
         case 0x7D: { break; }
         // LD A,(HL): Copy value pointed by HL to A
-        case 0x7E:
-          {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.READ;
-            }
-            break;
-          }
+        case 0x7E: { break; }
         // LD A,A: Copy A to A
         case 0x7F: { break; }
         // ADD A,B: Add B to A
@@ -645,14 +414,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // CP L: Compare L against A
         case 0xBD: { break; }
         // CP (HL): Compare value pointed by HL against A
-        case 0xBE:
-          {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
-            {
-              return BreakpointKinds.READ;
-            }
-            break;
-          }
+        case 0xBE: { break; }
         // CP A: Compare A against A
         case 0xBF: { break; }
         // RET NZ: Return if last result was not zero
@@ -660,35 +422,11 @@ namespace GBSharp.CPUSpace.Dictionaries
         // POP BC: Pop 16-bit value from stack into BC
         case 0xC1: { break; }
         // JP NZ,nn: Absolute jump to 16-bit location if last result was not zero
-        case 0xC2:
-          {
-            ushort target = n;
-            if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
-            {
-              return BreakpointKinds.JUMP;
-            }
-            break;
-          }
+        case 0xC2: { break; }
         // JP nn: Absolute jump to 16-bit location
-        case 0xC3:
-          {
-            ushort target = n;
-            if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
-            {
-              return BreakpointKinds.JUMP;
-            }
-            break;
-          }
+        case 0xC3: { break; }
         // CALL NZ,nn: Call routine at 16-bit location if last result was not zero
-        case 0xC4:
-          {
-            ushort target = n;
-            if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
-            {
-              return BreakpointKinds.JUMP;
-            }
-            break;
-          }
+        case 0xC4: { break; }
         // PUSH BC: Push 16-bit BC onto stack
         case 0xC5: { break; }
         // ADD A,n: Add 8-bit immediate to A
@@ -696,83 +434,45 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RST 0: Call routine at address 0000h
         case 0xC7:
           {
-            return Check(cpu, 0xCD, 0, ignoreBreakpoints);
+            Run(cpu, 0xCD, 0);
+            break;
           }
         // RET Z: Return if last result was zero
         case 0xC8: { break; }
         // RET: Return to calling routine
         case 0xC9: { break; }
         // JP Z,nn: Absolute jump to 16-bit location if last result was zero
-        case 0xCA:
-          {
-            ushort target = n;
-            if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
-            {
-              return BreakpointKinds.JUMP;
-            }
-            break;
-          }
+        case 0xCA: { break; }
         // Ext ops: Extended operations (two-byte instruction code)
         case 0xCB:
           {
             throw new InvalidInstructionException("Ext ops (0xCB)");
           }
         // CALL Z,nn: Call routine at 16-bit location if last result was zero
-        case 0xCC:
-          {
-            ushort target = n;
-            if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
-            {
-              return BreakpointKinds.JUMP;
-            }
-            break;
-          }
+        case 0xCC: { break; }
         // CALL nn: Call routine at 16-bit location
-        case 0xCD:
-          {
-            ushort target = n;
-            if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
-            {
-              return BreakpointKinds.JUMP;
-            }
-            break;
-          }
+        case 0xCD: { break; }
         // ADC A,n: Add 8-bit immediate and carry to A
         case 0xCE: { break; }
         // RST 8: Call routine at address 0008h
         case 0xCF:
           {
-            return Check(cpu, 0xCD, 0x08, ignoreBreakpoints);
+            Run(cpu, 0xCD, 0x08);
+            break;
           }
         // RET NC: Return if last result caused no carry
         case 0xD0: { break; }
         // POP DE: Pop 16-bit value from stack into DE
         case 0xD1: { break; }
         // JP NC,nn: Absolute jump to 16-bit location if last result caused no carry
-        case 0xD2:
-          {
-            ushort target = n;
-            if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
-            {
-              return BreakpointKinds.JUMP;
-            }
-            break;
-          }
-        // XX: Operation removed in this CPU
+        case 0xD2: { break; }
+        // XX: Operation removed in cpu CPU
         case 0xD3:
           {
             throw new InvalidInstructionException("XX (0xD3)");
           }
         // CALL NC,nn: Call routine at 16-bit location if last result caused no carry
-        case 0xD4:
-          {
-            ushort target = n;
-            if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
-            {
-              return BreakpointKinds.JUMP;
-            }
-            break;
-          }
+        case 0xD4: { break; }
         // PUSH DE: Push 16-bit DE onto stack
         case 0xD5: { break; }
         // SUB A,n: Subtract 8-bit immediate from A
@@ -780,38 +480,23 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RST 10: Call routine at address 0010h
         case 0xD7:
           {
-            return Check(cpu, 0xCD, 0x10, ignoreBreakpoints);
+            Run(cpu, 0xCD, 0x10);
+            break;
           }
         // RET C: Return if last result caused carry
         case 0xD8: { break; }
         // RETI: Enable interrupts and return to calling routine
         case 0xD9: { break; }
         // JP C,nn: Absolute jump to 16-bit location if last result caused carry
-        case 0xDA:
-          {
-            ushort target = n;
-            if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
-            {
-              return BreakpointKinds.JUMP;
-            }
-            break;
-          }
-        // XX: Operation removed in this CPU
+        case 0xDA: { break; }
+        // XX: Operation removed in cpu CPU
         case 0xDB:
           {
             throw new InvalidInstructionException("XX (0xDB)");
           }
         // CALL C,nn: Call routine at 16-bit location if last result caused carry
-        case 0xDC:
-          {
-            ushort target = n;
-            if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
-            {
-              return BreakpointKinds.JUMP;
-            }
-            break;
-          }
-        // XX: Operation removed in this CPU
+        case 0xDC: { break; }
+        // XX: Operation removed in cpu CPU
         case 0xDD:
           {
             throw new InvalidInstructionException("XX (0xDD)");
@@ -821,36 +506,21 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RST 18: Call routine at address 0018h
         case 0xDF:
           {
-            return Check(cpu, 0xCD, 0x18, ignoreBreakpoints);
-          }
-        // LDH (n),A: Save A at address pointed to by (FF00h + 8-bit immediate)
-        case 0xE0:
-          {
-            ushort address = (ushort)(0xFF00 | (byte)n);
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(address))
-            {
-              return BreakpointKinds.WRITE;
-            }
+            Run(cpu, 0xCD, 0x18);
             break;
           }
+        // LDH (n),A: Save A at address pointed to by (FF00h + 8-bit immediate)
+        case 0xE0: { break; }
         // POP HL: Pop 16-bit value from stack into HL
         case 0xE1: { break; }
         // LDH (C),A: Save A at address pointed to by (FF00h + C)
-        case 0xE2:
-          {
-            ushort address = (ushort)(0xFF00 | cpu.registers.C);
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(address))
-            {
-              return BreakpointKinds.WRITE;
-            }
-            break;
-          }
-        // XX: Operation removed in this CPU
+        case 0xE2: { break; }
+        // XX: Operation removed in cpu CPU
         case 0xE3:
           {
             throw new InvalidInstructionException("XX (0xE3)");
           }
-        // XX: Operation removed in this CPU
+        // XX: Operation removed in cpu CPU
         case 0xE4:
           {
             throw new InvalidInstructionException("XX (0xE4)");
@@ -862,40 +532,26 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RST 20: Call routine at address 0020h
         case 0xE7:
           {
-            return Check(cpu, 0xCD, 0x20, ignoreBreakpoints);
+            Run(cpu, 0xCD, 0x20);
+            break;
           }
         // ADD SP,d: Add signed 8-bit immediate to SP
         case 0xE8: { break; }
         // JP (HL): Jump to 16-bit value pointed by HL
-        case 0xE9:
-          {
-            ushort target = cpu.registers.HL;
-            if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
-            {
-              return BreakpointKinds.JUMP;
-            }
-            break;
-          }
+        case 0xE9: { break; }
         // LD (nn),A: Save A at given 16-bit address
-        case 0xEA:
-          {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(n))
-            {
-              return BreakpointKinds.WRITE;
-            }
-            break;
-          }
-        // XX: Operation removed in this CPU
+        case 0xEA: { break; }
+        // XX: Operation removed in cpu CPU
         case 0xEB:
           {
             throw new InvalidInstructionException("XX (0xEB)");
           }
-        // XX: Operation removed in this CPU
+        // XX: Operation removed in cpu CPU
         case 0xEC:
           {
             throw new InvalidInstructionException("XX (0xEC)");
           }
-        // XX: Operation removed in this CPU
+        // XX: Operation removed in cpu CPU
         case 0xED:
           {
             throw new InvalidInstructionException("XX (0xED)");
@@ -905,33 +561,18 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RST 28: Call routine at address 0028h
         case 0xEF:
           {
-            return Check(cpu, 0xCD, 0x28, ignoreBreakpoints);
+            Run(cpu, 0xCD, 0x28);
+            break;
           }
         // LDH A,(n): Load A from address pointed to by (FF00h + 8-bit immediate)
-        case 0xF0:
-          {
-            ushort address = (ushort)(0xFF00 | (byte)n);
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(address))
-            {
-              return BreakpointKinds.READ;
-            }
-            break;
-          }
+        case 0xF0: { break; }
         // POP AF: Pop 16-bit value from stack into AF
         case 0xF1: { break; }
-        // LDH A, (C): Operation removed in this CPU? (Or Load into A memory from FF00 + C?)
-        case 0xF2:
-          {
-            ushort address = (ushort)(0xFF00 | cpu.registers.C);
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(address))
-            {
-              return BreakpointKinds.READ;
-            }
-            break;
-          }
+        // LDH A, (C): Operation removed in cpu CPU? (Or Load into A cpu.memory from FF00 + C?)
+        case 0xF2: { break; }
         // DI: DIsable interrupts
         case 0xF3: { break; }
-        // XX: Operation removed in this CPU
+        // XX: Operation removed in cpu CPU
         case 0xF4:
           {
             throw new InvalidInstructionException("XX (0xF4)");
@@ -943,29 +584,23 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RST 30: Call routine at address 0030h
         case 0xF7:
           {
-            return Check(cpu, 0xCD, 0x30, ignoreBreakpoints);
+            Run(cpu, 0xCD, 0x30);
+            break;
           }
         // LDHL SP,d: Add signed 8-bit immediate to SP and save result in HL
         case 0xF8: { break; }
         // LD SP,HL: Copy HL to SP
         case 0xF9: { break; }
         // LD A,(nn): Load A from given 16-bit address
-        case 0xFA:
-          {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(n))
-            {
-              return BreakpointKinds.READ;
-            }
-            break;
-          }
+        case 0xFA: { break; }
         // EI: Enable interrupts
         case 0xFB: { break; }
-        // XX: Operation removed in this CPU
+        // XX: Operation removed in cpu CPU
         case 0xFC:
           {
             throw new InvalidInstructionException("XX (0xFC)");
           }
-        // XX: Operation removed in this CPU
+        // XX: Operation removed in cpu CPU
         case 0xFD:
           {
             throw new InvalidInstructionException("XX (0xFD)");
@@ -975,12 +610,10 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RST 38: Call routine at address 0038h
         case 0xFF:
           {
-            return Check(cpu, 0xCD, 0x38, ignoreBreakpoints);
+            Run(cpu, 0xCD, 0x38);
+            break;
           }
       }
-
-      // No breakpoints found
-      return BreakpointKinds.NONE;
     }
   }
 }

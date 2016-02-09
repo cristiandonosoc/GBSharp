@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GBSharp.CPUSpace.Dictionaries
 {
-  class CPUCBInstructionsBreakpoints
+  class CPUCBInstructionBreakpoints
   {
     /// <summary>
     /// Runs an CB opcode instruction

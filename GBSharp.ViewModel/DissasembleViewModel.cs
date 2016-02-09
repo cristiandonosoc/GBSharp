@@ -152,7 +152,7 @@ namespace GBSharp.ViewModel
           vm.Address = "0x" + address.ToString("x2");
           vm.originalOpcode = entry[1];
           vm.Opcode = "0x" + entry[1].ToString("x2");
-          vm.Name = CPUOpcodeNames.Get(entry[1]);
+          vm.Name = CPUInstructionNames.Get(entry[1]);
           vm.Description = CPUInstructionDescriptions.Get(entry[1]);
         }
         else if (intLength == 2)
@@ -162,7 +162,7 @@ namespace GBSharp.ViewModel
             vm.Address = "0x" + address.ToString("x2");
             vm.originalOpcode = entry[1];
             vm.Opcode = "0x" + entry[1].ToString("x2");
-            vm.Name = CPUOpcodeNames.Get(entry[1]);
+            vm.Name = CPUInstructionNames.Get(entry[1]);
             vm.Literal = "0x" + entry[2].ToString("x2");
             vm.Description = CPUInstructionDescriptions.Get(entry[1]);
           }
@@ -172,7 +172,7 @@ namespace GBSharp.ViewModel
             int instOpcode = ((entry[1] << 8) | entry[2]);
             vm.originalOpcode = (ushort)instOpcode;
             vm.Opcode = "0x" + instOpcode.ToString("x2");
-            vm.Name = CPUCBOpcodeNames.Get(entry[2]);
+            vm.Name = CPUCBInstructionNames.Get(entry[2]);
             vm.Literal = "0x" + entry[2].ToString("x2");
             vm.Description = CPUCBInstructionDescriptions.Get(entry[2]);
           }
@@ -182,7 +182,7 @@ namespace GBSharp.ViewModel
           vm.Address = "0x" + address.ToString("x2");
           vm.originalOpcode = entry[1];
           vm.Opcode = "0x" + entry[1].ToString("x2");
-          vm.Name = CPUOpcodeNames.Get(entry[1]);
+          vm.Name = CPUInstructionNames.Get(entry[1]);
           int literal = ((entry[2] << 8) | entry[3]);
           vm.Literal = "0x" + literal.ToString("x2");
           vm.Description = CPUInstructionDescriptions.Get(entry[1]);
