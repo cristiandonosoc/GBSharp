@@ -8,9 +8,9 @@ namespace GBSharp.CPUSpace.Dictionaries
 {
   class CPUCBInstructionPostClocks
   {
-    internal static byte Get(CPU cpu, byte originalClocks, byte opcode, ushort n)
+    internal static byte Get(CPU cpu, byte opcode, ushort n)
     {
-      byte result = originalClocks;
+      byte result = 0;
       switch (opcode)
       {
         // RLC B: Rotate B left with carry
@@ -621,6 +621,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 7,A: Set bit 7 of A
         case 0xFF: { break; }
       }
+      result = 0;
       return result;
     }
   }

@@ -9,9 +9,9 @@ namespace GBSharp.CPUSpace.Dictionaries
 {
   class CPUInstructionPostClocks
   {
-    internal static byte Get(CPU cpu, byte originalClocks, byte opcode, ushort n)
+    internal static byte Get(CPU cpu, byte opcode, ushort n)
     {
-      byte result = originalClocks;
+      byte result = 0;
       switch (opcode)
       {
         // NOP: No Operation
@@ -82,7 +82,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0x20:
           {
             if (cpu.registers.FZ != 0) { break; }
-            result = 12;
+            result = 4;
             break;
           }
         // LD HL,nn: Load 16-bit immediate into HL
@@ -103,7 +103,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0x28:
           {
             if (cpu.registers.FZ == 0) { break; }
-            result = 12;
+            result = 4;
             break;
           }
         // ADD HL,HL: Add 16-bit HL to HL
@@ -124,7 +124,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0x30:
           {
             if (cpu.registers.FC != 0) { break; }
-            result = 12;
+            result = 4;
             break;
           }
         // LD SP,nn: Load 16-bit immediate into SP
@@ -145,7 +145,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0x38:
           {
             if (cpu.registers.FC == 0) { break; }
-            result = 12;
+            result = 4;
             break;
           }
         // ADD HL,SP: Add 16-bit SP to HL
@@ -422,7 +422,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0xC0:
           {
             if (cpu.registers.FZ != 0) { break; }
-            result = 20;
+            result = 12;
             break;
           }
         // POP BC: Pop 16-bit value from stack into BC
@@ -431,7 +431,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0xC2:
           {
             if (cpu.registers.FZ != 0) { break; }
-            result = 16;
+            result = 4;
             break;
           }
         // JP nn: Absolute jump to 16-bit location
@@ -440,7 +440,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0xC4:
           {
             if (cpu.registers.FZ != 0) { break; }
-            result = 24;
+            result = 12;
             break;
           }
         // PUSH BC: Push 16-bit BC onto stack
@@ -450,13 +450,13 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RST 0: Call routine at address 0000h
         case 0xC7:
           {
-            return Get(cpu, originalClocks, 0xCD, 0);
+            return Get(cpu, 0xCD, 0);
           }
         // RET Z: Return if last result was zero
         case 0xC8:
           {
             if (cpu.registers.FZ == 0) { break; }
-            result = 20;
+            result = 12;
             break;
           }
         // RET: Return to calling routine
@@ -465,7 +465,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0xCA:
           {
             if (cpu.registers.FZ == 0) { break; }
-            result = 16;
+            result = 4;
             break;
           }
         // Ext ops: Extended operations (two-byte instruction code)
@@ -477,7 +477,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0xCC:
           {
             if (cpu.registers.FZ == 0) { break; }
-            result = 24;
+            result = 12;
             break;
           }
         // CALL nn: Call routine at 16-bit location
@@ -487,13 +487,13 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RST 8: Call routine at address 0008h
         case 0xCF:
           {
-            return Get(cpu, originalClocks, 0xCD, 0x08);
+            return Get(cpu, 0xCD, 0x08);
           }
         // RET NC: Return if last result caused no carry
         case 0xD0:
           {
             if (cpu.registers.FC != 0) { break; }
-            result = 20;
+            result = 12;
             break;
           }
         // POP DE: Pop 16-bit value from stack into DE
@@ -502,7 +502,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0xD2:
           {
             if (cpu.registers.FC != 0) { break; }
-            result = 16;
+            result = 4;
             break;
           }
         // XX: Operation removed in cpu CPU
@@ -514,7 +514,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0xD4:
           {
             if (cpu.registers.FC != 0) { break; }
-            result = 24;
+            result = 12;
             break;
           }
         // PUSH DE: Push 16-bit DE onto stack
@@ -524,13 +524,13 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RST 10: Call routine at address 0010h
         case 0xD7:
           {
-            return Get(cpu, originalClocks, 0xCD, 0x10);
+            return Get(cpu, 0xCD, 0x10);
           }
         // RET C: Return if last result caused carry
         case 0xD8:
           {
             if (cpu.registers.FC == 0) { break; }
-            result = 20;
+            result = 12;
             break;
           }
         // RETI: Enable interrupts and return to calling routine
@@ -539,7 +539,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0xDA:
           {
             if (cpu.registers.FC == 0) { break; }
-            result = 16;
+            result = 4;
             break;
           }
         // XX: Operation removed in cpu CPU
@@ -551,7 +551,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0xDC:
           {
             if (cpu.registers.FC == 0) { break; }
-            result = 24;
+            result = 12;
             break;
           }
         // XX: Operation removed in cpu CPU
@@ -564,7 +564,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RST 18: Call routine at address 0018h
         case 0xDF:
           {
-            return Get(cpu, originalClocks, 0xCD, 0x18);
+            return Get(cpu, 0xCD, 0x18);
           }
         // LDH (n),A: Save A at address pointed to by (FF00h + 8-bit immediate)
         case 0xE0: { break; }
@@ -589,7 +589,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RST 20: Call routine at address 0020h
         case 0xE7:
           {
-            return Get(cpu, originalClocks, 0xCD, 0x20);
+            return Get(cpu, 0xCD, 0x20);
           }
         // ADD SP,d: Add signed 8-bit immediate to SP
         case 0xE8: { break; }
@@ -617,7 +617,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RST 28: Call routine at address 0028h
         case 0xEF:
           {
-            return Get(cpu, originalClocks, 0xCD, 0x28);
+            return Get(cpu, 0xCD, 0x28);
           }
         // LDH A,(n): Load A from address pointed to by (FF00h + 8-bit immediate)
         case 0xF0: { break; }
@@ -639,7 +639,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RST 30: Call routine at address 0030h
         case 0xF7:
           {
-            return Get(cpu, originalClocks, 0xCD, 0x30);
+            return Get(cpu, 0xCD, 0x30);
           }
         // LDHL SP,d: Add signed 8-bit immediate to SP and save result in HL
         case 0xF8: { break; }
@@ -664,7 +664,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RST 38: Call routine at address 0038h
         case 0xFF:
           {
-            return Get(cpu, originalClocks, 0xCD, 0x38);
+            return Get(cpu, 0xCD, 0x38);
           }
       }
 
