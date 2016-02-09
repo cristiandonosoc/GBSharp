@@ -28,7 +28,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RLC (HL): Rotate value pointed by HL left with carry
         case 0x06:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // RLC A: Rotate A left with carry
@@ -48,7 +48,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RRC (HL): Rotate value pointed by HL right with carry
         case 0x0E:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // RRC A: Rotate A right with carry
@@ -68,7 +68,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RL (HL): Rotate value pointed by HL left
         case 0x16:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // RL A: Rotate A left
@@ -88,7 +88,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RR (HL): Rotate value pointed by HL right
         case 0x1E:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // RR A: Rotate A right
@@ -108,7 +108,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SLA (HL): Shift value pointed by HL left preserving sign
         case 0x26:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // SLA A: Shift A left preserving sign
@@ -127,7 +127,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SRA (HL): Shift value pointed by HL right preserving sign
         case 0x2E:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // SRA A: Shift A right preserving sign
@@ -147,7 +147,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SWAP (HL): Swap nybbles in value pointed by HL
         case 0x36:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // SWAP A: Swap nybbles in A
@@ -167,7 +167,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SRL (HL): Shift value pointed by HL right
         case 0x3E:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // SRL A: Shift A right
@@ -315,7 +315,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 0,(HL): Clear (reset) bit 0 of value pointed by HL
         case 0x86:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // RES 0,A: Clear (reset) bit 0 of A
@@ -335,7 +335,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 1,(HL): Clear (reset) bit 1 of value pointed by HL
         case 0x8E:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // RES 1,A: Clear (reset) bit 1 of A
@@ -355,7 +355,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 2,(HL): Clear (reset) bit 2 of value pointed by HL
         case 0x96:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // RES 2,A: Clear (reset) bit 2 of A
@@ -375,7 +375,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 3,(HL): Clear (reset) bit 3 of value pointed by HL
         case 0x9E:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // RES 3,A: Clear (reset) bit 3 of A
@@ -395,7 +395,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 4,(HL): Clear (reset) bit 4 of value pointed by HL
         case 0xA6:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // RES 4,A: Clear (reset) bit 4 of A
@@ -415,7 +415,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 5,(HL): Clear (reset) bit 5 of value pointed by HL
         case 0xAE:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // RES 5,A: Clear (reset) bit 5 of A
@@ -435,7 +435,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 6,(HL): Clear (reset) bit 6 of value pointed by HL
         case 0xB6:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // RES 6,A: Clear (reset) bit 6 of A
@@ -455,7 +455,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 7,(HL): Clear (reset) bit 7 of value pointed by HL
         case 0xBE:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // RES 7,A: Clear (reset) bit 7 of A
@@ -475,7 +475,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 0,(HL): Set bit 0 of value pointed by HL
         case 0xC6:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // SET 0,A: Set bit 0 of A
@@ -495,7 +495,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 1,(HL): Set bit 1 of value pointed by HL
         case 0xCE:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // SET 1,A: Set bit 1 of A
@@ -515,7 +515,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 2,(HL): Set bit 2 of value pointed by HL
         case 0xD6:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // SET 2,A: Set bit 2 of A
@@ -535,7 +535,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 3,(HL): Set bit 3 of value pointed by HL
         case 0xDE:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // SET 3,A: Set bit 3 of A
@@ -555,7 +555,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 4,(HL): Set bit 4 of value pointed by HL
         case 0xE6:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // SET 4,A: Set bit 4 of A
@@ -575,7 +575,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 5,(HL): Set bit 5 of value pointed by HL
         case 0xEE:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // SET 5,A: Set bit 5 of A
@@ -595,7 +595,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 6,(HL): Set bit 6 of value pointed by HL
         case 0xF6:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // SET 6,A: Set bit 6 of A
@@ -615,13 +615,12 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 7,(HL): Set bit 7 of value pointed by HL
         case 0xFE:
           {
-            result = 16;
+            result = 4;
             break;
           }
         // SET 7,A: Set bit 7 of A
         case 0xFF: { break; }
       }
-      result = 0;
       return result;
     }
   }

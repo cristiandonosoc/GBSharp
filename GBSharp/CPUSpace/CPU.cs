@@ -422,28 +422,27 @@ namespace GBSharp.CPUSpace
 
       // We calculate how many more ticks have to run
       //byte remainingSteps = (byte)(_currentInstruction.Ticks - alreadyRunSteps);
-      byte remainingSteps = GetPostTicks(alreadyRunSteps);
+      byte remainingSteps = GetPostTicks();
       return remainingSteps;
     }
     
-    internal byte GetPostTicks(byte alreadyRunSteps)
+    internal byte GetPostTicks()
     {
       // We calculate how many more ticks have to run
-      byte remainingSteps = 0;
+      byte ticks = 0;
       if(!_currentInstruction.CB)
       {
-        remainingSteps = CPUInstructionPostClocks.Get(this,
-                                                      (byte)_currentInstruction.OpCode,
-                                                      _currentInstruction.Literal);
+        ticks = CPUInstructionPostClocks.Get(this,
+                                             (byte)_currentInstruction.OpCode,
+                                             _currentInstruction.Literal);
       }
       else
       {
-        remainingSteps = CPUCBInstructionPostClocks.Get(this,
-                                                      (byte)_currentInstruction.OpCode,
-                                                      _currentInstruction.Literal);
-        remainingSteps = (byte)(_currentInstruction.Ticks - alreadyRunSteps);
+        ticks = CPUCBInstructionPostClocks.Get(this,
+                                               (byte)_currentInstruction.OpCode,
+                                               _currentInstruction.Literal);
       }
-      return remainingSteps;
+      return ticks;
     }
 
 
