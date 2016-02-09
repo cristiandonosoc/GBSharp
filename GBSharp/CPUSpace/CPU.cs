@@ -291,6 +291,50 @@ namespace GBSharp.CPUSpace
       _breakableInterrupts[interrupt] = isBreakable;
     }
 
+
+    /// <summary>
+    /// Get the amount of ticks to be run before the opcode execution
+    /// </summary>
+    /// <returns>cpu ticks</returns>
+    private byte GetPreClocks()
+    {
+      byte ticks = 0;
+      // We return the ticks that the instruction took
+      if(!_currentInstruction.CB)
+      {
+        ticks = CPUInstructionPreClocks.Get((byte)_currentInstruction.OpCode);
+      }
+      else
+      {
+        ticks = CPUCBInstructionPreClocks.Get((byte)_currentInstruction.OpCode);
+      }
+      return ticks;
+    }
+    
+    /// <summary>
+    /// Get the amount of ticks to be run after the opcode execution
+    /// (and before any potention post-execution code)
+    /// </summary>
+    /// <returns>cpu ticks</returns>
+    private byte GetPostTicks()
+    {
+      // We calculate how many more ticks have to run
+      byte ticks = 0;
+      if(!_currentInstruction.CB)
+      {
+        ticks = CPUInstructionPostClocks.Get(this,
+                                             (byte)_currentInstruction.OpCode,
+                                             _currentInstruction.Literal);
+      }
+      else
+      {
+        ticks = CPUCBInstructionPostClocks.Get(this,
+                                               (byte)_currentInstruction.OpCode,
+                                               _currentInstruction.Literal);
+      }
+      return ticks;
+    }
+
     /// <summary>
     /// Executes one instruction, requiring arbitrary machine and clock cycles.
     /// </summary>
@@ -346,7 +390,6 @@ namespace GBSharp.CPUSpace
 
       // We check to see if there is breakpoint to be triggered
       BreakpointKinds breakpointKind = BreakpointKinds.NONE;
-      byte prevTicksRequired = 0;
       if(!_currentInstruction.CB)
       {
         breakpointKind = CPUInstructionsBreakpoints.Check(this,
@@ -372,15 +415,7 @@ namespace GBSharp.CPUSpace
         return 0;
       }
 
-      // We return the ticks that the instruction took
-      if(!_currentInstruction.CB)
-      {
-        prevTicksRequired = CPUInstructionPreClocks.Get((byte)_currentInstruction.OpCode);
-      }
-      else
-      {
-        prevTicksRequired = CPUCBInstructionPreClocks.Get((byte)_currentInstruction.OpCode);
-      }
+      byte prevTicksRequired = GetPreClocks();
       return prevTicksRequired;
     }
 
@@ -391,7 +426,7 @@ namespace GBSharp.CPUSpace
     /// How many steps occured before the instruction actually runs
     /// </param>
     /// <returns></returns>
-    internal byte ExecuteInstruction(byte alreadyRunSteps)
+    internal byte ExecuteInstruction()
     {
       // Prepare for program counter movement, but wait for instruction execution.
       // Overwrite nextPC in the instruction lambdas if you want to implement jumps.
@@ -421,30 +456,9 @@ namespace GBSharp.CPUSpace
       this.registers.PC = this.nextPC;
 
       // We calculate how many more ticks have to run
-      //byte remainingSteps = (byte)(_currentInstruction.Ticks - alreadyRunSteps);
       byte remainingSteps = GetPostTicks();
       return remainingSteps;
     }
-    
-    internal byte GetPostTicks()
-    {
-      // We calculate how many more ticks have to run
-      byte ticks = 0;
-      if(!_currentInstruction.CB)
-      {
-        ticks = CPUInstructionPostClocks.Get(this,
-                                             (byte)_currentInstruction.OpCode,
-                                             _currentInstruction.Literal);
-      }
-      else
-      {
-        ticks = CPUCBInstructionPostClocks.Get(this,
-                                               (byte)_currentInstruction.OpCode,
-                                               _currentInstruction.Literal);
-      }
-      return ticks;
-    }
-
 
     private Instruction InterruptHandler(Interrupts interrupt)
     {

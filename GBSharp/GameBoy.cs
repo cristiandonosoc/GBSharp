@@ -251,7 +251,7 @@ namespace GBSharp
           StepPeripherals(prevTicks);
 
           // We simulate the rest of the instruction
-          byte postTicks = this.cpu.ExecuteInstruction(prevTicks);
+          byte postTicks = this.cpu.ExecuteInstruction();
           // postTicks 0 means that the instruction run at its last clock
           // so there is no postprocessing to be done
           if (postTicks > 0)
