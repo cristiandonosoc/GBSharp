@@ -117,7 +117,7 @@ namespace GBSharp.ViewModel
       _cpu.CopyFromDomain();
       _ioRegisters.CopyFromDomain();
       _display.CopyFromDomain();
-      _dissasemble.SetCurrentSelectedInstruction();
+      _dissasemble.SetCurrentInstructionToPC();
       _interrupt.CopyFromDomain();
       _memory.StepHandler();
       _breakpoints.StepHandler();
@@ -154,6 +154,7 @@ namespace GBSharp.ViewModel
     private void RunHandler()
     {
       _breakpoints.RunHandler();
+      _dissasemble.ClearCurrentInstruction();
     }
   }
 }

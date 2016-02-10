@@ -46,17 +46,17 @@ namespace GBSharp.ViewModel
       }
     }
 
-    private InstructionViewModel _current;
+    private InstructionViewModel _currentInstruction;
     public void SetCurrentInstruction(InstructionViewModel instruction)
     {
-      if(_current == instruction) { return; }
-      if (_current != null)
+      if(_currentInstruction == instruction) { return; }
+      if (_currentInstruction != null)
       {
-        _current.IsCurrent = false;
+        _currentInstruction.IsCurrent = false;
       }
 
-      _current = instruction;
-      _current.IsCurrent = true;
+      _currentInstruction = instruction;
+      _currentInstruction.IsCurrent = true;
     }
 
     private string _gotoField;
@@ -71,8 +71,6 @@ namespace GBSharp.ViewModel
       }
     }
 
-
-
     private string _searchField;
     public string SearchField
     {
@@ -85,7 +83,6 @@ namespace GBSharp.ViewModel
       }
     }
 
-
     public DissasembleViewModel(BreakpointsViewModel breakpoints, IGameBoy gameBoy)
     {
       _breakpoints = breakpoints;
@@ -96,7 +93,11 @@ namespace GBSharp.ViewModel
       _breakpoints.BreakpointChanged += _breakpoints_BreakpointChanged;
     }
 
-    public void SetCurrentSelectedInstruction()
+    /// <summary>
+    /// Indicates that the current PC is the current instructions
+    /// (for highlighting)
+    /// </summary>
+    public void SetCurrentInstructionToPC()
     {
       if(_addressToInstruction.ContainsKey(_cpu.Registers.PC))
       {
@@ -115,6 +116,17 @@ namespace GBSharp.ViewModel
       else
       {
         Dissasemble(_cpu.Registers.PC);
+      }
+    }
+
+    /// <summary>
+    /// Un-highlights the current instruction
+    /// </summary>
+    public void ClearCurrentInstruction()
+    {
+      if (_currentInstruction != null)
+      {
+        _currentInstruction.IsCurrent = false;
       }
     }
 
