@@ -18,6 +18,7 @@ namespace GBSharp.ViewModel
     {
       get { return _breakpoints; }
     }
+    private BreakpointViewModel _activeBreakpoint;
 
     private string _addressField;
     public string AddressField
@@ -42,26 +43,32 @@ namespace GBSharp.ViewModel
       Breakpoint breakpoint = _gameboy.CPU.CurrentBreakpoint;
       foreach(BreakpointViewModel bpvm in _breakpoints)
       {
-        if(bpvm.OriginalAddress == breakpoint.Address)
+        if(bpvm.OriginalAddress == breakpoint.Target)
         {
-          bpvm.IsExecuteActive = false;
-          bpvm.IsReadActive = false;
-          bpvm.IsWriteActive = false;
-          bpvm.IsJumpActive = false;
+          // We clear the past breakpoint
+          if(_activeBreakpoint != null)
+          {
+            _activeBreakpoint.IsExecuteActive = false;
+            _activeBreakpoint.IsReadActive = false;
+            _activeBreakpoint.IsWriteActive = false;
+            _activeBreakpoint.IsJumpActive = false;
+          }
+
+          _activeBreakpoint = bpvm;
 
           switch(breakpoint.Kind)
           {
             case BreakpointKinds.EXECUTION:
-              bpvm.IsExecuteActive = true;
+              _activeBreakpoint.IsExecuteActive = true;
               break;
             case BreakpointKinds.READ:
-              bpvm.IsReadActive = true;
+              _activeBreakpoint.IsReadActive = true;
               break;
             case BreakpointKinds.WRITE:
-              bpvm.IsWriteActive = true;
+              _activeBreakpoint.IsWriteActive = true;
               break;
             case BreakpointKinds.JUMP:
-              bpvm.IsJumpActive = true;
+              _activeBreakpoint.IsJumpActive = true;
               break;
           }
 

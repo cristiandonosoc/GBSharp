@@ -399,20 +399,20 @@ namespace GBSharp.CPUSpace
       if(!_currentInstruction.CB)
       {
         breakpointKind = CPUInstructionBreakpoints.Check(this,
-                                                          (byte)_currentInstruction.OpCode, 
-                                                          _currentInstruction.Literal,
-                                                          ignoreBreakpoints);
+                                                         (byte)_currentInstruction.OpCode, 
+                                                         _currentInstruction.Literal,
+                                                         ignoreBreakpoints);
       }
       else
       {
         breakpointKind = CPUCBInstructionBreakpoints.Check(this,
-                                                            (byte)_currentInstruction.OpCode,  
-                                                            _currentInstruction.Literal, 
-                                                            ignoreBreakpoints);
+                                                           (byte)_currentInstruction.OpCode,  
+                                                           _currentInstruction.Literal, 
+                                                           ignoreBreakpoints);
       }
 
       // We see if there is an breakpoint to this address
-      // NOTE(Cristian): ignoreBreakpoints is implicit in the RunInstruction
+      // NOTE(Cristian): CurrentBreakpoint.Target was calculated by Check
       if(breakpointKind != BreakpointKinds.NONE)
       {
         CurrentBreakpoint.Address = _currentInstruction.Address;

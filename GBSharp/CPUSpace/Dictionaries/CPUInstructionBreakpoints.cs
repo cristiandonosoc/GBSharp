@@ -28,7 +28,8 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.BC))
             {
-              return BreakpointKinds.WRITE;
+              cpu.CurrentBreakpoint.Target = cpu.registers.BC;
+              return BreakpointKinds.WRITE; 
             }
  
             break;
@@ -48,6 +49,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(n))
             {
+              cpu.CurrentBreakpoint.Target = n;
               return BreakpointKinds.WRITE;
             }
  
@@ -60,6 +62,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.BC))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.BC;
               return BreakpointKinds.READ;
             }
             
@@ -84,6 +87,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.DE))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.DE;
               return BreakpointKinds.WRITE;
             }
  
@@ -108,6 +112,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort target = (ushort)(cpu.nextPC + sn);
             if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
             {
+              cpu.CurrentBreakpoint.Target = target;
               return BreakpointKinds.JUMP;
             }
  
@@ -120,6 +125,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.DE))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.DE;
               return BreakpointKinds.READ;
             }
             break;
@@ -145,6 +151,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort target = (ushort)(cpu.nextPC + sn);
             if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
             {
+              cpu.CurrentBreakpoint.Target = target;
               return BreakpointKinds.JUMP;
             }
 
@@ -157,6 +164,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -180,6 +188,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort target = (ushort)(cpu.nextPC + sn);
             if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
             {
+              cpu.CurrentBreakpoint.Target = target;
               return BreakpointKinds.JUMP;
             }
             break;
@@ -191,6 +200,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.READ;
             }
             break;
@@ -214,6 +224,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort target = (ushort)(cpu.nextPC + sn);
             if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
             {
+              cpu.CurrentBreakpoint.Target = target;
               return BreakpointKinds.JUMP;
             }
             break;
@@ -225,6 +236,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -236,6 +248,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -245,6 +258,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -254,6 +268,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -269,6 +284,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort target = (ushort)(cpu.nextPC + sn);
             if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
             {
+              cpu.CurrentBreakpoint.Target = target;
               return BreakpointKinds.JUMP;
             }
             break;
@@ -280,6 +296,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.READ;
             }
             break;
@@ -311,6 +328,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.READ;
             }
             break;
@@ -334,6 +352,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.READ;
             }
             break;
@@ -357,6 +376,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.READ;
             }
             break;
@@ -380,6 +400,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.READ;
             }
             break;
@@ -403,6 +424,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.READ;
             }
             break;
@@ -426,6 +448,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.READ;
             }
             break;
@@ -437,6 +460,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -446,6 +470,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -455,6 +480,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -464,6 +490,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -473,6 +500,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -482,6 +510,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -493,6 +522,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -514,6 +544,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.READ;
             }
             break;
@@ -649,6 +680,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
             {
+              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
               return BreakpointKinds.READ;
             }
             break;
@@ -665,6 +697,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort target = n;
             if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
             {
+              cpu.CurrentBreakpoint.Target = target;
               return BreakpointKinds.JUMP;
             }
             break;
@@ -675,6 +708,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort target = n;
             if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
             {
+              cpu.CurrentBreakpoint.Target = target;
               return BreakpointKinds.JUMP;
             }
             break;
@@ -685,6 +719,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort target = n;
             if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
             {
+              cpu.CurrentBreakpoint.Target = target;
               return BreakpointKinds.JUMP;
             }
             break;
@@ -708,6 +743,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort target = n;
             if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
             {
+              cpu.CurrentBreakpoint.Target = target;
               return BreakpointKinds.JUMP;
             }
             break;
@@ -723,6 +759,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort target = n;
             if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
             {
+              cpu.CurrentBreakpoint.Target = target;
               return BreakpointKinds.JUMP;
             }
             break;
@@ -733,6 +770,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort target = n;
             if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
             {
+              cpu.CurrentBreakpoint.Target = target;
               return BreakpointKinds.JUMP;
             }
             break;
@@ -754,6 +792,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort target = n;
             if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
             {
+              cpu.CurrentBreakpoint.Target = target;
               return BreakpointKinds.JUMP;
             }
             break;
@@ -769,6 +808,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort target = n;
             if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
             {
+              cpu.CurrentBreakpoint.Target = target;
               return BreakpointKinds.JUMP;
             }
             break;
@@ -792,6 +832,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort target = n;
             if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
             {
+              cpu.CurrentBreakpoint.Target = target;
               return BreakpointKinds.JUMP;
             }
             break;
@@ -807,6 +848,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort target = n;
             if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
             {
+              cpu.CurrentBreakpoint.Target = target;
               return BreakpointKinds.JUMP;
             }
             break;
@@ -829,6 +871,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort address = (ushort)(0xFF00 | (byte)n);
             if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(address))
             {
+              cpu.CurrentBreakpoint.Target = address;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -841,6 +884,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort address = (ushort)(0xFF00 | cpu.registers.C);
             if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(address))
             {
+              cpu.CurrentBreakpoint.Target = address;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -872,6 +916,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort target = cpu.registers.HL;
             if (!ignoreBreakpoints && cpu.JumpBreakpoints.Contains(target))
             {
+              cpu.CurrentBreakpoint.Target = target;
               return BreakpointKinds.JUMP;
             }
             break;
@@ -881,6 +926,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(n))
             {
+              cpu.CurrentBreakpoint.Target = n;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -913,6 +959,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort address = (ushort)(0xFF00 | (byte)n);
             if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(address))
             {
+              cpu.CurrentBreakpoint.Target = address;
               return BreakpointKinds.READ;
             }
             break;
@@ -925,6 +972,7 @@ namespace GBSharp.CPUSpace.Dictionaries
             ushort address = (ushort)(0xFF00 | cpu.registers.C);
             if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(address))
             {
+              cpu.CurrentBreakpoint.Target = address;
               return BreakpointKinds.READ;
             }
             break;
@@ -954,6 +1002,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(n))
             {
+              cpu.CurrentBreakpoint.Target = n;
               return BreakpointKinds.READ;
             }
             break;
