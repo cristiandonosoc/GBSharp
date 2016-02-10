@@ -53,6 +53,7 @@ namespace GBSharp.ViewModel
       _gameBoyController.OnFileLoaded += FileLoadedHandler;
       _gameBoyController.OnStep += StepHandler;
       _gameBoyController.OnRun += RunHandler;
+      _gameBoyController.OnPause += PauseHandler;
 
       _memory = new MemoryViewModel(_gameBoy.Memory, "Memory View");
       _cpu = new CPUViewModel(_gameBoy, _dispatcher);
@@ -155,6 +156,15 @@ namespace GBSharp.ViewModel
     {
       _breakpoints.RunHandler();
       _dissasemble.ClearCurrentInstruction();
+      // TODO(Cristian): Clear the other components?
+    }
+
+    private void PauseHandler()
+    {
+      _cpu.CopyFromDomain();
+      _ioRegisters.CopyFromDomain();
+      _interrupt.CopyFromDomain();
+      _dissasemble.SetCurrentInstructionToPC();
     }
   }
 }

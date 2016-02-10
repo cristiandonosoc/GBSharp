@@ -11,6 +11,7 @@ namespace GBSharp.ViewModel
     public event Action OnFileLoaded;
     public event Action OnStep;
     public event Action OnRun;
+    public event Action OnPause;
 
     public AudioManager audioManager;
 
@@ -93,6 +94,7 @@ namespace GBSharp.ViewModel
     private void Pause()
     {
       _gameBoy.Pause();
+      NotifyPause();
     }
 
     private void Stop()
@@ -153,6 +155,14 @@ namespace GBSharp.ViewModel
       if (OnRun != null)
       {
         OnRun();
+      }
+    }
+
+    private void NotifyPause()
+    {
+      if (OnPause != null)
+      {
+        OnPause();
       }
     }
   }
