@@ -95,6 +95,12 @@ namespace GBSharp.ViewModel
       ClearActiveBreakpoint();
     }
 
+    public void RunHandler()
+    {
+      // Running clears the active breakpoint
+      ClearActiveBreakpoint();
+    }
+
     public void RecreateBreakpoints()
     {
       Dictionary<ushort, int> breakpointKindMap = new Dictionary<ushort, int>();

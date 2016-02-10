@@ -47,9 +47,13 @@ namespace GBSharp.ViewModel
       _keyboardHandler.KeyDown += OnKeyDown;
       _keyboardHandler.KeyUp += OnKeyUp;
       _window.OnClosing += HandleClosing;
+
+      // Gameboy Controller events
       _gameBoyController = new GameBoyContollerViewModel(_gameBoy, fileDialogFactory);
       _gameBoyController.OnFileLoaded += FileLoadedHandler;
       _gameBoyController.OnStep += StepHandler;
+      _gameBoyController.OnRun += RunHandler;
+
       _memory = new MemoryViewModel(_gameBoy.Memory, "Memory View");
       _cpu = new CPUViewModel(_gameBoy, _dispatcher);
 
@@ -145,6 +149,11 @@ namespace GBSharp.ViewModel
       _gameBoy.Stop();
 
       _window.OnClosing -= HandleClosing;
+    }
+
+    private void RunHandler()
+    {
+      _breakpoints.RunHandler();
     }
   }
 }

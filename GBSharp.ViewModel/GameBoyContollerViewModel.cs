@@ -10,6 +10,7 @@ namespace GBSharp.ViewModel
   {
     public event Action OnFileLoaded;
     public event Action OnStep;
+    public event Action OnRun;
 
     public AudioManager audioManager;
 
@@ -75,6 +76,7 @@ namespace GBSharp.ViewModel
     {
       _gameBoy.Run();
       audioManager.Play();
+      NotifyRun();
     }
 
     public void OnClosed()
@@ -144,6 +146,14 @@ namespace GBSharp.ViewModel
     {
       if (OnStep != null)
         OnStep();
+    }
+
+    private void NotifyRun()
+    {
+      if (OnRun != null)
+      {
+        OnRun();
+      }
     }
   }
 }
