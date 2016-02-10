@@ -77,6 +77,24 @@ namespace GBSharp.ViewModel
       }
     }
 
+    private void ClearActiveBreakpoint()
+    {
+      if (_activeBreakpoint != null)
+      {
+        _activeBreakpoint.IsExecuteActive = false;
+        _activeBreakpoint.IsReadActive = false;
+        _activeBreakpoint.IsWriteActive = false;
+        _activeBreakpoint.IsJumpActive = false;
+      }
+    }
+
+    public void StepHandler()
+    {
+      // We clear the active breakpoint because step doesn't trigger
+      // breakpoints
+      ClearActiveBreakpoint();
+    }
+
     public void RecreateBreakpoints()
     {
       Dictionary<ushort, int> breakpointKindMap = new Dictionary<ushort, int>();

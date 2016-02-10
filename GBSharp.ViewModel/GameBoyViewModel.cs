@@ -116,6 +116,7 @@ namespace GBSharp.ViewModel
       _dissasemble.SetCurrentSelectedInstruction();
       _interrupt.CopyFromDomain();
       _memory.StepHandler();
+      _breakpoints.StepHandler();
     }
 
     private void FileLoadedHandler()
