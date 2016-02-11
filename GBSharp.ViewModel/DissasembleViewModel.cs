@@ -208,7 +208,8 @@ namespace GBSharp.ViewModel
 
         searchString += vm.Address + "_";
         searchString += vm.Opcode + "_";
-        searchString += vm.Name;
+        searchString += vm.Name + "_";
+        searchString += vm.Literal;
 
         searchStrings[address] = searchString;
 
