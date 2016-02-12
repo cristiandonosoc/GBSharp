@@ -201,7 +201,7 @@ namespace GBSharp.AudioSpace
       {
         // TODO(Cristian): Wave Pattern Duty
         int soundLenghtFactor = value & 0x3F;
-        double soundLengthMs = (double)(0x40 - soundLenghtFactor) / (double)0x100;
+        double soundLengthMs = (double)(1000 * ((0x40 - soundLenghtFactor) / (double)0x100));
         _soundLengthTicks = (int)(GameBoy.ticksPerMillisecond * soundLengthMs);
 
         // NR(1,2)1 values are read ORed with 0x3F
