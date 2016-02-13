@@ -117,7 +117,8 @@ namespace GBSharp.AudioSpace
     private int _envelopeTicks;
     private int _envelopeTickCounter;
     private bool _envelopeUp;
-    private int _defaultEnvelopeValue;
+    private int _envelopeDefaultValue;
+    private bool _envelopeDACOn;
 
     /**
      * These are the values that are currently 'live' in the channel.
@@ -208,11 +209,21 @@ namespace GBSharp.AudioSpace
       }
       else if (register == _volumeEnvelopeRegister)
       {
-
         double envelopeMsLength = 1000 * ((double)(value & 0x7) / (double)64);
         _envelopeTicks = (int)(GameBoy.ticksPerMillisecond * envelopeMsLength);
         _envelopeUp = (value & 0x8) != 0;
-        _defaultEnvelopeValue = value >> 4;
+        _envelopeDefaultValue = value >> 4;
+
+        // Putting volume 0 disables the channel
+        if ((_envelopeDefaultValue == 0) && !_envelopeUp)
+        {
+          _envelopeDACOn = false;
+          Enabled = false;
+        }
+        else
+        {
+          _envelopeDACOn = true;
+        }
 
         // NR(1,2)2 values are read ORed with 0x00
         _memory.LowLevelWrite((ushort)register, value);
@@ -232,14 +243,15 @@ namespace GBSharp.AudioSpace
 
         _continuousOutput = (Utils.UtilFuncs.TestBit(value, 6) == 0);
 
-        bool init = (Utils.UtilFuncs.TestBit(value, 7) != 0);
 
         /**
          * Bit 7 is called a channel INIT. On this event the following occurs:
          * - The Volume Envelope values value are changed
          */
 
-        if (init)
+        bool init = (Utils.UtilFuncs.TestBit(value, 7) != 0);
+        // INIT triggers only if the DAC (volume) is on
+        if (init && _envelopeDACOn)
         {
           Enabled = true;
 
@@ -257,7 +269,7 @@ namespace GBSharp.AudioSpace
             _sweepTicksCounter = _sweepTicks;
           }
 
-          if(_soundLengthTickCounter == 0)
+          if (_soundLengthTickCounter == 0)
           {
             _soundLengthFactor = 0;
             _soundLengthTickCounter = CalculateSoundLengthTicks(_soundLengthFactor);
@@ -266,7 +278,7 @@ namespace GBSharp.AudioSpace
           // Envelope is reloaded
           _currentEnvelopeTicks = _envelopeTicks;
           _currentEnvelopeUp = _envelopeUp;
-          _currentEnvelopeValue = _defaultEnvelopeValue;
+          _currentEnvelopeValue = _envelopeDefaultValue;
           _envelopeTickCounter = 0;
         }
 
@@ -291,6 +303,21 @@ namespace GBSharp.AudioSpace
 
     internal void Step(int ticks)
     {
+      #region SOUND LENGTH DURATION
+
+      // NOTE(Cristian): The length counter runs even when the channel is disabled
+      if (_runSoundLength && !_continuousOutput)
+      {
+        _soundLengthTickCounter -= ticks;
+        if (_soundLengthTickCounter <= 0)
+        {
+          _soundLengthTickCounter = 0;
+          Enabled = false;
+        }
+      }
+
+      #endregion
+
       if (!Enabled) { return; }
 
       // The amount of ticks in a sample
@@ -346,20 +373,6 @@ namespace GBSharp.AudioSpace
               }
             }
           }
-        }
-      }
-
-      #endregion
-
-      #region SOUND LENGTH DURATION
-
-      if (_runSoundLength && !_continuousOutput)
-      {
-        _soundLengthTickCounter -= ticks;
-        if (_soundLengthTickCounter <= 0)
-        {
-          _soundLengthTickCounter = 0;
-          Enabled = false;
         }
       }
 
