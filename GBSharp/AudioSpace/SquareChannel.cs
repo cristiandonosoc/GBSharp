@@ -103,7 +103,7 @@ namespace GBSharp.AudioSpace
 
     private int _channelIndex;
 
-    private int _soundLengthTicks;
+    private int _soundLengthFactor;
     private int _soundLengthTickCounter;
     private bool _continuousOutput;
 
@@ -200,9 +200,8 @@ namespace GBSharp.AudioSpace
       else if (register == _wavePatternDutyRegister)
       {
         // TODO(Cristian): Wave Pattern Duty
-        int soundLenghtFactor = value & 0x3F;
-        double soundLengthMs = (double)(1000 * ((0x40 - soundLenghtFactor) / (double)0x100));
-        _soundLengthTicks = (int)(GameBoy.ticksPerMillisecond * soundLengthMs);
+        _soundLengthFactor = value & 0x3F;
+        _soundLengthTickCounter = CalculateSoundLengthTicks(_soundLengthFactor);
 
         // NR(1,2)1 values are read ORed with 0x3F
         _memory.LowLevelWrite((ushort)register, (byte)(value | 0x3F));
@@ -258,8 +257,11 @@ namespace GBSharp.AudioSpace
             _sweepTicksCounter = _sweepTicks;
           }
 
-          // Sound Length timer is reloaded
-          _soundLengthTickCounter = 0;
+          if(_soundLengthTickCounter == 0)
+          {
+            _soundLengthFactor = 0;
+            _soundLengthTickCounter = CalculateSoundLengthTicks(_soundLengthFactor);
+          }
 
           // Envelope is reloaded
           _currentEnvelopeTicks = _envelopeTicks;
@@ -353,10 +355,10 @@ namespace GBSharp.AudioSpace
 
       if (_runSoundLength && !_continuousOutput)
       {
-        _soundLengthTickCounter += ticks;
-        if (_soundLengthTickCounter >= _soundLengthTicks)
+        _soundLengthTickCounter -= ticks;
+        if (_soundLengthTickCounter <= 0)
         {
-          _soundLengthTickCounter -= _soundLengthTicks;
+          _soundLengthTickCounter = 0;
           Enabled = false;
         }
       }
@@ -460,6 +462,13 @@ namespace GBSharp.AudioSpace
       }
     }
 #endif
+
+    private int CalculateSoundLengthTicks(int soundLengthFactor)
+    {
+      double soundLengthMs = (double)(1000 * ((0x40 - soundLengthFactor) / (double)0x100));
+      return (int)(GameBoy.ticksPerMillisecond * soundLengthMs);
+    }
+
 
   }
 }
