@@ -154,6 +154,26 @@ namespace GBSharp.ViewModel
         breakpointKindMap[jumpBreakpoint] = mask | 8;
       }
 
+      // We search for enabled
+      foreach (BreakpointViewModel enabledBreakpoint in _breakpoints)
+      {
+        int mask = 0;
+        if (breakpointKindMap.ContainsKey(enabledBreakpoint.OriginalAddress))
+        {
+          mask = breakpointKindMap[enabledBreakpoint.OriginalAddress];
+        }
+        // We add the breakpoint mask
+        if(enabledBreakpoint.Enabled)
+        {
+          breakpointKindMap[enabledBreakpoint.OriginalAddress] = mask | 16;
+        }
+        else
+        {
+          breakpointKindMap[enabledBreakpoint.OriginalAddress] = mask | 32;
+        }
+      }
+
+
       ushort[] keys = new ushort[breakpointKindMap.Count];
       breakpointKindMap.Keys.CopyTo(keys, 0);
       Array.Sort(keys);
@@ -167,14 +187,20 @@ namespace GBSharp.ViewModel
 
         int mask = breakpointKindMap[address];
 
+        vm.BreakpointChanged += UpdateBreakpoints;
         vm.Enabled = true;
-        if((mask & 1) != 0) { vm.DirectOnExecute = true; }
-        if((mask & 2) != 0) { vm.DirectOnRead = true; }
-        if((mask & 4) != 0) { vm.DirectOnWrite = true; }
-        if((mask & 8) != 0) { vm.DirectOnJump = true; }
+        if((mask & 1)   != 0) { vm.DirectOnExecute = true; }
+        if((mask & 2) 	!= 0) { vm.DirectOnRead = true; }
+        if((mask & 4) 	!= 0) { vm.DirectOnWrite = true; }
+        if((mask & 8) 	!= 0) { vm.DirectOnJump = true; }
+        if((mask & 16)  != 0) { vm.Enabled = true; }
+        if((mask & 32)  != 0) { vm.Enabled = false; }
+
+        // This is *very* ugly, but we use it to search for a highlighted breakpoint.
+        // TODO(Cristian): Do this without erasing all records everytime
+        CPU_BreakpointFound();
 
         _breakpoints.Add(vm);
-        vm.BreakpointChanged += UpdateBreakpoints;
       }
     }
 
@@ -184,7 +210,6 @@ namespace GBSharp.ViewModel
     /// </summary>
     private void UpdateBreakpoints()
     {
-      RecreateBreakpoints();
       // We notify other views about this
       BreakpointChanged();
     }
@@ -200,6 +225,7 @@ namespace GBSharp.ViewModel
       catch(FormatException) { return; }
 
       _gameboy.CPU.AddBreakpoint(BreakpointKinds.EXECUTION, address);
+      RecreateBreakpoints();
       UpdateBreakpoints();
     }
 

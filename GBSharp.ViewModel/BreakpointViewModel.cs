@@ -15,6 +15,14 @@ namespace GBSharp.ViewModel
     public string Name { get; private set; }
 
     private bool _enabled;
+    internal bool DirectEnabled
+    {
+      set
+      {
+        _enabled = value;
+        OnPropertyChanged(() => Enabled);
+      }
+    }
     public bool Enabled
     {
       get { return _enabled; }
@@ -39,6 +47,7 @@ namespace GBSharp.ViewModel
           _gameboy.CPU.RemoveBreakpoint(BreakpointKinds.JUMP, _instruction.Address);
         }
 
+        BreakpointChanged();
         OnPropertyChanged(() => Enabled);
       }
     }
@@ -62,13 +71,16 @@ namespace GBSharp.ViewModel
         if(_onExecute == value) { return; }
         _onExecute = value;
 
-        if(_onExecute)
+        if (_enabled)
         {
-          _gameboy.CPU.AddBreakpoint(BreakpointKinds.EXECUTION, _instruction.Address);
-        }
-        else
-        {
-          _gameboy.CPU.RemoveBreakpoint(BreakpointKinds.EXECUTION, _instruction.Address);
+          if (_onExecute)
+          {
+            _gameboy.CPU.AddBreakpoint(BreakpointKinds.EXECUTION, _instruction.Address);
+          }
+          else
+          {
+            _gameboy.CPU.RemoveBreakpoint(BreakpointKinds.EXECUTION, _instruction.Address);
+          }
         }
 
         // Execute breakpoint allways triggers because there are other views
@@ -110,22 +122,18 @@ namespace GBSharp.ViewModel
         if(_onRead == value) { return; }
         _onRead = value;
 
-        if(_onRead)
+        if (_enabled)
         {
-          _gameboy.CPU.AddBreakpoint(BreakpointKinds.READ, _instruction.Address);
-        }
-        else
-        {
-          _gameboy.CPU.RemoveBreakpoint(BreakpointKinds.READ, _instruction.Address);
+          if (_onRead)
+          {
+            _gameboy.CPU.AddBreakpoint(BreakpointKinds.READ, _instruction.Address);
+          }
+          else
+          {
+            _gameboy.CPU.RemoveBreakpoint(BreakpointKinds.READ, _instruction.Address);
+          }
         }
 
-        // If all kinds were disabled, we remove the breakpoint
-        if(!_onExecute && !_onRead && !_onWrite && !_onJump)
-        {
-          BreakpointChanged();
-          return;
-        }
-        
         OnPropertyChanged(() => OnRead);
       }
     }
@@ -162,20 +170,16 @@ namespace GBSharp.ViewModel
         if(_onWrite == value) { return; }
         _onWrite = value;
 
-        if(_onWrite)
+        if (_enabled)
         {
-          _gameboy.CPU.AddBreakpoint(BreakpointKinds.WRITE, _instruction.Address);
-        }
-        else
-        {
-          _gameboy.CPU.RemoveBreakpoint(BreakpointKinds.WRITE, _instruction.Address);
-        }
-
-        // If all kinds were disabled, we remove the breakpoint
-        if(!_onExecute && !_onRead && !_onWrite && !_onJump)
-        {
-          BreakpointChanged();
-          return;
+          if (_onWrite)
+          {
+            _gameboy.CPU.AddBreakpoint(BreakpointKinds.WRITE, _instruction.Address);
+          }
+          else
+          {
+            _gameboy.CPU.RemoveBreakpoint(BreakpointKinds.WRITE, _instruction.Address);
+          }
         }
 
         OnPropertyChanged(() => OnWrite);
@@ -214,20 +218,16 @@ namespace GBSharp.ViewModel
         if(_onJump == value) { return; }
         _onJump = value;
 
-        if(_onJump)
+        if (_enabled)
         {
-          _gameboy.CPU.AddBreakpoint(BreakpointKinds.JUMP, _instruction.Address);
-        }
-        else
-        {
-          _gameboy.CPU.RemoveBreakpoint(BreakpointKinds.JUMP, _instruction.Address);
-        }
-
-        // If all kinds were disabled, we remove the breakpoint
-        if(!_onExecute && !_onRead && !_onWrite && !_onJump)
-        {
-          BreakpointChanged();
-          return;
+          if (_onJump)
+          {
+            _gameboy.CPU.AddBreakpoint(BreakpointKinds.JUMP, _instruction.Address);
+          }
+          else
+          {
+            _gameboy.CPU.RemoveBreakpoint(BreakpointKinds.JUMP, _instruction.Address);
+          }
         }
 
         OnPropertyChanged(() => OnJump);
