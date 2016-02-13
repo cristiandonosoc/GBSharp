@@ -1,11 +1,13 @@
 ﻿using GBSharp.CPUSpace;
 using System;
+using System.Windows.Input;
 
 namespace GBSharp.ViewModel
 {
   public class BreakpointViewModel : ViewModelBase
   {
     public event Action BreakpointChanged;
+    public event Action BreakpointDeleted;
 
     private readonly IGameBoy _gameboy;
     private readonly IInstruction _instruction;
@@ -13,6 +15,8 @@ namespace GBSharp.ViewModel
     public ushort OriginalAddress { get; private set; }
     public string Address { get; private set; }
     public string Name { get; private set; }
+
+    internal bool ToBeDeleted { get; private set; }
 
     private bool _enabled;
     internal bool DirectEnabled
@@ -255,6 +259,18 @@ namespace GBSharp.ViewModel
       OriginalAddress = inst.Address;
       Address = "0x" + inst.Address.ToString("x2");
       Name = inst.Name;
+    }
+
+    public ICommand DeleteBreakpointCommand { get { return new DelegateCommand(DeleteBreakpoint); } }
+    public void DeleteBreakpoint()
+    {
+      _gameboy.CPU.RemoveBreakpoint(BreakpointKinds.EXECUTION, _instruction.Address);
+      _gameboy.CPU.RemoveBreakpoint(BreakpointKinds.READ, _instruction.Address);
+      _gameboy.CPU.RemoveBreakpoint(BreakpointKinds.WRITE, _instruction.Address);
+      _gameboy.CPU.RemoveBreakpoint(BreakpointKinds.JUMP, _instruction.Address);
+      _enabled = false;
+      ToBeDeleted = true;
+      BreakpointDeleted();
     }
   }
 }

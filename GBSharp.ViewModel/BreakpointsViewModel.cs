@@ -169,6 +169,7 @@ namespace GBSharp.ViewModel
         }
         else
         {
+          if(enabledBreakpoint.ToBeDeleted) { continue; }
           breakpointKindMap[enabledBreakpoint.OriginalAddress] = mask | 32;
         }
       }
@@ -188,6 +189,7 @@ namespace GBSharp.ViewModel
         int mask = breakpointKindMap[address];
 
         vm.BreakpointChanged += UpdateBreakpoints;
+        vm.BreakpointDeleted += Vm_BreakpointDeleted;
         vm.Enabled = true;
         if((mask & 1)   != 0) { vm.DirectOnExecute = true; }
         if((mask & 2) 	!= 0) { vm.DirectOnRead = true; }
@@ -202,6 +204,12 @@ namespace GBSharp.ViewModel
 
         _breakpoints.Add(vm);
       }
+    }
+
+    private void Vm_BreakpointDeleted()
+    {
+      RecreateBreakpoints();
+      BreakpointChanged();
     }
 
     /// <summary>
