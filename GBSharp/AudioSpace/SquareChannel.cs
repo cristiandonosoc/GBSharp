@@ -103,12 +103,6 @@ namespace GBSharp.AudioSpace
 
     private int _channelIndex;
 
-    private int _soundLengthFactor;
-    private int _soundLengthTickCounter;
-    private int _soundLengthGhostCounter;
-    private bool _continuousOutput;
-
-
     #region VOLUME / VOLUME ENVELOPE
 
     /**
@@ -160,6 +154,9 @@ namespace GBSharp.AudioSpace
       _volumeEnvelopeRegister = volumeEnvelopeRegister;
       _freqLowRegister = freqLowRegister;
       _freqHighRegister = freqHighRegister;
+
+      _frameSequencerTicks = (int)(GameBoy.ticksPerMillisecond * (double)1000 / (double)512);
+      _frameSequencerTickCounter = _frameSequencerTicks;
     }
 
     private bool _sweepEnabled = false;
@@ -173,6 +170,14 @@ namespace GBSharp.AudioSpace
     private bool _runSweep = true;
     private bool _runSoundLength = true;
     private bool _runVolumeEnvelope = true;
+
+
+    private int _frameSequencerTicks;
+    private int _frameSequencerTickCounter;
+
+    private int _soundLengthCounter;
+    private byte _soundLengthPeriod;
+    private bool _continuousOutput;
 
     public void HandleMemoryChange(MMR register, byte value)
     {
@@ -202,9 +207,7 @@ namespace GBSharp.AudioSpace
       else if (register == _wavePatternDutyRegister)
       {
         // TODO(Cristian): Wave Pattern Duty
-        _soundLengthFactor = value & 0x3F;
-        _soundLengthTickCounter = CalculateSoundLengthTicks(_soundLengthFactor);
-        _soundLengthGhostCounter = _soundLengthTickCounter / 4;
+        _soundLengthCounter = 0x3F - value;
 
         // NR(1,2)1 values are read ORed with 0x3F
         _memory.LowLevelWrite((ushort)register, (byte)(value | 0x3F));
@@ -244,15 +247,6 @@ namespace GBSharp.AudioSpace
         FrequencyFactor = (ushort)(((value & 0x7) << 8) | LowFreqByte);
 
         _continuousOutput = (Utils.UtilFuncs.TestBit(value, 6) == 0);
-        if(!_continuousOutput)
-        {
-          if(_soundLengthGhostCounter > 0)
-          {
-            _soundLengthTickCounter = 0;
-            _soundLengthGhostCounter = 0;
-            Enabled = false;
-          }
-        }
 
         /**
          * Bit 7 is called a channel INIT. On this event the following occurs:
@@ -279,10 +273,9 @@ namespace GBSharp.AudioSpace
             _sweepTicksCounter = _sweepTicks;
           }
 
-          if (_soundLengthTickCounter == 0)
+          if(_soundLengthCounter < 0)
           {
-            _soundLengthFactor = 0;
-            _soundLengthTickCounter = CalculateSoundLengthTicks(_soundLengthFactor);
+            _soundLengthCounter = 0x3F;
           }
 
           // Envelope is reloaded
@@ -314,31 +307,32 @@ namespace GBSharp.AudioSpace
 
     internal void Step(int ticks)
     {
-      #region SOUND LENGTH DURATION
-
-      // NOTE(Cristian): The length counter runs even when the channel is disabled
-      if (_runSoundLength)
+      _frameSequencerTickCounter -= ticks;
+      if(_frameSequencerTickCounter <= 0)
       {
-        if (!_continuousOutput)
+        _frameSequencerTickCounter += _frameSequencerTicks;
+
+        // We tick all the assholes
+
+        #region SOUND LENGTH DURATION
+
+        // NOTE(Cristian): The length counter runs even when the channel is disabled
+        if (_runSoundLength)
         {
-          if (_soundLengthTickCounter > 0)
+          if (!_continuousOutput)
           {
-            _soundLengthTickCounter -= ticks;
-            if (_soundLengthTickCounter <= 0)
+            ++_soundLengthPeriod;
+            // We have an internal period
+            if ((_soundLengthPeriod & 0x01) == 0)
             {
-              _soundLengthTickCounter = 0;
-              Enabled = false;
-            }
-          }
-        }
-        else
-        {
-          if (_soundLengthGhostCounter > 0)
-          {
-            _soundLengthGhostCounter -= ticks;
-            if(_soundLengthGhostCounter <= 0)
-            {
-              _soundLengthGhostCounter = 0;
+              if(_soundLengthCounter >= 0)
+              {
+                --_soundLengthCounter;
+                if(_soundLengthCounter < 0)
+                {
+                  Enabled = false;
+                }
+              }
             }
           }
         }
@@ -503,11 +497,5 @@ namespace GBSharp.AudioSpace
       }
     }
 #endif
-
-    private int CalculateSoundLengthTicks(int soundLengthFactor)
-    {
-      double soundLengthMs = (double)(1000 * ((0x40 - soundLengthFactor) / (double)0x100));
-      return (int)(GameBoy.ticksPerMillisecond * soundLengthMs);
-    }
   }
 }
