@@ -97,8 +97,10 @@ namespace GBSharp.AudioSpace
       _channelIndex = channelIndex;
     }
 
-    int _soundLengthTicks;
-    double _soundLengthTickCounter;
+    private bool _channelDACOn;
+
+    private int _soundLengthFactor;
+    private int _soundLengthTickCounter;
 
     int _volumeRightShift;
 
@@ -111,15 +113,20 @@ namespace GBSharp.AudioSpace
       {
         case MMR.NR30:  // Sound on/off
           // Last bit determines sound on/off
-          Enabled = (Utils.UtilFuncs.TestBit(value, 7) != 0);
+          _channelDACOn = (Utils.UtilFuncs.TestBit(value, 7) != 0);
+          // When DAC re-enabled, the channel doesn't enables itself
+          if (!_channelDACOn)
+          {
+            Enabled = false;
+          }
 
           // NR30 is ORed with 0x7F
           _memory.LowLevelWrite((ushort)register, (byte)(value | 0x7f));
           break;
         case MMR.NR31:  // Sound Length
+          _soundLengthFactor = value;
           double soundLengthMs = (double)(0x100 - value) / (double)0x100;
-          _soundLengthTicks = (int)(GameBoy.ticksPerMillisecond * soundLengthMs);
-          _soundLengthTickCounter = 0;
+          _soundLengthTickCounter = CalculateSoundLengthTicks(_soundLengthFactor);
 
           // NR31 is ORed with 0xFF
           _memory.LowLevelWrite((ushort)register, 0xFF);
@@ -145,9 +152,15 @@ namespace GBSharp.AudioSpace
           _continuousOutput = (Utils.UtilFuncs.TestBit(value, 6) == 0);
 
           bool init = (Utils.UtilFuncs.TestBit(value, 7) != 0);
-          if(init)
+          if(init && _channelDACOn)
           {
             Enabled = true;
+
+            if(_soundLengthTickCounter == 0)
+            {
+              _soundLengthFactor = 0;
+              _soundLengthTickCounter = CalculateSoundLengthTicks(_soundLengthFactor);
+            }
           }
 
           // NR34 is ORed with 0xBF
@@ -160,6 +173,20 @@ namespace GBSharp.AudioSpace
 
     internal void Step(int ticks)
     {
+      #region SOUND LENGTH DURATION
+
+      if (!_continuousOutput)
+      {
+        _soundLengthTickCounter -= ticks;
+        if (_soundLengthTickCounter <= 0)
+        {
+          _soundLengthTickCounter = 0;
+          Enabled = false;
+        }
+      }
+
+      #endregion
+
       if (!Enabled) { return; }
 
       _tickCounter += ticks;
@@ -190,16 +217,6 @@ namespace GBSharp.AudioSpace
         _outputValue = (short)Volume;
       }
 
-      /* SOUND LENGTH */
-      if (!_continuousOutput)
-      {
-        _soundLengthTickCounter += ticks;
-        if (_soundLengthTickCounter >= _soundLengthTicks)
-        {
-          _soundLengthTickCounter -= _soundLengthTicks;
-          Enabled = false;
-        }
-      }
     }
 
     private byte _currentSampleIndex;
@@ -207,6 +224,8 @@ namespace GBSharp.AudioSpace
 
     public void GenerateSamples(int sampleCount)
     {
+      // ***************************************
+      // TODO(Cristian): REMOVE THIS!!!!!!
       return;
       while (sampleCount > 0)
       {
@@ -224,6 +243,12 @@ namespace GBSharp.AudioSpace
     public void ClearBuffer()
     {
       _sampleIndex = 0;
+    }
+
+    private int CalculateSoundLengthTicks(int soundLengthFactor)
+    {
+      double soundLengthMs = (double)(1000 * (0x100 - soundLengthFactor) / 0x100);
+      return (int)(GameBoy.ticksPerMillisecond * soundLengthMs);
     }
 
   }
