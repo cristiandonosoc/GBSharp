@@ -177,11 +177,15 @@ namespace GBSharp.AudioSpace
 
       if (!_continuousOutput)
       {
-        _soundLengthTickCounter -= ticks;
-        if (_soundLengthTickCounter <= 0)
+        if (_soundLengthTickCounter > 0)
         {
-          _soundLengthTickCounter = 0;
-          Enabled = false;
+
+          _soundLengthTickCounter -= ticks;
+          if (_soundLengthTickCounter <= 0)
+          {
+            _soundLengthTickCounter = 0;
+            Enabled = false;
+          }
         }
       }
 

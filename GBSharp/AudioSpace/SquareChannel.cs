@@ -298,6 +298,7 @@ namespace GBSharp.AudioSpace
 #if SoundTiming
       //Timeline[TimelineCount++] = before;
       //Timeline[TimelineCount++] = _memory.LowLevelRead((ushort)register);
+
 #endif
     }
 
@@ -308,11 +309,14 @@ namespace GBSharp.AudioSpace
       // NOTE(Cristian): The length counter runs even when the channel is disabled
       if (_runSoundLength && !_continuousOutput)
       {
-        _soundLengthTickCounter -= ticks;
-        if (_soundLengthTickCounter <= 0)
+        if (_soundLengthTickCounter > 0)
         {
-          _soundLengthTickCounter = 0;
-          Enabled = false;
+          _soundLengthTickCounter -= ticks;
+          if (_soundLengthTickCounter <= 0)
+          {
+            _soundLengthTickCounter = 0;
+            Enabled = false;
+          }
         }
       }
 
@@ -481,7 +485,5 @@ namespace GBSharp.AudioSpace
       double soundLengthMs = (double)(1000 * ((0x40 - soundLengthFactor) / (double)0x100));
       return (int)(GameBoy.ticksPerMillisecond * soundLengthMs);
     }
-
-
   }
 }

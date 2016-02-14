@@ -294,6 +294,7 @@ namespace GBSharp.AudioSpace
       _channel1.Step(ticks);
       _channel2.Step(ticks);
       _channel3.Step(ticks);
+      _channel4.Step(ticks);
     }
 
     public void GenerateSamples(int fullSampleCount)
