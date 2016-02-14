@@ -105,6 +105,7 @@ namespace GBSharp.AudioSpace
 
     private int _soundLengthFactor;
     private int _soundLengthTickCounter;
+    private int _soundLengthGhostCounter;
     private bool _continuousOutput;
 
 
@@ -203,6 +204,7 @@ namespace GBSharp.AudioSpace
         // TODO(Cristian): Wave Pattern Duty
         _soundLengthFactor = value & 0x3F;
         _soundLengthTickCounter = CalculateSoundLengthTicks(_soundLengthFactor);
+        _soundLengthGhostCounter = _soundLengthTickCounter / 4;
 
         // NR(1,2)1 values are read ORed with 0x3F
         _memory.LowLevelWrite((ushort)register, (byte)(value | 0x3F));
@@ -242,7 +244,15 @@ namespace GBSharp.AudioSpace
         FrequencyFactor = (ushort)(((value & 0x7) << 8) | LowFreqByte);
 
         _continuousOutput = (Utils.UtilFuncs.TestBit(value, 6) == 0);
-
+        if(!_continuousOutput)
+        {
+          if(_soundLengthGhostCounter > 0)
+          {
+            _soundLengthTickCounter = 0;
+            _soundLengthGhostCounter = 0;
+            Enabled = false;
+          }
+        }
 
         /**
          * Bit 7 is called a channel INIT. On this event the following occurs:
@@ -307,15 +317,29 @@ namespace GBSharp.AudioSpace
       #region SOUND LENGTH DURATION
 
       // NOTE(Cristian): The length counter runs even when the channel is disabled
-      if (_runSoundLength && !_continuousOutput)
+      if (_runSoundLength)
       {
-        if (_soundLengthTickCounter > 0)
+        if (!_continuousOutput)
         {
-          _soundLengthTickCounter -= ticks;
-          if (_soundLengthTickCounter <= 0)
+          if (_soundLengthTickCounter > 0)
           {
-            _soundLengthTickCounter = 0;
-            Enabled = false;
+            _soundLengthTickCounter -= ticks;
+            if (_soundLengthTickCounter <= 0)
+            {
+              _soundLengthTickCounter = 0;
+              Enabled = false;
+            }
+          }
+        }
+        else
+        {
+          if (_soundLengthGhostCounter > 0)
+          {
+            _soundLengthGhostCounter -= ticks;
+            if(_soundLengthGhostCounter <= 0)
+            {
+              _soundLengthGhostCounter = 0;
+            }
           }
         }
       }
