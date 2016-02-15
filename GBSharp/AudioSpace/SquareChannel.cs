@@ -273,6 +273,9 @@ namespace GBSharp.AudioSpace
             _sweepTicksCounter = _sweepTicks;
           }
 
+
+          // NOTE(Cristian): If the length counter is empty at INIT,
+          //                 it's reloaded with full length
           if(_soundLengthCounter < 0)
           {
             _soundLengthCounter = 0x3F;
@@ -336,9 +339,11 @@ namespace GBSharp.AudioSpace
             }
           }
         }
+
+        #endregion
+
       }
 
-      #endregion
 
       if (!Enabled) { return; }
 
