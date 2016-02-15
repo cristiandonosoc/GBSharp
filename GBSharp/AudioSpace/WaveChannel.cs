@@ -95,12 +95,19 @@ namespace GBSharp.AudioSpace
       _buffer = new short[SampleRate * NumChannels * SampleSize * _milliseconds / 1000];
 
       _channelIndex = channelIndex;
+
+      _frameSequencerTicks = (int)(GameBoy.ticksPerMillisecond * (double)1000 / (double)512);
+      _frameSequencerTickCounter = _frameSequencerTicks;
     }
 
     private bool _channelDACOn;
 
-    private int _soundLengthFactor;
-    private int _soundLengthTickCounter;
+
+    private int _frameSequencerTicks;
+    private int _frameSequencerTickCounter;
+
+    private int _soundLengthCounter;
+    private byte _soundLengthPeriod;
 
     int _volumeRightShift;
 
@@ -124,9 +131,7 @@ namespace GBSharp.AudioSpace
           _memory.LowLevelWrite((ushort)register, (byte)(value | 0x7f));
           break;
         case MMR.NR31:  // Sound Length
-          _soundLengthFactor = value;
-          double soundLengthMs = (double)(0x100 - value) / (double)0x100;
-          _soundLengthTickCounter = CalculateSoundLengthTicks(_soundLengthFactor);
+          _soundLengthCounter = 0xFF - value;
 
           // NR31 is ORed with 0xFF
           _memory.LowLevelWrite((ushort)register, 0xFF);
@@ -156,10 +161,11 @@ namespace GBSharp.AudioSpace
           {
             Enabled = true;
 
-            if(_soundLengthTickCounter == 0)
+            // NOTE(Cristian): If the length counter is empty at INIT,
+            //                 it's reloaded with full length
+            if(_soundLengthCounter < 0)
             {
-              _soundLengthFactor = 0;
-              _soundLengthTickCounter = CalculateSoundLengthTicks(_soundLengthFactor);
+              _soundLengthCounter = 0xFF;
             }
           }
 
@@ -173,23 +179,32 @@ namespace GBSharp.AudioSpace
 
     internal void Step(int ticks)
     {
-      #region SOUND LENGTH DURATION
-
-      if (!_continuousOutput)
+      _frameSequencerTickCounter -= ticks;
+      if (_frameSequencerTickCounter <= 0)
       {
-        if (_soundLengthTickCounter > 0)
-        {
+        _frameSequencerTickCounter += _frameSequencerTicks;
 
-          _soundLengthTickCounter -= ticks;
-          if (_soundLengthTickCounter <= 0)
+        #region SOUND LENGTH DURATION
+        
+        if (!_continuousOutput)
+        {
+          ++_soundLengthPeriod;
+          // We have an internal period
+          if ((_soundLengthPeriod & 0x01) == 0)
           {
-            _soundLengthTickCounter = 0;
-            Enabled = false;
+            if (_soundLengthCounter >= 0)
+            {
+              --_soundLengthCounter;
+              if (_soundLengthCounter < 0)
+              {
+                Enabled = false;
+              }
+            }
           }
         }
-      }
 
-      #endregion
+        #endregion
+      }
 
       if (!Enabled) { return; }
 
@@ -248,12 +263,5 @@ namespace GBSharp.AudioSpace
     {
       _sampleIndex = 0;
     }
-
-    private int CalculateSoundLengthTicks(int soundLengthFactor)
-    {
-      double soundLengthMs = (double)(1000 * (0x100 - soundLengthFactor) / 0x100);
-      return (int)(GameBoy.ticksPerMillisecond * soundLengthMs);
-    }
-
   }
 }

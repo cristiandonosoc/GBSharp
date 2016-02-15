@@ -207,7 +207,7 @@ namespace GBSharp.AudioSpace
       else if (register == _wavePatternDutyRegister)
       {
         // TODO(Cristian): Wave Pattern Duty
-        _soundLengthCounter = 0x3F - value;
+        _soundLengthCounter = 0x3F - (value & 0x3F);
 
         // NR(1,2)1 values are read ORed with 0x3F
         _memory.LowLevelWrite((ushort)register, (byte)(value | 0x3F));
@@ -308,7 +308,7 @@ namespace GBSharp.AudioSpace
     internal void Step(int ticks)
     {
       _frameSequencerTickCounter -= ticks;
-      if(_frameSequencerTickCounter <= 0)
+      if (_frameSequencerTickCounter <= 0)
       {
         _frameSequencerTickCounter += _frameSequencerTicks;
 
@@ -325,10 +325,10 @@ namespace GBSharp.AudioSpace
             // We have an internal period
             if ((_soundLengthPeriod & 0x01) == 0)
             {
-              if(_soundLengthCounter >= 0)
+              if (_soundLengthCounter >= 0)
               {
                 --_soundLengthCounter;
-                if(_soundLengthCounter < 0)
+                if (_soundLengthCounter < 0)
                 {
                   Enabled = false;
                 }
