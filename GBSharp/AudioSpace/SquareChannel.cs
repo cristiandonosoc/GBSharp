@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -246,13 +247,20 @@ namespace GBSharp.AudioSpace
       {
         FrequencyFactor = (ushort)(((value & 0x7) << 8) | LowFreqByte);
 
+        bool prevContinuousOutput = _continuousOutput;
         _continuousOutput = (Utils.UtilFuncs.TestBit(value, 6) == 0);
+        // Only enabling sound length (disabled -> enabled) could trigger a clock
+        if ((!_continuousOutput) &&
+            (prevContinuousOutput != _continuousOutput))
+        {
+          if ((_soundLengthPeriod & 0x01) == 0)
+          {
+            ClockLengthCounter();
+          }
+        }
 
-        /**
-         * Bit 7 is called a channel INIT. On this event the following occurs:
-         * - The Volume Envelope values value are changed
-         */
-
+        // Bit 7 is called a channel INIT. On this event the following occurs:
+        // * The Volume Envelope values value are changed
         bool init = (Utils.UtilFuncs.TestBit(value, 7) != 0);
         // INIT triggers only if the DAC (volume) is on
         if (init && _envelopeDACOn)
@@ -278,7 +286,14 @@ namespace GBSharp.AudioSpace
           //                 it's reloaded with full length
           if(_soundLengthCounter < 0)
           {
+            int prevSoundLengthCounter = _soundLengthCounter;
             _soundLengthCounter = 0x3F;
+
+            if ((!_continuousOutput) &&
+                (prevSoundLengthCounter == -1))
+            {
+              ClockLengthCounter();
+            }
           }
 
           // Envelope is reloaded
@@ -288,6 +303,7 @@ namespace GBSharp.AudioSpace
           _envelopeTickCounter = 0;
         }
 
+
         // NRx4 values are read ORed with 0xBF
         _memory.LowLevelWrite((ushort)register, (byte)(value | 0xBF));
       }
@@ -295,6 +311,7 @@ namespace GBSharp.AudioSpace
       {
         // NOTE(Cristian): This register is written at the APU level
         Enabled = (Utils.UtilFuncs.TestBit(value, _channelIndex) != 0);
+
       }
       else
       {
@@ -316,32 +333,16 @@ namespace GBSharp.AudioSpace
         _frameSequencerTickCounter += _frameSequencerTicks;
 
         // We tick all the assholes
-
-        #region SOUND LENGTH DURATION
-
-        // NOTE(Cristian): The length counter runs even when the channel is disabled
-        if (_runSoundLength)
+        ++_soundLengthPeriod;
+        if ((_soundLengthPeriod & 0x01) == 0)
         {
-          if (!_continuousOutput)
+          // NOTE(Cristian): The length counter runs even when the channel is disabled
+          if (_runSoundLength && !_continuousOutput)
           {
-            ++_soundLengthPeriod;
             // We have an internal period
-            if ((_soundLengthPeriod & 0x01) == 0)
-            {
-              if (_soundLengthCounter >= 0)
-              {
-                --_soundLengthCounter;
-                if (_soundLengthCounter < 0)
-                {
-                  Enabled = false;
-                }
-              }
-            }
+            ClockLengthCounter();
           }
         }
-
-        #endregion
-
       }
 
 
@@ -472,7 +473,26 @@ namespace GBSharp.AudioSpace
 
     public void ClearBuffer()
     {
+
       _sampleIndex = 0;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ClockLengthCounter()
+    {
+      if (_soundLengthCounter >= 0)
+      {
+        --_soundLengthCounter;
+        if (_soundLengthCounter < 0)
+        {
+          Enabled = false;
+        }
+      }
+      else
+      {
+        // This is for marking that we already "over-clocked"
+        --_soundLengthCounter;
+      }
     }
     
 #if SoundTiming
