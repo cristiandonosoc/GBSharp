@@ -247,16 +247,16 @@ namespace GBSharp.AudioSpace
       {
         FrequencyFactor = (ushort)(((value & 0x7) << 8) | LowFreqByte);
 
-        bool wasClocked = false;
         bool prevContinuousOutput = _continuousOutput;
         _continuousOutput = (Utils.UtilFuncs.TestBit(value, 6) == 0);
         // Only enabling sound length (disabled -> enabled) could trigger a clock
         if ((!_continuousOutput) &&
             (prevContinuousOutput != _continuousOutput))
         {
+          // If the next frameSequencer WON'T trigger the length period,
+          // the counter is somehow decremented...
           if ((_soundLengthPeriod & 0x01) == 0)
           {
-            wasClocked = true;
             ClockLengthCounter();
           }
         }
@@ -286,9 +286,11 @@ namespace GBSharp.AudioSpace
           //                 it's reloaded with full length
           if(_soundLengthCounter < 0)
           {
-            int prevSoundLengthCounter = _soundLengthCounter;
             _soundLengthCounter = 0x3F;
 
+            // If INIT on an zerioed empty enabled length channel
+            // AND the next frameSequencer tick WON'T tick the length period
+            // The lenght counter is somehow decremented
             if (!_continuousOutput &&
                 ((_soundLengthPeriod & 0x01) == 0))
             {
@@ -348,7 +350,6 @@ namespace GBSharp.AudioSpace
           }
         }
       }
-
 
       if (!Enabled) { return; }
 
@@ -491,11 +492,6 @@ namespace GBSharp.AudioSpace
         {
           Enabled = false;
         }
-      }
-      else
-      {
-        // This is for marking that we already "over-clocked"
-        --_soundLengthCounter;
       }
     }
     

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GBSharp.MemorySpace;
+using System.Runtime.CompilerServices;
 
 namespace GBSharp.AudioSpace
 {
@@ -154,18 +155,43 @@ namespace GBSharp.AudioSpace
           break;
         case MMR.NR34:  // FrequencyFactor higher
           FrequencyFactor = (ushort)(((value & 0x7) << 8) | LowFreqByte);
+
+          bool prevContinuousOutput = _continuousOutput;
           _continuousOutput = (Utils.UtilFuncs.TestBit(value, 6) == 0);
+          // Only enabling sound length (disabled -> enabled) could trigger a clock
+          if ((!_continuousOutput) &&
+              (prevContinuousOutput != _continuousOutput))
+          {
+            // If the next frameSequencer WON'T trigger the length period,
+            // the counter is somehow decremented...
+            if ((_soundLengthPeriod & 0x01) == 0)
+            {
+              ClockLengthCounter();
+            }
+          }
 
           bool init = (Utils.UtilFuncs.TestBit(value, 7) != 0);
-          if(init && _channelDACOn)
+          if(init)
           {
-            Enabled = true;
-
             // NOTE(Cristian): If the length counter is empty at INIT,
             //                 it's reloaded with full length
-            if(_soundLengthCounter < 0)
+            if (_soundLengthCounter < 0)
             {
               _soundLengthCounter = 0xFF;
+
+              // If INIT on an zerioed empty enabled length channel
+              // AND the next frameSequencer tick WON'T tick the length period
+              // The lenght counter is somehow decremented
+              if (!_continuousOutput &&
+                  ((_soundLengthPeriod & 0x01) == 0))
+              {
+                ClockLengthCounter();
+              }
+            }
+
+            if(_channelDACOn)
+            {
+              Enabled = true;
             }
           }
 
@@ -184,26 +210,14 @@ namespace GBSharp.AudioSpace
       {
         _frameSequencerTickCounter += _frameSequencerTicks;
 
-        #region SOUND LENGTH DURATION
-        
-        if (!_continuousOutput)
+        ++_soundLengthPeriod;
+        if ((_soundLengthPeriod & 0x01) == 0)
         {
-          ++_soundLengthPeriod;
-          // We have an internal period
-          if ((_soundLengthPeriod & 0x01) == 0)
+          if (!_continuousOutput)
           {
-            if (_soundLengthCounter >= 0)
-            {
-              --_soundLengthCounter;
-              if (_soundLengthCounter < 0)
-              {
-                Enabled = false;
-              }
-            }
+            ClockLengthCounter();
           }
         }
-
-        #endregion
       }
 
       if (!Enabled) { return; }
@@ -263,5 +277,19 @@ namespace GBSharp.AudioSpace
     {
       _sampleIndex = 0;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ClockLengthCounter()
+    {
+      if (_soundLengthCounter >= 0)
+      {
+        --_soundLengthCounter;
+        if (_soundLengthCounter < 0)
+        {
+          Enabled = false;
+        }
+      }
+    }
+ 
   }
 }
