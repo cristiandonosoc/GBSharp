@@ -247,6 +247,7 @@ namespace GBSharp.AudioSpace
       {
         FrequencyFactor = (ushort)(((value & 0x7) << 8) | LowFreqByte);
 
+        bool wasClocked = false;
         bool prevContinuousOutput = _continuousOutput;
         _continuousOutput = (Utils.UtilFuncs.TestBit(value, 6) == 0);
         // Only enabling sound length (disabled -> enabled) could trigger a clock
@@ -255,6 +256,7 @@ namespace GBSharp.AudioSpace
         {
           if ((_soundLengthPeriod & 0x01) == 0)
           {
+            wasClocked = true;
             ClockLengthCounter();
           }
         }
@@ -263,10 +265,8 @@ namespace GBSharp.AudioSpace
         // * The Volume Envelope values value are changed
         bool init = (Utils.UtilFuncs.TestBit(value, 7) != 0);
         // INIT triggers only if the DAC (volume) is on
-        if (init && _envelopeDACOn)
+        if (init)
         {
-          Enabled = true;
-
           // Tick Counter is restarted
           _tickCounter = 0;
 
@@ -289,8 +289,8 @@ namespace GBSharp.AudioSpace
             int prevSoundLengthCounter = _soundLengthCounter;
             _soundLengthCounter = 0x3F;
 
-            if ((!_continuousOutput) &&
-                (prevSoundLengthCounter == -1))
+            if (!_continuousOutput &&
+                ((_soundLengthPeriod & 0x01) == 0))
             {
               ClockLengthCounter();
             }
@@ -301,8 +301,12 @@ namespace GBSharp.AudioSpace
           _currentEnvelopeUp = _envelopeUp;
           _currentEnvelopeValue = _envelopeDefaultValue;
           _envelopeTickCounter = 0;
-        }
 
+          if(_envelopeDACOn)
+          {
+            Enabled = true;
+          }
+        }
 
         // NRx4 values are read ORed with 0xBF
         _memory.LowLevelWrite((ushort)register, (byte)(value | 0xBF));
