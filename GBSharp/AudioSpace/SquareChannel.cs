@@ -167,6 +167,16 @@ namespace GBSharp.AudioSpace
     private int _sweepTicks;
     private int _sweepTicksCounter;
 
+
+    private bool _newSweepEnabled;
+    private int _newSweepPeriod;
+    private int _newSweepInternalFlag;
+    private int _newSweepFrequencyRegister;
+    private int _newSweepTicks;
+    private int _newSweepTickCounter;
+    private int _newSweepShifts;
+    private bool _newSweepUp;
+
     // DEBUG FLAGS
     private bool _runSweep = true;
     private bool _runSoundLength = true;
@@ -204,6 +214,14 @@ namespace GBSharp.AudioSpace
 
         // NR10 is read as ORed with 0x80
         _memory.LowLevelWrite((ushort)register, (byte)(value | 0x80));
+
+
+        // NEW SWEEP
+        _newSweepShifts = value & 0x07;
+
+        _newSweepUp = ((value & 0x08) == 0);
+
+        _newSweepTicks = ((value >> 4) & 0x07);
       }
       else if (register == _wavePatternDutyRegister)
       {
@@ -281,6 +299,15 @@ namespace GBSharp.AudioSpace
             _sweepTicksCounter = _sweepTicks;
           }
 
+          // NEW FREQUENCY
+          _newSweepFrequencyRegister = FrequencyFactor;
+          _newSweepTickCounter = _newSweepTicks;
+          _newSweepEnabled = ((_newSweepTicks > 0) || (_newSweepShifts > 0));
+          // TODO(Cristian): Make immediate frequency calculation
+
+
+
+
 
           // NOTE(Cristian): If the length counter is empty at INIT,
           //                 it's reloaded with full length
@@ -338,7 +365,10 @@ namespace GBSharp.AudioSpace
       {
         _frameSequencerTickCounter += _frameSequencerTicks;
 
-        // We tick all the assholes
+        // We check which internal element ticket
+
+        // SOUND LENGTH
+        // Ticks every two frame sequencer ticks
         ++_soundLengthPeriod;
         if ((_soundLengthPeriod & 0x01) == 0)
         {
@@ -349,6 +379,85 @@ namespace GBSharp.AudioSpace
             ClockLengthCounter();
           }
         }
+
+
+        #region FREQUENCY SWEEP
+
+        // FREQUENCY SWEEP
+        // Ticks every 8 frame sequencer ticks
+        ++_newSweepPeriod;
+        if ((_newSweepPeriod & 0x07) == 0x07)
+        {
+          --_newSweepTickCounter;
+          if ((_newSweepTickCounter == 0) && _newSweepEnabled)
+          {
+            if (_newSweepShifts > 0)
+            {
+              int freqChange = _newSweepFrequencyRegister;
+              freqChange >>= _newSweepShifts;
+              if (!_newSweepUp) { freqChange *= -1; }
+              _newSweepFrequencyRegister += freqChange;
+
+              // Overflows turns off the channel
+              if (_newSweepFrequencyRegister >= 0x800)
+              {
+                Enabled = false;
+              }
+              else
+              {
+                FrequencyFactor = (ushort)_newSweepFrequencyRegister;
+              }
+            }
+          }
+        }
+
+        //_runSweep = false;
+        //if (_runSweep && _sweepTicks > 0)
+        //{
+        //  _sweepTicksCounter += ticks;
+        //  if (_sweepTicksCounter > _sweepTicks)
+        //  {
+        //    _sweepTicksCounter -= _sweepTicks;
+
+        //    if (_sweepShiftNumber == 0)
+        //    {
+        //      // If the shift number is 0, the channel stops when it's time to
+        //      // shift
+        //      Enabled = false;
+        //    }
+        //    else
+        //    {
+        //      if (_sweepUp)
+        //      {
+        //        int newFreqFactor = FrequencyFactor +
+        //                            (_sweepFrequencyFactor >> _sweepShiftNumber);
+        //        if (newFreqFactor < 0x800) // Higher than an 11-bit number
+        //        {
+        //          _sweepFrequencyFactor = (ushort)newFreqFactor;
+        //          FrequencyFactor = _sweepFrequencyFactor;
+        //        }
+        //        else
+        //        {
+        //          // Overflow stops the channel
+        //          Enabled = false;
+        //        }
+        //      }
+        //      else
+        //      {
+        //        int newFreqFactor = FrequencyFactor -
+        //                               (_sweepFrequencyFactor >> _sweepShiftNumber);
+        //        if (newFreqFactor > 0)
+        //        {
+        //          _sweepFrequencyFactor = (ushort)newFreqFactor;
+        //          FrequencyFactor = _sweepFrequencyFactor;
+        //        }
+        //      }
+        //    }
+        //  }
+        //}
+
+        #endregion
+
       }
 
       if (!Enabled) { return; }
@@ -362,54 +471,6 @@ namespace GBSharp.AudioSpace
         _tickCounter -= _tickThreshold;
       }
 
-      #region FREQUENCY SWEEP
-
-      _runSweep = false;
-      if (_runSweep && _sweepTicks > 0)
-      {
-        _sweepTicksCounter += ticks;
-        if (_sweepTicksCounter > _sweepTicks)
-        {
-          _sweepTicksCounter -= _sweepTicks;
-
-          if (_sweepShiftNumber == 0)
-          {
-            // If the shift number is 0, the channel stops when it's time to
-            // shift
-            Enabled = false;
-          }
-          else
-          {
-            if (_sweepUp)
-            {
-              int newFreqFactor = FrequencyFactor +
-                                  (_sweepFrequencyFactor >> _sweepShiftNumber);
-              if (newFreqFactor < 0x800) // Higher than an 11-bit number
-              {
-                _sweepFrequencyFactor = (ushort)newFreqFactor;
-                FrequencyFactor = _sweepFrequencyFactor;
-              }
-              else
-              {
-                // Overflow stops the channel
-                Enabled = false;
-              }
-            }
-            else
-            {
-              int newFreqFactor = FrequencyFactor -
-                                     (_sweepFrequencyFactor >> _sweepShiftNumber);
-              if (newFreqFactor > 0)
-              {
-                _sweepFrequencyFactor = (ushort)newFreqFactor;
-                FrequencyFactor = _sweepFrequencyFactor;
-              }
-            }
-          }
-        }
-      }
-
-      #endregion
 
       #region VOLUME ENVELOPE
 
@@ -435,6 +496,7 @@ namespace GBSharp.AudioSpace
       }
 
       #endregion
+
     }
 
     private int _sampleTickCount = 0;
