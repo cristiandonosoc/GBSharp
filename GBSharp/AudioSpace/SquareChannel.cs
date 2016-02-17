@@ -160,22 +160,13 @@ namespace GBSharp.AudioSpace
       _frameSequencerTickCounter = _frameSequencerTicks;
     }
 
-    private bool _sweepEnabled = false;
-    private ushort _sweepFrequencyFactor;
-    private int _sweepShiftNumber;
-    private bool _sweepUp;
+    private bool _sweepEnabled;
+    private int _sweepPeriod;
+    private int _sweepFrequencyRegister;
     private int _sweepTicks;
-    private int _sweepTicksCounter;
-
-
-    private bool _newSweepEnabled;
-    private int _newSweepPeriod;
-    private int _newSweepInternalFlag;
-    private int _newSweepFrequencyRegister;
-    private int _newSweepTicks;
-    private int _newSweepTickCounter;
-    private int _newSweepShifts;
-    private bool _newSweepUp;
+    private int _sweepTickCounter;
+    private int _sweepShifts;
+    private bool _sweepUp;
 
     // DEBUG FLAGS
     private bool _runSweep = true;
@@ -201,27 +192,16 @@ namespace GBSharp.AudioSpace
       if (register == _sweepRegister)
       {
         // Sweep Shift Number (Bits 0-2)
-        _sweepShiftNumber = value & 0x7;
+        _sweepShifts = value & 0x07;
 
         // Sweep Direction (Bit 3)
-        _sweepUp = (value & 0x8) == 0;
+        _sweepUp = ((value & 0x08) == 0);
 
         // Sweep Time (Bits 4-6)
-        int sweepTime = ((value >> 4) & 0x7);
-        double sweepTimeMs = 1000 * ((double)sweepTime / (double)0x200);
-        _sweepTicks = (int)(GameBoy.ticksPerMillisecond * sweepTimeMs);
-        _sweepTicksCounter = 0;
+        _sweepTicks = ((value >> 4) & 0x07);
 
         // NR10 is read as ORed with 0x80
         _memory.LowLevelWrite((ushort)register, (byte)(value | 0x80));
-
-
-        // NEW SWEEP
-        _newSweepShifts = value & 0x07;
-
-        _newSweepUp = ((value & 0x08) == 0);
-
-        _newSweepTicks = ((value >> 4) & 0x07);
       }
       else if (register == _wavePatternDutyRegister)
       {
@@ -288,26 +268,11 @@ namespace GBSharp.AudioSpace
           // Tick Counter is restarted
           _tickCounter = 0;
 
-          // Frequency Sweep
-          _sweepFrequencyFactor = FrequencyFactor;
-          _sweepTicksCounter = 0;
-          _sweepEnabled = ((_sweepShiftNumber != 0) && (_sweepTicks != 0));
-          // Apparently frequency change is runned immediately if there is a
-          // shift number
-          if (_sweepShiftNumber > 0)
-          {
-            _sweepTicksCounter = _sweepTicks;
-          }
-
-          // NEW FREQUENCY
-          _newSweepFrequencyRegister = FrequencyFactor;
-          _newSweepTickCounter = _newSweepTicks;
-          _newSweepEnabled = ((_newSweepTicks > 0) || (_newSweepShifts > 0));
+          // FREQUENCY SWEEP
+          _sweepFrequencyRegister = FrequencyFactor;
+          _sweepTickCounter = _sweepTicks;
+          _sweepEnabled = ((_sweepTicks > 0) || (_sweepShifts > 0));
           // TODO(Cristian): Make immediate frequency calculation
-
-
-
-
 
           // NOTE(Cristian): If the length counter is empty at INIT,
           //                 it's reloaded with full length
@@ -380,81 +345,41 @@ namespace GBSharp.AudioSpace
           }
         }
 
-
         #region FREQUENCY SWEEP
 
         // FREQUENCY SWEEP
         // Ticks every 8 frame sequencer ticks
-        ++_newSweepPeriod;
-        if ((_newSweepPeriod & 0x07) == 0x07)
+        ++_sweepPeriod;
+        if ((_sweepPeriod & 0x07) == 0x07)
         {
-          --_newSweepTickCounter;
-          if ((_newSweepTickCounter == 0) && _newSweepEnabled)
+          if (_sweepEnabled)
           {
-            if (_newSweepShifts > 0)
+            --_sweepTickCounter;
+            if ((_sweepTickCounter == 0) && _sweepEnabled)
             {
-              int freqChange = _newSweepFrequencyRegister;
-              freqChange >>= _newSweepShifts;
-              if (!_newSweepUp) { freqChange *= -1; }
-              _newSweepFrequencyRegister += freqChange;
+              // We restart the sweep counter
+              _sweepTickCounter = _sweepTicks;
 
-              // Overflows turns off the channel
-              if (_newSweepFrequencyRegister >= 0x800)
+              if (_sweepShifts > 0)
               {
-                Enabled = false;
-              }
-              else
-              {
-                FrequencyFactor = (ushort)_newSweepFrequencyRegister;
+                int freqChange = _sweepFrequencyRegister;
+                freqChange >>= _sweepShifts;
+                if (!_sweepUp) { freqChange *= -1; }
+                _sweepFrequencyRegister += freqChange;
+
+                // Overflows turns off the channel
+                if (_sweepFrequencyRegister >= 0x800)
+                {
+                  Enabled = false;
+                }
+                else
+                {
+                  FrequencyFactor = (ushort)_sweepFrequencyRegister;
+                }
               }
             }
           }
         }
-
-        //_runSweep = false;
-        //if (_runSweep && _sweepTicks > 0)
-        //{
-        //  _sweepTicksCounter += ticks;
-        //  if (_sweepTicksCounter > _sweepTicks)
-        //  {
-        //    _sweepTicksCounter -= _sweepTicks;
-
-        //    if (_sweepShiftNumber == 0)
-        //    {
-        //      // If the shift number is 0, the channel stops when it's time to
-        //      // shift
-        //      Enabled = false;
-        //    }
-        //    else
-        //    {
-        //      if (_sweepUp)
-        //      {
-        //        int newFreqFactor = FrequencyFactor +
-        //                            (_sweepFrequencyFactor >> _sweepShiftNumber);
-        //        if (newFreqFactor < 0x800) // Higher than an 11-bit number
-        //        {
-        //          _sweepFrequencyFactor = (ushort)newFreqFactor;
-        //          FrequencyFactor = _sweepFrequencyFactor;
-        //        }
-        //        else
-        //        {
-        //          // Overflow stops the channel
-        //          Enabled = false;
-        //        }
-        //      }
-        //      else
-        //      {
-        //        int newFreqFactor = FrequencyFactor -
-        //                               (_sweepFrequencyFactor >> _sweepShiftNumber);
-        //        if (newFreqFactor > 0)
-        //        {
-        //          _sweepFrequencyFactor = (ushort)newFreqFactor;
-        //          FrequencyFactor = _sweepFrequencyFactor;
-        //        }
-        //      }
-        //    }
-        //  }
-        //}
 
         #endregion
 
