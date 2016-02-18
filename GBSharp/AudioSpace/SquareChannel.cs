@@ -265,6 +265,11 @@ namespace GBSharp.AudioSpace
         // INIT triggers only if the DAC (volume) is on
         if (init)
         {
+          if(_envelopeDACOn)
+          {
+            Enabled = true;
+          }
+
           // Tick Counter is restarted
           _tickCounter = 0;
 
@@ -272,7 +277,18 @@ namespace GBSharp.AudioSpace
           _sweepFrequencyRegister = FrequencyFactor;
           _sweepTickCounter = _sweepTicks;
           _sweepEnabled = ((_sweepTicks > 0) || (_sweepShifts > 0));
-          // TODO(Cristian): Make immediate frequency calculation
+          // We create immediate frequency calculation
+          if (_sweepShifts > 0)
+          {
+            int freqChange = _sweepFrequencyRegister;
+            freqChange >>= _sweepShifts;
+            if (!_sweepUp) { freqChange *= -1; }
+            int newFreq = _sweepFrequencyRegister + freqChange;
+            if (newFreq >= 0x800)
+            {
+              Enabled = false;
+            }
+          }
 
           // NOTE(Cristian): If the length counter is empty at INIT,
           //                 it's reloaded with full length
@@ -295,11 +311,6 @@ namespace GBSharp.AudioSpace
           _currentEnvelopeUp = _envelopeUp;
           _currentEnvelopeValue = _envelopeDefaultValue;
           _envelopeTickCounter = 0;
-
-          if(_envelopeDACOn)
-          {
-            Enabled = true;
-          }
         }
 
         // NRx4 values are read ORed with 0xBF
