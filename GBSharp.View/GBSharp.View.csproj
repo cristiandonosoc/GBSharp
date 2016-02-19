@@ -113,6 +113,9 @@
     </Compile>
     <Compile Include="OpenFileDialogAdapter.cs" />
     <Compile Include="OpenFileDialogAdapterFactory.cs" />
+    <Compile Include="SoundChannelInternalsView.xaml.cs">
+      <DependentUpon>SoundChannelInternalsView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SoundRecordingView.xaml.cs">
       <DependentUpon>SoundRecordingView.xaml</DependentUpon>
     </Compile>
@@ -215,6 +218,10 @@
     </Page>
     <Page Include="MemoryView.xaml">
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SoundChannelInternalsView.xaml">
+      <SubType>Form</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="SoundRecordingView.xaml">

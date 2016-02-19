@@ -47,9 +47,6 @@ namespace GBSharp.ViewModel
 
     }
 
-
-
-
     public ICommand ReadCommand { get { return new DelegateCommand(CopyFromDomain); }}
     public ICommand WriteCommand { get { return new DelegateCommand(CopyToDomain); } }
 

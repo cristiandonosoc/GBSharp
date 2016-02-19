@@ -104,6 +104,7 @@
     <Compile Include="IInstruction.cs" />
     <Compile Include="IMemory.cs" />
     <Compile Include="CPUSpace\Instruction.cs" />
+    <Compile Include="ISquareChannel.cs" />
     <Compile Include="Keypad.cs" />
     <Compile Include="MemorySpace\DMA.cs" />
     <Compile Include="MemorySpace\Memory.cs" />

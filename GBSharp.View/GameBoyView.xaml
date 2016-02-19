@@ -52,6 +52,13 @@
                 </ScrollViewer>
             </Grid>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModel:SoundChannelInternalsViewModel}">
+            <Grid Style="{StaticResource SubContentGrid}">
+                <ScrollViewer>
+                    <view:SoundChannelInternalsView></view:SoundChannelInternalsView>
+                </ScrollViewer>
+            </Grid>
+        </DataTemplate>
         <DataTemplate DataType="{x:Type viewModel:DisplayViewModel}">
             <Grid Style="{StaticResource SubContentGrid}">
                 <ScrollViewer>
@@ -207,6 +214,9 @@
                             </avalonDock:LayoutAnchorable>
                             <avalonDock:LayoutAnchorable Title="IO Registers">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=InterruptSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding IORegisters}"/>
+                            </avalonDock:LayoutAnchorable>
+                            <avalonDock:LayoutAnchorable Title="Sound Channel Internals">
+                                <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Visibility="{Binding ElementName=InterruptSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" Content="{Binding SoundChannelInternals}"/>
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
                         <avalonDock:LayoutAnchorablePane DockHeight="*">

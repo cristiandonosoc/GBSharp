@@ -58,6 +58,7 @@ namespace GBSharp.AudioSpace
     private Memory _memory;
 
     SquareChannel _channel1;
+    public ISquareChannel Channel1 { get { return _channel1; } }
     SquareChannel _channel2;
     WaveChannel _channel3;
     NoiseChannel _channel4;

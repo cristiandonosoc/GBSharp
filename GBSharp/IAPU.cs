@@ -24,5 +24,7 @@ namespace GBSharp
     bool Channel1Run { get; set; }
     bool Channel2Run { get; set; }
     bool Channel3Run { get; set; }
+
+    ISquareChannel Channel1 { get; }
   }
 }

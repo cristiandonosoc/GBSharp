@@ -13,6 +13,7 @@ namespace GBSharp.ViewModel
     private readonly CPUViewModel _cpu;
     private readonly InterruptManagerViewModel _interrupt;
     private readonly IORegistersManagerViewModel _ioRegisters;
+    private readonly SoundChannelInternalsViewModel _soundChannelInternals;
     private readonly DisplayViewModel _display;
     private readonly GameBoyContollerViewModel _gameBoyController;
     private readonly GameBoyGamePadViewModel _gameBoyGamePad;
@@ -33,6 +34,7 @@ namespace GBSharp.ViewModel
     public DissasembleViewModel Dissasemble { get { return _dissasemble; } }
     public BreakpointsViewModel Breakpoints { get { return _breakpoints; } }
     public IORegistersManagerViewModel IORegisters { get { return _ioRegisters; } }
+    public SoundChannelInternalsViewModel SoundChannelInternals { get { return _soundChannelInternals; } }
     public InstructionHistogramViewModel InstructionHistogram { get { return _instructionHistogram; } }
     public APUViewModel APU { get { return _apu; } }
     public MemoryImageViewModel MemoryImage { get { return _memoryImage; } }
@@ -64,6 +66,7 @@ namespace GBSharp.ViewModel
 
       _interrupt = new InterruptManagerViewModel(_gameBoy, _dispatcher);
       _ioRegisters = new IORegistersManagerViewModel(_gameBoy, _dispatcher);
+      _soundChannelInternals = new SoundChannelInternalsViewModel(_gameBoy);
       _display = new DisplayViewModel(_gameBoy, _gameBoy.Display, _gameBoy.Memory, _dispatcher);
       _gameBoyGamePad = new GameBoyGamePadViewModel(_gameBoy, _dispatcher);
       _breakpoints = new BreakpointsViewModel(_gameBoy);
@@ -122,6 +125,7 @@ namespace GBSharp.ViewModel
       _interrupt.CopyFromDomain();
       _memory.StepHandler();
       _breakpoints.StepHandler();
+      _soundChannelInternals.Reload();
     }
 
     private void FileLoadedHandler()
@@ -165,6 +169,7 @@ namespace GBSharp.ViewModel
       _ioRegisters.CopyFromDomain();
       _interrupt.CopyFromDomain();
       _dissasemble.SetCurrentInstructionToPC();
+      _soundChannelInternals.Reload();
     }
   }
 }

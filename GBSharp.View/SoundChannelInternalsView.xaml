@@ -1,0 +1,51 @@
+﻿<UserControl x:Class="GBSharp.View.SoundChannelInternalsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:GBSharp.View"
+             xmlns:viewModel="clr-namespace:GBSharp.ViewModel;assembly=GBSharp.ViewModel"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+  <Grid Style="{StaticResource SubContentGrid}">
+    <ScrollViewer>
+      <Grid Height="Auto">
+        <Grid.RowDefinitions>
+          <RowDefinition></RowDefinition>
+          <RowDefinition></RowDefinition>
+          <RowDefinition></RowDefinition>
+          <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" BorderBrush="Black" BorderThickness="1">
+          <Grid Margin="5">
+            <Grid.RowDefinitions>
+              <RowDefinition></RowDefinition>
+              <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" FontWeight="Bold" Text="Channel 1 (Square Channel w/ frequency sweep"></TextBlock>
+
+            <Grid Grid.Row="1">
+              <Grid.RowDefinitions>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+              </Grid.RowDefinitions>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+              </Grid.ColumnDefinitions>
+
+              <TextBlock Grid.Row="0" Grid.Column="0" Text="Frame Sequencer"></TextBlock>
+              <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding FrameSequencer}"></TextBox>
+            </Grid>
+          </Grid>
+        </Border>
+      </Grid>
+    </ScrollViewer>
+  </Grid>
+
+        
+</UserControl>
+
