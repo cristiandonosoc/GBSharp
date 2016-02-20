@@ -135,6 +135,7 @@ namespace GBSharp.ViewModel
       _display.CopyFromDomain();
       _cpu.CopyFromDomain();
       _dissasemble.DissasembleCommandWrapper();
+      _soundChannelInternals.Reload();
       _soundRecording.CartridgeLoaded = true;
     }
 
