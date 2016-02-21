@@ -281,14 +281,7 @@ namespace GBSharp.AudioSpace
           // We create immediate frequency calculation
           if (SweepShifts > 0)
           {
-            int freqChange = SweepFrequencyRegister;
-            freqChange >>= SweepShifts;
-            if (!SweepUp) { freqChange *= -1; }
-            int newFreq = SweepFrequencyRegister + freqChange;
-            if (newFreq >= 0x800)
-            {
-              Enabled = false;
-            }
+            CalculateSweepChange();
           }
 
           // NOTE(Cristian): If the length counter is empty at INIT,
@@ -372,23 +365,7 @@ namespace GBSharp.AudioSpace
               // We restart the sweep counter
               SweepCounter = SweepLength;
 
-              if (SweepShifts > 0)
-              {
-                int freqChange = SweepFrequencyRegister;
-                freqChange >>= SweepShifts;
-                if (!SweepUp) { freqChange *= -1; }
-                SweepFrequencyRegister += freqChange;
-
-                // Overflows turns off the channel
-                if (SweepFrequencyRegister >= 0x800)
-                {
-                  Enabled = false;
-                }
-                else
-                {
-                  FrequencyFactor = (ushort)SweepFrequencyRegister;
-                }
-              }
+              CalculateSweepChange();
             }
           }
         }
@@ -491,6 +468,25 @@ namespace GBSharp.AudioSpace
         {
           Enabled = false;
         }
+      }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void CalculateSweepChange()
+    {
+      int freqChange = SweepFrequencyRegister;
+      freqChange >>= SweepShifts;
+      if (!SweepUp) { freqChange *= -1; }
+      SweepFrequencyRegister += freqChange;
+
+      // Overflows turns off the channel
+      if (SweepFrequencyRegister >= 0x800)
+      {
+        Enabled = false;
+      }
+      else
+      {
+        FrequencyFactor = (ushort)SweepFrequencyRegister;
       }
     }
     
