@@ -47,15 +47,20 @@
               <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SoundLengthCounter}"></TextBox>
               <CheckBox Grid.Row="1" Grid.Column="2" Content="Continous Output" IsChecked="{Binding ContinuousOutput}"></CheckBox>
 
-              <TextBlock Grid.Row="2" Grid.Column="0" Text="Sweep Counter"></TextBlock>
-              <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding SweepCounter}"></TextBox>
-              <TextBlock Grid.Row="2" Grid.Column="2" Text="Sweep Frequency Register"></TextBlock>
-              <TextBox Grid.Row="2" Grid.Column="3" Text="{Binding SweepFrequency}"></TextBox>
-              <TextBlock Grid.Row="3" Grid.Column="0" Text="Sweep Length"></TextBlock>
-              <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding SweepLength}"></TextBox>
-              <TextBlock Grid.Row="3" Grid.Column="2" Text="Sweep Shifts"></TextBlock>
-              <TextBox Grid.Row="3" Grid.Column="3" Text="{Binding SweepShifts}"></TextBox>
+              <TextBlock Grid.Row="2" Grid.Column="0" Text="Sweep Frequency Register"></TextBlock>
+              <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding SweepFrequency}"></TextBox>
+              <TextBlock Grid.Row="2" Grid.Column="2" Text="Sweep Period"></TextBlock>
+              <TextBox Grid.Row="2" Grid.Column="3" Text="{Binding SweepPeriod}"></TextBox>
+
+              
+              <TextBlock Grid.Row="3" Grid.Column="0" Text="Sweep Counter"></TextBlock>
+              <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding SweepCounter}"></TextBox>
+              <TextBlock Grid.Row="3" Grid.Column="2" Text="Sweep Length"></TextBlock>
+              <TextBox Grid.Row="3" Grid.Column="3" Text="{Binding SweepLength}"></TextBox>
+
               <CheckBox Grid.Row="4" Grid.Column="0" Content="Sweep Up" IsChecked="{Binding SweepUp}"></CheckBox>
+              <TextBlock Grid.Row="4" Grid.Column="2" Text="Sweep Shifts"></TextBlock>
+              <TextBox Grid.Row="4" Grid.Column="3" Text="{Binding SweepShifts}"></TextBox>
 
 
 

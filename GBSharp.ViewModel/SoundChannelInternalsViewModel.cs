@@ -98,6 +98,17 @@ namespace GBSharp.ViewModel
       }
     }
 
+    private string _sweepPeriod;
+    public string SweepPeriod
+    {
+      get { return _sweepPeriod; }
+      set
+      {
+        _sweepPeriod = value;
+        OnPropertyChanged(() => SweepPeriod);
+      }
+    }
+
     internal SoundChannelInternalsViewModel(IGameBoy gameboy)
     {
       _gameboy = gameboy;
@@ -115,6 +126,7 @@ namespace GBSharp.ViewModel
       SweepLength = "0x" + _gameboy.APU.Channel1.SweepLength.ToString("x2");
       SweepShifts = _gameboy.APU.Channel1.SweepShifts.ToString();
       SweepUp = _gameboy.APU.Channel1.SweepUp;
+      SweepPeriod = "0x" + _gameboy.APU.Channel1.SweepPeriod.ToString("x2");
     }
 
     internal void Clear()

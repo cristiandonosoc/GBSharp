@@ -161,12 +161,13 @@ namespace GBSharp.AudioSpace
     }
 
     private bool _sweepEnabled;
-    private int _sweepPeriod;
+    public int SweepPeriod { get; private set;}
 
     public int SweepFrequencyRegister { get; private set; }
     public int SweepLength { get; private set; }
     public int SweepCounter { get; private set; }
     public int SweepShifts { get; private set; }
+
     public bool SweepUp { get; private set; }
 
     // DEBUG FLAGS
@@ -360,8 +361,8 @@ namespace GBSharp.AudioSpace
 
         // FREQUENCY SWEEP
         // Ticks every 8 frame sequencer ticks
-        ++_sweepPeriod;
-        if ((_sweepPeriod & 0x07) == 0x07)
+        ++SweepPeriod;
+        if ((SweepPeriod & 0x07) == 0x07)
         {
           if (_sweepEnabled)
           {

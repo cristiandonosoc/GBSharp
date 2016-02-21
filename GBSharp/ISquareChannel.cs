@@ -21,5 +21,6 @@ namespace GBSharp
     int SweepLength { get; }
     int SweepCounter { get; }
     bool SweepUp { get; }
+    int SweepPeriod { get; }
   }
 }
