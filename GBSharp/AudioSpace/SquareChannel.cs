@@ -330,6 +330,7 @@ namespace GBSharp.AudioSpace
 
     internal void Step(int ticks)
     {
+      // Frame Sequencer clocks at 512 Hz
       FrameSequencerCounter -= ticks;
       if (FrameSequencerCounter <= 0)
       {
@@ -338,7 +339,7 @@ namespace GBSharp.AudioSpace
         // We check which internal element ticket
 
         // SOUND LENGTH
-        // Ticks every two frame sequencer ticks
+        // Clocks at 256 Hz (every two frame sequencer ticks)
         ++_soundLengthPeriod;
         if ((_soundLengthPeriod & 0x01) == 0)
         {
@@ -353,11 +354,11 @@ namespace GBSharp.AudioSpace
         #region FREQUENCY SWEEP
 
         // FREQUENCY SWEEP
-        // Ticks every 8 frame sequencer ticks
+        // Clocks at 128 Hz (every four frame sequencer ticks)
         ++SweepPeriod;
-        if ((SweepPeriod & 0x07) == 0x07)
+        if ((SweepPeriod & 0x03) == 0x00)
         {
-          if (_sweepEnabled)
+          if (SweepLength > 0)
           {
             --SweepCounter;
             if ((SweepCounter == 0) && _sweepEnabled)
