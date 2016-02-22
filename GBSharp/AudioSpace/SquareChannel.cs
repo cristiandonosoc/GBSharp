@@ -200,6 +200,7 @@ namespace GBSharp.AudioSpace
 
         // Sweep Time (Bits 4-6)
         SweepLength = ((value >> 4) & 0x07);
+        SweepCounter = SweepLength;
 
         // NR10 is read as ORed with 0x80
         _memory.LowLevelWrite((ushort)register, (byte)(value | 0x80));
@@ -265,6 +266,7 @@ namespace GBSharp.AudioSpace
         bool init = (Utils.UtilFuncs.TestBit(value, 7) != 0);
         // INIT triggers only if the DAC (volume) is on
         if (init)
+
         {
           if(_envelopeDACOn)
           {
@@ -279,9 +281,9 @@ namespace GBSharp.AudioSpace
           SweepCounter = SweepLength;
           _sweepEnabled = ((SweepLength > 0) || (SweepShifts > 0));
           // We create immediate frequency calculation
-          if (SweepShifts > 0)
+          if (_sweepEnabled && (SweepShifts > 0))
           {
-            CalculateSweepChange();
+            CalculateSweepChange(redoCalculation: false);
           }
 
           // NOTE(Cristian): If the length counter is empty at INIT,
@@ -358,15 +360,15 @@ namespace GBSharp.AudioSpace
         ++SweepPeriod;
         if ((SweepPeriod & 0x03) == 0x00)
         {
-          if (SweepLength > 0)
+          if(_sweepEnabled && SweepLength > 0)
           {
             --SweepCounter;
-            if ((SweepCounter == 0) && _sweepEnabled)
+            if (SweepCounter == 0)
             {
+              CalculateSweepChange(redoCalculation: true);
+
               // We restart the sweep counter
               SweepCounter = SweepLength;
-
-              CalculateSweepChange();
             }
           }
         }
@@ -433,6 +435,7 @@ namespace GBSharp.AudioSpace
           _sampleTickCount += APU.MinimumTickThreshold;
           if (_sampleTickCount >= _sampleTickThreshold)
           {
+
             _sampleTickThreshold = newTicksThreshold;
             _sampleTickCount -= _sampleTickThreshold;
             _sampleVolume = newVolume;
@@ -473,21 +476,40 @@ namespace GBSharp.AudioSpace
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void CalculateSweepChange()
+    private void CalculateSweepChange(bool redoCalculation)
     {
       int freqChange = SweepFrequencyRegister;
       freqChange >>= SweepShifts;
       if (!SweepUp) { freqChange *= -1; }
-      SweepFrequencyRegister += freqChange;
+      int newFreq = SweepFrequencyRegister + freqChange;
 
       // Overflows turns off the channel
-      if (SweepFrequencyRegister >= 0x800)
+      if (newFreq >= 0x800)
       {
         Enabled = false;
       }
       else
       {
-        FrequencyFactor = (ushort)SweepFrequencyRegister;
+        if (SweepShifts > 0)
+        {
+          SweepFrequencyRegister = newFreq;
+          FrequencyFactor = (ushort)SweepFrequencyRegister;
+
+
+          if (redoCalculation)
+          {
+            // We need to perform another check
+            freqChange = SweepFrequencyRegister;
+            freqChange >>= SweepShifts;
+            if (!SweepUp) { freqChange *= -1; }
+            newFreq = SweepFrequencyRegister + freqChange;
+
+            if (newFreq > 0x800)
+            {
+              Enabled = false;
+            }
+          }
+        }
       }
     }
     
