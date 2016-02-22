@@ -161,8 +161,7 @@ namespace GBSharp.AudioSpace
     }
 
     private bool _sweepEnabled;
-    public int SweepPeriod { get; private set;}
-
+    public int SweepPeriod { get; private set; }
     public int SweepFrequencyRegister { get; private set; }
     public int SweepLength { get; private set; }
     public int SweepCounter { get; private set; }
@@ -200,7 +199,6 @@ namespace GBSharp.AudioSpace
 
         // Sweep Time (Bits 4-6)
         SweepLength = ((value >> 4) & 0x07);
-        SweepCounter = SweepLength;
 
         // NR10 is read as ORed with 0x80
         _memory.LowLevelWrite((ushort)register, (byte)(value | 0x80));
@@ -279,9 +277,10 @@ namespace GBSharp.AudioSpace
           // FREQUENCY SWEEP
           SweepFrequencyRegister = FrequencyFactor;
           SweepCounter = SweepLength;
+          if (SweepLength == 0) { SweepCounter = 8; }
           _sweepEnabled = ((SweepLength > 0) || (SweepShifts > 0));
           // We create immediate frequency calculation
-          if (_sweepEnabled && (SweepShifts > 0))
+          if (SweepShifts > 0)
           {
             CalculateSweepChange(redoCalculation: false);
           }
@@ -358,9 +357,9 @@ namespace GBSharp.AudioSpace
         // FREQUENCY SWEEP
         // Clocks at 128 Hz (every four frame sequencer ticks)
         ++SweepPeriod;
-        if ((SweepPeriod & 0x03) == 0x00)
+        if ((SweepPeriod & 0x03) == 0x02)
         {
-          if(_sweepEnabled && SweepLength > 0)
+          if (_sweepEnabled)
           {
             --SweepCounter;
             if (SweepCounter == 0)
@@ -369,6 +368,7 @@ namespace GBSharp.AudioSpace
 
               // We restart the sweep counter
               SweepCounter = SweepLength;
+              if (SweepLength == 0) { SweepCounter = 8; }
             }
           }
         }
@@ -490,11 +490,10 @@ namespace GBSharp.AudioSpace
       }
       else
       {
-        if (SweepShifts > 0)
+        if ((SweepShifts > 0) && (SweepLength > 0))
         {
           SweepFrequencyRegister = newFreq;
           FrequencyFactor = (ushort)SweepFrequencyRegister;
-
 
           if (redoCalculation)
           {
