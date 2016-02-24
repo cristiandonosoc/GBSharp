@@ -161,6 +161,7 @@ namespace GBSharp.AudioSpace
     }
 
     private bool _sweepEnabled;
+    private bool _sweepCalcOcurred;
     public int SweepPeriod { get; private set; }
     public int SweepFrequencyRegister { get; private set; }
     public int SweepLength { get; private set; }
@@ -195,7 +196,13 @@ namespace GBSharp.AudioSpace
         SweepShifts = value & 0x07;
 
         // Sweep Direction (Bit 3)
+        bool prevSweepUp = SweepUp;
         SweepUp = ((value & 0x08) == 0);
+        // Going from neg->pos after a calc has occurred disabled the channel
+        if (_sweepCalcOcurred && !prevSweepUp && SweepUp)
+        {
+          Enabled = false;
+        }
 
         // Sweep Time (Bits 4-6)
         SweepLength = ((value >> 4) & 0x07);
@@ -364,7 +371,11 @@ namespace GBSharp.AudioSpace
             --SweepCounter;
             if (SweepCounter == 0)
             {
-              CalculateSweepChange(updateValue: true, redoCalculation: true);
+              if (SweepLength > 0)
+              {
+                CalculateSweepChange(updateValue: true, redoCalculation: true);
+                _sweepCalcOcurred = true;
+              }
 
               // We restart the sweep counter
               SweepCounter = SweepLength;
