@@ -282,7 +282,7 @@ namespace GBSharp.AudioSpace
           // We create immediate frequency calculation
           if (SweepShifts > 0)
           {
-            CalculateSweepChange(redoCalculation: false);
+            CalculateSweepChange(updateValue: false, redoCalculation: false);
           }
 
           // NOTE(Cristian): If the length counter is empty at INIT,
@@ -364,7 +364,7 @@ namespace GBSharp.AudioSpace
             --SweepCounter;
             if (SweepCounter == 0)
             {
-              CalculateSweepChange(redoCalculation: true);
+              CalculateSweepChange(updateValue: true, redoCalculation: true);
 
               // We restart the sweep counter
               SweepCounter = SweepLength;
@@ -476,7 +476,7 @@ namespace GBSharp.AudioSpace
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void CalculateSweepChange(bool redoCalculation)
+    private void CalculateSweepChange(bool updateValue, bool redoCalculation)
     {
       int freqChange = SweepFrequencyRegister;
       freqChange >>= SweepShifts;
@@ -492,6 +492,8 @@ namespace GBSharp.AudioSpace
       {
         if ((SweepShifts > 0) && (SweepLength > 0))
         {
+          if (!updateValue) { return; }
+
           SweepFrequencyRegister = newFreq;
           FrequencyFactor = (ushort)SweepFrequencyRegister;
 
