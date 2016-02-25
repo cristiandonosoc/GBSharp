@@ -203,6 +203,7 @@ namespace GBSharp.AudioSpace
         {
           Enabled = false;
         }
+        _sweepCalcOcurred = false;
 
         // Sweep Time (Bits 4-6)
         SweepLength = ((value >> 4) & 0x07);
@@ -290,6 +291,7 @@ namespace GBSharp.AudioSpace
           if (SweepShifts > 0)
           {
             CalculateSweepChange(updateValue: false, redoCalculation: false);
+            _sweepCalcOcurred = true;
           }
 
           // NOTE(Cristian): If the length counter is empty at INIT,
