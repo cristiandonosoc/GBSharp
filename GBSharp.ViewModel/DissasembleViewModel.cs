@@ -40,7 +40,6 @@ namespace GBSharp.ViewModel
       get { return _selectedInstruction; }
       set
       {
-        if (_selectedInstruction == value) { return; }
         _selectedInstruction = value;
         OnPropertyChanged(() => SelectedInstruction);
       }
@@ -49,7 +48,6 @@ namespace GBSharp.ViewModel
     private InstructionViewModel _currentInstruction;
     public void SetCurrentInstruction(InstructionViewModel instruction)
     {
-      if(_currentInstruction == instruction) { return; }
       if (_currentInstruction != null)
       {
         _currentInstruction.IsCurrent = false;
