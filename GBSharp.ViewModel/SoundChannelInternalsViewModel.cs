@@ -116,7 +116,7 @@ namespace GBSharp.ViewModel
 
     internal void Reload()
     {
-      FrameSequencer = "0x" + _gameboy.APU.Channel1.FrameSequencerCounter.ToString("x2");
+      FrameSequencer = "0x" + _gameboy.APU.Channel1.FrameSequencerTickCounter.ToString("x2");
 
       SoundLengthCounter = "0x" + _gameboy.APU.Channel1.SoundLengthCounter.ToString("x2");
       ContinuousOutput = _gameboy.APU.Channel1.ContinuousOutput;

@@ -9,7 +9,7 @@ namespace GBSharp
 {
   public interface ISquareChannel
   {
-    int FrameSequencerCounter { get; }
+    int FrameSequencerTickCounter { get; }
 
     // Sound Length
     int SoundLengthCounter { get; }
@@ -21,6 +21,5 @@ namespace GBSharp
     int SweepLength { get; }
     int SweepCounter { get; }
     bool SweepUp { get; }
-    int SweepPeriod { get; }
   }
 }

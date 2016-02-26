@@ -145,13 +145,12 @@ namespace GBSharp.AudioSpace
       _freqLowRegister = freqLowRegister;
       _freqHighRegister = freqHighRegister;
 
-      _frameSequencerLength = (int)(GameBoy.ticksPerMillisecond * (double)1000 / (double)512);
-      FrameSequencerCounter = _frameSequencerLength;
+      _frameSequencerTickLength = (int)(GameBoy.ticksPerMillisecond * (double)1000 / (double)512);
+      FrameSequencerTickCounter = _frameSequencerTickLength;
     }
 
     private bool _sweepEnabled;
     private bool _sweepCalcOcurred;
-    public int SweepPeriod { get; private set; }
     public int SweepFrequencyRegister { get; private set; }
     public int SweepLength { get; private set; }
     public int SweepCounter { get; private set; }
@@ -164,11 +163,11 @@ namespace GBSharp.AudioSpace
     private bool _runSoundLength = true;
     private bool _runVolumeEnvelope = true;
 
-    private int _frameSequencerLength;
-    public int FrameSequencerCounter { get; private set; }
+    private int _frameSequencerTickLength;
+    public int FrameSequencerTickCounter { get; private set; }
+    private int _frameSequencerCounter;
 
     public int SoundLengthCounter { get; private set; }
-    private byte _soundLengthPeriod;
     public bool ContinuousOutput { get; private set; }
 
     public void HandleMemoryChange(MMR register, byte value)
@@ -250,7 +249,7 @@ namespace GBSharp.AudioSpace
         {
           // If the next frameSequencer WON'T trigger the length period,
           // the counter is somehow decremented...
-          if ((_soundLengthPeriod & 0x01) == 0)
+          if ((_frameSequencerCounter & 0x01) == 0)
           {
             ClockLengthCounter();
           }
@@ -293,7 +292,7 @@ namespace GBSharp.AudioSpace
             // AND the next frameSequencer tick WON'T tick the length period
             // The lenght counter is somehow decremented
             if (!ContinuousOutput &&
-                ((_soundLengthPeriod & 0x01) == 0))
+                ((_frameSequencerCounter & 0x01) == 0))
             {
               ClockLengthCounter();
             }
@@ -330,17 +329,17 @@ namespace GBSharp.AudioSpace
     internal void Step(int ticks)
     {
       // Frame Sequencer clocks at 512 Hz
-      FrameSequencerCounter -= ticks;
-      if (FrameSequencerCounter <= 0)
+      FrameSequencerTickCounter -= ticks;
+      if (FrameSequencerTickCounter <= 0)
       {
-        FrameSequencerCounter += _frameSequencerLength;
+        FrameSequencerTickCounter += _frameSequencerTickLength;
+        ++_frameSequencerCounter;
 
         // We check which internal element ticket
 
         // SOUND LENGTH
         // Clocks at 256 Hz (every two frame sequencer ticks)
-        ++_soundLengthPeriod;
-        if ((_soundLengthPeriod & 0x01) == 0)
+        if ((_frameSequencerCounter & 0x01) == 0)
         {
           // NOTE(Cristian): The length counter runs even when the channel is disabled
           if (_runSoundLength && !ContinuousOutput)
@@ -354,8 +353,7 @@ namespace GBSharp.AudioSpace
 
         // FREQUENCY SWEEP
         // Clocks at 128 Hz (every four frame sequencer ticks)
-        ++SweepPeriod;
-        if ((SweepPeriod & 0x03) == 0x02)
+        if ((_frameSequencerCounter & 0x03) == 0x02)
         {
           if (_sweepEnabled)
           {
