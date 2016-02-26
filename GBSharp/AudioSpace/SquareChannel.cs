@@ -61,17 +61,6 @@ namespace GBSharp.AudioSpace
     internal byte LowFreqByte { get; private set; }
     internal byte HighFreqByte { get; private set; }
 
-    private int _latencyTicks;
-    private int _latencyTicksLeft;
-    private bool _latencySimulated;
-    internal void SetLatencyTicks(int latencyTicks)
-    {
-      _latencyTicks = latencyTicks;
-      _latencyTicksLeft = _latencyTicks;
-      _latencySimulated = true;
-    }
-
-
     private int _tickThreshold;
 
     private ushort _frequencyFactor;

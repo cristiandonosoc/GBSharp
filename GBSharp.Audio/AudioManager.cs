@@ -34,9 +34,6 @@ namespace GBSharp.Audio
       _soundOut = GetSoundOut();
       _soundOut.Initialize(_source);
       _soundOut.Volume = 0.2f;
-
-      // We set some ms of latency
-      _apu.Latency = 125;
     }
 
     private void GameBoy_PauseRequested()

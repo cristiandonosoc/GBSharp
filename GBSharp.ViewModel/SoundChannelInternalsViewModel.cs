@@ -126,7 +126,7 @@ namespace GBSharp.ViewModel
       SweepLength = "0x" + _gameboy.APU.Channel1.SweepLength.ToString("x2");
       SweepShifts = _gameboy.APU.Channel1.SweepShifts.ToString();
       SweepUp = _gameboy.APU.Channel1.SweepUp;
-      SweepPeriod = "0x" + _gameboy.APU.Channel1.SweepPeriod.ToString("x2");
+      //SweepPeriod = "0x" + _gameboy.APU.Channel1.SweepPeriod.ToString("x2");
     }
 
     internal void Clear()

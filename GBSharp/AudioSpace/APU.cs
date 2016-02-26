@@ -34,19 +34,6 @@ namespace GBSharp.AudioSpace
 
     private int _milliseconds = 1000; // ms of sample
 
-    private int _latency = 0;
-    public int Latency
-    {
-      get { return _latency; }
-      set
-      {
-        _latency = value;
-        int latencyTicks = _latency * GameBoy.ticksPerMillisecond;
-        _channel1.SetLatencyTicks(latencyTicks);
-        _channel2.SetLatencyTicks(latencyTicks);
-      }
-    }
-
     private short[] _tempBuffer;
     byte[] _buffer;
     public byte[] Buffer { get { return _buffer; } }

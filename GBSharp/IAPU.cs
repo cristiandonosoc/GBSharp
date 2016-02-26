@@ -19,8 +19,6 @@ namespace GBSharp
     void StartRecording(string filename = null);
     void StopRecording();
 
-    int Latency { get; set; }
-
     bool Channel1Run { get; set; }
     bool Channel2Run { get; set; }
     bool Channel3Run { get; set; }
