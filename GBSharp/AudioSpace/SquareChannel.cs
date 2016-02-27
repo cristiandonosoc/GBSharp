@@ -170,6 +170,11 @@ namespace GBSharp.AudioSpace
     public int SoundLengthCounter { get; private set; }
     public bool ContinuousOutput { get; private set; }
 
+    public void PowerOn()
+    {
+      _frameSequencerCounter = -1; // Next frame sequencer is 0
+    }
+
     public void HandleMemoryChange(MMR register, byte value)
     {
       byte before = _memory.LowLevelRead((ushort)register);
@@ -273,6 +278,7 @@ namespace GBSharp.AudioSpace
           // FREQUENCY SWEEP
           SweepFrequencyRegister = FrequencyFactor;
           SweepCounter = SweepLength;
+
           if (SweepLength == 0) { SweepCounter = 8; }
           _sweepEnabled = ((SweepLength > 0) || (SweepShifts > 0));
           // We create immediate frequency calculation
