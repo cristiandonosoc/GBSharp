@@ -122,8 +122,7 @@ namespace GBSharp.AudioSpace
         case MMR.NR41:  // Sound Length
           _soundLengthCounter = 0x3F - (value & 0x3F);
 
-          // NR41 is read as ORed with 0xFF
-          _memory.LowLevelWrite((ushort)register, 0xFF);
+          _memory.LowLevelWrite((ushort)register, value);
           break;
         case MMR.NR42:
           double envelopeMsLength = 1000 * ((double)(value & 0x7) / (double)64);
@@ -142,11 +141,9 @@ namespace GBSharp.AudioSpace
             _envelopeDACOn = true;
           }
 
-            // NR42 is read as ORed with 0x00
           _memory.LowLevelWrite((ushort)register, value);
           break;
         case MMR.NR43:
-          // NR42 is read as ORed with 0x00
           _memory.LowLevelWrite((ushort)register, value);
           break;
         case MMR.NR44:
@@ -190,8 +187,7 @@ namespace GBSharp.AudioSpace
             }
           }
 
-          // NR42 is read as ORed with 0xBF
-          _memory.LowLevelWrite((ushort)register, (byte)(value | 0xBF));
+          _memory.LowLevelWrite((ushort)register, value);
           break;
         default:
           throw new InvalidProgramException("Invalid register received.");

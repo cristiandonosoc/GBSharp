@@ -233,7 +233,38 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     /// </returns>
     virtual internal byte Read(ushort address)
     {
-      return this.memoryData[address];
+      // The sound values come or'ed
+      byte value = this.memoryData[address];
+      switch((MMR)address)
+      {
+        case MMR.NR10: value |= 0x80; break;
+        case MMR.NR11: value |= 0x3F; break;
+        case MMR.NR12: value |= 0x00; break;
+        case MMR.NR13: value |= 0xFF; break;
+        case MMR.NR14: value |= 0xBF; break;
+
+        case MMR.NR21: value |= 0x3F; break;
+        case MMR.NR22: value |= 0x00; break;
+        case MMR.NR23: value |= 0xFF; break;
+        case MMR.NR24: value |= 0xBF; break;
+
+        case MMR.NR30: value |= 0x7F; break;
+        case MMR.NR31: value |= 0xFF; break;
+        case MMR.NR32: value |= 0x9F; break;
+        case MMR.NR33: value |= 0xFF; break;
+        case MMR.NR34: value |= 0xBF; break;
+
+        case MMR.NR41: value |= 0xFF; break;
+        case MMR.NR42: value |= 0x00; break;
+        case MMR.NR43: value |= 0x00; break;
+        case MMR.NR44: value |= 0xBF; break;
+
+        case MMR.NR50: value |= 0x00; break;
+        case MMR.NR51: value |= 0x00; break;
+        case MMR.NR52: value |= 0x70; break;
+      }
+
+      return value;
     }
 
     public virtual void Dispose()

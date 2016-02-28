@@ -201,16 +201,14 @@ namespace GBSharp.AudioSpace
         // Sweep Time (Bits 4-6)
         SweepLength = ((value >> 4) & 0x07);
 
-        // NR10 is read as ORed with 0x80
-        _memory.LowLevelWrite((ushort)register, (byte)(value | 0x80));
+        _memory.LowLevelWrite((ushort)register, value);
       }
       else if (register == _wavePatternDutyRegister)
       {
         // TODO(Cristian): Wave Pattern Duty
         SoundLengthCounter = 0x3F - (value & 0x3F);
 
-        // NR(1,2)1 values are read ORed with 0x3F
-        _memory.LowLevelWrite((ushort)register, (byte)(value | 0x3F));
+        _memory.LowLevelWrite((ushort)register, value);
       }
       else if (register == _volumeEnvelopeRegister)
       {
@@ -230,7 +228,6 @@ namespace GBSharp.AudioSpace
           _envelopeDACOn = true;
         }
 
-        // NR(1,2)2 values are read ORed with 0x00
         _memory.LowLevelWrite((ushort)register, value);
       }
       else if (register == _freqLowRegister)
@@ -239,8 +236,7 @@ namespace GBSharp.AudioSpace
 
         _memory.LowLevelWrite((ushort)register, value);
 
-        // NR(1,2)3 values are read ORed with 0xFF
-        _memory.LowLevelWrite((ushort)register, 0xFF);
+        _memory.LowLevelWrite((ushort)register, value);
       }
       else if (register == _freqHighRegister)
       {
@@ -311,14 +307,12 @@ namespace GBSharp.AudioSpace
           _envelopeTickCounter = 0;
         }
 
-        // NRx4 values are read ORed with 0xBF
-        _memory.LowLevelWrite((ushort)register, (byte)(value | 0xBF));
+        _memory.LowLevelWrite((ushort)register, value);
       }
       else if (register == MMR.NR52)
       {
         // NOTE(Cristian): This register is written at the APU level
         Enabled = (Utils.UtilFuncs.TestBit(value, _channelIndex) != 0);
-
       }
       else
       {

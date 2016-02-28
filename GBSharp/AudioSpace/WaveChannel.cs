@@ -128,14 +128,12 @@ namespace GBSharp.AudioSpace
             Enabled = false;
           }
 
-          // NR30 is ORed with 0x7F
-          _memory.LowLevelWrite((ushort)register, (byte)(value | 0x7f));
+          _memory.LowLevelWrite((ushort)register, value);
           break;
         case MMR.NR31:  // Sound Length
           _soundLengthCounter = 0xFF - value;
-
-          // NR31 is ORed with 0xFF
-          _memory.LowLevelWrite((ushort)register, 0xFF);
+          //_memory.LowLevelWrite((ushort)register, 0xFF);
+          _memory.LowLevelWrite((ushort)register, value);
           break;
         case MMR.NR32:  // Output Level (volume)
           // Basically, we shift by this amount.
@@ -144,14 +142,12 @@ namespace GBSharp.AudioSpace
           // We reload the sample
           //_outputValue = (short)Volume;
 
-          // NR32 is ORed with 0x9F
-          _memory.LowLevelWrite((ushort)register, (byte)(value | 0x9F));
+          _memory.LowLevelWrite((ushort)register, value);
           break;
         case MMR.NR33:  // FrequencyFactor lower
           FrequencyFactor = (ushort)(((HighFreqByte & 0x7) << 8) | value);
 
-          // NR33 is ORed with 0xFF
-          _memory.LowLevelWrite((ushort)register, 0xFF);
+          _memory.LowLevelWrite((ushort)register, value);
           break;
         case MMR.NR34:  // FrequencyFactor higher
           FrequencyFactor = (ushort)(((value & 0x7) << 8) | LowFreqByte);
@@ -195,8 +191,7 @@ namespace GBSharp.AudioSpace
             }
           }
 
-          // NR34 is ORed with 0xBF
-          _memory.LowLevelWrite((ushort)register, (byte)(value | 0xBF));
+          _memory.LowLevelWrite((ushort)register, value);
           break;
         default:
           throw new InvalidProgramException("Invalid register received.");
