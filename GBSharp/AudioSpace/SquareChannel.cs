@@ -172,7 +172,10 @@ namespace GBSharp.AudioSpace
 
     public void PowerOn()
     {
-      _frameSequencerCounter = -1; // Next frame sequencer is 0
+      FrameSequencerTickCounter >>= 2;
+      FrameSequencerTickCounter &= 0xFFF;
+      FrameSequencerTickCounter += ~(FrameSequencerTickCounter + 2) << 1 & 0x1000;
+      FrameSequencerTickCounter <<= 2;
     }
 
     public void HandleMemoryChange(MMR register, byte value)
@@ -201,7 +204,8 @@ namespace GBSharp.AudioSpace
         // Sweep Time (Bits 4-6)
         SweepLength = ((value >> 4) & 0x07);
 
-        _memory.LowLevelWrite((ushort)register, value);
+        // Bit 7 is always 1
+        _memory.LowLevelWrite((ushort)register, (byte)(value | 0x80));
       }
       else if (register == _wavePatternDutyRegister)
       {
@@ -307,7 +311,8 @@ namespace GBSharp.AudioSpace
           _envelopeTickCounter = 0;
         }
 
-        _memory.LowLevelWrite((ushort)register, value);
+        // Bits 3-5 are always 1
+        _memory.LowLevelWrite((ushort)register, (byte)(value | 0x38));
       }
       else if (register == MMR.NR52)
       {

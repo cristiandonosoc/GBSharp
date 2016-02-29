@@ -244,10 +244,9 @@ namespace GBSharp.AudioSpace
             _channel3.Enabled = false;
             _channel4.Enabled = false;
           }
-          else if(!Enabled)
+          else
           {
             _channel1.PowerOn();
-
           }
           // We update at the end because otherwise the recursive calls would
           // be rejected by the guard
