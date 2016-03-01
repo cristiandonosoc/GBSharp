@@ -59,6 +59,8 @@ namespace GBSharp.AudioSpace
     public bool Channel3Run { get; set; }
     public bool Channel4Run { get; set; }
 
+    private FrameSequencer _frameSequencer;
+
     private bool _recordSeparateChannels;
     public bool RecordSeparateChannels
     {
@@ -85,6 +87,7 @@ namespace GBSharp.AudioSpace
     private WavExporter _channel2WavExporter;
     private WavExporter _channel3WavExporter;
     private WavExporter _channel4WavExporter;
+
 
     internal APU(Memory memory, int sampleRate, int numChannels, int sampleSize)
     {
@@ -123,12 +126,14 @@ namespace GBSharp.AudioSpace
         _channel4WavExporter = new WavExporter();
       }
 
+      _frameSequencer = new FrameSequencer();
+
       // We setup the channels
-      _channel1 = new SquareChannel(_memory, 
+      _channel1 = new SquareChannel(_memory, _frameSequencer,
                                     SampleRate, NumChannels, SampleSize, 0,
                                     MMR.NR10, MMR.NR11, MMR.NR12, MMR.NR13, MMR.NR14);
       // NOTE(Cristian): Channel 2 doesn't have frequency sweep
-      _channel2 = new SquareChannel(_memory, 
+      _channel2 = new SquareChannel(_memory, _frameSequencer,
                                     SampleRate, NumChannels, SampleSize, 1,
                                     0, MMR.NR21, MMR.NR22, MMR.NR23, MMR.NR24);
 
@@ -283,6 +288,7 @@ namespace GBSharp.AudioSpace
 
     internal void Step(int ticks)
     {
+      _frameSequencer.Step((uint)ticks);
       _channel1.Step(ticks);
       _channel2.Step(ticks);
       _channel3.Step(ticks);

@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AudioSpace\APU.cs" />
+    <Compile Include="AudioSpace\FrameSequencer.cs" />
     <Compile Include="AudioSpace\IChannel.cs" />
     <Compile Include="AudioSpace\NoiseChannel.cs" />
     <Compile Include="AudioSpace\SquareChannel.cs" />

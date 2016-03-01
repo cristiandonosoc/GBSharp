@@ -9,8 +9,6 @@ namespace GBSharp
 {
   public interface ISquareChannel
   {
-    uint FrameSequencer { get; }
-
     // Sound Length
     int SoundLengthCounter { get; }
     bool ContinuousOutput { get; }
