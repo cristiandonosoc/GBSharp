@@ -82,12 +82,14 @@ namespace GBSharp.AudioSpace
     internal double Frequency { get; set; }
 
     private Memory _memory;
+    private FrameSequencer _frameSequencer;
 
-    internal WaveChannel(Memory memory, 
+    internal WaveChannel(Memory memory, FrameSequencer frameSequencer,
                          int sampleRate, int numChannels, 
                          int sampleSize, int channelIndex)
     {
       _memory = memory;
+      _frameSequencer = frameSequencer;
 
       SampleRate = sampleRate;
       _msSampleRate = SampleRate / 1000;
@@ -96,19 +98,11 @@ namespace GBSharp.AudioSpace
       _buffer = new short[SampleRate * NumChannels * SampleSize * _milliseconds / 1000];
 
       _channelIndex = channelIndex;
-
-      _frameSequencerTicks = (int)(GameBoy.ticksPerMillisecond * (double)1000 / (double)512);
-      _frameSequencerTickCounter = _frameSequencerTicks;
     }
 
     private bool _channelDACOn;
 
-
-    private int _frameSequencerTicks;
-    private int _frameSequencerTickCounter;
-
     private int _soundLengthCounter;
-    private byte _soundLengthPeriod;
 
     int _volumeRightShift;
 
@@ -160,7 +154,7 @@ namespace GBSharp.AudioSpace
           {
             // If the next frameSequencer WON'T trigger the length period,
             // the counter is somehow decremented...
-            if ((_soundLengthPeriod & 0x01) == 0)
+            if ((_frameSequencer.Value & 0x01) == 0)
             {
               ClockLengthCounter();
             }
@@ -179,7 +173,7 @@ namespace GBSharp.AudioSpace
               // AND the next frameSequencer tick WON'T tick the length period
               // The lenght counter is somehow decremented
               if (!_continuousOutput &&
-                  ((_soundLengthPeriod & 0x01) == 0))
+                  ((_frameSequencer.Value & 0x01) == 0))
               {
                 ClockLengthCounter();
               }
@@ -200,13 +194,9 @@ namespace GBSharp.AudioSpace
 
     internal void Step(int ticks)
     {
-      _frameSequencerTickCounter -= ticks;
-      if (_frameSequencerTickCounter <= 0)
+      if (_frameSequencer.Clocked)
       {
-        _frameSequencerTickCounter += _frameSequencerTicks;
-
-        ++_soundLengthPeriod;
-        if ((_soundLengthPeriod & 0x01) == 0)
+        if ((_frameSequencer.Value & 0x01) == 0)
         {
           if (!_continuousOutput)
           {

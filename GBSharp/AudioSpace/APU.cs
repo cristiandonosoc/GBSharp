@@ -137,7 +137,8 @@ namespace GBSharp.AudioSpace
                                     SampleRate, NumChannels, SampleSize, 1,
                                     0, MMR.NR21, MMR.NR22, MMR.NR23, MMR.NR24);
 
-      _channel3 = new WaveChannel(_memory, SampleRate, NumChannels, SampleSize, 2);
+      _channel3 = new WaveChannel(_memory, _frameSequencer,
+                                  SampleRate, NumChannels, SampleSize, 2);
       _channel4 = new NoiseChannel(_memory, SampleRate, NumChannels, SampleSize, 3);
 
       LeftChannelEnabled = true;
