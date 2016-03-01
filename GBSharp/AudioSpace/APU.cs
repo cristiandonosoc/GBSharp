@@ -139,7 +139,8 @@ namespace GBSharp.AudioSpace
 
       _channel3 = new WaveChannel(_memory, _frameSequencer,
                                   SampleRate, NumChannels, SampleSize, 2);
-      _channel4 = new NoiseChannel(_memory, SampleRate, NumChannels, SampleSize, 3);
+      _channel4 = new NoiseChannel(_memory, _frameSequencer,
+                                   SampleRate, NumChannels, SampleSize, 3);
 
       LeftChannelEnabled = true;
       RightChannelEnabled = true;
