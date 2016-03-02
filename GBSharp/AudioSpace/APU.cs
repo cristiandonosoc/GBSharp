@@ -253,7 +253,8 @@ namespace GBSharp.AudioSpace
           }
           else
           {
-            _channel1.PowerOn();
+            _frameSequencer.Reset();
+            _channel1.Reset();
           }
           // We update at the end because otherwise the recursive calls would
           // be rejected by the guard

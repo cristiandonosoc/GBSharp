@@ -23,5 +23,14 @@ namespace GBSharp.AudioSpace
 
       Value = _internalCounter >> 13;
     }
+
+    internal void Reset()
+    {
+
+      //_internalCounter &= 0x1FFF;
+      //_internalCounter += 0x2000;
+      _internalCounter &= 0x1FFF;
+      Value = _internalCounter >> 13;
+    }
   }
 }

@@ -166,12 +166,9 @@ namespace GBSharp.AudioSpace
     public int SoundLengthCounter { get; private set; }
     public bool ContinuousOutput { get; private set; }
 
-    public void PowerOn()
+    public void Reset()
     {
-      //FrameSequencerTickCounter >>= 2;
-      //FrameSequencerTickCounter &= 0xFFF;
-      //FrameSequencerTickCounter += ~(FrameSequencerTickCounter + 2) << 1 & 0x1000;
-      //FrameSequencerTickCounter <<= 2;
+      SweepCounter = int.MaxValue;
     }
 
     public void HandleMemoryChange(MMR register, byte value)
