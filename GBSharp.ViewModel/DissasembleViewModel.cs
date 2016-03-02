@@ -147,6 +147,7 @@ namespace GBSharp.ViewModel
       {
         byte[] entry = matrix[address];
         int intLength = entry[0];
+        bool CB = false;
 
 
         if (intLength == 0) {
@@ -178,6 +179,7 @@ namespace GBSharp.ViewModel
           }
           else
           {
+            CB = true;
             vm.Address = "0x" + address.ToString("x2");
             int instOpcode = ((entry[1] << 8) | entry[2]);
             vm.originalOpcode = (ushort)instOpcode;
@@ -199,6 +201,14 @@ namespace GBSharp.ViewModel
         }
         vm.originalAddress = (ushort)address;
 
+        if (!CB)
+        {
+          vm.Ticks = CPUSpace.Dictionaries.CPUInstructionClocks.Get((byte)vm.originalOpcode);
+        }
+        else
+        {
+          vm.Ticks = CPUSpace.Dictionaries.CPUCBInstructionClocks.Get((byte)vm.originalOpcode);
+        }
 
         _instructions.Add(vm);
         _addressToInstruction[(ushort)address] = vm;

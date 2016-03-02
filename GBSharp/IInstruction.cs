@@ -10,5 +10,6 @@ namespace GBSharp
     ushort OpCode { get; }
     ushort Literal { get; }
     byte?[] Operands { get; }
+    bool CB { get; }
   }
 }

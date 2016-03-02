@@ -19,6 +19,7 @@ namespace GBSharp.ViewModel
     public string Name { get; set; }
     public string Literal { get; set; }
     public string Description { get; set; }
+    public string Ticks { get; set; }
 
     private bool _hasBreakpoint;
     public bool HasBreakpoint
@@ -55,6 +56,15 @@ namespace GBSharp.ViewModel
       Name = instruction.Name;
       Literal = "0x" + instruction.Literal.ToString("x2");
       Description = instruction.Description;
+
+      if (!instruction.CB)
+      {
+        Ticks = CPUSpace.Dictionaries.CPUInstructionClocks.Get((byte)instruction.OpCode);
+      }
+      else
+      {
+        Ticks = CPUSpace.Dictionaries.CPUCBInstructionClocks.Get((byte)instruction.OpCode);
+      }
     }
 
     public InstructionViewModel(ICPU cpu)

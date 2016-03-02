@@ -15,6 +15,7 @@
           <ColumnDefinition Width="80"></ColumnDefinition>
           <ColumnDefinition Width="80"></ColumnDefinition>
           <ColumnDefinition Width="80"></ColumnDefinition>
+          <ColumnDefinition Width="80"></ColumnDefinition>
           <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
 
@@ -46,6 +47,7 @@
         <TextBlock Grid.Column="3" Text="{Binding Opcode}"></TextBlock>
         <TextBlock Grid.Column="4" Text="{Binding Name}"></TextBlock>
         <TextBlock Grid.Column="5" Text="{Binding Literal}"></TextBlock>
+        <TextBlock Grid.Column="6" Text="{Binding Ticks}"></TextBlock>
 
         <Grid.ContextMenu>
           <ContextMenu>

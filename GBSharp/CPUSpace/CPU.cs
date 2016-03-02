@@ -496,7 +496,7 @@ namespace GBSharp.CPUSpace
       byte lowOpcode = (byte)instruction.OpCode;
       instruction.Length = CPUInstructionLengths.Get(lowOpcode);
       instruction.Literal = this.interruptHandlers[(Interrupts)interrupt];
-      instruction.Ticks = CPUInstructionClocks.Get(lowOpcode);
+      instruction.Ticks = CPUInstructionPreClocks.Get(lowOpcode);
       instruction.Name = CPUInstructionNames.Get(lowOpcode);
       instruction.Description = CPUInstructionDescriptions.Get(lowOpcode);
 
@@ -563,7 +563,7 @@ namespace GBSharp.CPUSpace
           instruction.Literal += (ushort)(instruction.Operands[0] << 8);
         }
 
-        instruction.Ticks = CPUInstructionClocks.Get(lowOpcode);
+        instruction.Ticks = CPUInstructionPreClocks.Get(lowOpcode);
         instruction.Name = CPUInstructionNames.Get(lowOpcode);
         instruction.Description = CPUInstructionDescriptions.Get(lowOpcode);
       }
@@ -591,7 +591,7 @@ namespace GBSharp.CPUSpace
         // There is no literal in CB instructions!
 
         //instruction.Lambda = this.CBInstructionLambdas[lowOpcode];
-        instruction.Ticks = CPUCBInstructionClocks.Get(lowOpcode);
+        instruction.Ticks = CPUCBInstructionPreClocks.Get(lowOpcode);
         instruction.Name = CPUCBInstructionNames.Get(lowOpcode);
         instruction.Description = CPUCBInstructionDescriptions.Get(lowOpcode);
       }
