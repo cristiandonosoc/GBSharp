@@ -249,6 +249,18 @@ namespace GBSharp.ViewModel
       }
     }
 
+    private string _tickCounter;
+    public string TickCounter
+    {
+      get { return _tickCounter; }
+      set
+      {
+        if(_tickCounter == value) { return; }
+        _tickCounter = value;
+        OnPropertyChanged(() => TickCounter);
+      }
+    }
+
     public ICommand ReadCommand
     {
       get { return new DelegateCommand(CopyFromDomain); }
@@ -257,6 +269,17 @@ namespace GBSharp.ViewModel
     public ICommand WriteCommand
     {
       get { return new DelegateCommand(CopyToDomain); }
+    }
+
+    public ICommand ResetTickCounterCommand
+    {
+      get { return new DelegateCommand(ResetTickCounter); }
+    }
+
+    public void ResetTickCounter()
+    {
+      _gameBoy.DebugTickCounter = 0;
+      TickCounter = "0x0";
     }
 
     public CPUViewModel(IGameBoy gameBoy, IDispatcher dispatcher)
@@ -309,6 +332,8 @@ namespace GBSharp.ViewModel
       FlagCarry = _cpu.Registers.FC == 1;
       FlagHalfCarry = _cpu.Registers.FH == 1;
       FlagNegative = _cpu.Registers.FN == 1;
+
+      TickCounter = "0x" + _gameBoy.DebugTickCounter.ToString("x2");
     }
 
     private void CopyToDomain()

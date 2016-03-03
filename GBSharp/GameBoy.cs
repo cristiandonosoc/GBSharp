@@ -48,7 +48,6 @@ namespace GBSharp
     private Disassembler disassembler;
 
     private Stopwatch stopwatch;
-    private long tickCounter;
     private long stepCounter;
 
     public bool ReleaseButtons { get; set; }
@@ -57,6 +56,8 @@ namespace GBSharp
     private long totalFrameTicks = 0;
     public double FPS { get; private set; }
 
+    // This is a debug counter
+    public ulong DebugTickCounter { get; set; }
 
 #if TIMING
     private long[] timingSamples;
@@ -251,6 +252,7 @@ namespace GBSharp
       byte prevTicks = this.cpu.DetermineStep(ignoreNextStep || ignoreBreakpoints);
 
       // NOTE(Cristian): If the CPU is halted, the hardware carry on at a simulated clock
+      byte postTicks = 0;
       if (cpu.halted)
       {
         prevTicks = 4;
@@ -266,7 +268,7 @@ namespace GBSharp
 
           // We execute the opcode. Returns the amount of ticks that have to be
           // simulated after the opcode execution
-          byte postTicks = this.cpu.ExecuteInstruction();
+          postTicks = this.cpu.ExecuteInstruction();
           // postTicks 0 means that the instruction run at its last clock
           // so there is no postprocessing to be done
           if (postTicks > 0)
@@ -278,6 +280,10 @@ namespace GBSharp
           }
         }
       }
+
+      // We track the ticks
+      DebugTickCounter += prevTicks;
+      DebugTickCounter += postTicks;
 
 #endif
     }
@@ -291,7 +297,6 @@ namespace GBSharp
 
       this.apu.Step(ticks);
 
-      this.tickCounter += ticks;
       this.stepCounter++;
 
       this.serial.Step(ticks);
@@ -336,7 +341,6 @@ namespace GBSharp
 
       this.run = true;
       this.stepCounter = 0;
-      this.tickCounter = 0;
       this.stopwatch.Restart();
       this.manualResetEvent.Set();
 
@@ -446,7 +450,6 @@ namespace GBSharp
 #endif
 
         this.stopwatch.Restart();
-        this.tickCounter = 0;
         this.stepCounter = 0;
         this.frameReady = false;
 

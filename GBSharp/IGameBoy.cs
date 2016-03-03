@@ -35,6 +35,8 @@ namespace GBSharp
 
     double FPS { get; }
     void Dispose();
+
+    ulong DebugTickCounter { get; set; }
     
   }
 }
