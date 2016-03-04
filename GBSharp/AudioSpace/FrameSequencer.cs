@@ -26,10 +26,13 @@ namespace GBSharp.AudioSpace
 
     internal void Reset()
     {
-
-      //_internalCounter &= 0x1FFF;
-      //_internalCounter += 0x2000;
+      // FrameSequencer is restarted
       _internalCounter &= 0x1FFF;
+      // ... and clocked once (why not?)
+      // NOTE(Cristian): There is NO indication that this is what
+      //                 happens, but this passes the test
+      //                 If it quacks like a DMG...
+      _internalCounter += 0x2000;
       Value = _internalCounter >> 13;
     }
   }
