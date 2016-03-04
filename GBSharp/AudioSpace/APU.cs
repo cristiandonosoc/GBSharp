@@ -252,10 +252,9 @@ namespace GBSharp.AudioSpace
             _channel3.Enabled = false;
             _channel4.Enabled = false;
           }
-          else if(!Enabled)
+          else if (!Enabled)
           {
             _frameSequencer.Reset();
-            _channel1.Reset();
           }
           // We update at the end because otherwise the recursive calls would
           // be rejected by the guard
