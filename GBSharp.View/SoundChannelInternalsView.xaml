@@ -43,6 +43,9 @@
               <TextBlock Grid.Row="0" Grid.Column="0" Text="Frame Sequencer"></TextBlock>
               <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding FrameSequencer}"></TextBox>
 
+              <TextBlock Grid.Row="0" Grid.Column="2" Text="Frame Sequencer (internal)"></TextBlock>
+              <TextBox Grid.Row="0" Grid.Column="3" Text="{Binding FrameSequencerInternal}"></TextBox>
+
               <TextBlock Grid.Row="1" Grid.Column="0" Text="Sound Length Counter"></TextBlock>
               <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SoundLengthCounter}"></TextBox>
               <CheckBox Grid.Row="1" Grid.Column="2" Content="Continous Output" IsChecked="{Binding ContinuousOutput}"></CheckBox>

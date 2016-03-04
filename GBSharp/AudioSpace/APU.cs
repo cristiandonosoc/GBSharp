@@ -60,6 +60,7 @@ namespace GBSharp.AudioSpace
     public bool Channel4Run { get; set; }
 
     private FrameSequencer _frameSequencer;
+    public FrameSequencer FrameSequencerTimer { get { return _frameSequencer; } }
 
     private bool _recordSeparateChannels;
     public bool RecordSeparateChannels
@@ -214,7 +215,7 @@ namespace GBSharp.AudioSpace
         case MMR.NR22:
         case MMR.NR23:
         case MMR.NR24:
-         _channel2.HandleMemoryChange(register, value);
+          _channel2.HandleMemoryChange(register, value);
           break;
         case MMR.NR30:
         case MMR.NR31:
@@ -239,7 +240,7 @@ namespace GBSharp.AudioSpace
           break;
         case MMR.NR52:
           bool apuEnabled = (Utils.UtilFuncs.TestBit(value, 7) != 0);
-          if(!apuEnabled)
+          if (!apuEnabled)
           {
             // Powering down the APU should power down all the registers
             for (ushort r = (ushort)MMR.NR10; r < (ushort)MMR.NR52; ++r)

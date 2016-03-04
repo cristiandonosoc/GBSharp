@@ -1,5 +1,4 @@
-﻿using GBSharp.Cartridge;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace GBSharp

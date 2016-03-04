@@ -21,6 +21,19 @@ namespace GBSharp.ViewModel
       }
     }
 
+    private string _frameSequencerInternal;
+    public string FrameSequencerInternal
+    {
+      get { return _frameSequencerInternal; }
+      set
+      {
+        _frameSequencerInternal = value;
+        OnPropertyChanged(() => FrameSequencerInternal);
+      }
+    }
+
+
+
     private string _soundLengthCounter;
     public string SoundLengthCounter
     {
@@ -116,7 +129,8 @@ namespace GBSharp.ViewModel
 
     internal void Reload()
     {
-      //FrameSequencer = "0x" + _gameboy.APU.Channel1.FrameSequencer.ToString("x2");
+      FrameSequencer = "0x" + _gameboy.APU.FrameSequencerTimer.Value.ToString("x2");
+      FrameSequencerInternal = "0x" + (_gameboy.APU.FrameSequencerTimer.InternalCounter & 0x1FFF).ToString("x2");
 
       SoundLengthCounter = "0x" + _gameboy.APU.Channel1.SoundLengthCounter.ToString("x2");
       ContinuousOutput = _gameboy.APU.Channel1.ContinuousOutput;
