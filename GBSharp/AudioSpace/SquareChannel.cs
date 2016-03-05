@@ -225,9 +225,6 @@ namespace GBSharp.AudioSpace
       else if (register == _freqLowRegister)
       {
         FrequencyFactor = (ushort)(((HighFreqByte & 0x7) << 8) | value);
-
-        _memory.LowLevelWrite((ushort)register, value);
-
         _memory.LowLevelWrite((ushort)register, value);
       }
       else if (register == _freqHighRegister)
@@ -317,6 +314,36 @@ namespace GBSharp.AudioSpace
       //Timeline[TimelineCount++] = _memory.LowLevelRead((ushort)register);
 
 #endif
+    }
+
+    internal void PowerOff()
+    {
+      // Sweep
+      if (_sweepRegister != 0)
+      {
+        SweepShifts = 0;
+        SweepUp = true;
+        _sweepCalcOcurred = false;
+        SweepLength = 0;
+        _memory.LowLevelWrite((ushort)_sweepRegister, 0);
+      }
+
+      // Length Register is unaffected by write
+      _memory.LowLevelWrite((ushort)_wavePatternDutyRegister, 0x00);
+
+
+      // Volume Envelope
+      _envelopeTicks = 0;
+      _envelopeTickCounter = 0;
+      _envelopeUp = false;
+      _envelopeDefaultValue = 0;
+      _memory.LowLevelWrite((ushort)_volumeEnvelopeRegister, 0);
+
+      // Frequency-Low
+      FrequencyFactor = 0x00;
+      ContinuousOutput = true;
+      _memory.LowLevelWrite((ushort)_freqLowRegister, 0);
+      _memory.LowLevelWrite((ushort)_freqHighRegister, 0);
     }
 
     internal void Step(int ticks)

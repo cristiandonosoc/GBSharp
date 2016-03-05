@@ -243,13 +243,19 @@ namespace GBSharp.AudioSpace
           if (!apuEnabled)
           {
             // Powering down the APU should power down all the registers
-            for (ushort r = (ushort)MMR.NR10; r < (ushort)MMR.NR52; ++r)
-            {
-              HandleMemoryChange((MMR)r, 0, false);
-            }
+            //for (ushort r = (ushort)MMR.NR10; r < (ushort)MMR.NR52; ++r)
+            //{
+            //  HandleMemoryChange((MMR)r, 0, false);
+            //}
+            _memory.LowLevelWrite((ushort)MMR.NR50, 0);
+            _memory.LowLevelWrite((ushort)MMR.NR51, 0);
+            _channel1.PowerOff();
             _channel1.Enabled = false;
+            _channel2.PowerOff();
             _channel2.Enabled = false;
+            _channel3.PowerOff();
             _channel3.Enabled = false;
+            _channel4.PowerOff();
             _channel4.Enabled = false;
           }
           else if (!Enabled)

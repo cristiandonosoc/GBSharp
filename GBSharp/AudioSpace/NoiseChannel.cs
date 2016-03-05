@@ -188,6 +188,26 @@ namespace GBSharp.AudioSpace
       }
     }
 
+    internal void PowerOff()
+    {
+      // Length Register is unaffected by write
+      _memory.LowLevelWrite((ushort)MMR.NR41, 0);
+
+      // Volume Envelope 
+      //_envelopeTicks = 0;
+      //_envelopeTickCounter = 0;
+      //_envelopeUp = false;
+      //_envelopeDefaultValue = 0;
+      _memory.LowLevelWrite((ushort)MMR.NR42, 0);
+
+
+      // Frequency-Low
+      FrequencyFactor = 0x00;
+      _continuousOutput = true;
+      _memory.LowLevelWrite((ushort)MMR.NR43, 0);
+      _memory.LowLevelWrite((ushort)MMR.NR44, 0);
+    }
+
     internal void Step(int ticks)
     {
       if (_frameSequencer.Clocked)

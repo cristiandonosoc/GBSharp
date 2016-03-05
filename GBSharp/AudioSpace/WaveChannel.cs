@@ -192,6 +192,29 @@ namespace GBSharp.AudioSpace
       }
     }
 
+    internal void PowerOff()
+    {
+      // Length Register is unaffected by write
+
+      // Volume Envelope 
+      //_envelopeTicks = 0;
+      //_envelopeTickCounter = 0;
+      //_envelopeUp = false;
+      //_envelopeDefaultValue = 0;
+      _memory.LowLevelWrite((ushort)MMR.NR30, 0);
+      _memory.LowLevelWrite((ushort)MMR.NR32, 0);
+
+      // Length Register is unaffected by write
+      _memory.LowLevelWrite((ushort)MMR.NR31, 0x00);
+
+
+      // Frequency-Low
+      FrequencyFactor = 0x00;
+      _continuousOutput = true;
+      _memory.LowLevelWrite((ushort)MMR.NR33, 0);
+      _memory.LowLevelWrite((ushort)MMR.NR34, 0);
+    }
+
     internal void Step(int ticks)
     {
       if (_frameSequencer.Clocked)
@@ -199,6 +222,7 @@ namespace GBSharp.AudioSpace
         if ((_frameSequencer.Value & 0x01) == 0)
         {
           if (!_continuousOutput)
+
           {
             ClockLengthCounter();
           }
