@@ -193,7 +193,15 @@ namespace GBSharp.AudioSpace
 
     internal void HandleMemoryChange(MMR register, byte value, bool updatedEnabledFlag = true)
     {
-      if(!Enabled && register != MMR.NR52) { return; }
+      if (!Enabled)
+      {
+        if ((register != MMR.NR11) &&
+            (register != MMR.NR21) &&
+            (register != MMR.NR31) &&
+            (register != MMR.NR41) &&
+            (register != MMR.NR52))
+        return;
+      }
 
       // We store previous channel status
       bool channel1Enabled = _channel1.Enabled;
@@ -247,8 +255,6 @@ namespace GBSharp.AudioSpace
             //{
             //  HandleMemoryChange((MMR)r, 0, false);
             //}
-            _memory.LowLevelWrite((ushort)MMR.NR50, 0);
-            _memory.LowLevelWrite((ushort)MMR.NR51, 0);
             _channel1.PowerOff();
             _channel1.Enabled = false;
             _channel2.PowerOff();
@@ -257,6 +263,9 @@ namespace GBSharp.AudioSpace
             _channel3.Enabled = false;
             _channel4.PowerOff();
             _channel4.Enabled = false;
+
+            _memory.LowLevelWrite((ushort)MMR.NR50, 0);
+            _memory.LowLevelWrite((ushort)MMR.NR51, 0);
           }
           else if (!Enabled)
           {
@@ -298,6 +307,9 @@ namespace GBSharp.AudioSpace
     internal void Step(int ticks)
     {
       _frameSequencer.Step((uint)ticks);
+
+      if (!Enabled) { return; }
+
       _channel1.Step(ticks);
       _channel2.Step(ticks);
       _channel3.Step(ticks);
