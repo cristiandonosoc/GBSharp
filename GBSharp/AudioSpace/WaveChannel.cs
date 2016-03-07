@@ -192,7 +192,7 @@ namespace GBSharp.AudioSpace
       }
     }
 
-    internal void PowerOff()
+    public void PowerOff()
     {
       // Length Register is unaffected by write
 
@@ -215,14 +215,22 @@ namespace GBSharp.AudioSpace
       _memory.LowLevelWrite((ushort)MMR.NR34, 0);
     }
 
+    public void ChangeLength(byte value)
+    {
+      _soundLengthCounter = 0xFF - value;
+      _memory.LowLevelWrite((ushort)MMR.NR31, value);
+    }
+
     internal void Step(int ticks)
     {
+      // FrameSequencer ticks at 512 Hz
       if (_frameSequencer.Clocked)
       {
+
+        // Length counter ticks at 256 Hz (every two frameSequencer ticks)
         if ((_frameSequencer.Value & 0x01) == 0)
         {
           if (!_continuousOutput)
-
           {
             ClockLengthCounter();
           }

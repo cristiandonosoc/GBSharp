@@ -147,7 +147,6 @@ namespace GBSharp.AudioSpace
       _volumeEnvelopeRegister = volumeEnvelopeRegister;
       _freqLowRegister = freqLowRegister;
       _freqHighRegister = freqHighRegister;
-
     }
 
     private bool _sweepEnabled;
@@ -316,7 +315,7 @@ namespace GBSharp.AudioSpace
 #endif
     }
 
-    internal void PowerOff()
+    public void PowerOff()
     {
       // Sweep
       if (_sweepRegister != 0)
@@ -344,6 +343,14 @@ namespace GBSharp.AudioSpace
       ContinuousOutput = true;
       _memory.LowLevelWrite((ushort)_freqLowRegister, 0);
       _memory.LowLevelWrite((ushort)_freqHighRegister, 0);
+    }
+
+    public void ChangeLength(byte value)
+    {
+      SoundLengthCounter = 0x3F - (value & 0x3F);
+      // Only length part changes
+      byte prevValue = _memory.LowLevelRead((ushort)_wavePatternDutyRegister);
+      _memory.LowLevelWrite((ushort)_wavePatternDutyRegister, (byte)((prevValue & 0xC0) | (value & 0x3F)));
     }
 
     internal void Step(int ticks)

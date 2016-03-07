@@ -195,12 +195,25 @@ namespace GBSharp.AudioSpace
     {
       if (!Enabled)
       {
-        if ((register != MMR.NR11) &&
-            (register != MMR.NR21) &&
-            (register != MMR.NR31) &&
-            (register != MMR.NR41) &&
-            (register != MMR.NR52))
-        return;
+        // When powered off, the internal length can be changed (DMG only)
+        switch(register)
+        {
+          case MMR.NR11:
+            _channel1.ChangeLength(value);
+            break;
+          case MMR.NR21:
+            _channel2.ChangeLength(value);
+            break;
+          case MMR.NR31:
+            _channel3.ChangeLength(value);
+            break;
+          case MMR.NR41:
+            _channel4.ChangeLength(value);
+            break;
+        }
+
+        // Other than turning on, all other writes are ignored
+        if (register != MMR.NR52) { return; }
       }
 
       // We store previous channel status

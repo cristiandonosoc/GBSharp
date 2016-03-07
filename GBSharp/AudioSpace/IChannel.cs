@@ -21,5 +21,9 @@ namespace GBSharp.AudioSpace
     void HandleMemoryChange(MemorySpace.MMR register, byte value);
     void GenerateSamples(int sampleCount);
     void ClearBuffer();
+
+    void PowerOff();
+    void ChangeLength(byte value);
+
   }
 }

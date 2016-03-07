@@ -115,7 +115,6 @@ namespace GBSharp.AudioSpace
       {
         case MMR.NR41:  // Sound Length
           _soundLengthCounter = 0x3F - (value & 0x3F);
-
           _memory.LowLevelWrite((ushort)register, value);
           break;
         case MMR.NR42:
@@ -188,7 +187,7 @@ namespace GBSharp.AudioSpace
       }
     }
 
-    internal void PowerOff()
+    public void PowerOff()
     {
       // Length Register is unaffected by write
       _memory.LowLevelWrite((ushort)MMR.NR41, 0);
@@ -206,6 +205,14 @@ namespace GBSharp.AudioSpace
       _continuousOutput = true;
       _memory.LowLevelWrite((ushort)MMR.NR43, 0);
       _memory.LowLevelWrite((ushort)MMR.NR44, 0);
+    }
+
+    public void ChangeLength(byte value)
+    {
+      _soundLengthCounter = 0x3F - (value & 0x3F);
+      // Only the length part changes
+      byte prevValue = _memory.LowLevelRead((ushort)MMR.NR41);
+      _memory.LowLevelWrite((ushort)MMR.NR41, (byte)((prevValue & 0xC0) | (value & 0x3F)));
     }
 
     internal void Step(int ticks)
