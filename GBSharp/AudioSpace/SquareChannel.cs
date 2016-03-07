@@ -72,17 +72,12 @@ namespace GBSharp.AudioSpace
         _frequencyFactor = value;
         LowFreqByte = (byte)_frequencyFactor;
         HighFreqByte = (byte)((_frequencyFactor >> 8) & 0x7);
-        Frequency = (double)0x20000 / (double)(0x800 - _frequencyFactor);
-        _tickThreshold = (int)(GameBoy.ticksPerMillisecond * (1000.0 / (2 * Frequency)));
+        // This is the counter used to output sound
+        _tickThreshold = (0x800 - _frequencyFactor) / 2;
       }
     }
 
     internal double Frequency { get; set; }
-
-    private int _tickCounter = 0;
-
-    private bool _up = false;
-    private short _outputValue = 0;
 
     // Registers
     private MMR _sweepRegister;
@@ -256,9 +251,6 @@ namespace GBSharp.AudioSpace
             Enabled = true;
           }
 
-          // Tick Counter is restarted
-          _tickCounter = 0;
-
           // FREQUENCY SWEEP
           SweepFrequencyRegister = FrequencyFactor;
           SweepCounter = SweepLength;
@@ -401,16 +393,6 @@ namespace GBSharp.AudioSpace
 
       if (!Enabled) { return; }
 
-      // The amount of ticks in a sample
-      _tickCounter += ticks;
-      if (_tickCounter >= _tickThreshold)
-      {
-        _up = !_up;
-        _outputValue = (short)(_up ? Volume : -Volume);
-        _tickCounter -= _tickThreshold;
-      }
-
-
       #region VOLUME ENVELOPE
 
       if (_runVolumeEnvelope && _envelopeTicks > 0)
@@ -429,8 +411,6 @@ namespace GBSharp.AudioSpace
             --_currentEnvelopeValue;
             if (_currentEnvelopeValue < 0) { _currentEnvelopeValue = 0; }
           }
-
-          _outputValue = (short)(_up ? Volume : -Volume);
         }
       }
 
@@ -438,30 +418,43 @@ namespace GBSharp.AudioSpace
 
     }
 
+    // We copy the state into the channel when we start generating input
+    // This means that the channel can continue to emulate while the generation
+    // thread outputs a snapshot of the frequecy and volume.
+    // This approach works only when the GenerateSample is called frequently
+    // and asks for relatively few samples each time
     private int _sampleTickCount = 0;
+#pragma warning disable 414 // Disabling never used warning
     private int _sampleTickThreshold = 0;
-    private bool _sampleUp = false;
     private int _sampleVolume = 0;
+#pragma warning restore 414
+    private bool _sampleUp = false;
+    private int _sampleTimerDivider = 0;
 
     public void GenerateSamples(int fullSamples)
     {
       // We obtain the status of the APU
-      int newTicksThreshold = _tickThreshold;
-      int newVolume = Volume;
+      int _sampleTickThreshold = _tickThreshold;
+      int _sampleVolume = Volume;
 
       int fullSamplesCount = fullSamples;
       while(fullSamplesCount > 0)
       {
         if (Enabled)
         {
-          _sampleTickCount += APU.MinimumTickThreshold;
-          if (_sampleTickCount >= _sampleTickThreshold)
+          // We simulate the hardware for that amount of ticks
+          _sampleTimerDivider -= APU.MinimumTickThreshold;
+          while (_sampleTimerDivider < 0)
           {
+            // Timer divider is a 5 bit counter that clocks the 11-bit frequency counter
+            _sampleTimerDivider += 32; 
 
-            _sampleTickThreshold = newTicksThreshold;
-            _sampleTickCount -= _sampleTickThreshold;
-            _sampleVolume = newVolume;
-            _sampleUp = !_sampleUp;
+            --_sampleTickCount;
+            if (_sampleTickCount <= 0)
+            {
+              _sampleTickCount += _sampleTickThreshold;
+              _sampleUp = !_sampleUp;
+            }
           }
 
           for(int c = 0; c < NumChannels; ++c)
