@@ -316,6 +316,18 @@ namespace GBSharp.AudioSpace
         _memory.LowLevelWrite((ushort)MMR.NR52, nr52);
       }
     }
+    
+    internal byte HandleWaveRead(ushort address)
+    {
+      if (_channel3.Enabled)
+      {
+        byte wave = _channel3.HandleWaveRead();
+        return wave;
+      }
+
+      // If the channel is off, we return the actual data
+      return _memory.LowLevelRead(address);
+    }
 
     internal void Step(int ticks)
     {

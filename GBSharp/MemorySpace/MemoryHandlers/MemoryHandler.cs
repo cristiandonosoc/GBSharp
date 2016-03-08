@@ -233,6 +233,13 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     /// </returns>
     virtual internal byte Read(ushort address)
     {
+      // We see if it's wave data
+      if ((0xFF30 <= address) && (address < 0xFF40))
+      {
+        byte wave = this.apu.HandleWaveRead(address);
+        return wave;
+      }
+
       // The sound values come or'ed
       byte value = this.memoryData[address];
       switch((MMR)address)

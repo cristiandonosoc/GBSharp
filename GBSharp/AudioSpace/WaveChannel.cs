@@ -192,6 +192,11 @@ namespace GBSharp.AudioSpace
       }
     }
 
+    internal byte HandleWaveRead()
+    {
+      return _currentWaveByte;
+    }
+
     public void PowerOff()
     {
       // Length Register is unaffected by write
@@ -251,17 +256,17 @@ namespace GBSharp.AudioSpace
         }
 
         // We get the memory value
-        ushort waveRAM = (ushort)(0xFF30 + _currentSampleIndex / 2);
-        byte value = _memory.Read(waveRAM);
+        ushort waveRAMAddress = (ushort)(0xFF30 + _currentSampleIndex / 2);
+        _currentWaveByte = _memory.LowLevelRead(waveRAMAddress);
         // Pair means the first 4 bits,
         // Odd means the last 4 bits
         if ((_currentSampleIndex & 1) == 0)
         {
-          _currentSample = (byte)(value >> 4);
+          _currentSample = (byte)(_currentWaveByte >> 4);
         }
         else
         {
-          _currentSample = (byte)(value & 0xF);
+          _currentSample = (byte)(_currentWaveByte & 0xF);
         }
 
         _outputValue = (short)Volume;
@@ -270,6 +275,7 @@ namespace GBSharp.AudioSpace
     }
 
     private byte _currentSampleIndex;
+    private byte _currentWaveByte;
     private byte _currentSample;
 
     public void GenerateSamples(int sampleCount)
