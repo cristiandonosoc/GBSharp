@@ -64,6 +64,7 @@ namespace GBSharp.AudioSpace
 
     private int _tickThreshold;
     private double _tickCounter;
+    private int _timerDivider;
 
     private ushort _frequencyFactor;
     internal ushort FrequencyFactor
@@ -75,7 +76,9 @@ namespace GBSharp.AudioSpace
         LowFreqByte = (byte)_frequencyFactor;
         HighFreqByte = (byte)((_frequencyFactor >> 8) & 0x7);
         Frequency = (double)0x20000 / (double)(0x800 - _frequencyFactor);
-        _tickThreshold = (int)(GameBoy.ticksPerMillisecond * (1000.0 / (2 * Frequency)));
+
+        // This is the counter used to output sound
+        _tickThreshold = (0x800 - _frequencyFactor) / 2;
       }
     }
 
@@ -163,6 +166,9 @@ namespace GBSharp.AudioSpace
           bool init = (Utils.UtilFuncs.TestBit(value, 7) != 0);
           if(init)
           {
+            _tickCounter = _tickThreshold;
+            _currentSampleIndex = 0;
+
             // NOTE(Cristian): If the length counter is empty at INIT,
             //                 it's reloaded with full length
             if (_soundLengthCounter < 0)
@@ -244,34 +250,39 @@ namespace GBSharp.AudioSpace
 
       if (!Enabled) { return; }
 
-      _tickCounter += ticks;
-      if (_tickCounter >= _tickThreshold)
+      _tickCounter -= ticks;
+      if (_tickCounter <= 0)
       {
-        _tickCounter -= _tickThreshold;
+        _tickCounter += _tickThreshold;
 
-        ++_currentSampleIndex;
-        if (_currentSampleIndex >= 32)
+        --_timerDivider;
+        if (_timerDivider < 0)
         {
-          _currentSampleIndex = 0;
-        }
+          _timerDivider += 32;
 
-        // We get the memory value
-        ushort waveRAMAddress = (ushort)(0xFF30 + _currentSampleIndex / 2);
-        _currentWaveByte = _memory.LowLevelRead(waveRAMAddress);
-        // Pair means the first 4 bits,
-        // Odd means the last 4 bits
-        if ((_currentSampleIndex & 1) == 0)
-        {
-          _currentSample = (byte)(_currentWaveByte >> 4);
-        }
-        else
-        {
-          _currentSample = (byte)(_currentWaveByte & 0xF);
-        }
+          ++_currentSampleIndex;
+          if (_currentSampleIndex >= 32)
+          {
+            _currentSampleIndex = 0;
+          }
 
-        _outputValue = (short)Volume;
+          // We get the memory value
+          ushort waveRAMAddress = (ushort)(0xFF30 + _currentSampleIndex / 2);
+          _currentWaveByte = _memory.LowLevelRead(waveRAMAddress);
+          // Pair means the first 4 bits,
+          // Odd means the last 4 bits
+          if ((_currentSampleIndex & 1) == 0)
+          {
+            _currentSample = (byte)(_currentWaveByte >> 4);
+          }
+          else
+          {
+            _currentSample = (byte)(_currentWaveByte & 0xF);
+          }
+
+          _outputValue = (short)Volume;
+        }
       }
-
     }
 
     private byte _currentSampleIndex;
