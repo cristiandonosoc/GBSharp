@@ -32,7 +32,7 @@ namespace GBSharp.ViewModel
       }
     }
 
-
+    #region CHANNEL 1
 
     private string _soundLengthCounter;
     public string SoundLengthCounter
@@ -122,6 +122,52 @@ namespace GBSharp.ViewModel
       }
     }
 
+    #endregion
+
+    private string _waveSoundLengthCounter;
+    public string WaveSoundLengthCounter
+    {
+      get { return _waveSoundLengthCounter; }
+      set
+      {
+        _waveSoundLengthCounter = value;
+        OnPropertyChanged(() => WaveSoundLengthCounter);
+      }
+    }
+
+    private string _waveContinuousOutput;
+    public string WaveContinuousOutput
+    {
+      get { return _waveContinuousOutput; }
+      set
+      {
+        _waveContinuousOutput = value;
+        OnPropertyChanged(() => WaveContinuousOutput);
+      }
+    }
+
+    private string _waveCurrentSampleIndex;
+    public string WaveCurrentSampleIndex
+    {
+      get { return _waveCurrentSampleIndex; }
+      set
+      {
+        _waveCurrentSampleIndex = value;
+        OnPropertyChanged(() => WaveCurrentSampleIndex);
+      }
+    }
+
+    private string _waveCurrentSample;
+    public string WaveCurrentSample
+    {
+      get { return _waveCurrentSample; }
+      set
+      {
+        _waveCurrentSample = value;
+        OnPropertyChanged(() => WaveCurrentSample);
+      }
+    }
+
     internal SoundChannelInternalsViewModel(IGameBoy gameboy)
     {
       _gameboy = gameboy;
@@ -141,6 +187,11 @@ namespace GBSharp.ViewModel
       SweepShifts = _gameboy.APU.Channel1.SweepShifts.ToString();
       SweepUp = _gameboy.APU.Channel1.SweepUp;
       //SweepPeriod = "0x" + _gameboy.APU.Channel1.SweepPeriod.ToString("x2");
+
+      WaveSoundLengthCounter = "0x" + _gameboy.APU.Channel3.SoundLengthCounter.ToString("x2");
+      WaveContinuousOutput = "0x" + _gameboy.APU.Channel3.ContinuousOutput;
+      WaveCurrentSampleIndex = "0x" + _gameboy.APU.Channel3.CurrentSampleIndex.ToString("x2");
+      WaveCurrentSample = "0x" + _gameboy.APU.Channel3.CurrentSample.ToString("x2");
     }
 
     internal void Clear()

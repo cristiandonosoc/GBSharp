@@ -48,6 +48,7 @@ namespace GBSharp.AudioSpace
     public ISquareChannel Channel1 { get { return _channel1; } }
     SquareChannel _channel2;
     WaveChannel _channel3;
+    public IWaveChannel Channel3 { get { return _channel3; } }
     NoiseChannel _channel4;
 
     public bool Enabled { get; private set; }

@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace GBSharp.AudioSpace
 {
-  internal class WaveChannel : IChannel
+  internal class WaveChannel : IChannel, IWaveChannel
   {
     private int _msSampleRate;
     public int SampleRate { get; private set; }
@@ -105,11 +105,11 @@ namespace GBSharp.AudioSpace
 
     private bool _channelDACOn;
 
-    private int _soundLengthCounter;
+    public int SoundLengthCounter { get; private set; }
 
     int _volumeRightShift;
 
-    bool _continuousOutput;
+    public bool ContinuousOutput { get; private set; }
     private short _outputValue;
 
     public void HandleMemoryChange(MMR register, byte value)
@@ -128,7 +128,7 @@ namespace GBSharp.AudioSpace
           _memory.LowLevelWrite((ushort)register, value);
           break;
         case MMR.NR31:  // Sound Length
-          _soundLengthCounter = 0xFF - value;
+          SoundLengthCounter = 0xFF - value;
           //_memory.LowLevelWrite((ushort)register, 0xFF);
           _memory.LowLevelWrite((ushort)register, value);
           break;
@@ -149,11 +149,11 @@ namespace GBSharp.AudioSpace
         case MMR.NR34:  // FrequencyFactor higher
           FrequencyFactor = (ushort)(((value & 0x7) << 8) | LowFreqByte);
 
-          bool prevContinuousOutput = _continuousOutput;
-          _continuousOutput = (Utils.UtilFuncs.TestBit(value, 6) == 0);
+          bool prevContinuousOutput = ContinuousOutput;
+          ContinuousOutput = (Utils.UtilFuncs.TestBit(value, 6) == 0);
           // Only enabling sound length (disabled -> enabled) could trigger a clock
-          if ((!_continuousOutput) &&
-              (prevContinuousOutput != _continuousOutput))
+          if ((!ContinuousOutput) &&
+              (prevContinuousOutput != ContinuousOutput))
           {
             // If the next frameSequencer WON'T trigger the length period,
             // the counter is somehow decremented...
@@ -167,18 +167,18 @@ namespace GBSharp.AudioSpace
           if(init)
           {
             _tickCounter = _tickThreshold;
-            _currentSampleIndex = 0;
+            CurrentSampleIndex = 0;
 
             // NOTE(Cristian): If the length counter is empty at INIT,
             //                 it's reloaded with full length
-            if (_soundLengthCounter < 0)
+            if (SoundLengthCounter < 0)
             {
-              _soundLengthCounter = 0xFF;
+              SoundLengthCounter = 0xFF;
 
               // If INIT on an zerioed empty enabled length channel
               // AND the next frameSequencer tick WON'T tick the length period
               // The lenght counter is somehow decremented
-              if (!_continuousOutput &&
+              if (!ContinuousOutput &&
                   ((_frameSequencer.Value & 0x01) == 0))
               {
                 ClockLengthCounter();
@@ -221,14 +221,14 @@ namespace GBSharp.AudioSpace
 
       // Frequency-Low
       FrequencyFactor = 0x00;
-      _continuousOutput = true;
+      ContinuousOutput = true;
       _memory.LowLevelWrite((ushort)MMR.NR33, 0);
       _memory.LowLevelWrite((ushort)MMR.NR34, 0);
     }
 
     public void ChangeLength(byte value)
     {
-      _soundLengthCounter = 0xFF - value;
+      SoundLengthCounter = 0xFF - value;
       _memory.LowLevelWrite((ushort)MMR.NR31, value);
     }
 
@@ -241,7 +241,7 @@ namespace GBSharp.AudioSpace
         // Length counter ticks at 256 Hz (every two frameSequencer ticks)
         if ((_frameSequencer.Value & 0x01) == 0)
         {
-          if (!_continuousOutput)
+          if (!ContinuousOutput)
           {
             ClockLengthCounter();
           }
@@ -255,29 +255,29 @@ namespace GBSharp.AudioSpace
       {
         _tickCounter += _tickThreshold;
 
-        --_timerDivider;
-        if (_timerDivider < 0)
+        //--_timerDivider;
+        if (true)
         {
-          _timerDivider += 32;
+          //_timerDivider += 32;
 
-          ++_currentSampleIndex;
-          if (_currentSampleIndex >= 32)
+          ++CurrentSampleIndex;
+          if (CurrentSampleIndex >= 32)
           {
-            _currentSampleIndex = 0;
+            CurrentSampleIndex = 0;
           }
 
           // We get the memory value
-          ushort waveRAMAddress = (ushort)(0xFF30 + _currentSampleIndex / 2);
+          ushort waveRAMAddress = (ushort)(0xFF30 + CurrentSampleIndex / 2);
           _currentWaveByte = _memory.LowLevelRead(waveRAMAddress);
           // Pair means the first 4 bits,
           // Odd means the last 4 bits
-          if ((_currentSampleIndex & 1) == 0)
+          if ((CurrentSampleIndex & 1) == 0)
           {
-            _currentSample = (byte)(_currentWaveByte >> 4);
+            CurrentSample = (byte)(_currentWaveByte >> 4);
           }
           else
           {
-            _currentSample = (byte)(_currentWaveByte & 0xF);
+            CurrentSample = (byte)(_currentWaveByte & 0xF);
           }
 
           _outputValue = (short)Volume;
@@ -285,9 +285,9 @@ namespace GBSharp.AudioSpace
       }
     }
 
-    private byte _currentSampleIndex;
     private byte _currentWaveByte;
-    private byte _currentSample;
+    public byte CurrentSample { get; private set; }
+    public byte CurrentSampleIndex { get; private set; }
 
     public void GenerateSamples(int sampleCount)
     {
@@ -315,10 +315,10 @@ namespace GBSharp.AudioSpace
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ClockLengthCounter()
     {
-      if (_soundLengthCounter >= 0)
+      if (SoundLengthCounter >= 0)
       {
-        --_soundLengthCounter;
-        if (_soundLengthCounter < 0)
+        --SoundLengthCounter;
+        if (SoundLengthCounter < 0)
         {
           Enabled = false;
         }

@@ -23,7 +23,7 @@
               <RowDefinition></RowDefinition>
               <RowDefinition></RowDefinition>
             </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" FontWeight="Bold" Text="Channel 1 (Square Channel w/ frequency sweep"></TextBlock>
+            <TextBlock Grid.Row="0" FontWeight="Bold" Text="Channel 1 (Square Channel w/ frequency sweep)"></TextBlock>
 
             <Grid Grid.Row="1">
               <Grid.RowDefinitions>
@@ -69,6 +69,38 @@
 
 
               
+            </Grid>
+          </Grid>
+        </Border>
+
+        <Border Grid.Row="1" BorderBrush="Black" BorderThickness="1">
+          <Grid Margin="5">
+            <Grid.RowDefinitions>
+              <RowDefinition></RowDefinition>
+              <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" FontWeight="Bold" Text="Channel 3 (Wave Channel)"></TextBlock>
+
+            <Grid Grid.Row="1">
+              <Grid.RowDefinitions>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+              </Grid.RowDefinitions>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+              </Grid.ColumnDefinitions>
+
+              <TextBlock Grid.Row="0" Grid.Column="0" Text="Sound Length Counter"></TextBlock>
+              <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding WaveSoundLengthCounter}"></TextBox>
+              <CheckBox Grid.Row="0" Grid.Column="2" Content="Continous Output" IsChecked="{Binding WaveContinuousOutput}"></CheckBox>
+
+              <TextBlock Grid.Row="1" Grid.Column="0" Text="Current Sample Index"></TextBlock>
+              <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding WaveCurrentSampleIndex}"></TextBox>
+              <TextBlock Grid.Row="1" Grid.Column="2" Text="Current Sample"></TextBlock>
+              <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding WaveCurrentSample}"></TextBox>
             </Grid>
           </Grid>
         </Border>

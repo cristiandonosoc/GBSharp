@@ -24,6 +24,7 @@ namespace GBSharp
     bool Channel3Run { get; set; }
 
     ISquareChannel Channel1 { get; }
+    IWaveChannel Channel3 { get; }
 
     FrameSequencer FrameSequencerTimer { get; }
   }
