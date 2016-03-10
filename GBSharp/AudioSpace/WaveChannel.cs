@@ -51,7 +51,7 @@ namespace GBSharp.AudioSpace
       get
       {
         if(_volumeRightShift < 0) { return 0; }
-        int index = ((_currentSample >> _volumeRightShift) - 7);
+        int index = ((CurrentSample >> _volumeRightShift) - 7);
         int volume = index * _volumeConstant;
         return volume;
       }
@@ -250,15 +250,16 @@ namespace GBSharp.AudioSpace
 
       if (!Enabled) { return; }
 
-      _tickCounter -= ticks;
-      if (_tickCounter <= 0)
-      {
-        _tickCounter += _tickThreshold;
 
-        //--_timerDivider;
-        if (true)
+      _timerDivider -= ticks;
+      if (_timerDivider <= 0)
+      {
+        _timerDivider += 32;
+
+        --_tickCounter;
+        if (_tickCounter <= 0)
         {
-          //_timerDivider += 32;
+          _tickCounter += _tickThreshold;
 
           ++CurrentSampleIndex;
           if (CurrentSampleIndex >= 32)
@@ -293,7 +294,6 @@ namespace GBSharp.AudioSpace
     {
       // ***************************************
       // TODO(Cristian): REMOVE THIS!!!!!!
-      return;
       while (sampleCount > 0)
       {
         --sampleCount;
