@@ -10,6 +10,64 @@ using System.Threading.Tasks;
 
 namespace GBSharp.AudioSpace
 {
+  internal class SoundEvent
+  {
+    internal int TickDiff;
+    internal int Threshold;
+    internal int Volume;
+  }
+
+
+  internal class SoundEventBuffer
+  {
+    const int SIZE = 1000;
+    SoundEvent[] _events;
+
+    int _writeBuffer;
+    int _readBuffer;
+
+    internal SoundEventBuffer()
+    {
+      _events = new SoundEvent[SIZE];
+      // We initialize all the fuckers
+      for (int i = 0; i < SIZE; ++i)
+      {
+        _events[i] = new SoundEvent();
+      }
+    }
+
+    internal void AddSoundEvent(int ticks, int threshold, int volume)
+    {
+      _events[_writeBuffer].TickDiff = ticks;
+      _events[_writeBuffer].Threshold = threshold;
+      _events[_writeBuffer].Volume = volume;
+      if (_writeBuffer + 1 == SIZE)
+      {
+        _writeBuffer = 0;
+      }
+      else
+      {
+        ++_writeBuffer;
+      }
+    }
+
+    internal bool GetNextEvent(ref SoundEvent soundEvent)
+    {
+      if (_readBuffer == _writeBuffer) { return false; }
+
+      soundEvent.TickDiff = _events[_writeBuffer].TickDiff;
+      soundEvent.Threshold = _events[_writeBuffer].Threshold;
+      soundEvent.Volume = _events[_writeBuffer].Volume;
+      ++_readBuffer;
+      if (_readBuffer == SIZE)
+      {
+        _readBuffer = 0;
+      }
+
+      return true;
+    }
+  }
+
   internal class SquareChannel : IChannel, ISquareChannel
   {
     private Memory _memory;
@@ -74,6 +132,7 @@ namespace GBSharp.AudioSpace
         HighFreqByte = (byte)((_frequencyFactor >> 8) & 0x7);
         // This is the counter used to output sound
         _tickThreshold = (0x800 - _frequencyFactor) / 2;
+        _eventBuffer.AddSoundEvent(_tickCount, _tickThreshold, Volume);
       }
     }
 
@@ -120,6 +179,9 @@ namespace GBSharp.AudioSpace
 
     private FrameSequencer _frameSequencer;
 
+    private SoundEventBuffer _eventBuffer;
+    private int _tickDiff;
+
     internal SquareChannel(Memory memory, FrameSequencer frameSequencer,
                            int sampleRate, int numChannels, int sampleSize, int channelIndex,
                            MMR sweepRegister, MMR wavePatternDutyRegister, MMR volumeEnvelopeRegister,
@@ -135,6 +197,7 @@ namespace GBSharp.AudioSpace
       _buffer = new short[SampleRate * NumChannels * SampleSize * _milliseconds / 1000];
 
       _channelIndex = channelIndex;
+      _eventBuffer = new SoundEventBuffer();
 
       // Register setup
       _sweepRegister = sweepRegister;
@@ -345,8 +408,13 @@ namespace GBSharp.AudioSpace
       _memory.LowLevelWrite((ushort)_wavePatternDutyRegister, (byte)((prevValue & 0xC0) | (value & 0x3F)));
     }
 
+
+    int _tickCount = 0;
+    int _tickDivider;
+
     internal void Step(int ticks)
     {
+
       if (_frameSequencer.Clocked)
       { 
         // We check which internal element ticket
@@ -392,6 +460,18 @@ namespace GBSharp.AudioSpace
       }
 
       if (!Enabled) { return; }
+
+      _tickDivider -= ticks;
+      if (_tickDivider < 0)
+      {
+        _tickDivider += 32;
+
+        --_tickCount;
+        if (_tickCount <= 0)
+        {
+          _tickCount += _tickThreshold;
+        }
+      }
 
       #region VOLUME ENVELOPE
 
@@ -473,7 +553,6 @@ namespace GBSharp.AudioSpace
 
     public void ClearBuffer()
     {
-
       _sampleIndex = 0;
     }
 
