@@ -55,9 +55,9 @@ namespace GBSharp.AudioSpace
     {
       if (_readBuffer == _writeBuffer) { return false; }
 
-      soundEvent.TickDiff = _events[_writeBuffer].TickDiff;
-      soundEvent.Threshold = _events[_writeBuffer].Threshold;
-      soundEvent.Volume = _events[_writeBuffer].Volume;
+      soundEvent.TickDiff = _events[_readBuffer].TickDiff;
+      soundEvent.Threshold = _events[_readBuffer].Threshold;
+      soundEvent.Volume = _events[_readBuffer].Volume;
       ++_readBuffer;
       if (_readBuffer == SIZE)
       {
@@ -132,7 +132,8 @@ namespace GBSharp.AudioSpace
         HighFreqByte = (byte)((_frequencyFactor >> 8) & 0x7);
         // This is the counter used to output sound
         _tickThreshold = (0x800 - _frequencyFactor) / 2;
-        _eventBuffer.AddSoundEvent(_tickCount, _tickThreshold, Volume);
+        _eventBuffer.AddSoundEvent(_tickDiff, _tickThreshold, Volume);
+        _tickDiff = 0;
       }
     }
 
@@ -166,12 +167,22 @@ namespace GBSharp.AudioSpace
     private int _currentEnvelopeTicks;
     private bool _currentEnvelopeUp;
     private int _currentEnvelopeValue;
+    private int CurrentEnvelopeValue
+    {
+      get { return _currentEnvelopeValue; }
+      set
+      {
+        _currentEnvelopeValue = value;
+        _eventBuffer.AddSoundEvent(_tickDiff, _tickThreshold, Volume);
+        _tickDiff = 0;
+      }
+    }
 
     private const int _volumeConstant = 511;
     public int Volume {
       get
       {
-        return _currentEnvelopeValue * _volumeConstant;
+        return CurrentEnvelopeValue * _volumeConstant;
       }
     }
 
@@ -346,7 +357,7 @@ namespace GBSharp.AudioSpace
           // Envelope is reloaded
           _currentEnvelopeTicks = _envelopeTicks;
           _currentEnvelopeUp = _envelopeUp;
-          _currentEnvelopeValue = _envelopeDefaultValue;
+          CurrentEnvelopeValue = _envelopeDefaultValue;
           _envelopeTickCounter = 0;
         }
 
@@ -414,6 +425,7 @@ namespace GBSharp.AudioSpace
 
     internal void Step(int ticks)
     {
+      _tickDiff += ticks;
 
       if (_frameSequencer.Clocked)
       { 
@@ -483,13 +495,13 @@ namespace GBSharp.AudioSpace
           _envelopeTickCounter -= _envelopeTicks;
           if (_envelopeUp)
           {
-            ++_currentEnvelopeValue;
-            if (_currentEnvelopeValue > 15) { _currentEnvelopeValue = 15; }
+            ++CurrentEnvelopeValue;
+            if (CurrentEnvelopeValue > 15) { CurrentEnvelopeValue = 15; }
           }
           else
           {
-            --_currentEnvelopeValue;
-            if (_currentEnvelopeValue < 0) { _currentEnvelopeValue = 0; }
+            --CurrentEnvelopeValue;
+            if (CurrentEnvelopeValue < 0) { CurrentEnvelopeValue = 0; }
           }
         }
       }
@@ -548,6 +560,75 @@ namespace GBSharp.AudioSpace
         }
 
         --fullSamplesCount;
+      }
+    }
+
+    int _eventTickCounter;
+    bool _eventAlreadyRun = true;
+    SoundEvent _currentEvent = new SoundEvent();
+
+    int _newSampleTickCounter;
+    int _newSampleTickThreshold;
+    int _newSampleVolume;
+    bool _newSampleUp;
+
+    int _newSampleTimerDivider;
+
+    public void GenerateSamples2(int fullSamples)
+    {
+      int fullSampleCount = fullSamples;
+      while (fullSampleCount > 0)
+      {
+        // We how many ticks will pass this sample
+        int ticks = APU.MinimumTickThreshold;
+
+        // If the event already run, we try to see if there is a new one
+        if (_eventAlreadyRun)
+        {
+          if (_eventBuffer.GetNextEvent(ref _currentEvent))
+          {
+            _eventTickCounter = _currentEvent.TickDiff;
+            _eventAlreadyRun = false;
+          }
+        }
+        else
+        {
+          _eventTickCounter -= ticks;
+          if (_eventTickCounter < 0)
+          {
+            _newSampleTickThreshold = _currentEvent.Threshold;
+            _newSampleVolume = _currentEvent.Volume;
+            _eventAlreadyRun = true;
+          }
+        }
+
+        // We simulate to output the output
+        int volume = 0;
+        if (Enabled)
+        {
+          _newSampleTimerDivider -= ticks;
+          while (_newSampleTimerDivider <= 0)
+          {
+            _newSampleTimerDivider += 32;
+
+            --_newSampleTickCounter;
+            if (_newSampleTickCounter <= 0)
+            {
+              _newSampleTickCounter += _newSampleTickThreshold;
+              _newSampleUp = !_newSampleUp;
+            }
+          }
+
+          volume = _newSampleVolume;
+        }
+
+        // We generate the sample
+        for (int c = 0; c < NumChannels; ++c)
+        {
+          _buffer[_sampleIndex++] = (short)(_newSampleUp ? volume : -volume);
+        }
+
+        --fullSampleCount;
       }
     }
 
