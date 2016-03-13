@@ -10,6 +10,13 @@ using System.Threading.Tasks;
 
 namespace GBSharp.AudioSpace
 {
+  internal enum SquareChannelEvents
+  {
+    THRESHOLD_CHANGE,
+    VOLUME_CHANGE
+  }
+
+
   internal class SquareChannel : IChannel, ISquareChannel
   {
     
@@ -20,8 +27,6 @@ namespace GBSharp.AudioSpace
     internal static uint TimelineSoundThreadCount = 0;
     internal static Stopwatch sw = new Stopwatch();
 #endif
-
-
 
     private Memory _memory;
     #region BUFFER DEFINITION
@@ -58,16 +63,6 @@ namespace GBSharp.AudioSpace
           nr52 &= mask;
         }
         _memory.LowLevelWrite((ushort)MMR.NR52, nr52);
-
-        if (Enabled)
-        {
-          _eventQueue.AddSoundEvent(_tickDiff, _tickThreshold, Volume, _channelIndex);
-        }
-        else
-        {
-          _eventQueue.AddSoundEvent(_tickDiff, 0, 0, _channelIndex);
-        }
-        _tickDiff = 0;
       }
     }
 
@@ -89,7 +84,8 @@ namespace GBSharp.AudioSpace
         HighFreqByte = (byte)((_frequencyFactor >> 8) & 0x7);
         // This is the counter used to output sound
         _tickThreshold = (0x800 - _frequencyFactor) / 2;
-        _eventQueue.AddSoundEvent(_tickDiff, _tickThreshold, Volume, _channelIndex);
+        _eventQueue.AddSoundEvent(_tickDiff, (int)SquareChannelEvents.THRESHOLD_CHANGE,
+                                  _tickThreshold, _channelIndex);
         _tickDiff = 0;
       }
     }
@@ -130,7 +126,8 @@ namespace GBSharp.AudioSpace
       set
       {
         _currentEnvelopeValue = value;
-        _eventQueue.AddSoundEvent(_tickDiff, _tickThreshold, Volume, _channelIndex);
+        _eventQueue.AddSoundEvent(_tickDiff, (int)SquareChannelEvents.VOLUME_CHANGE,
+                                  Volume, _channelIndex);
         _tickDiff = 0;
       }
     }
@@ -577,8 +574,15 @@ namespace GBSharp.AudioSpace
 
           if (_eventTickCounter <= 0)
           {
-            _newSampleTickThreshold = _currentEvent.Threshold;
-            _newSampleVolume = _currentEvent.Volume;
+            switch((SquareChannelEvents)_currentEvent.Kind)
+            {
+              case SquareChannelEvents.THRESHOLD_CHANGE:
+                _newSampleTickThreshold = _currentEvent.Value;
+                break;
+              case SquareChannelEvents.VOLUME_CHANGE:
+                _newSampleVolume = _currentEvent.Value;
+                break;
+            }
             _eventAlreadyRun = true;
           }
         }

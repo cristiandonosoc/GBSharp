@@ -8,9 +8,9 @@ namespace GBSharp.AudioSpace
 {
   internal class SoundEvent
   {
-    internal long TickDiff;
-    internal int Threshold;
-    internal int Volume;
+    internal long TickDiff { get; set; }
+    internal int Kind { get; set; }
+    internal int Value { get; set; }
   }
 
   internal class SoundEventQueue
@@ -23,7 +23,8 @@ namespace GBSharp.AudioSpace
 
     internal SoundEventQueue(int size)
     {
-      _events = new SoundEvent[size];
+      _size = size;
+      _events = new SoundEvent[_size];
       // We initialize all the fuckers
       for (int i = 0; i < _size; ++i)
       {
@@ -31,11 +32,11 @@ namespace GBSharp.AudioSpace
       }
     }
 
-    internal void AddSoundEvent(long ticks, int threshold, int volume, int channelIndex)
+    internal void AddSoundEvent(long ticks, int kind, int value, int channelIndex)
     {
       _events[_writeBuffer].TickDiff = ticks;
-      _events[_writeBuffer].Threshold = threshold;
-      _events[_writeBuffer].Volume = volume;
+      _events[_writeBuffer].Kind = kind;
+      _events[_writeBuffer].Value = value;
 #if SoundTiming
         if (channelIndex == 0)
         {
@@ -61,8 +62,8 @@ namespace GBSharp.AudioSpace
       if (_readBuffer == _writeBuffer) { return false; }
 
       soundEvent.TickDiff = _events[_readBuffer].TickDiff;
-      soundEvent.Threshold = _events[_readBuffer].Threshold;
-      soundEvent.Volume = _events[_readBuffer].Volume;
+      soundEvent.Kind = _events[_readBuffer].Kind;
+      soundEvent.Value = _events[_readBuffer].Value;
       ++_readBuffer;
       if (_readBuffer == _size)
       {
