@@ -230,6 +230,14 @@ namespace GBSharp.AudioSpace
       return _currentWaveByte;
     }
 
+    internal void HandleWaveWrite(ushort address, byte value)
+    {
+      // The encoding is address | value
+      _eventQueue.AddSoundEvent(_tickDiff, (int)WaveChannelEvents.MEMORY_CHANGE,
+                                ((address << 8) | value), _channelIndex);
+      _tickDiff = 0;
+    }
+
     public void PowerOff()
     {
       // Length Register is unaffected by write
@@ -297,6 +305,7 @@ namespace GBSharp.AudioSpace
 
           // We get the memory value
           ushort waveRAMAddress = (ushort)(0xFF30 + CurrentSampleIndex / 2);
+
           _currentWaveByte = _memory.LowLevelRead(waveRAMAddress);
           // Pair means the first 4 bits,
           // Odd means the last 4 bits
@@ -328,10 +337,141 @@ namespace GBSharp.AudioSpace
         {
           _buffer[_sampleIndex++] = _outputValue;
         }
-
-
       }
     }
+
+    long _eventTickCounter;
+    long _eventOnHoldCounter;
+    bool _eventAlreadyRun = true;
+    SoundEvent _currentEvent = new SoundEvent();
+
+    int _newSampleTickCounter;
+    int _newSampleTickThreshold;
+    int _newSampleVolume;
+    bool _newSampleUp;
+
+    long _newSampleTimerDivider;
+
+    byte[] _newSampleArray = new byte[16];
+    int _newSampleIndex;
+    byte _newCurrentSample;
+    int _newVolumeShift;
+
+    int CalculateWaveVolume(int volumeRightShift, byte currentSample)
+    {
+        if(volumeRightShift < 0) { return 0; }
+        int index = ((currentSample >> volumeRightShift) - 7);
+        int volume = index * _volumeConstant;
+        return volume;
+    }
+
+    public void GenerateSamples2(int fullSamples)
+    {
+      int fullSampleCount = fullSamples;
+      while (fullSampleCount > 0)
+      {
+        // We how many ticks will pass this sample
+        long ticks = APU.MinimumTickThreshold;
+
+        // If the event already run, we try to see if there is a new one
+        if (_eventAlreadyRun)
+        {
+          if (_eventQueue.GetNextEvent(ref _currentEvent))
+          {
+            _eventTickCounter = _currentEvent.TickDiff;
+            _eventAlreadyRun = false;
+          }
+          else
+          {
+            _eventOnHoldCounter += ticks;
+          }
+        }
+        else
+        {
+          // We need to substract the on hold time
+          _eventOnHoldCounter += ticks;
+          if (_eventTickCounter > _eventOnHoldCounter)
+          {
+            _eventTickCounter -= _eventOnHoldCounter;
+            _eventOnHoldCounter = 0;
+          }
+          else
+          {
+            _eventOnHoldCounter -= _eventTickCounter;
+            _eventTickCounter = 0;
+          }
+
+          if (_eventTickCounter <= 0)
+          {
+            switch((WaveChannelEvents)_currentEvent.Kind)
+            {
+              case WaveChannelEvents.THRESHOLD_CHANGE:
+                _newSampleTickThreshold = _currentEvent.Value;
+                break;
+              case WaveChannelEvents.VOLUME_CHANGE:
+                _newVolumeShift = _currentEvent.Value;
+                _newSampleVolume = CalculateWaveVolume(_newVolumeShift, _newCurrentSample);
+                break;
+              case WaveChannelEvents.MEMORY_CHANGE:
+                // The key is the actual address in memory
+                int index = (_currentEvent.Value >> 8) - 0xFF30;
+                byte value = (byte)(_currentEvent.Value & 0xFF);
+                _newSampleArray[index] = value;
+                break;
+            }
+            _eventAlreadyRun = true;
+          }
+        }
+
+        // We simulate to output the output
+        int volume = 0;
+        if (Enabled)
+        {
+          _newSampleTimerDivider -= ticks;
+          while (_newSampleTimerDivider <= 0)
+          {
+            _newSampleTimerDivider += 32;
+
+            --_newSampleTickCounter;
+            if (_newSampleTickCounter <= 0)
+            {
+              ++_newSampleIndex;
+              if (_newSampleIndex >= 32)
+              {
+                _newSampleIndex = 0;
+              }
+
+              // We get the memory value
+              byte currentByte = _newSampleArray[_newSampleIndex >> 1];
+              if ((_newSampleIndex & 1) == 0)
+              {
+                _newCurrentSample = (byte)(currentByte >> 4);
+              }
+              else
+              {
+                _newCurrentSample = (byte)(currentByte & 0x0F);
+              }
+
+              _newSampleVolume = CalculateWaveVolume(_newVolumeShift, _newCurrentSample);
+            }
+          }
+
+          volume = _newSampleVolume;
+        }
+
+        // We generate the sample
+        for (int c = 0; c < NumChannels; ++c)
+        {
+          _buffer[_sampleIndex++] = (short)(_newSampleUp ? volume : -volume);
+        }
+
+        --fullSampleCount;
+      }
+    }
+
+
+
+
 
     public void ClearBuffer()
     {

@@ -170,13 +170,17 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           {
             // This addresses cannot be written
           }
-
+          else if ((0xFF30 <= address) && (address < 0xFF40))
+          {
+            this.apu.HandleWaveWrite(address, value);
+            this.memoryData[address] = value;
+          }
           // NOTE(Cristian): We start a DMA process.
           else if (address == (ushort)MMR.DMA)
           {
             this.dma.Start(value);
           }
-          else if (address >= 0xFF40)
+          else if (0xFF40 <= address)
           {
             this.memoryData[address] = value;
             // We handle display memory changes

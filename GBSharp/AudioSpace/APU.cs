@@ -330,6 +330,11 @@ namespace GBSharp.AudioSpace
       return _memory.LowLevelRead(address);
     }
 
+    internal void HandleWaveWrite(ushort address, byte value)
+    {
+      _channel3.HandleWaveWrite(address, value);
+    }
+
     internal void Step(int ticks)
     {
       _frameSequencer.Step((uint)ticks);
@@ -346,7 +351,7 @@ namespace GBSharp.AudioSpace
       // If the channels are disabled, all the channels will output 0
       if (Channel1Run) { _channel1.GenerateSamples2(fullSampleCount); }
       if (Channel2Run) { _channel2.GenerateSamples2(fullSampleCount); }
-      if (Channel3Run) { _channel3.GenerateSamples(fullSampleCount); }
+      if (Channel3Run) { _channel3.GenerateSamples2(fullSampleCount); }
       if (Channel4Run) { _channel4.GenerateSamples(fullSampleCount); }
 
       // We transformate the samples
