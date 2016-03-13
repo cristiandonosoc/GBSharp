@@ -67,6 +67,7 @@
     <Compile Include="AudioSpace\FrameSequencer.cs" />
     <Compile Include="AudioSpace\IChannel.cs" />
     <Compile Include="AudioSpace\NoiseChannel.cs" />
+    <Compile Include="AudioSpace\SoundEventQueue.cs" />
     <Compile Include="AudioSpace\SquareChannel.cs" />
     <Compile Include="AudioSpace\WaveChannel.cs" />
     <Compile Include="AudioSpace\WavExporter.cs" />

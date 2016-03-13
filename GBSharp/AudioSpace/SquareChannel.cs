@@ -10,74 +10,6 @@ using System.Threading.Tasks;
 
 namespace GBSharp.AudioSpace
 {
-  internal class SoundEvent
-  {
-    internal long TickDiff;
-    internal int Threshold;
-    internal int Volume;
-  }
-
-
-  internal class SoundEventBuffer
-  {
-    const int SIZE = 1000;
-    SoundEvent[] _events;
-
-    int _writeBuffer;
-    int _readBuffer;
-
-    internal SoundEventBuffer()
-    {
-      _events = new SoundEvent[SIZE];
-      // We initialize all the fuckers
-      for (int i = 0; i < SIZE; ++i)
-      {
-        _events[i] = new SoundEvent();
-      }
-    }
-
-    internal void AddSoundEvent(long ticks, int threshold, int volume, int channelIndex)
-    {
-      _events[_writeBuffer].TickDiff = ticks;
-      _events[_writeBuffer].Threshold = threshold;
-      _events[_writeBuffer].Volume = volume;
-#if SoundTiming
-      if (channelIndex == 0)
-      {
-        SquareChannel.TimelineLocal[SquareChannel.TimelineLocalCount++] = SquareChannel.sw.ElapsedMilliseconds;
-        SquareChannel.TimelineLocal[SquareChannel.TimelineLocalCount++] = ticks;
-        SquareChannel.TimelineLocal[SquareChannel.TimelineLocalCount++] = threshold;
-        SquareChannel.TimelineLocal[SquareChannel.TimelineLocalCount++] = volume;
-      }
-
-#endif
-      if (_writeBuffer + 1 == SIZE)
-      {
-        _writeBuffer = 0;
-      }
-      else
-      {
-        ++_writeBuffer;
-      }
-    }
-
-    internal bool GetNextEvent(ref SoundEvent soundEvent)
-    {
-      if (_readBuffer == _writeBuffer) { return false; }
-
-      soundEvent.TickDiff = _events[_readBuffer].TickDiff;
-      soundEvent.Threshold = _events[_readBuffer].Threshold;
-      soundEvent.Volume = _events[_readBuffer].Volume;
-      ++_readBuffer;
-      if (_readBuffer == SIZE)
-      {
-        _readBuffer = 0;
-      }
-
-      return true;
-    }
-  }
-
   internal class SquareChannel : IChannel, ISquareChannel
   {
     
@@ -129,11 +61,11 @@ namespace GBSharp.AudioSpace
 
         if (Enabled)
         {
-          _eventBuffer.AddSoundEvent(_tickDiff, _tickThreshold, Volume, _channelIndex);
+          _eventQueue.AddSoundEvent(_tickDiff, _tickThreshold, Volume, _channelIndex);
         }
         else
         {
-          _eventBuffer.AddSoundEvent(_tickDiff, 0, 0, _channelIndex);
+          _eventQueue.AddSoundEvent(_tickDiff, 0, 0, _channelIndex);
         }
         _tickDiff = 0;
       }
@@ -157,7 +89,7 @@ namespace GBSharp.AudioSpace
         HighFreqByte = (byte)((_frequencyFactor >> 8) & 0x7);
         // This is the counter used to output sound
         _tickThreshold = (0x800 - _frequencyFactor) / 2;
-        _eventBuffer.AddSoundEvent(_tickDiff, _tickThreshold, Volume, _channelIndex);
+        _eventQueue.AddSoundEvent(_tickDiff, _tickThreshold, Volume, _channelIndex);
         _tickDiff = 0;
       }
     }
@@ -198,7 +130,7 @@ namespace GBSharp.AudioSpace
       set
       {
         _currentEnvelopeValue = value;
-        _eventBuffer.AddSoundEvent(_tickDiff, _tickThreshold, Volume, _channelIndex);
+        _eventQueue.AddSoundEvent(_tickDiff, _tickThreshold, Volume, _channelIndex);
         _tickDiff = 0;
       }
     }
@@ -215,7 +147,7 @@ namespace GBSharp.AudioSpace
 
     private FrameSequencer _frameSequencer;
 
-    private SoundEventBuffer _eventBuffer;
+    private SoundEventQueue _eventQueue;
     private long _tickDiff;
 
     internal SquareChannel(Memory memory, FrameSequencer frameSequencer,
@@ -233,7 +165,7 @@ namespace GBSharp.AudioSpace
       _buffer = new short[SampleRate * NumChannels * SampleSize * _milliseconds / 1000];
 
       _channelIndex = channelIndex;
-      _eventBuffer = new SoundEventBuffer();
+      _eventQueue = new SoundEventQueue(1000);
 
       // Register setup
       _sweepRegister = sweepRegister;
@@ -618,7 +550,7 @@ namespace GBSharp.AudioSpace
         // If the event already run, we try to see if there is a new one
         if (_eventAlreadyRun)
         {
-          if (_eventBuffer.GetNextEvent(ref _currentEvent))
+          if (_eventQueue.GetNextEvent(ref _currentEvent))
           {
             _eventTickCounter = _currentEvent.TickDiff;
             _eventAlreadyRun = false;
