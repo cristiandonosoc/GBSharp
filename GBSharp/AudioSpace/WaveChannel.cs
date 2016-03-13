@@ -8,6 +8,13 @@ using System.Runtime.CompilerServices;
 
 namespace GBSharp.AudioSpace
 {
+  internal enum WaveChannelEvents
+  {
+    THRESHOLD_CHANGE,
+    VOLUME_CHANGE,
+    MEMORY_CHANGE
+  }
+
   internal class WaveChannel : IChannel, IWaveChannel
   {
     private int _msSampleRate;
@@ -46,6 +53,20 @@ namespace GBSharp.AudioSpace
     }
 
     private const int _volumeConstant = 1023;
+
+    int _volumeRightShift;
+    int VolumeRightShift
+    {
+      get { return _volumeRightShift; }
+      set
+      {
+        _volumeRightShift = value;
+        _eventQueue.AddSoundEvent(_tickDiff, (int)WaveChannelEvents.VOLUME_CHANGE,
+                                  _volumeRightShift, _channelIndex);
+        _tickDiff = 0;
+      }
+    }
+
     public int Volume
     {
       get
@@ -62,6 +83,8 @@ namespace GBSharp.AudioSpace
     internal byte LowFreqByte { get; private set; }
     internal byte HighFreqByte { get; private set; }
 
+    long _tickDiff;
+
     private int _tickThreshold;
     private double _tickCounter;
     private int _timerDivider;
@@ -75,10 +98,12 @@ namespace GBSharp.AudioSpace
         _frequencyFactor = value;
         LowFreqByte = (byte)_frequencyFactor;
         HighFreqByte = (byte)((_frequencyFactor >> 8) & 0x7);
-        Frequency = (double)0x20000 / (double)(0x800 - _frequencyFactor);
-
         // This is the counter used to output sound
         _tickThreshold = (0x800 - _frequencyFactor) / 2;
+
+        _eventQueue.AddSoundEvent(_tickDiff, (int)SquareChannelEvents.THRESHOLD_CHANGE,
+                                  _tickThreshold, _channelIndex);
+        _tickDiff = 0;
       }
     }
 
@@ -86,6 +111,8 @@ namespace GBSharp.AudioSpace
 
     private Memory _memory;
     private FrameSequencer _frameSequencer;
+
+    private SoundEventQueue _eventQueue;
 
     internal WaveChannel(Memory memory, FrameSequencer frameSequencer,
                          int sampleRate, int numChannels, 
@@ -101,13 +128,13 @@ namespace GBSharp.AudioSpace
       _buffer = new short[SampleRate * NumChannels * SampleSize * _milliseconds / 1000];
 
       _channelIndex = channelIndex;
+
+      _eventQueue = new SoundEventQueue(1000);
     }
 
     private bool _channelDACOn;
 
     public int SoundLengthCounter { get; private set; }
-
-    int _volumeRightShift;
 
     public bool ContinuousOutput { get; private set; }
     private short _outputValue;
@@ -234,6 +261,8 @@ namespace GBSharp.AudioSpace
 
     internal void Step(int ticks)
     {
+      _tickDiff += ticks;
+
       // FrameSequencer ticks at 512 Hz
       if (_frameSequencer.Clocked)
       {
@@ -249,7 +278,6 @@ namespace GBSharp.AudioSpace
       }
 
       if (!Enabled) { return; }
-
 
       _timerDivider -= ticks;
       if (_timerDivider <= 0)
@@ -292,8 +320,6 @@ namespace GBSharp.AudioSpace
 
     public void GenerateSamples(int sampleCount)
     {
-      // ***************************************
-      // TODO(Cristian): REMOVE THIS!!!!!!
       while (sampleCount > 0)
       {
         --sampleCount;
