@@ -12,7 +12,7 @@ namespace GBSharp.AudioSpace
 {
   internal class SoundEvent
   {
-    internal int TickDiff;
+    internal long TickDiff;
     internal int Threshold;
     internal int Volume;
   }
@@ -126,6 +126,16 @@ namespace GBSharp.AudioSpace
           nr52 &= mask;
         }
         _memory.LowLevelWrite((ushort)MMR.NR52, nr52);
+
+        if (Enabled)
+        {
+          _eventBuffer.AddSoundEvent(_tickDiff, _tickThreshold, Volume, _channelIndex);
+        }
+        else
+        {
+          _eventBuffer.AddSoundEvent(_tickDiff, 0, 0, _channelIndex);
+        }
+        _tickDiff = 0;
       }
     }
 
@@ -206,7 +216,7 @@ namespace GBSharp.AudioSpace
     private FrameSequencer _frameSequencer;
 
     private SoundEventBuffer _eventBuffer;
-    private int _tickDiff;
+    private long _tickDiff;
 
     internal SquareChannel(Memory memory, FrameSequencer frameSequencer,
                            int sampleRate, int numChannels, int sampleSize, int channelIndex,
@@ -585,7 +595,8 @@ namespace GBSharp.AudioSpace
       }
     }
 
-    int _eventTickCounter;
+    long _eventTickCounter;
+    long _eventOnHoldCounter;
     bool _eventAlreadyRun = true;
     SoundEvent _currentEvent = new SoundEvent();
 
@@ -594,7 +605,7 @@ namespace GBSharp.AudioSpace
     int _newSampleVolume;
     bool _newSampleUp;
 
-    int _newSampleTimerDivider;
+    long _newSampleTimerDivider;
 
     public void GenerateSamples2(int fullSamples)
     {
@@ -602,7 +613,7 @@ namespace GBSharp.AudioSpace
       while (fullSampleCount > 0)
       {
         // We how many ticks will pass this sample
-        int ticks = APU.MinimumTickThreshold;
+        long ticks = APU.MinimumTickThreshold;
 
         // If the event already run, we try to see if there is a new one
         if (_eventAlreadyRun)
@@ -612,11 +623,27 @@ namespace GBSharp.AudioSpace
             _eventTickCounter = _currentEvent.TickDiff;
             _eventAlreadyRun = false;
           }
+          else
+          {
+            _eventOnHoldCounter += ticks;
+          }
         }
         else
         {
-          _eventTickCounter -= ticks;
-          if (_eventTickCounter < 0)
+          // We need to substract the on hold time
+          _eventOnHoldCounter += ticks;
+          if (_eventTickCounter > _eventOnHoldCounter)
+          {
+            _eventTickCounter -= _eventOnHoldCounter;
+            _eventOnHoldCounter = 0;
+          }
+          else
+          {
+            _eventOnHoldCounter -= _eventTickCounter;
+            _eventTickCounter = 0;
+          }
+
+          if (_eventTickCounter <= 0)
           {
             _newSampleTickThreshold = _currentEvent.Threshold;
             _newSampleVolume = _currentEvent.Volume;
