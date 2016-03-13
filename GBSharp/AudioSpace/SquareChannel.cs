@@ -36,11 +36,21 @@ namespace GBSharp.AudioSpace
       }
     }
 
-    internal void AddSoundEvent(int ticks, int threshold, int volume)
+    internal void AddSoundEvent(long ticks, int threshold, int volume, int channelIndex)
     {
       _events[_writeBuffer].TickDiff = ticks;
       _events[_writeBuffer].Threshold = threshold;
       _events[_writeBuffer].Volume = volume;
+#if SoundTiming
+      if (channelIndex == 0)
+      {
+        SquareChannel.TimelineLocal[SquareChannel.TimelineLocalCount++] = SquareChannel.sw.ElapsedMilliseconds;
+        SquareChannel.TimelineLocal[SquareChannel.TimelineLocalCount++] = ticks;
+        SquareChannel.TimelineLocal[SquareChannel.TimelineLocalCount++] = threshold;
+        SquareChannel.TimelineLocal[SquareChannel.TimelineLocalCount++] = volume;
+      }
+
+#endif
       if (_writeBuffer + 1 == SIZE)
       {
         _writeBuffer = 0;
@@ -70,14 +80,19 @@ namespace GBSharp.AudioSpace
 
   internal class SquareChannel : IChannel, ISquareChannel
   {
+    
+#if SoundTiming
+    internal static long[] TimelineLocal = new long[10000 * 4];
+    internal static uint TimelineLocalCount = 0;
+    internal static long[] TimelineSoundThread = new long[10000 * 3];
+    internal static uint TimelineSoundThreadCount = 0;
+    internal static Stopwatch sw = new Stopwatch();
+#endif
+
+
+
     private Memory _memory;
     #region BUFFER DEFINITION
-
-#if SoundTiming
-    static long[] Timeline = new long[10000 * 2];
-    static uint TimelineCount = 0;
-    static Stopwatch sw = new Stopwatch();
-#endif
 
     private int _msSampleRate;
     public int SampleRate { get; private set; }
@@ -132,7 +147,7 @@ namespace GBSharp.AudioSpace
         HighFreqByte = (byte)((_frequencyFactor >> 8) & 0x7);
         // This is the counter used to output sound
         _tickThreshold = (0x800 - _frequencyFactor) / 2;
-        _eventBuffer.AddSoundEvent(_tickDiff, _tickThreshold, Volume);
+        _eventBuffer.AddSoundEvent(_tickDiff, _tickThreshold, Volume, _channelIndex);
         _tickDiff = 0;
       }
     }
@@ -173,7 +188,7 @@ namespace GBSharp.AudioSpace
       set
       {
         _currentEnvelopeValue = value;
-        _eventBuffer.AddSoundEvent(_tickDiff, _tickThreshold, Volume);
+        _eventBuffer.AddSoundEvent(_tickDiff, _tickThreshold, Volume, _channelIndex);
         _tickDiff = 0;
       }
     }
@@ -216,6 +231,13 @@ namespace GBSharp.AudioSpace
       _volumeEnvelopeRegister = volumeEnvelopeRegister;
       _freqLowRegister = freqLowRegister;
       _freqHighRegister = freqHighRegister;
+#if SoundTiming
+      if (_channelIndex == 0)
+      {
+        sw.Start();
+      }
+#endif
+
     }
 
     private bool _sweepEnabled;
@@ -696,17 +718,18 @@ namespace GBSharp.AudioSpace
       {
         using (var file = new StreamWriter("sound_events.csv", false))
         {
-          //file.WriteLine("{0},{1}", "Ticks", "Value");
-          for (uint i = 0; i < TimelineCount; i += 3)
+          file.WriteLine("{0},{1},{2},{3}", "Ms", "TickDiff","Threshold","Volume");
+          for (uint i = 0; i < TimelineLocalCount; i += 4)
           {
             //file.WriteLine("{0},{1},{2}",
             //               Timeline[i],
             //               //"0x" + Timeline[i + 1].ToString("x2").ToUpper());
             //               Timeline[i + 1],
             //               Timeline[i + 2]);
-            file.WriteLine("{0},{1},{2}", Timeline[i]*0.0002384,
-                                          Timeline[i + 1]*0.0002384,
-                                          Timeline[i + 2]);
+            file.WriteLine("{0},{1},{2},{3}", TimelineLocal[i],
+                                              TimelineLocal[i + 1],
+                                              TimelineLocal[i + 2],
+                                              TimelineLocal[i + 3]);
           }
         }
       }
