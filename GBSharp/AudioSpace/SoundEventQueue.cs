@@ -38,12 +38,11 @@ namespace GBSharp.AudioSpace
       _events[_writeBuffer].Kind = kind;
       _events[_writeBuffer].Value = value;
 #if SoundTiming
-        if (channelIndex == 0)
+        if (channelIndex == 2)
         {
-          SquareChannel.TimelineLocal[SquareChannel.TimelineLocalCount++] = SquareChannel.sw.ElapsedMilliseconds;
-          SquareChannel.TimelineLocal[SquareChannel.TimelineLocalCount++] = ticks;
-          SquareChannel.TimelineLocal[SquareChannel.TimelineLocalCount++] = threshold;
-          SquareChannel.TimelineLocal[SquareChannel.TimelineLocalCount++] = volume;
+          APU.TimelineLocal[APU.TimelineLocalCount++] = APU.sw.ElapsedMilliseconds;
+          APU.TimelineLocal[APU.TimelineLocalCount++] = kind;
+          APU.TimelineLocal[APU.TimelineLocalCount++] = value;
         }
 
 #endif

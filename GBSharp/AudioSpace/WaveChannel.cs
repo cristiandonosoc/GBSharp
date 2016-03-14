@@ -13,7 +13,8 @@ namespace GBSharp.AudioSpace
     THRESHOLD_CHANGE,
     VOLUME_CHANGE,
     MEMORY_CHANGE,
-    ENABLED_CHANGE
+    ENABLED_CHANGE,
+    INIT 
   }
 
   internal class WaveChannel : IChannel, IWaveChannel
@@ -30,16 +31,13 @@ namespace GBSharp.AudioSpace
     private int _sampleIndex;
     public int SampleCount { get { return _sampleIndex; } }
 
-    private bool _enabled;
-    public bool Enabled
+    public bool Enabled { get; internal set; }
+    private void SetEnabled(bool enabled, OFF_EVENT offEvent)
     {
-      get { return _enabled; }
-      internal set
-      {
-        _enabled = value;
+        Enabled = enabled;
         // We update the NR52 byte
         byte nr52 = _memory.LowLevelRead((ushort)MMR.NR52);
-        if(_enabled)
+        if(Enabled)
         {
           byte mask = (byte)(1 << _channelIndex);
           nr52 |= mask;
@@ -50,7 +48,14 @@ namespace GBSharp.AudioSpace
           nr52 &= mask;
         }
         _memory.LowLevelWrite((ushort)MMR.NR52, nr52);
-      }
+
+        AddSoundEvent(WaveChannelEvents.ENABLED_CHANGE, Enabled ? 1 : (int)offEvent);
+    }
+
+    internal enum OFF_EVENT
+    {
+      DIRECT = 0x100,
+      LENGTH = 0x200
     }
 
     private const int _volumeConstant = 1023;
@@ -152,7 +157,7 @@ namespace GBSharp.AudioSpace
           // When DAC re-enabled, the channel doesn't enables itself
           if (!_channelDACOn)
           {
-            Enabled = false;
+            SetEnabled(false, OFF_EVENT.DIRECT);
           }
 
           _memory.LowLevelWrite((ushort)register, value);
@@ -165,7 +170,7 @@ namespace GBSharp.AudioSpace
         case MMR.NR32:  // Output Level (volume)
           // Basically, we shift by this amount.
           // If the amount is 0, it means we mute
-          _volumeRightShift = ((value >> 5) & 0x3) - 1;
+          VolumeRightShift = ((value >> 5) & 0x3) - 1;
           // We reload the sample
           //_outputValue = (short)Volume;
 
@@ -196,6 +201,7 @@ namespace GBSharp.AudioSpace
           bool init = (Utils.UtilFuncs.TestBit(value, 7) != 0);
           if(init)
           {
+            AddSoundEvent(WaveChannelEvents.INIT, 0);
             _tickCounter = _tickThreshold;
             CurrentSampleIndex = 0;
 
@@ -217,7 +223,7 @@ namespace GBSharp.AudioSpace
 
             if(_channelDACOn)
             {
-              Enabled = true;
+              SetEnabled(true, 0);
             }
           }
 
@@ -357,11 +363,12 @@ namespace GBSharp.AudioSpace
     int _newSampleIndex;
     byte _newCurrentSample;
     int _newVolumeShift;
+    bool _newSampleEnabled = true;
 
     int CalculateWaveVolume(int volumeRightShift, byte currentSample)
     {
         if(volumeRightShift < 0) { return 0; }
-        int index = ((currentSample >> volumeRightShift) - 7);
+        int index = ((currentSample >> volumeRightShift) - 0x7F);
         int volume = index * _volumeConstant;
         return volume;
     }
@@ -418,23 +425,31 @@ namespace GBSharp.AudioSpace
                 byte value = (byte)(_currentEvent.Value & 0xFF);
                 _newSampleArray[index] = value;
                 break;
+              case WaveChannelEvents.ENABLED_CHANGE:
+                _newSampleEnabled = (_currentEvent.Value == 1);
+                break;
+              case WaveChannelEvents.INIT:
+                _newSampleTickCounter = _newSampleTickThreshold;
+                _newSampleIndex = 0;
+                break;
             }
             _eventAlreadyRun = true;
           }
         }
 
         // We simulate to output the output
-        int volume = 0;
-        if (Enabled)
+        if (_newSampleEnabled)
         {
           _newSampleTimerDivider -= ticks;
           while (_newSampleTimerDivider <= 0)
           {
-            _newSampleTimerDivider += 32;
+            _newSampleTimerDivider = 1;
 
             --_newSampleTickCounter;
             if (_newSampleTickCounter <= 0)
             {
+              _newSampleTickCounter += _newSampleTickThreshold;
+
               ++_newSampleIndex;
               if (_newSampleIndex >= 32)
               {
@@ -455,23 +470,21 @@ namespace GBSharp.AudioSpace
               _newSampleVolume = CalculateWaveVolume(_newVolumeShift, _newCurrentSample);
             }
           }
-
-          volume = _newSampleVolume;
         }
+
+        //int volume = 0x7FFF;
+        //if (_newSampleEnabled) { volume = _newSampleVolume; }
+        int volume = _newSampleVolume;
 
         // We generate the sample
         for (int c = 0; c < NumChannels; ++c)
         {
-          _buffer[_sampleIndex++] = (short)(_newSampleUp ? volume : -volume);
+          _buffer[_sampleIndex++] = (short)(volume);
         }
 
         --fullSampleCount;
       }
     }
-
-
-
-
 
     public void ClearBuffer()
     {
@@ -486,7 +499,7 @@ namespace GBSharp.AudioSpace
         --SoundLengthCounter;
         if (SoundLengthCounter < 0)
         {
-          Enabled = false;
+          SetEnabled(false, OFF_EVENT.LENGTH);
         }
       }
     }

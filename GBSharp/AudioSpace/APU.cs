@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GBSharp.MemorySpace;
 using System.Diagnostics;
+using System.IO;
 
 namespace GBSharp.AudioSpace
 {
@@ -14,13 +15,21 @@ namespace GBSharp.AudioSpace
   class APU : IAPU, IDisposable
   {
 
+#if SoundTiming
+    internal static long[] TimelineLocal = new long[10000 * 4];
+    internal static uint TimelineLocalCount = 0;
+    internal static long[] TimelineSoundThread = new long[10000 * 3];
+    internal static uint TimelineSoundThreadCount = 0;
+    internal static Stopwatch sw = new Stopwatch();
+#endif
+
     internal string CartridgeFilename { get; set; }
 
     /// <summary>
     /// This is the amount of ticks needed to output a single sample
     /// ~ 22 kHz max frequency
     /// </summary>
-    internal static int MinimumTickThreshold = 96; 
+    internal static int MinimumTickThreshold = 96;
 
     private int _sampleRate;
     private int _msSampleRate;
@@ -74,7 +83,7 @@ namespace GBSharp.AudioSpace
       {
         // NOTE(Cristian): If we're recording, we don't want to change the channel exporting
         //                 It's more complicated than it's worth to support
-        if(Recording) { return; }
+        if (Recording) { return; }
         _recordSeparateChannels = value;
       }
     }
@@ -102,9 +111,9 @@ namespace GBSharp.AudioSpace
 
       Reset();
 
-      Channel1Run = true;
-      Channel2Run = true;
-      Channel3Run = false;
+      Channel1Run = false;
+      Channel2Run = false;
+      Channel3Run = true;
       Channel4Run = false;
 
       //RecordSeparateChannels = true;
@@ -114,7 +123,7 @@ namespace GBSharp.AudioSpace
     internal void Reset()
     {
       // Wav exporter
-      if((_wavExporter != null))
+      if ((_wavExporter != null))
       {
         // We stop recording just in case
         StopRecording();
@@ -197,7 +206,7 @@ namespace GBSharp.AudioSpace
       if (!Enabled)
       {
         // When powered off, the internal length can be changed (DMG only)
-        switch(register)
+        switch (register)
         {
           case MMR.NR11:
             _channel1.ChangeLength(value);
@@ -294,7 +303,7 @@ namespace GBSharp.AudioSpace
       // NOTE(Cristian): This is an "optimization" for when NR52 is disabled,
       //                 All the registers are set to 0. A normal recursive call
       //                 would write the NR52 memory several times unnecessarily
-      if(!updatedEnabledFlag) { return; }
+      if (!updatedEnabledFlag) { return; }
 
       // We compare to see if we have to change the NR52 byte
       if ((channel1Enabled != _channel1.Enabled) ||
@@ -317,7 +326,7 @@ namespace GBSharp.AudioSpace
         _memory.LowLevelWrite((ushort)MMR.NR52, nr52);
       }
     }
-    
+
     internal byte HandleWaveRead(ushort address)
     {
       if (_channel3.Enabled)
@@ -335,8 +344,19 @@ namespace GBSharp.AudioSpace
       _channel3.HandleWaveWrite(address, value);
     }
 
+
+    bool firstStep = true;
     internal void Step(int ticks)
     {
+#if SoundTiming
+      if (firstStep)
+      {
+        firstStep = false;
+        sw.Start();
+        StartRecording();
+      }
+#endif
+
       _frameSequencer.Step((uint)ticks);
       _channel1.Step(ticks);
       _channel2.Step(ticks);
@@ -428,11 +448,11 @@ namespace GBSharp.AudioSpace
         _buffer[_sampleIndex++] = (byte)rightSample;
         _buffer[_sampleIndex++] = (byte)(rightSample >> 8);
 
-        if(_wavExporter.Recording)
+        if (_wavExporter.Recording)
         {
           _wavExporter.WriteSamples(leftSample, rightSample);
 
-          if(RecordSeparateChannels)
+          if (RecordSeparateChannels)
           {
             _channel1WavExporter.WriteSamples(c1LeftSample, c1RightSample);
             _channel2WavExporter.WriteSamples(c2LeftSample, c2RightSample);
@@ -446,7 +466,7 @@ namespace GBSharp.AudioSpace
     internal void EndFrame()
     {
       _wavExporter.UpdateExporter();
-      if(RecordSeparateChannels)
+      if (RecordSeparateChannels)
       {
         _channel1WavExporter.UpdateExporter();
         _channel2WavExporter.UpdateExporter();
@@ -468,18 +488,18 @@ namespace GBSharp.AudioSpace
 #if SoundTiming
     ~APU()
     {
-      _channel1.WriteOutput();
+      WriteOutput();
     }
 #endif
 
     public void StartRecording(string filename = null)
     {
-      if(Recording) { return; }
-      if(filename == null) { filename = CartridgeFilename; }
+      if (Recording) { return; }
+      if (filename == null) { filename = CartridgeFilename; }
       string finalFilename = _wavExporter.StartRecording(filename);
 
       if (RecordSeparateChannels)
-      { 
+      {
         _channel1WavExporter.StartRecording(finalFilename, 1);
         _channel2WavExporter.StartRecording(finalFilename, 2);
         _channel3WavExporter.StartRecording(finalFilename, 3);
@@ -501,6 +521,64 @@ namespace GBSharp.AudioSpace
       _channel2WavExporter.Dispose();
       _channel3WavExporter.Dispose();
     }
+
+#if SoundTiming
+    public void WriteOutput()
+    {
+      try
+      {
+        using (var file = new StreamWriter("sound_events.csv", false))
+        {
+          file.WriteLine("{0},{1},{2}", "Ms", "Event", "Value");
+          for (uint i = 0; i < TimelineLocalCount; i += 3)
+          {
+            //file.WriteLine("{0},{1},{2}",
+            //               Timeline[i],
+            //               //"0x" + Timeline[i + 1].ToString("x2").ToUpper());
+            //               Timeline[i + 1],
+            //               Timeline[i + 2]);
+            WaveChannelEvents soundEvent = (WaveChannelEvents)TimelineLocal[i + 1];
+            long soundEventValue = TimelineLocal[i + 2];
+            string value;
+            if (soundEvent == WaveChannelEvents.THRESHOLD_CHANGE)
+            {
+              value = "0x" + soundEventValue.ToString("x2");
+            }
+            else if (soundEvent == WaveChannelEvents.MEMORY_CHANGE)
+            {
+              long address = (soundEventValue >> 8);
+              long memoryValue = (soundEventValue & 0xFF);
+              value = String.Format("{0} - {1}", "0x" + address.ToString("x2"),
+                                                 "0x" + memoryValue.ToString("x2"));
+            }
+            else if (soundEvent == WaveChannelEvents.ENABLED_CHANGE)
+            {
+              if (soundEventValue == 1)
+              {
+                value = "ON";
+              }
+              else
+              {
+                value = String.Format("OFF [{0}]", ((WaveChannel.OFF_EVENT)soundEventValue).ToString());
+              }
+            }
+            else
+            {
+              value = "0x" + soundEventValue.ToString("x2");
+            }
+
+            file.WriteLine("{0},{1},{2}", TimelineLocal[i],
+                                          soundEvent,
+                                          value);
+          }
+        }
+      }
+      catch (IOException)
+      {
+        // Probably because the csv is opened by a program. Whatever...
+      }
+    }
+#endif
   }
 
 }
