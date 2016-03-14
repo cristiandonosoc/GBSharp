@@ -84,9 +84,7 @@ namespace GBSharp.AudioSpace
         HighFreqByte = (byte)((_frequencyFactor >> 8) & 0x7);
         // This is the counter used to output sound
         _tickThreshold = (0x800 - _frequencyFactor) / 2;
-        _eventQueue.AddSoundEvent(_tickDiff, (int)SquareChannelEvents.THRESHOLD_CHANGE,
-                                  _tickThreshold, _channelIndex);
-        _tickDiff = 0;
+        AddSoundEvent(SquareChannelEvents.THRESHOLD_CHANGE, _tickThreshold);
       }
     }
 
@@ -126,9 +124,7 @@ namespace GBSharp.AudioSpace
       set
       {
         _currentEnvelopeValue = value;
-        _eventQueue.AddSoundEvent(_tickDiff, (int)SquareChannelEvents.VOLUME_CHANGE,
-                                  Volume, _channelIndex);
-        _tickDiff = 0;
+        AddSoundEvent(SquareChannelEvents.VOLUME_CHANGE, Volume);
       }
     }
 
@@ -194,6 +190,12 @@ namespace GBSharp.AudioSpace
 
     public int SoundLengthCounter { get; private set; }
     public bool ContinuousOutput { get; private set; }
+
+    private void AddSoundEvent(SquareChannelEvents soundEvent, int value)
+    {
+        _eventQueue.AddSoundEvent(_tickDiff, (int)soundEvent, value, _channelIndex);
+        _tickDiff = 0;
+    }
 
     public void HandleMemoryChange(MMR register, byte value)
     {
@@ -564,13 +566,12 @@ namespace GBSharp.AudioSpace
           if (_eventTickCounter > _eventOnHoldCounter)
           {
             _eventTickCounter -= _eventOnHoldCounter;
-            _eventOnHoldCounter = 0;
           }
           else
           {
-            _eventOnHoldCounter -= _eventTickCounter;
             _eventTickCounter = 0;
           }
+          _eventOnHoldCounter = 0;
 
           if (_eventTickCounter <= 0)
           {

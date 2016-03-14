@@ -12,7 +12,8 @@ namespace GBSharp.AudioSpace
   {
     THRESHOLD_CHANGE,
     VOLUME_CHANGE,
-    MEMORY_CHANGE
+    MEMORY_CHANGE,
+    ENABLED_CHANGE
   }
 
   internal class WaveChannel : IChannel, IWaveChannel
@@ -61,9 +62,7 @@ namespace GBSharp.AudioSpace
       set
       {
         _volumeRightShift = value;
-        _eventQueue.AddSoundEvent(_tickDiff, (int)WaveChannelEvents.VOLUME_CHANGE,
-                                  _volumeRightShift, _channelIndex);
-        _tickDiff = 0;
+        AddSoundEvent(WaveChannelEvents.VOLUME_CHANGE, _volumeRightShift);
       }
     }
 
@@ -101,9 +100,7 @@ namespace GBSharp.AudioSpace
         // This is the counter used to output sound
         _tickThreshold = (0x800 - _frequencyFactor) / 2;
 
-        _eventQueue.AddSoundEvent(_tickDiff, (int)SquareChannelEvents.THRESHOLD_CHANGE,
-                                  _tickThreshold, _channelIndex);
-        _tickDiff = 0;
+        AddSoundEvent(WaveChannelEvents.THRESHOLD_CHANGE, _tickThreshold);
       }
     }
 
@@ -138,6 +135,12 @@ namespace GBSharp.AudioSpace
 
     public bool ContinuousOutput { get; private set; }
     private short _outputValue;
+
+    private void AddSoundEvent(WaveChannelEvents soundEvent, int value)
+    {
+        _eventQueue.AddSoundEvent(_tickDiff, (int)soundEvent, value, _channelIndex);
+        _tickDiff = 0;
+    }
 
     public void HandleMemoryChange(MMR register, byte value)
     {
@@ -232,10 +235,8 @@ namespace GBSharp.AudioSpace
 
     internal void HandleWaveWrite(ushort address, byte value)
     {
-      // The encoding is address | value
-      _eventQueue.AddSoundEvent(_tickDiff, (int)WaveChannelEvents.MEMORY_CHANGE,
-                                ((address << 8) | value), _channelIndex);
-      _tickDiff = 0;
+      int encodedValue = ((address << 8) | value);
+      AddSoundEvent(WaveChannelEvents.MEMORY_CHANGE, encodedValue);
     }
 
     public void PowerOff()
@@ -393,13 +394,12 @@ namespace GBSharp.AudioSpace
           if (_eventTickCounter > _eventOnHoldCounter)
           {
             _eventTickCounter -= _eventOnHoldCounter;
-            _eventOnHoldCounter = 0;
           }
           else
           {
-            _eventOnHoldCounter -= _eventTickCounter;
             _eventTickCounter = 0;
           }
+          _eventOnHoldCounter = 0;
 
           if (_eventTickCounter <= 0)
           {
