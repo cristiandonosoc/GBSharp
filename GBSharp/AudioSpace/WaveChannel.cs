@@ -379,63 +379,71 @@ namespace GBSharp.AudioSpace
       while (fullSampleCount > 0)
       {
         // We how many ticks will pass this sample
-        long ticks = APU.MinimumTickThreshold;
+        long eventTicks = APU.MinimumTickThreshold;
+        eventTicks += _eventOnHoldCounter;
+        _eventOnHoldCounter = 0;
 
-        // If the event already run, we try to see if there is a new one
-        if (_eventAlreadyRun)
+        while (eventTicks > 0)
         {
-          if (_eventQueue.GetNextEvent(ref _currentEvent))
+          // If the event already run, we try to see if there is a new one
+          if (_eventAlreadyRun)
           {
-            _eventTickCounter = _currentEvent.TickDiff;
-            _eventAlreadyRun = false;
-          }
-          else
-          {
-            _eventOnHoldCounter += ticks;
-          }
-        }
-        else
-        {
-          // We need to substract the on hold time
-          _eventOnHoldCounter += ticks;
-          if (_eventTickCounter > _eventOnHoldCounter)
-          {
-            _eventTickCounter -= _eventOnHoldCounter;
-          }
-          else
-          {
-            _eventTickCounter = 0;
-          }
-          _eventOnHoldCounter = 0;
-
-          if (_eventTickCounter <= 0)
-          {
-            switch((WaveChannelEvents)_currentEvent.Kind)
+            if (_eventQueue.GetNextEvent(ref _currentEvent))
             {
-              case WaveChannelEvents.THRESHOLD_CHANGE:
-                _newSampleTickThreshold = _currentEvent.Value;
-                break;
-              case WaveChannelEvents.VOLUME_CHANGE:
-                _newVolumeShift = _currentEvent.Value;
-                _newSampleVolume = CalculateWaveVolume(_newVolumeShift, _newCurrentSample);
-                break;
-              case WaveChannelEvents.MEMORY_CHANGE:
-                // The key is the actual address in memory
-                int index = (_currentEvent.Value >> 8) - 0xFF30;
-                byte value = (byte)(_currentEvent.Value & 0xFF);
-                _newSampleArray[index] = value;
-                break;
-              case WaveChannelEvents.ENABLED_CHANGE:
-                _newSampleEnabled = (_currentEvent.Value == 1);
-                break;
-              case WaveChannelEvents.INIT:
-                _newSampleTickCounter = _newSampleTickThreshold;
-                _newSampleIndex = 0;
-                break;
+              _eventTickCounter = _currentEvent.TickDiff;
+              _eventAlreadyRun = false;
             }
-            _eventAlreadyRun = true;
+            else
+            {
+              _eventOnHoldCounter += eventTicks;
+              eventTicks = 0;
+            }
+          }
+          else
+          {
+            // We need to substract the on hold time
+            if (_eventTickCounter > eventTicks)
+            {
+              _eventTickCounter -= eventTicks;
+              eventTicks = 0;
+            }
+            else
+            {
+              eventTicks -= _eventTickCounter;
+              _eventTickCounter = 0;
+            }
+
+            if (_eventTickCounter <= 0)
+            {
+              switch ((WaveChannelEvents)_currentEvent.Kind)
+              {
+                case WaveChannelEvents.THRESHOLD_CHANGE:
+                  _newSampleTickThreshold = _currentEvent.Value;
+                  break;
+                case WaveChannelEvents.VOLUME_CHANGE:
+                  _newVolumeShift = _currentEvent.Value;
+                  _newSampleVolume = CalculateWaveVolume(_newVolumeShift, _newCurrentSample);
+                  break;
+                case WaveChannelEvents.MEMORY_CHANGE:
+                  // The key is the actual address in memory
+                  int index = (_currentEvent.Value >> 8) - 0xFF30;
+                  byte value = (byte)(_currentEvent.Value & 0xFF);
+                  _newSampleArray[index] = value;
+                  break;
+                case WaveChannelEvents.ENABLED_CHANGE:
+                  _newSampleEnabled = (_currentEvent.Value == 1);
+                  break;
+                case WaveChannelEvents.INIT:
+                  _newSampleTickCounter = _newSampleTickThreshold;
+                  _newSampleIndex = 0;
+                  break;
+              }
+              _eventAlreadyRun = true;
+            }
           }
         }
+
+        long ticks = APU.MinimumTickThreshold;
 
         // We simulate to output the output
         if (_newSampleEnabled)
