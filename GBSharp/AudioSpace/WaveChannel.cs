@@ -443,7 +443,7 @@ namespace GBSharp.AudioSpace
           _newSampleTimerDivider -= ticks;
           while (_newSampleTimerDivider <= 0)
           {
-            _newSampleTimerDivider = 1;
+            _newSampleTimerDivider += 4;
 
             --_newSampleTickCounter;
             if (_newSampleTickCounter <= 0)
@@ -472,9 +472,8 @@ namespace GBSharp.AudioSpace
           }
         }
 
-        //int volume = 0x7FFF;
-        //if (_newSampleEnabled) { volume = _newSampleVolume; }
-        int volume = _newSampleVolume;
+        int volume = 0;
+        if (_newSampleEnabled) { volume = _newSampleVolume; }
 
         // We generate the sample
         for (int c = 0; c < NumChannels; ++c)
