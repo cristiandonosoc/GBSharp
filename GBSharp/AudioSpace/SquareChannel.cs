@@ -458,72 +458,19 @@ namespace GBSharp.AudioSpace
 
     }
 
-    // We copy the state into the channel when we start generating input
-    // This means that the channel can continue to emulate while the generation
-    // thread outputs a snapshot of the frequecy and volume.
-    // This approach works only when the GenerateSample is called frequently
-    // and asks for relatively few samples each time
-    private int _sampleTickCount = 0;
-#pragma warning disable 414 // Disabling never used warning
-    private int _sampleTickThreshold = 0;
-    private int _sampleVolume = 0;
-#pragma warning restore 414
-    private bool _sampleUp = false;
-    private int _sampleTimerDivider = 0;
-
-    public void GenerateSamples(int fullSamples)
-    {
-      // We obtain the status of the APU
-      int _sampleTickThreshold = _tickThreshold;
-      int _sampleVolume = Volume;
-
-      int fullSamplesCount = fullSamples;
-      while(fullSamplesCount > 0)
-      {
-        if (Enabled)
-        {
-          // We simulate the hardware for that amount of ticks
-          _sampleTimerDivider -= APU.MinimumTickThreshold;
-          while (_sampleTimerDivider < 0)
-          {
-            // Timer divider is a 5 bit counter that clocks the 11-bit frequency counter
-            _sampleTimerDivider += 32; 
-
-            --_sampleTickCount;
-            if (_sampleTickCount <= 0)
-            {
-              _sampleTickCount += _sampleTickThreshold;
-              _sampleUp = !_sampleUp;
-            }
-          }
-
-          for(int c = 0; c < NumChannels; ++c)
-          {
-            _buffer[_sampleIndex++] = (short)(_sampleUp ? _sampleVolume : -_sampleVolume);
-          }
-        }
-        else
-        {
-          _buffer[_sampleIndex++] = 0;
-        }
-
-        --fullSamplesCount;
-      }
-    }
-
     long _eventTickCounter;
     long _eventOnHoldCounter;
     bool _eventAlreadyRun = true;
     SoundEvent _currentEvent = new SoundEvent();
 
-    int _newSampleTickCounter;
-    int _newSampleTickThreshold;
-    int _newSampleVolume;
-    bool _newSampleUp;
+    int _sampleTickCounter;
+    int _sampleTickThreshold;
+    int _sampleVolume;
+    bool _sampleUp;
 
-    long _newSampleTimerDivider;
+    long _sampleTimerDivider;
 
-    public void GenerateSamples2(int fullSamples)
+    public void GenerateSamples(int fullSamples)
     {
       int fullSampleCount = fullSamples;
       while (fullSampleCount > 0)
@@ -563,10 +510,10 @@ namespace GBSharp.AudioSpace
             switch((SquareChannelEvents)_currentEvent.Kind)
             {
               case SquareChannelEvents.THRESHOLD_CHANGE:
-                _newSampleTickThreshold = _currentEvent.Value;
+                _sampleTickThreshold = _currentEvent.Value;
                 break;
               case SquareChannelEvents.VOLUME_CHANGE:
-                _newSampleVolume = _currentEvent.Value;
+                _sampleVolume = _currentEvent.Value;
                 break;
             }
             _eventAlreadyRun = true;
@@ -577,26 +524,26 @@ namespace GBSharp.AudioSpace
         int volume = 0;
         if (Enabled)
         {
-          _newSampleTimerDivider -= ticks;
-          while (_newSampleTimerDivider <= 0)
+          _sampleTimerDivider -= ticks;
+          while (_sampleTimerDivider <= 0)
           {
-            _newSampleTimerDivider += 32;
+            _sampleTimerDivider += 32;
 
-            --_newSampleTickCounter;
-            if (_newSampleTickCounter <= 0)
+            --_sampleTickCounter;
+            if (_sampleTickCounter <= 0)
             {
-              _newSampleTickCounter += _newSampleTickThreshold;
-              _newSampleUp = !_newSampleUp;
+              _sampleTickCounter += _sampleTickThreshold;
+              _sampleUp = !_sampleUp;
             }
           }
 
-          volume = _newSampleVolume;
+          volume = _sampleVolume;
         }
 
         // We generate the sample
         for (int c = 0; c < NumChannels; ++c)
         {
-          _buffer[_sampleIndex++] = (short)(_newSampleUp ? volume : -volume);
+          _buffer[_sampleIndex++] = (short)(_sampleUp ? volume : -volume);
         }
 
         --fullSampleCount;

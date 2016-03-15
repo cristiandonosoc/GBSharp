@@ -334,36 +334,22 @@ namespace GBSharp.AudioSpace
     public byte CurrentSample { get; private set; }
     public byte CurrentSampleIndex { get; private set; }
 
-    public void GenerateSamples(int sampleCount)
-    {
-      while (sampleCount > 0)
-      {
-        --sampleCount;
-
-        for (int c = 0; c < NumChannels; ++c)
-        {
-          _buffer[_sampleIndex++] = _outputValue;
-        }
-      }
-    }
-
     long _eventTickCounter;
     long _eventOnHoldCounter;
     bool _eventAlreadyRun = true;
     SoundEvent _currentEvent = new SoundEvent();
 
-    int _newSampleTickCounter;
-    int _newSampleTickThreshold;
-    int _newSampleVolume;
-    bool _newSampleUp;
+    int _sampleTickCounter;
+    int _sampleTickThreshold;
+    int _sampleVolume;
 
-    long _newSampleTimerDivider;
+    long _sampleTimerDivider;
 
-    byte[] _newSampleArray = new byte[16];
-    int _newSampleIndex;
+    byte[] _sampleArray = new byte[16];
+    int _sampleWaveIndex;
     byte _newCurrentSample;
     int _newVolumeShift;
-    bool _newSampleEnabled = true;
+    bool _sampleEnabled = true;
 
     int CalculateWaveVolume(int volumeRightShift, byte currentSample)
     {
@@ -373,7 +359,7 @@ namespace GBSharp.AudioSpace
         return volume;
     }
 
-    public void GenerateSamples2(int fullSamples)
+    public void GenerateSamples(int fullSamples)
     {
       int fullSampleCount = fullSamples;
       while (fullSampleCount > 0)
@@ -418,24 +404,24 @@ namespace GBSharp.AudioSpace
               switch ((WaveChannelEvents)_currentEvent.Kind)
               {
                 case WaveChannelEvents.THRESHOLD_CHANGE:
-                  _newSampleTickThreshold = _currentEvent.Value;
+                  _sampleTickThreshold = _currentEvent.Value;
                   break;
                 case WaveChannelEvents.VOLUME_CHANGE:
                   _newVolumeShift = _currentEvent.Value;
-                  _newSampleVolume = CalculateWaveVolume(_newVolumeShift, _newCurrentSample);
+                  _sampleVolume = CalculateWaveVolume(_newVolumeShift, _newCurrentSample);
                   break;
                 case WaveChannelEvents.MEMORY_CHANGE:
                   // The key is the actual address in memory
                   int index = (_currentEvent.Value >> 8) - 0xFF30;
                   byte value = (byte)(_currentEvent.Value & 0xFF);
-                  _newSampleArray[index] = value;
+                  _sampleArray[index] = value;
                   break;
                 case WaveChannelEvents.ENABLED_CHANGE:
-                  _newSampleEnabled = (_currentEvent.Value == 1);
+                  _sampleEnabled = (_currentEvent.Value == 1);
                   break;
                 case WaveChannelEvents.INIT:
-                  _newSampleTickCounter = _newSampleTickThreshold;
-                  _newSampleIndex = 0;
+                  _sampleTickCounter = _sampleTickThreshold;
+                  _sampleWaveIndex = 0;
                   break;
               }
               _eventAlreadyRun = true;
@@ -446,27 +432,27 @@ namespace GBSharp.AudioSpace
         long ticks = APU.MinimumTickThreshold;
 
         // We simulate to output the output
-        if (_newSampleEnabled)
+        if (_sampleEnabled)
         {
-          _newSampleTimerDivider -= ticks;
-          while (_newSampleTimerDivider <= 0)
+          _sampleTimerDivider -= ticks;
+          while (_sampleTimerDivider <= 0)
           {
-            _newSampleTimerDivider += 4;
+            _sampleTimerDivider += 4;
 
-            --_newSampleTickCounter;
-            if (_newSampleTickCounter <= 0)
+            --_sampleTickCounter;
+            if (_sampleTickCounter <= 0)
             {
-              _newSampleTickCounter += _newSampleTickThreshold;
+              _sampleTickCounter += _sampleTickThreshold;
 
-              ++_newSampleIndex;
-              if (_newSampleIndex >= 32)
+              ++_sampleWaveIndex;
+              if (_sampleWaveIndex >= 32)
               {
-                _newSampleIndex = 0;
+                _sampleWaveIndex = 0;
               }
 
               // We get the memory value
-              byte currentByte = _newSampleArray[_newSampleIndex >> 1];
-              if ((_newSampleIndex & 1) == 0)
+              byte currentByte = _sampleArray[_sampleWaveIndex >> 1];
+              if ((_sampleWaveIndex & 1) == 0)
               {
                 _newCurrentSample = (byte)(currentByte >> 4);
               }
@@ -475,13 +461,13 @@ namespace GBSharp.AudioSpace
                 _newCurrentSample = (byte)(currentByte & 0x0F);
               }
 
-              _newSampleVolume = CalculateWaveVolume(_newVolumeShift, _newCurrentSample);
+              _sampleVolume = CalculateWaveVolume(_newVolumeShift, _newCurrentSample);
             }
           }
         }
 
         int volume = 0;
-        if (_newSampleEnabled) { volume = _newSampleVolume; }
+        if (_sampleEnabled) { volume = _sampleVolume; }
 
         // We generate the sample
         for (int c = 0; c < NumChannels; ++c)

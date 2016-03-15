@@ -366,9 +366,9 @@ namespace GBSharp.AudioSpace
       ClearBuffer();
 
       // If the channels are disabled, all the channels will output 0
-      _channel1.GenerateSamples2(fullSampleCount);
-      _channel2.GenerateSamples2(fullSampleCount);
-      _channel3.GenerateSamples2(fullSampleCount);
+      _channel1.GenerateSamples(fullSampleCount);
+      _channel2.GenerateSamples(fullSampleCount);
+      _channel3.GenerateSamples(fullSampleCount);
       _channel4.GenerateSamples(fullSampleCount);
 
       // We transformate the samples
