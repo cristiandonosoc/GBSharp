@@ -107,15 +107,14 @@ namespace GBSharp.AudioSpace
      * These are the values that are currently 'live' in the channel.
      * These could be (or not) the same values that are loaded in the envelope register.
      */
-    private int _currentEnvelopeTicks;
-    private bool _currentEnvelopeUp;
-    private int _currentEnvelopeValue;
-    private int CurrentEnvelopeValue
+    private bool _envelopeCurrentUp;
+    private int _envelopeCurrentValue;
+    private int EnvelopeCurrentValue
     {
-      get { return _currentEnvelopeValue; }
+      get { return _envelopeCurrentValue; }
       set
       {
-        _currentEnvelopeValue = value;
+        _envelopeCurrentValue = value;
         AddSoundEvent(SquareChannelEvents.VOLUME_CHANGE, Volume);
       }
     }
@@ -124,7 +123,7 @@ namespace GBSharp.AudioSpace
     public int Volume {
       get
       {
-        return CurrentEnvelopeValue * _volumeConstant;
+        return EnvelopeCurrentValue * _volumeConstant;
       }
     }
 
@@ -170,8 +169,6 @@ namespace GBSharp.AudioSpace
     public bool SweepUp { get; private set; }
 
     // DEBUG FLAGS
-    private bool _runSoundLength = true;
-    private bool _runVolumeEnvelope = true;
 
     public int SoundLengthCounter { get; private set; }
     public bool ContinuousOutput { get; private set; }
@@ -220,8 +217,7 @@ namespace GBSharp.AudioSpace
       }
       else if (register == _volumeEnvelopeRegister)
       {
-        double envelopeMsLength = 1000 * ((double)(value & 0x7) / (double)64);
-        _envelopeTicks = (int)(GameBoy.ticksPerMillisecond * envelopeMsLength);
+        _envelopeTicks = value & 0x7;
         _envelopeUp = (value & 0x8) != 0;
         _envelopeDefaultValue = value >> 4;
 
@@ -266,7 +262,6 @@ namespace GBSharp.AudioSpace
         bool init = (Utils.UtilFuncs.TestBit(value, 7) != 0);
         // INIT triggers only if the DAC (volume) is on
         if (init)
-
         {
           if(_envelopeDACOn)
           {
@@ -303,10 +298,9 @@ namespace GBSharp.AudioSpace
           }
 
           // Envelope is reloaded
-          _currentEnvelopeTicks = _envelopeTicks;
-          _currentEnvelopeUp = _envelopeUp;
-          CurrentEnvelopeValue = _envelopeDefaultValue;
-          _envelopeTickCounter = 0;
+          _envelopeTickCounter = _envelopeTicks;
+          _envelopeCurrentUp = _envelopeUp;
+          EnvelopeCurrentValue = _envelopeDefaultValue;
         }
 
         // Bits 3-5 are always 1
@@ -325,7 +319,6 @@ namespace GBSharp.AudioSpace
 #if SoundTiming
       //Timeline[TimelineCount++] = before;
       //Timeline[TimelineCount++] = _memory.LowLevelRead((ushort)register);
-
 #endif
     }
 
@@ -343,7 +336,6 @@ namespace GBSharp.AudioSpace
 
       // Length Register is unaffected by write
       _memory.LowLevelWrite((ushort)_wavePatternDutyRegister, 0x00);
-
 
       // Volume Envelope
       _envelopeTicks = 0;
@@ -367,10 +359,6 @@ namespace GBSharp.AudioSpace
       _memory.LowLevelWrite((ushort)_wavePatternDutyRegister, (byte)((prevValue & 0xC0) | (value & 0x3F)));
     }
 
-
-    int _tickCount = 0;
-    int _tickDivider;
-
     internal void Step(int ticks)
     {
       _tickDiff += ticks;
@@ -384,7 +372,7 @@ namespace GBSharp.AudioSpace
         if ((_frameSequencer.Value & 0x01) == 0)
         {
           // NOTE(Cristian): The length counter runs even when the channel is disabled
-          if (_runSoundLength && !ContinuousOutput)
+          if (!ContinuousOutput)
           {
             // We have an internal period
             ClockLengthCounter();
@@ -417,45 +405,41 @@ namespace GBSharp.AudioSpace
 
         #endregion
 
-      }
+        #region VOLUME ENVELOPE
 
-      if (!Enabled) { return; }
-
-      _tickDivider -= ticks;
-      if (_tickDivider < 0)
-      {
-        _tickDivider += 32;
-
-        --_tickCount;
-        if (_tickCount <= 0)
+        if ((_frameSequencer.Value & 0x07) == 0x07)
         {
-          _tickCount += _tickThreshold;
-        }
-      }
-
-      #region VOLUME ENVELOPE
-
-      if (_runVolumeEnvelope && _envelopeTicks > 0)
-      {
-        _envelopeTickCounter += ticks;
-        if (_envelopeTickCounter > _envelopeTicks)
-        {
-          _envelopeTickCounter -= _envelopeTicks;
-          if (_envelopeUp)
+          if (_envelopeTicks > 0)
           {
-            ++CurrentEnvelopeValue;
-            if (CurrentEnvelopeValue > 15) { CurrentEnvelopeValue = 15; }
-          }
-          else
-          {
-            --CurrentEnvelopeValue;
-            if (CurrentEnvelopeValue < 0) { CurrentEnvelopeValue = 0; }
+            --_envelopeTickCounter;
+            if (_envelopeTickCounter <= 0)
+            {
+              _envelopeTickCounter = _envelopeTicks;
+              if (_envelopeCurrentUp)
+              {
+                ++EnvelopeCurrentValue;
+                if (EnvelopeCurrentValue > 15)
+                {
+                  EnvelopeCurrentValue = 15;
+                  _envelopeTicks = 0;
+                }
+              }
+              else
+              {
+                --EnvelopeCurrentValue;
+                if (EnvelopeCurrentValue < 0)
+                {
+                  EnvelopeCurrentValue = 0;
+                  _envelopeTicks = 0;
+                }
+              }
+            }
           }
         }
+
+        #endregion
+
       }
-
-      #endregion
-
     }
 
     long _eventTickCounter;

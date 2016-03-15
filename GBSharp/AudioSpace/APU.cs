@@ -111,8 +111,8 @@ namespace GBSharp.AudioSpace
 
       Reset();
 
-      Channel1Run = false;
-      Channel2Run = false;
+      Channel1Run = true;
+      Channel2Run = true;
       Channel3Run = true;
       Channel4Run = false;
     }
