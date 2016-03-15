@@ -115,9 +115,6 @@ namespace GBSharp.AudioSpace
       Channel2Run = false;
       Channel3Run = true;
       Channel4Run = false;
-
-      //RecordSeparateChannels = true;
-      //StartRecording("TEST");
     }
 
     internal void Reset()

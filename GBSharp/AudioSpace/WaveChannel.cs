@@ -201,7 +201,7 @@ namespace GBSharp.AudioSpace
           bool init = (Utils.UtilFuncs.TestBit(value, 7) != 0);
           if(init)
           {
-            AddSoundEvent(WaveChannelEvents.INIT, 0);
+            AddSoundEvent(WaveChannelEvents.INIT, value);
             _tickCounter = _tickThreshold;
             CurrentSampleIndex = 0;
 
