@@ -69,6 +69,15 @@ namespace GBSharp.AudioSpace
     public bool Channel3Run { get; set; }
     public bool Channel4Run { get; set; }
 
+    private bool _outputChannel1Left;
+    private bool _outputChannel1Right;
+    private bool _outputChannel2Left;
+    private bool _outputChannel2Right;
+    private bool _outputChannel3Left;
+    private bool _outputChannel3Right;
+    private bool _outputChannel4Left;
+    private bool _outputChannel4Right;
+
     private FrameSequencer _frameSequencer;
     public FrameSequencer FrameSequencerTimer { get { return _frameSequencer; } }
 
@@ -259,11 +268,19 @@ namespace GBSharp.AudioSpace
           _channel4.HandleMemoryChange(register, value);
           break;
         case MMR.NR50:
-          // TODO(Cristian): Implement this logic
+          // NOTE(Cristian): No Vin support
           _memory.LowLevelWrite((ushort)register, value);
           break;
         case MMR.NR51:
           // TODO(Cristian): Implement this logic
+          _outputChannel1Left = ((value & 0x01) != 0);
+          _outputChannel2Left = ((value & 0x02) != 0);
+          _outputChannel3Left = ((value & 0x04) != 0);
+          _outputChannel4Left = ((value & 0x08) != 0);
+          _outputChannel1Right = ((value & 0x10) != 0);
+          _outputChannel2Right = ((value & 0x20) != 0);
+          _outputChannel3Right = ((value & 0x40) != 0);
+          _outputChannel4Right = ((value & 0x80) != 0);
           _memory.LowLevelWrite((ushort)register, value);
           break;
         case MMR.NR52:
@@ -388,22 +405,22 @@ namespace GBSharp.AudioSpace
           if (_channel1.Enabled)
           {
             c1LeftSample = _channel1.Buffer[_channelSampleIndex];
-            if (Channel1Run) { leftSample += c1LeftSample; }
+            if (Channel1Run && _outputChannel1Left) { leftSample += c1LeftSample; }
           }
           if (_channel2.Enabled)
           {
             c2LeftSample = _channel2.Buffer[_channelSampleIndex];
-            if (Channel2Run) { leftSample += c2LeftSample; }
+            if (Channel2Run && _outputChannel2Left) { leftSample += c2LeftSample; }
           }
           if (_channel3.Enabled)
           {
             c3LeftSample = _channel3.Buffer[_channelSampleIndex];
-            if (Channel3Run) { leftSample += c3LeftSample; }
+            if (Channel3Run && _outputChannel3Left) { leftSample += c3LeftSample; }
           }
           if (_channel4.Enabled)
           {
             c4LeftSample = _channel4.Buffer[_channelSampleIndex];
-            if (Channel4Run) { leftSample += c4LeftSample; }
+            if (Channel4Run && _outputChannel4Left) { leftSample += c4LeftSample; }
           }
         }
         ++_channelSampleIndex;
@@ -423,22 +440,22 @@ namespace GBSharp.AudioSpace
           if (_channel1.Enabled)
           {
             c1RightSample = _channel1.Buffer[_channelSampleIndex];
-            if (Channel1Run) { rightSample += c1RightSample; }
+            if (Channel1Run && _outputChannel1Right) { rightSample += c1RightSample; }
           }
           if (_channel2.Enabled)
           {
             c2RightSample = _channel2.Buffer[_channelSampleIndex];
-            if (Channel2Run) { rightSample += c2RightSample; }
+            if (Channel2Run && _outputChannel2Right) { rightSample += c2RightSample; }
           }
           if (_channel3.Enabled)
           {
             c3RightSample = _channel3.Buffer[_channelSampleIndex];
-            if (Channel3Run) { rightSample += c3RightSample; }
+            if (Channel3Run && _outputChannel3Right) { rightSample += c3RightSample; }
           }
           if (_channel4.Enabled)
           {
             c4RightSample = _channel4.Buffer[_channelSampleIndex];
-            if (Channel4Run) { rightSample += c4RightSample; }
+            if (Channel4Run && _outputChannel4Right) { rightSample += c4RightSample; }
           }
         }
         ++_channelSampleIndex;
