@@ -34,18 +34,22 @@ namespace GBSharp.AudioSpace
 
     internal void AddSoundEvent(long ticks, int kind, int value, int channelIndex)
     {
+#if SoundTiming
+      if (channelIndex == 5)
+      {
+        if (APU.TimelineLocalCount > APU.TimelineLocal.Length - 15) { return; }
+
+        APU.TimelineLocal[APU.TimelineLocalCount++] = APU.sw.ElapsedMilliseconds;
+        APU.TimelineLocal[APU.TimelineLocalCount++] = kind;
+        APU.TimelineLocal[APU.TimelineLocalCount++] = value;
+        return;
+      }
+#endif
+
       _events[_writeBuffer].TickDiff = ticks;
       _events[_writeBuffer].Kind = kind;
       _events[_writeBuffer].Value = value;
-#if SoundTiming
-        if (channelIndex == 3)
-        {
-          APU.TimelineLocal[APU.TimelineLocalCount++] = APU.sw.ElapsedMilliseconds;
-          APU.TimelineLocal[APU.TimelineLocalCount++] = kind;
-          APU.TimelineLocal[APU.TimelineLocalCount++] = value;
-        }
 
-#endif
       if (_writeBuffer + 1 == _size)
       {
         _writeBuffer = 0;

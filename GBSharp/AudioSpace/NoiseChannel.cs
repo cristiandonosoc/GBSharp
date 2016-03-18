@@ -13,7 +13,8 @@ namespace GBSharp.AudioSpace
     VOLUME_CHANGE,
     NR43_WRITE,
     ENABLED_CHANGE,
-    INIT
+    INIT,
+    LSFR_CHANGE
   }
 
   class NoiseChannel : IChannel
@@ -98,9 +99,10 @@ namespace GBSharp.AudioSpace
 
     private SoundEventQueue _eventQueue;
 
-    private void AddSoundEvent(NoiseChannelEvents soundEvent, int value)
+    private void AddSoundEvent(NoiseChannelEvents soundEvent, int value, int channelIndex = 0xFF)
     {
-      _eventQueue.AddSoundEvent(_tickDiff, (int)soundEvent, value, _channelIndex);
+      if (channelIndex == 0xFF) { channelIndex = _channelIndex; }
+      _eventQueue.AddSoundEvent(_tickDiff, (int)soundEvent, value, channelIndex);
       _tickDiff = 0;
     }
 
@@ -288,12 +290,12 @@ namespace GBSharp.AudioSpace
     bool _eventAlreadyRun = true;
     SoundEvent _currentEvent = new SoundEvent();
 
-    private int _sampleLsfrRegister;
+    private int _sampleLsfrRegister = 0x7FFF;
     private bool _sampleLsfrBigSteps;
     private int _sampleClockDividerThreshold = CalculateSampleClockDividerThreshold(0);
-    private int _sampleClockDividerCounter;
+    private int _sampleClockDividerCounter = 4;
     private int _sampleClockPreScalerThreshold = 0x01;
-    private int _sampleClockPreScalerCounter;
+    private int _sampleClockPreScalerCounter = 1;
 
     private bool _sampleUp;
     private int _sampleVolume;
@@ -305,8 +307,8 @@ namespace GBSharp.AudioSpace
     private static int CalculateSampleClockDividerThreshold(int dividerKey)
     {
       int result;
-      if (dividerKey == 0) { result = 2 * 4194304 / 8; }
-      else { result = (4194304 / 8) / dividerKey; }
+      if (dividerKey == 0) { result = 4; }
+      else { result = 8 * dividerKey; }
       return result;
     }
 
@@ -360,8 +362,11 @@ namespace GBSharp.AudioSpace
                   break;
                 case NoiseChannelEvents.NR43_WRITE:
                   int dividerKey = _currentEvent.Value & 0x07;
+                  _sampleClockDividerThreshold = CalculateSampleClockDividerThreshold(dividerKey);
 
                   _sampleLsfrBigSteps = ((_currentEvent.Value & 0x08) == 0);
+                  if (_sampleLsfrBigSteps) { _sampleLsfrRegister = 0x7FFF; }
+                  else { _sampleLsfrRegister = 0x7FF; }
 
                   int preScalerKey = _currentEvent.Value >> 4;
                   if (preScalerKey < 0xDF) // Last two values are not used
@@ -395,8 +400,13 @@ namespace GBSharp.AudioSpace
 
             // We remember the last value
             int firstBit = _sampleLsfrRegister & 0x01;
+            bool prevSampleUp = _sampleUp;
             _sampleUp = (firstBit == 0); // The last bit is inverted
-            _sampleValue = (short)(_sampleUp ? _sampleVolume : _sampleVolume);
+            _sampleValue = (short)(_sampleUp ? _sampleVolume : -_sampleVolume);
+            if ((prevSampleUp != _sampleUp) && (_sampleValue != 0))
+            {
+              AddSoundEvent(NoiseChannelEvents.LSFR_CHANGE, _sampleLsfrRegister, 5);
+            }
 
             _sampleLsfrRegister >>= 1;
             // We are only interested in XOR'ing the last two bits
