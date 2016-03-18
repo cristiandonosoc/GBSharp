@@ -104,10 +104,6 @@ namespace GBSharp.AudioSpace
       _tickDiff = 0;
     }
 
-    private int _clockDivider;
-    private int _clockPreScaler;
-    private bool _lsfrBigSteps;
-
     internal NoiseChannel(Memory  memory, FrameSequencer frameSequencer,
                           int sampleRate, int numChannels, 
                           int sampleSize, int channelIndex)
@@ -156,9 +152,7 @@ namespace GBSharp.AudioSpace
           _memory.LowLevelWrite((ushort)register, value);
           break;
         case MMR.NR43:
-          _clockDivider = value & 0x07;
-          _clockPreScaler = value >> 4;
-          _lsfrBigSteps = ((value & 0x08) == 0);
+          AddSoundEvent(NoiseChannelEvents.NR43_WRITE, value);
           _memory.LowLevelWrite((ushort)register, value);
           break;
         case MMR.NR44:
@@ -180,6 +174,7 @@ namespace GBSharp.AudioSpace
           bool init = (Utils.UtilFuncs.TestBit(value, 7) != 0);
           if (init)
           {
+            AddSoundEvent(NoiseChannelEvents.INIT, 0);
             if(_envelopeDACOn)
             {
               Enabled = true;
@@ -408,7 +403,7 @@ namespace GBSharp.AudioSpace
             int newDigit = (firstBit ^ _sampleLsfrRegister) & 0x01;
 
             // We insert the digit in its place
-            if (_lsfrBigSteps)
+            if (_sampleLsfrBigSteps)
             {
               // If bit steps, as we did a shift, the 15 place is 0
               _sampleLsfrRegister |= (newDigit << 14);

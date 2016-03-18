@@ -38,7 +38,7 @@ namespace GBSharp.AudioSpace
       _events[_writeBuffer].Kind = kind;
       _events[_writeBuffer].Value = value;
 #if SoundTiming
-        if (channelIndex == 2)
+        if (channelIndex == 3)
         {
           APU.TimelineLocal[APU.TimelineLocalCount++] = APU.sw.ElapsedMilliseconds;
           APU.TimelineLocal[APU.TimelineLocalCount++] = kind;
