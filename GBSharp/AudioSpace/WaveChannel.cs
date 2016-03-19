@@ -58,7 +58,6 @@ namespace GBSharp.AudioSpace
       LENGTH = 0x200
     }
 
-    private const int _volumeConstant = 1023;
 
     int _volumeRightShift;
     int VolumeRightShift
@@ -351,10 +350,11 @@ namespace GBSharp.AudioSpace
     int _newVolumeShift;
     bool _sampleEnabled = true;
 
+    private const int _volumeConstant = 1023;
     int CalculateWaveVolume(int volumeRightShift, byte currentSample)
     {
         if(volumeRightShift < 0) { return 0; }
-        int index = ((currentSample >> volumeRightShift) - 0x7F);
+        int index = ((currentSample >> volumeRightShift) - 0x8);
         int volume = index * _volumeConstant;
         return volume;
     }
@@ -496,6 +496,5 @@ namespace GBSharp.AudioSpace
         }
       }
     }
- 
   }
 }
