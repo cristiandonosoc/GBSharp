@@ -114,7 +114,7 @@ namespace GBSharp.AudioSpace
       Channel1Run = true;
       Channel2Run = true;
       Channel3Run = true;
-      Channel4Run = false;
+      Channel4Run = true;
     }
 
     internal void Reset()
@@ -350,6 +350,7 @@ namespace GBSharp.AudioSpace
       {
         firstStep = false;
         sw.Start();
+        RecordSeparateChannels = true;
         StartRecording();
       }
 #endif
@@ -500,6 +501,7 @@ namespace GBSharp.AudioSpace
         _channel1WavExporter.StartRecording(finalFilename, 1);
         _channel2WavExporter.StartRecording(finalFilename, 2);
         _channel3WavExporter.StartRecording(finalFilename, 3);
+        _channel4WavExporter.StartRecording(finalFilename, 4);
       }
     }
 
@@ -509,6 +511,7 @@ namespace GBSharp.AudioSpace
       _channel1WavExporter.StopRecording();
       _channel2WavExporter.StopRecording();
       _channel3WavExporter.StopRecording();
+      _channel4WavExporter.StopRecording();
     }
 
     public void Dispose()
@@ -517,6 +520,7 @@ namespace GBSharp.AudioSpace
       _channel1WavExporter.Dispose();
       _channel2WavExporter.Dispose();
       _channel3WavExporter.Dispose();
+      _channel4WavExporter.Dispose();
     }
 
 #if SoundTiming
@@ -534,21 +538,14 @@ namespace GBSharp.AudioSpace
             //               //"0x" + Timeline[i + 1].ToString("x2").ToUpper());
             //               Timeline[i + 1],
             //               Timeline[i + 2]);
-            WaveChannelEvents soundEvent = (WaveChannelEvents)TimelineLocal[i + 1];
+            NoiseChannelEvents soundEvent = (NoiseChannelEvents)TimelineLocal[i + 1];
             long soundEventValue = TimelineLocal[i + 2];
             string value;
-            if (soundEvent == WaveChannelEvents.THRESHOLD_CHANGE)
+            if (soundEvent == NoiseChannelEvents.VOLUME_CHANGE)
             {
-              value = "0x" + soundEventValue.ToString("x2");
+              value = soundEventValue.ToString();
             }
-            else if (soundEvent == WaveChannelEvents.MEMORY_CHANGE)
-            {
-              long address = (soundEventValue >> 8);
-              long memoryValue = (soundEventValue & 0xFF);
-              value = String.Format("{0} - {1}", "0x" + address.ToString("x2"),
-                                                 "0x" + memoryValue.ToString("x2"));
-            }
-            else if (soundEvent == WaveChannelEvents.ENABLED_CHANGE)
+            else if (soundEvent == NoiseChannelEvents.ENABLED_CHANGE)
             {
               if (soundEventValue == 1)
               {
@@ -556,8 +553,14 @@ namespace GBSharp.AudioSpace
               }
               else
               {
-                value = String.Format("OFF [{0}]", ((WaveChannel.OFF_EVENT)soundEventValue).ToString());
+                value = String.Format("OFF");
               }
+            }
+            else if ((soundEvent == NoiseChannelEvents.LSFR_CHANGE) ||
+                     (soundEvent == NoiseChannelEvents.LSFR_CHANGE2) ||
+                     (soundEvent == NoiseChannelEvents.LSFR_CHANGE3))
+            {
+              value = Convert.ToString(soundEventValue, 2);
             }
             else
             {

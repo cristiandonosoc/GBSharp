@@ -14,7 +14,9 @@ namespace GBSharp.AudioSpace
     NR43_WRITE,
     ENABLED_CHANGE,
     INIT,
-    LSFR_CHANGE
+    LSFR_CHANGE,
+    LSFR_CHANGE2,
+    LSFR_CHANGE3,
   }
 
   class NoiseChannel : IChannel
