@@ -354,7 +354,7 @@ namespace GBSharp.AudioSpace
     int CalculateWaveVolume(int volumeRightShift, byte currentSample)
     {
         if(volumeRightShift < 0) { return 0; }
-        int index = ((currentSample >> volumeRightShift) - 0x8);
+        int index = ((currentSample - 0x8) >> volumeRightShift);
         int volume = index * _volumeConstant;
         return volume;
     }
