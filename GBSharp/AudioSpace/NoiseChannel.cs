@@ -366,19 +366,20 @@ namespace GBSharp.AudioSpace
 
                   _sampleLsfrBigSteps = ((_currentEvent.Value & 0x08) == 0);
                   if (_sampleLsfrBigSteps) { _sampleLsfrRegister = 0x7FFF; }
-                  else { _sampleLsfrRegister = 0x7FF; }
+                  else { _sampleLsfrRegister = 0x7F; }
 
                   int preScalerKey = _currentEvent.Value >> 4;
                   if (preScalerKey < 0xDF) // Last two values are not used
                   {
-                    _sampleClockPreScalerThreshold = (0x01 << _currentEvent.Value >> 4);
+                    _sampleClockPreScalerThreshold = (0x01 << (_currentEvent.Value >> 4));
                   }
                   break;
                 case NoiseChannelEvents.ENABLED_CHANGE:
                   _sampleEnabled = (_currentEvent.Value == 1);
                   break;
                 case NoiseChannelEvents.INIT:
-                  _sampleLsfrRegister = 0x7FFF; // We fill all 15 first bits
+                  if (_sampleLsfrBigSteps) { _sampleLsfrRegister = 0x7FFF; }
+                  else { _sampleLsfrRegister = 0x7F; }
                   break;
               }
               _eventAlreadyRun = true;
@@ -403,10 +404,6 @@ namespace GBSharp.AudioSpace
             bool prevSampleUp = _sampleUp;
             _sampleUp = (firstBit == 0); // The last bit is inverted
             _sampleValue = (short)(_sampleUp ? _sampleVolume : -_sampleVolume);
-            if ((prevSampleUp != _sampleUp) && (_sampleValue != 0))
-            {
-              AddSoundEvent(NoiseChannelEvents.LSFR_CHANGE, _sampleLsfrRegister, 5);
-            }
 
             _sampleLsfrRegister >>= 1;
             // We are only interested in XOR'ing the last two bits
