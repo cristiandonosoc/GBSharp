@@ -13,10 +13,21 @@ namespace GBSharp.MemorySpace
     public ushort MemoryChangedLow { get; private set; }
     public ushort MemoryChangedHigh { get; private set; }
 
-    /// <summary>
-    /// This is what can be addressed.
-    /// </summary>
-    private byte[] data;
+    class State
+    {
+      /// <summary>
+      /// This is what can be addressed.
+      /// </summary>
+      internal byte[] Data;
+    }
+    State _state = new State();
+
+    // This is an pointer needed by the DMA
+    internal byte[] MemoryData
+    {
+      get { return _state.Data; }
+    }
+
     private DMA dma;
 
     /// <summary>
@@ -34,8 +45,8 @@ namespace GBSharp.MemorySpace
 
     internal void Reset()
     {
-      data = new byte[65536];
-      this.dma = new DMA(this.data);
+      _state.Data = new byte[65536];
+      this.dma = new DMA(this);
     }
 
     internal void Step(byte ticks)
@@ -43,14 +54,24 @@ namespace GBSharp.MemorySpace
       this.dma.Step(ticks);
     }
 
+    internal void SaveState()
+    {
+
+    }
+
+    internal void LoadState()
+    {
+
+    }
+
     /// <summary>
     /// Clears the internal memory.
     /// </summary>
     private void ClearMemory()
     {
-      for (int i = 0; i < this.data.Length; ++i)
+      for (int i = 0; i < _state.Data.Length; ++i)
       {
-        data[i] = 0;
+        _state.Data[i] = 0;
       }
     }
 
@@ -61,7 +82,7 @@ namespace GBSharp.MemorySpace
     internal void SetMemoryHandler(MemoryHandler memoryHandler)
     {
       this.memoryHandler = memoryHandler;
-      this.memoryHandler.UpdateMemoryReference(this.data, this.dma);
+      this.memoryHandler.UpdateMemoryReference(this.dma);
     }
 
     /// <summary>
@@ -98,7 +119,7 @@ namespace GBSharp.MemorySpace
     /// <param name="value">8 bits value.</param>
     internal void LowLevelWrite(ushort address, byte value)
     {
-      this.data[address] = value;
+      _state.Data[address] = value;
     }
 
     /// <summary>
@@ -113,7 +134,7 @@ namespace GBSharp.MemorySpace
 
     internal byte LowLevelRead(ushort address)
     {
-      byte result = this.data[address];
+      byte result = _state.Data[address];
       return result;
     }
 
@@ -122,7 +143,7 @@ namespace GBSharp.MemorySpace
       byte[] result = new byte[length];
       for (int i = 0; i < length; i++)
       {
-        result[i] = this.data[address++];
+        result[i] = _state.Data[address++];
       }
       return result;
     }
@@ -131,12 +152,12 @@ namespace GBSharp.MemorySpace
 
     byte[] IMemory.Data
     {
-      get { return this.data; }
+      get { return _state.Data; }
     }
 
     public void Load(byte[] data)
     {
-      this.data = data;
+      _state.Data = data;
     }
 
     public void Dispose()

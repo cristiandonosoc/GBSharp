@@ -119,11 +119,6 @@ namespace GBSharp.AudioSpace
       _sampleSize = sampleSize;
 
       Reset();
-
-      Channel1Run = true;
-      Channel2Run = true;
-      Channel3Run = true;
-      Channel4Run = true;
     }
 
     internal void Reset()
@@ -162,10 +157,10 @@ namespace GBSharp.AudioSpace
       LeftChannelEnabled = true;
       RightChannelEnabled = true;
 
-      Channel1Run = true;
-      Channel2Run = true;
-      Channel3Run = true;
-      Channel4Run = true;
+      Channel1Run = false;
+      Channel2Run = false;
+      Channel3Run = false;
+      Channel4Run = false;
 
       _memory.LowLevelWrite((ushort)MMR.NR10, 0x80);
       _memory.LowLevelWrite((ushort)MMR.NR11, 0xBF);

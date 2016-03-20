@@ -40,6 +40,9 @@ namespace GBSharp.MemorySpace.MemoryHandlers
       this.ramBanksData = new byte[0x8000]; // 32768 bytes
       this.romBanksData = new byte[0x200000]; // 2097152 bytes
 
+      // We get the memory pointer
+      byte[] memoryData = memory.MemoryData;
+
       // Copy ROM banks
       Buffer.BlockCopy(this.cartridge.Data, romBank0Start,
                        this.romBanksData, romBank0Start,
@@ -47,12 +50,15 @@ namespace GBSharp.MemorySpace.MemoryHandlers
 
       // Copy first and second ROM banks
       Buffer.BlockCopy(this.cartridge.Data, romBank0Start,
-                       this.memoryData, romBank0Start,
+                       memoryData, romBank0Start,
                        Math.Min(this.cartridge.Data.Length, romBankLength * 2));
     }
 
     internal override void Write(ushort address, byte value)
     {
+      // We ge the memory pointer
+      byte[] memoryData = memory.MemoryData;
+
       /* [0x0000 - 0x7FFF]: Memory Bank 0, Memory Bank 1 */
       if (address < 0x8000)
       {
@@ -73,7 +79,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           currentRomBank = bank;
 
           Buffer.BlockCopy(this.cartridge.Data, currentRomBank * romBankLength,
-                            this.memoryData, romBankLength, romBankLength);
+                           memoryData, romBankLength, romBankLength);
           
         }
         /* [0x4000 - 0x5FFF]: RAM Bank select or real time clock access */
@@ -87,13 +93,13 @@ namespace GBSharp.MemorySpace.MemoryHandlers
             if (newRamBank == currentRamBank) { return; } // Avoid unnecessary switching
 
             // Backup current bank
-            Buffer.BlockCopy(this.memoryData, ramBank0Start, this.ramBanksData,
+            Buffer.BlockCopy(memoryData, ramBank0Start, this.ramBanksData,
                              currentRamBank * ramBankLength, ramBankLength);
 
             // Copy the new one
             currentRamBank = newRamBank;
             Buffer.BlockCopy(this.ramBanksData, currentRamBank * ramBankLength,
-                             this.memoryData, ramBank0Start, ramBankLength);
+                             memoryData, ramBank0Start, ramBankLength);
           }
           else
           // RTC access

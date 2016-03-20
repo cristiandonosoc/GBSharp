@@ -21,7 +21,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
 
     #region ATTRIBUTES
     protected GameBoy gameboy;
-    protected byte[] memoryData;
+    protected Memory memory;
     protected Cartridge.Cartridge cartridge;
     protected DMA dma;
     protected Display display;
@@ -33,8 +33,8 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     internal MemoryHandler(GameBoy gameboy)
     {
       this.gameboy = gameboy;
+      this.memory = (Memory)gameboy.Memory;
       this.cartridge = (Cartridge.Cartridge)gameboy.Cartridge;
-      this.memoryData = gameboy.Memory.Data;
       this.cpu = (CPU)gameboy.CPU;
       this.display = (Display)gameboy.Display;
       this.apu = (APU)gameboy.APU;
@@ -43,10 +43,11 @@ namespace GBSharp.MemorySpace.MemoryHandlers
 
     #region PUBLIC METHODS
 
-    internal virtual void UpdateMemoryReference(byte[] memory, DMA dma)
+    internal virtual void UpdateMemoryReference(DMA dma)
     {
-      this.memoryData = memory;
       this.dma = dma;
+      // We unsuscribe just in case
+      this.dma.DMAReady -= Dma_DMAReady;
       this.dma.DMAReady += Dma_DMAReady;
     }
 
@@ -64,6 +65,8 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     /// <param name="value">8 bits value.</param>
     internal virtual void Write(ushort address, byte value)
     {
+      // We get the pointer
+      byte[] memoryData = memory.MemoryData;
 
       /* [0x0000 - 0x7FFF]: Memory Bank 0, Memory Bank 1 */
       if (address < 0x8000)
@@ -74,33 +77,33 @@ namespace GBSharp.MemorySpace.MemoryHandlers
       /* [0x8000 - 0xBFFF]: VRAM, Cartridge RAM */
       else if (address < 0xC000)
       {
-        this.memoryData[address] = value;
+        memoryData[address] = value;
       } // < 0xC000
 
       /* [0xC000 - 0xDFFF]: Internal RAM */
       else if (address < 0xE000)
       {
-        this.memoryData[address] = value;
+        memoryData[address] = value;
 
         // Internal RAM is 8kb, but RAM Echo is only 7.5kb
         if (address < 0xDE00)
         {
           // Copy to RAM Echo, add 8kb offset
-          this.memoryData[address + 0x2000] = value;
+          memoryData[address + 0x2000] = value;
         }
       } // < 0xE000
 
       /* [0xE000 - 0xFDFF]: RAM Echo */
       else if (address < 0xFE00)
       {
-        this.memoryData[address] = value;
-        this.memoryData[address - 0x2000] = value; // 8kb offset
+        memoryData[address] = value;
+        memoryData[address - 0x2000] = value; // 8kb offset
       } // < 0xFE00
 
       /* [0xFE00 - 0xFE9F]: Sprite Attributes Memory (OAM) */
       else if (address < 0xFEA0)
       {
-        this.memoryData[address] = value;
+        memoryData[address] = value;
         // TODO(Cristian): This is to see if OAM table is changed without DMA.
         //                 Perhaps the only way to access it is through DMA.
         //                 If that is the case, sprite sorting is greatly simplified
@@ -115,7 +118,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
         /* [0xFEA0 - 0xFEFF]: Empty but unusable for I/O */
         if (address < 0xFF00)
         {
-          this.memoryData[address] = value;
+          memoryData[address] = value;
         }
         
         /* [0xFF00 - 0xFF4B]: I/O Ports */
@@ -123,11 +126,11 @@ namespace GBSharp.MemorySpace.MemoryHandlers
         {
           if (address == (ushort)MMR.P1)
           {
-            byte p1 = this.memoryData[address];
+            byte p1 = memoryData[address];
             // Only the bits 4 and 5 are writable in P1
             p1 &= 0xCF; // &= 11001111;
             p1 |= (byte)(value & 0x30); // |= (value & 00110000); writable mask
-            this.memoryData[address] = p1;
+            memoryData[address] = p1;
 
 
             // Request an interrupt if necessary
@@ -137,7 +140,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           // Any write to DIV restarts the timer
           else if (address == (ushort)MMR.DIV)
           {
-            this.memoryData[address] = 0;
+            memoryData[address] = 0;
           }
 
           else if ((address == (ushort)MMR.TIMA) ||
@@ -151,7 +154,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           else if (address == (ushort)MMR.IF)
           {
             // IF has a 0xE0 mask
-            this.memoryData[address] = (byte)(0xE0 | value);
+            memoryData[address] = (byte)(0xE0 | value);
             // Trigger interrupt check event
             this.cpu.CheckForInterruptRequired();
           }
@@ -173,7 +176,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           else if ((0xFF30 <= address) && (address < 0xFF40))
           {
             this.apu.HandleWaveWrite(address, value);
-            this.memoryData[address] = value;
+            memoryData[address] = value;
           }
           // NOTE(Cristian): We start a DMA process.
           else if (address == (ushort)MMR.DMA)
@@ -182,33 +185,33 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           }
           else if (0xFF40 <= address)
           {
-            this.memoryData[address] = value;
+            memoryData[address] = value;
             // We handle display memory changes
             this.display.HandleMemoryChange((MMR)address, value);
           }
           else
           {
-            this.memoryData[address] = value;
+            memoryData[address] = value;
           }
         }
 
         /* [0xFF4C - 0xFF7F]: Empty but unusable for I/O */
         else
         {
-          this.memoryData[address] = value;
+          memoryData[address] = value;
         }
       } // < 0xFF80
 
       /* [0xFF80 - 0xFFFE]: Internal RAM */
       else if (address < 0xFFFF)
       {
-        this.memoryData[address] = value;
+        memoryData[address] = value;
       } // < 0xFFFF
 
       /* [0xFFFF]: INTERRUPT ENABLE */
       else
       {
-        this.memoryData[address] = value;
+        memoryData[address] = value;
         // Trigger memory event check
         this.cpu.CheckForInterruptRequired();
       } // < 0x10000
@@ -237,6 +240,10 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     /// </returns>
     virtual internal byte Read(ushort address)
     {
+      // We get the pointer
+      byte[] memoryData = memory.MemoryData;
+
+
       // We see if it's wave data
       if ((0xFF30 <= address) && (address < 0xFF40))
       {
@@ -245,7 +252,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
       }
 
       // The sound values come or'ed
-      byte value = this.memoryData[address];
+      byte value = memoryData[address];
       switch((MMR)address)
       {
         case MMR.NR10: value |= 0x80; break;

@@ -19,6 +19,16 @@ namespace GBSharp
     internal static double targetMillisecondsPerTick = 0.0002384185791015625; // It is know that this is 2^-22.
     internal static int ticksPerMillisecond = 4194; // Actually it's 4194,304
 
+    class State
+    {
+      internal bool Pause;
+      internal bool Run;
+      internal bool FrameReady;
+      internal bool InBreakpoint;
+    }
+
+    State _state = new State();
+
     public event Action StepCompleted;
     public event Action FrameCompleted;
     public event Action PauseRequested;
@@ -35,10 +45,6 @@ namespace GBSharp
     private VideoSpace.Display display;
     private AudioSpace.APU apu;
     private SerialSpace.SerialController serial;
-    private bool pause;
-    private bool run;
-    private bool frameReady;
-    private bool inBreakpoint;
     private Thread gameLoopThread;
 
     private ManualResetEvent pauseEvent;
@@ -80,7 +86,7 @@ namespace GBSharp
     /// </summary>
     public GameBoy()
     {
-      this.run = false;
+      _state.Run = false;
       this.stopwatch = new Stopwatch();
 
       this.memory = new MemorySpace.Memory();
@@ -111,7 +117,7 @@ namespace GBSharp
     {
       // NOTE(Cristian): It's responsability of the view (or the calling audio code) to
       //                 handling and re-hooking correctly the audio on reset
-      if(this.run) { this.Stop(); }
+      if(_state.Run) { this.Stop(); }
 
       if(resetComponents)
       {
@@ -136,7 +142,7 @@ namespace GBSharp
       this.pauseEvent = new ManualResetEvent(true);
       this.manualResetEvent = new ManualResetEventSlim(false);
 
-      this.inBreakpoint = false;
+      _state.InBreakpoint = false;
       this.ReleaseButtons = true;
 
       var disDef = display.GetDisplayDefinition();
@@ -180,7 +186,7 @@ namespace GBSharp
     /// <param name="cartridgeData"></param>
     public void LoadCartridge(string cartridgeFullFilename, byte[] cartridgeData)
     {
-      if (this.run) { Reset(); }
+      if (_state.Run) { Reset(); }
       this.cartridge = new Cartridge.Cartridge();
       this.cartridge.Load(cartridgeData);
 
@@ -212,9 +218,9 @@ namespace GBSharp
       //                 breakpoint. This next step must ignore the breakpoint
       //                 or it will stop with itself.
       bool ignoreNextStep = false;
-      if (inBreakpoint)
+      if (_state.InBreakpoint)
       {
-        inBreakpoint = false;
+        _state.InBreakpoint = false;
         ignoreNextStep = true;
       }
 
@@ -292,13 +298,9 @@ namespace GBSharp
     {
       this.cpu.UpdateClockAndTimers(ticks);
       this.memory.Step(ticks);
-
       this.display.Step(ticks);
-
       this.apu.Step(ticks);
-
       this.stepCounter++;
-
       this.serial.Step(ticks);
     }
 
@@ -308,10 +310,10 @@ namespace GBSharp
     private void CalculateFrame()
     {
       display.StartFrame();
-      while ((this.run) && (!this.frameReady))
+      while ((_state.Run) && (!_state.FrameReady))
       {
         // We check if the thread has been paused
-        if (this.pause)
+        if (_state.Pause)
         {
           PauseRequested();
           this.pauseEvent.WaitOne(Timeout.Infinite);
@@ -328,18 +330,18 @@ namespace GBSharp
     public void Run()
     {
       // We first try to unpause
-      if (this.pause)
+      if (_state.Pause)
       {
         this.pauseEvent.Set();
-        this.pause = false;
+        _state.Pause = false;
         this.stopwatch.Start();
       }
 
       // NOTE(cdonoso): If we're running, we shouldn't restart. Or should we?
-      if (this.run) { return; }
+      if (_state.Run) { return; }
       if (this.cartridge == null) { return; }
 
-      this.run = true;
+      _state.Run = true;
       this.stepCounter = 0;
       this.stopwatch.Restart();
       this.manualResetEvent.Set();
@@ -357,9 +359,9 @@ namespace GBSharp
     /// </summary>
     public void Pause()
     {
-      if (!this.run) { return; }
-      if (this.pause) { return; }
-      this.pause = true;
+      if (!_state.Run) { return; }
+      if (_state.Pause) { return; }
+      _state.Pause = true;
       this.stopwatch.Stop();
       this.pauseEvent.Reset();
     }
@@ -369,8 +371,8 @@ namespace GBSharp
     /// </summary>
     public void Stop()
     {
-      if (!this.run) { return; }
-      this.run = false;
+      if (!_state.Run) { return; }
+      _state.Run = false;
       this.stopwatch.Stop();
 
       // We unpause if needed
@@ -389,7 +391,7 @@ namespace GBSharp
     private void ThreadedRun()
     {
       long drama = 0;
-      while (this.run)
+      while (_state.Run)
       {
         CalculateFrame();
 
@@ -412,7 +414,7 @@ namespace GBSharp
           // NOTE(Cristian): Sometimes the thread would be trapped here because when
           //                 the process close signal gets, the timers stop working and
           //                 the finalTicks variable would never update.
-          if ((!this.run) || (this.pause)) { break; }
+          if ((!_state.Run) || (_state.Pause)) { break; }
           finalTicks = this.stopwatch.ElapsedTicks;
         }
 
@@ -451,7 +453,7 @@ namespace GBSharp
 
         this.stopwatch.Restart();
         this.stepCounter = 0;
-        this.frameReady = false;
+        _state.FrameReady = false;
 
         // We see if the APU needs to close things this frame
         apu.EndFrame();
@@ -462,12 +464,22 @@ namespace GBSharp
       }
     }
 
+    public void SaveState()
+    {
+
+    }
+
+    public void LoadState()
+    {
+
+    }
+
     /// <summary>
     /// Debugger. Handles the cpu.BreakPointFound event.
     /// </summary>
     private void BreakpointHandler()
     {
-      inBreakpoint = true;
+      _state.InBreakpoint = true;
       Pause();
     }
 
@@ -476,7 +488,7 @@ namespace GBSharp
     /// </summary>
     private void InterruptHandler(Interrupts interrupt)
     {
-      inBreakpoint = true;
+      _state.InBreakpoint = true;
       Pause();
     }
 
@@ -485,7 +497,7 @@ namespace GBSharp
     /// </summary>
     private void FrameReadyHandler()
     {
-      frameReady = true;
+      _state.FrameReady = true;
     }
 
     /// <summary>

@@ -64,6 +64,9 @@ namespace GBSharp.MemorySpace.MemoryHandlers
       this.ramBanksData = new byte[0x8000]; // 32768 bytes
       this.romBanksData = new byte[0x200000]; // 2097152 bytes
 
+      // We obtain the memory pointer
+      byte[] memoryData = memory.MemoryData;
+
       // Copy ROM banks
       Buffer.BlockCopy(this.cartridge.Data, romBank0Start,
                        this.romBanksData, romBank0Start,
@@ -71,7 +74,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
 
       // Copy first and second ROM banks
       Buffer.BlockCopy(this.cartridge.Data, romBank0Start,
-                       this.memoryData, romBank0Start,
+                       memoryData, romBank0Start,
                        Math.Min(this.cartridge.Data.Length, romBankLength * 2));
 
       this.hasBattery = hasBattery;
@@ -86,7 +89,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
 
           // We send it to main memory
           Buffer.BlockCopy(this.ramBanksData, currentRamBank * ramBankLength,
-                           this.memoryData, ramBank0Start, ramBankLength);
+                           memoryData, ramBank0Start, ramBankLength);
         }
       }
 
@@ -94,6 +97,9 @@ namespace GBSharp.MemorySpace.MemoryHandlers
 
     internal override void Write(ushort address, byte value)
     {
+      // We get the pointer
+      byte[] memoryData = memory.MemoryData;
+
       /* [0x0000 - 0x7FFF]: Memory Bank 0, Memory Bank 1 */
       if (address < 0x8000)
       {
@@ -114,7 +120,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           currentRomBank = (byte)((currentRomBank & 0xE0) | (bank & 0x1F));
 
           Buffer.BlockCopy(this.cartridge.Data, currentRomBank * romBankLength,
-                           this.memoryData, romBankLength, romBankLength);
+                           memoryData, romBankLength, romBankLength);
         }
         /* [0x4000 - 0x5FFF]: RAM Bank select or Upper ROM bank bits */
         else if (address < 0x6000)
@@ -128,7 +134,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
             currentRomBank = (byte)((highBank) | (currentRamBank & 0x1F));
 
             Buffer.BlockCopy(this.cartridge.Data, currentRomBank * romBankLength,
-                             this.memoryData, romBankLength, romBankLength);
+                             memoryData, romBankLength, romBankLength);
           }
           // RAM bank select
           else
@@ -138,13 +144,13 @@ namespace GBSharp.MemorySpace.MemoryHandlers
             if (newRamBank == currentRamBank) { return; } // Avoid unnecessary switching
 
             // Backup current bank
-            Buffer.BlockCopy(this.memoryData, ramBank0Start, this.ramBanksData,
+            Buffer.BlockCopy(memoryData, ramBank0Start, this.ramBanksData,
                              currentRamBank * ramBankLength, ramBankLength);
 
             // Copy the new one
             currentRamBank = newRamBank;
             Buffer.BlockCopy(this.ramBanksData, currentRamBank * ramBankLength,
-                             this.memoryData, ramBank0Start, ramBankLength);
+                             memoryData, ramBank0Start, ramBankLength);
           }
         }
         /* [0x6000 - 0x7FFF]: Mode select */
@@ -166,8 +172,11 @@ namespace GBSharp.MemorySpace.MemoryHandlers
 
       using (var file = new System.IO.BinaryWriter(new FileStream(saveFilePath, FileMode.Create)))
       {
+        // We get the pointer
+        byte[] memoryData = memory.MemoryData;
+
         // We need to save the current data into the rombanks
-        Buffer.BlockCopy(this.memoryData, ramBank0Start, this.ramBanksData,
+        Buffer.BlockCopy(memoryData, ramBank0Start, this.ramBanksData,
                          currentRamBank * ramBankLength, ramBankLength);
         file.Write(ramBanksData);
       }
