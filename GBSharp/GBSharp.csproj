@@ -109,7 +109,6 @@
     <Compile Include="IWaveChannel.cs" />
     <Compile Include="ISquareChannel.cs" />
     <Compile Include="Keypad.cs" />
-    <Compile Include="MemorySpace\DMA.cs" />
     <Compile Include="MemorySpace\Memory.cs" />
     <Compile Include="MemorySpace\MemoryHandlers\MBC3MemoryHandler.cs" />
     <Compile Include="MemorySpace\MemoryHandlers\MemoryHandler.cs" />

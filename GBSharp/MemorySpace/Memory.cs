@@ -10,6 +10,11 @@ namespace GBSharp.MemorySpace
 {
   class Memory : IMemory, IDisposable
   {
+    // TODO(Cristian): This GB timing, not GBC
+    // TODO(Cristian): Unify this value throughout the program!!!
+    static double usPerTick = 0.2384185791015625; // 2^-22
+    static ushort targetTickCount = (ushort)(Math.Ceiling(160 / usPerTick));
+
     public ushort MemoryChangedLow { get; private set; }
     public ushort MemoryChangedHigh { get; private set; }
 
@@ -19,6 +24,11 @@ namespace GBSharp.MemorySpace
       /// This is what can be addressed.
       /// </summary>
       internal byte[] Data;
+      
+      // DMA
+      internal ushort DmaStartAddress;
+      internal ushort DmaCurrentTickCount;
+      internal bool DmaActive;
     }
     State _state = new State();
 
@@ -27,8 +37,6 @@ namespace GBSharp.MemorySpace
     {
       get { return _state.Data; }
     }
-
-    private DMA dma;
 
     /// <summary>
     /// The class that is going to handle the memory writes depending on the cartridge type.
@@ -46,12 +54,58 @@ namespace GBSharp.MemorySpace
     internal void Reset()
     {
       _state.Data = new byte[65536];
-      this.dma = new DMA(this);
+      _state.DmaActive = false;
     }
 
+    /// <summary>
+    /// The DMA transfers 160 bytes from the address/0x100
+    /// into the addresses 0xFF00-0xFF9F (the OAM table).
+    /// This process takes ~160us and in that time CPU can
+    /// only access the "High" RAM (0xFF80-FFFE)
+    /// </summary>
+    /// <param name="source">
+    /// The source address/0x100
+    /// (i.e if the source address is to be 0x8800, 
+    /// then this input is 88)
+    /// </param>
+    internal void StartDma(byte source)
+    {
+      if(_state.DmaActive) {
+        throw new InvalidOperationException(
+          "There should not be a DMA start during DMA transfer");
+      }
+      _state.DmaStartAddress = (ushort)(source << 8);
+      _state.DmaCurrentTickCount = 0;
+      _state.DmaActive = true;
+    }
+
+    /// <summary>
+    /// Updates the copy process according to the ellapsed amount of time since the last update.
+    /// A full copy takes ~ 160 microseconds.
+    /// </summary>
+    /// <param name="ticks">Clock ticks since last update.</param>
     internal void Step(byte ticks)
     {
-      this.dma.Step(ticks);
+      if (!_state.DmaActive) { return; }
+
+      // NOTE(Cristian): Right now, the ticks of the write to the DMA address
+      //                 are being updated to this count.
+      //                 This is because this moves the timing closer to what
+      //                 the expected ticks are
+      _state.DmaCurrentTickCount += ticks;
+      if(_state.DmaCurrentTickCount >= targetTickCount)
+      {
+        // We copy the result of the DMA
+        Buffer.BlockCopy(_state.Data, _state.DmaStartAddress,
+                         _state.Data, 0xFE00,
+                         0xA0);
+        _state.DmaCurrentTickCount = 0;
+        _state.DmaActive = false;
+
+        // We notify the display that the sprites must be sorted
+        // We use the memoryHandler as it has the display reference
+        memoryHandler.DmaReady();
+      }
     }
 
     internal void SaveState()
@@ -82,7 +136,6 @@ namespace GBSharp.MemorySpace
     internal void SetMemoryHandler(MemoryHandler memoryHandler)
     {
       this.memoryHandler = memoryHandler;
-      this.memoryHandler.UpdateMemoryReference(this.dma);
     }
 
     /// <summary>

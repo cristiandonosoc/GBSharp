@@ -23,7 +23,6 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     protected GameBoy gameboy;
     protected Memory memory;
     protected Cartridge.Cartridge cartridge;
-    protected DMA dma;
     protected Display display;
     protected APU apu;
     protected CPU cpu;
@@ -43,15 +42,8 @@ namespace GBSharp.MemorySpace.MemoryHandlers
 
     #region PUBLIC METHODS
 
-    internal virtual void UpdateMemoryReference(DMA dma)
-    {
-      this.dma = dma;
-      // We unsuscribe just in case
-      this.dma.DMAReady -= Dma_DMAReady;
-      this.dma.DMAReady += Dma_DMAReady;
-    }
-
-    private void Dma_DMAReady()
+    // TODO(Cristian): Do we need this method here? Could be in memory...
+    internal void DmaReady()
     {
       // NOTE(Cristian): The value is not important, this is a signal
       this.display.HandleMemoryChange(MMR.DMA, 0);
@@ -181,7 +173,7 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           // NOTE(Cristian): We start a DMA process.
           else if (address == (ushort)MMR.DMA)
           {
-            this.dma.Start(value);
+            this.memory.StartDma(value);
           }
           else if (0xFF40 <= address)
           {
