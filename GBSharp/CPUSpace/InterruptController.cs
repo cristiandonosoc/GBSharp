@@ -10,10 +10,15 @@ namespace GBSharp.CPUSpace
   class InterruptController
   {
     MemorySpace.Memory memory;
-    private bool IME; // Interrupt Master Enable
-    private const ushort IFAddress = 0xFF0F; // Interrupt Request Address, see Interrupts.cs
-    private const ushort IEAddress = 0xFFFF; // Interrupt Enable Address, see Interrupts.cs
-    private byte pressedButtons = 0x00; // 8 bits: Start, Select, B, A, Down, Up, Left, Right
+    private static ushort IFAddress = 0xFF0F; // Interrupt Request Address, see Interrupts.cs
+    private static ushort IEAddress = 0xFFFF; // Interrupt Enable Address, see Interrupts.cs
+
+    class State
+    {
+      internal bool IME; // Interrupt Master Enable
+      internal byte PressedButtons; // 8 bits: Start, Select, B, A, Down, Up, Left, Right
+    }
+    State _state = new State();
 
     /// <summary>
     /// Class constructor.
@@ -26,8 +31,7 @@ namespace GBSharp.CPUSpace
 
     internal void Reset()
     {
-      #warning TODO: Find a source with the initial value for this.
-      this.IME = true;
+      _state.IME = true;
     }
 
     /// <summary>
@@ -38,12 +42,12 @@ namespace GBSharp.CPUSpace
     {
       get
       {
-        return this.IME;
+        return _state.IME;
       }
 
       set
       {
-        this.IME = value;
+        _state.IME = value;
       }
     }
 
@@ -54,7 +58,7 @@ namespace GBSharp.CPUSpace
     /// <param name="buttons">The new state of the buttons</param>
     public void UpdateKeypadState(Keypad buttons)
     {
-      this.pressedButtons = (byte)buttons; // This only works because the magic values we chose for the Keypad enum
+      _state.PressedButtons = (byte)buttons; // This only works because the magic values we chose for the Keypad enum
       this.UpdateKeypadState();
     }
 
@@ -97,13 +101,13 @@ namespace GBSharp.CPUSpace
       // Check if P14 is 0
       if ((p14p15 & 0x10) == 0x00)
       {
-        p1 = (byte)(0x0F & this.pressedButtons); // 0x0F is the mask for Down, Up, Left, Right (P14)
+        p1 = (byte)(0x0F & _state.PressedButtons); // 0x0F is the mask for Down, Up, Left, Right (P14)
       }
 
       // Check if P15 is 0
       if ((p14p15 & 0x20) == 0x00)
       {
-        p1 |= (byte)(this.pressedButtons >> 4); // 0xF0 is the mask for A, B, Select, Start (P15)
+        p1 |= (byte)(_state.PressedButtons >> 4); // 0xF0 is the mask for A, B, Select, Start (P15)
       }
 
       // At this point we have the combination of pressed buttons for P14 OR P15 in the lower 4 bits of the P1
