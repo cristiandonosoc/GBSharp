@@ -53,6 +53,8 @@ namespace GBSharp.ViewModel
     public ICommand StopCommand { get { return new DelegateCommand(Stop); } }
     public ICommand ResetCommand { get { return new DelegateCommand(Reset); } }
     public ICommand LoadCommand { get { return new DelegateCommand(Load); } }
+    public ICommand SaveStateCommand { get { return new DelegateCommand(SaveState); } }
+    public ICommand LoadStateCommand { get { return new DelegateCommand(LoadState); } }
 
     public GameBoyContollerViewModel(IGameBoy gameBoy, IOpenFileDialogFactory fileDialogFactory)
     {
@@ -106,6 +108,16 @@ namespace GBSharp.ViewModel
     {
       _gameBoy.Reset();
       _gameBoy.Run();
+    }
+
+    private void SaveState()
+    {
+      _gameBoy.SaveState();
+    }
+
+    private void LoadState()
+    {
+      _gameBoy.LoadState();
     }
 
     private void OnFileOpened(string filePath, int filterIndex)
