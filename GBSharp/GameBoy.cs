@@ -34,50 +34,61 @@ namespace GBSharp
     public event Action PauseRequested;
     public event Action StopRequested;
 
-    private CPUSpace.CPU cpu;
-    private CPUSpace.InterruptController interruptController;
-    private MemorySpace.Memory memory;
+    private CPUSpace.CPU _cpu;
+    private CPUSpace.InterruptController _interruptController;
+    private MemorySpace.Memory _memory;
 
+    private Cartridge.Cartridge _cartridge;
     internal string CartridgeDirectory { get; private set; }
     internal string CartridgeFilename { get; private set; }
-    private Cartridge.Cartridge cartridge;
 
-    private VideoSpace.Display display;
-    private AudioSpace.APU apu;
-    private SerialSpace.SerialController serial;
-    private Thread gameLoopThread;
+    private VideoSpace.Display _display;
+    private AudioSpace.APU _apu;
+    private SerialSpace.SerialController _serial;
+    private Thread _gameLoopThread;
 
-    private ManualResetEvent pauseEvent;
-    private ManualResetEventSlim manualResetEvent;
+    private ManualResetEvent _pauseEvent;
+    private ManualResetEventSlim _manualResetEvent;
 
-    private Keypad buttons;
-    private Disassembler disassembler;
+    private Keypad _buttons;
+    private Disassembler _disassembler;
 
-    private Stopwatch stopwatch;
-    private long stepCounter;
+    private Stopwatch _stopwatch;
+    private long _stepCounter;
 
     public bool ReleaseButtons { get; set; }
 
-    private int frameCounter = 0;
-    private long totalFrameTicks = 0;
+    private int _frameCounter = 0;
+    private long _totalFrameTicks = 0;
     public double FPS { get; private set; }
 
     // This is a debug counter
     public ulong DebugTickCounter { get; set; }
 
+    #region INTERFACE GETTERS
+
+    public ICPU CPU { get { return _cpu; } }
+    public IMemory Memory { get { return _memory; } }
+    public ICartridge Cartridge { get { return _cartridge; } }
+    public IDisplay Display { get { return _display; } }
+    public IAPU APU { get { return _apu; } }
+    public IDisassembler Disassembler { get { return _disassembler; } }
+
+    #endregion
+
 #if TIMING
-    private long[] timingSamples;
+    private long[] _timingSamples;
 
-    private int timingFrameCounter = 0;
-    private int sampleCounter = 0;
-    private int maxSamples = 60 * 100;
-    private int sampleAmount = 5;
+    private int _timingFrameCounter = 0;
+    private int _sampleCounter = 0;
+    private int _maxSamples = 60 * 100;
+    private int _sampleAmount = 5;
 
-    private Stopwatch swCPU;
-    private Stopwatch swDisplay;
-    private Stopwatch swBlit;
-    private Stopwatch swClockMem;
-    public static Stopwatch swBeginInvoke = new Stopwatch();
+    private Stopwatch _swCPU;
+    private Stopwatch _swDisplay;
+    private Stopwatch _swBlit;
+    private Stopwatch _swClockMem;
+    public static Stopwatch _swBeginInvoke = new Stopwatch();
 #endif
 
     /// <summary>
@@ -87,20 +98,20 @@ namespace GBSharp
     public GameBoy()
     {
       _state.Run = false;
-      this.stopwatch = new Stopwatch();
+      _stopwatch = new Stopwatch();
 
-      this.memory = new MemorySpace.Memory();
-      this.cpu = new CPUSpace.CPU(this.memory);
-      this.interruptController = this.cpu.interruptController;
-      this.display = new Display(this.interruptController, this.memory);
-      this.apu = new AudioSpace.APU(this.memory, 44000, 2, 2);
-      this.serial = new SerialSpace.SerialController(this.interruptController, this.memory);
-      this.disassembler = new Disassembler(cpu, memory);
+      _memory = new MemorySpace.Memory();
+      _cpu = new CPUSpace.CPU(this._memory);
+      _interruptController = this._cpu.interruptController;
+      _display = new Display(this._interruptController, this._memory);
+      _apu = new AudioSpace.APU(this._memory, 44000, 2, 2);
+      _serial = new SerialSpace.SerialController(this._interruptController, this._memory);
+      _disassembler = new Disassembler(_cpu, _memory);
 
       // Events
-      this.cpu.BreakpointFound += BreakpointHandler;
-      this.cpu.InterruptHappened += InterruptHandler;
-      this.display.FrameReady += FrameReadyHandler;
+      _cpu.BreakpointFound += BreakpointHandler;
+      _cpu.InterruptHappened += InterruptHandler;
+      _display.FrameReady += FrameReadyHandler;
 
       InternalReset(false);
     }
@@ -121,53 +132,40 @@ namespace GBSharp
 
       if(resetComponents)
       {
-        this.memory.Reset();
-        this.cpu.Reset();
-        this.interruptController.Reset();
-        this.display.Reset();
-        this.apu.Reset();
-        this.disassembler.Reset();
+        _memory.Reset();
+        _cpu.Reset();
+        _interruptController.Reset();
+        _display.Reset();
+        _apu.Reset();
+        _disassembler.Reset();
         //this.serial = new SerialSpace.SerialController(this.interruptController, this.memory);
       }
 
       // We re-hook information
-      if(this.cartridge != null)
+      if(this._cartridge != null)
       {
-        this.apu.CartridgeFilename = this.CartridgeFilename; 
-        this.memory.SetMemoryHandler(GBSharp.MemorySpace.MemoryHandlers.
+        _apu.CartridgeFilename = this.CartridgeFilename; 
+        _memory.SetMemoryHandler(GBSharp.MemorySpace.MemoryHandlers.
                                      MemoryHandlerFactory.CreateMemoryHandler(this));
       }
 
-      this.buttons = Keypad.None;
-      this.pauseEvent = new ManualResetEvent(true);
-      this.manualResetEvent = new ManualResetEventSlim(false);
+      _buttons = Keypad.None;
+      _pauseEvent = new ManualResetEvent(true);
+      _manualResetEvent = new ManualResetEventSlim(false);
 
       _state.InBreakpoint = false;
-      this.ReleaseButtons = true;
+      ReleaseButtons = true;
 
-      var disDef = display.GetDisplayDefinition();
+      var disDef = _display.GetDisplayDefinition();
 
 #if TIMING
-      this.timingSamples = new long[sampleAmount * maxSamples];
-
-      this.swCPU = new Stopwatch();
-      this.swDisplay = new Stopwatch();
-
-      this.swBlit = new Stopwatch();
-      this.swClockMem = new Stopwatch();
+      _timingSamples = new long[_sampleAmount * _maxSamples];
+      _swCPU = new Stopwatch();
+      _swDisplay = new Stopwatch();
+      _swBlit = new Stopwatch();
+      _swClockMem = new Stopwatch();
 #endif
     }
-
-    #region INTERFACE GETTERS
-
-    public ICPU CPU { get { return cpu; } }
-    public IMemory Memory { get { return memory; } }
-    public ICartridge Cartridge { get { return cartridge; } }
-    public IDisplay Display { get { return display; } }
-    public IAPU APU { get { return apu; } }
-    public IDisassembler Disassembler { get { return disassembler; } }
-
-    #endregion
 
     /// <summary>
     /// Provides access to the interrupt controller to every component connected to the gameboy, so interrupts
@@ -177,7 +175,7 @@ namespace GBSharp
     /// </summary>
     internal CPUSpace.InterruptController InterruptController
     {
-      get { return interruptController; }
+      get { return _interruptController; }
     }
 
     /// <summary>
@@ -187,18 +185,18 @@ namespace GBSharp
     public void LoadCartridge(string cartridgeFullFilename, byte[] cartridgeData)
     {
       if (_state.Run) { Reset(); }
-      this.cartridge = new Cartridge.Cartridge();
-      this.cartridge.Load(cartridgeData);
+      this._cartridge = new Cartridge.Cartridge();
+      this._cartridge.Load(cartridgeData);
 
-      this.cpu.ResetBreakpoints();
+      this._cpu.ResetBreakpoints();
       this.CartridgeFilename = Path.GetFileNameWithoutExtension(cartridgeFullFilename);
       this.CartridgeDirectory = Path.GetDirectoryName(cartridgeFullFilename);
-      this.apu.CartridgeFilename = this.CartridgeFilename; 
+      this._apu.CartridgeFilename = this.CartridgeFilename; 
       // We create the MemoryHandler according to the data
       // from the cartridge and set it to the memory.
       // From this point onwards, all the access to memory
       // are done throught the MemoryHandler
-      this.memory.SetMemoryHandler(GBSharp.MemorySpace.MemoryHandlers.
+      this._memory.SetMemoryHandler(GBSharp.MemorySpace.MemoryHandlers.
                                    MemoryHandlerFactory.CreateMemoryHandler(this));
     }
 
@@ -225,20 +223,21 @@ namespace GBSharp
       }
 
 #if TIMING 
-      swCPU.Start();
-      byte ticks = this.cpu.Step(ignoreNextStep || ignoreBreakpoints);
-      swCPU.Stop();
+      _swCPU.Start();
+      // TODO(Cristian): Update rest of flow
+      byte ticks = _cpu.DetermineStep(ignoreNextStep || ignoreBreakpoints);
+      _swCPU.Stop();
 
-      swClockMem.Start();
+      _swClockMem.Start();
       // NOTE(Cristian): If the CPU is halted, the hardware carry on
-      if (cpu.halted) { ticks = 4; }
-      this.cpu.UpdateClockAndTimers(ticks);
-      this.memory.Step(ticks);
-      swClockMem.Stop();
+      if (_cpu.halted) { ticks = 4; }
+      _cpu.UpdateClockAndTimers(ticks);
+      _memory.Step(ticks);
+      _swClockMem.Stop();
 
-      swDisplay.Start();
-      this.display.Step(ticks);
-      swDisplay.Stop();
+      _swDisplay.Start();
+      _display.Step(ticks);
+      _swDisplay.Stop();
 #else
       /**
        * The CPU Step works as following
@@ -255,11 +254,11 @@ namespace GBSharp
 
       // Sets the current instruction and obtain how many ticks the peripherals have
       // to be simulated before opcode execution
-      byte prevTicks = this.cpu.DetermineStep(ignoreNextStep || ignoreBreakpoints);
+      byte prevTicks = this._cpu.DetermineStep(ignoreNextStep || ignoreBreakpoints);
 
       // NOTE(Cristian): If the CPU is halted, the hardware carry on at a simulated clock
       byte postTicks = 0;
-      if (cpu.halted)
+      if (_cpu.halted)
       {
         prevTicks = 4;
         StepPeripherals(prevTicks);
@@ -274,7 +273,7 @@ namespace GBSharp
 
           // We execute the opcode. Returns the amount of ticks that have to be
           // simulated after the opcode execution
-          postTicks = this.cpu.ExecuteInstruction();
+          postTicks = this._cpu.ExecuteInstruction();
           // postTicks 0 means that the instruction run at its last clock
           // so there is no postprocessing to be done
           if (postTicks > 0)
@@ -282,7 +281,7 @@ namespace GBSharp
             StepPeripherals(postTicks);
             // Some opcodes run some code after execution (this is for two-stage opcodes
             // that read and write at different clocks)
-            this.cpu.PostExecuteInstruction();
+            this._cpu.PostExecuteInstruction();
           }
         }
       }
@@ -296,12 +295,12 @@ namespace GBSharp
 
     private void StepPeripherals(byte ticks)
     {
-      this.cpu.UpdateClockAndTimers(ticks);
-      this.memory.Step(ticks);
-      this.display.Step(ticks);
-      this.apu.Step(ticks);
-      this.stepCounter++;
-      this.serial.Step(ticks);
+      this._cpu.UpdateClockAndTimers(ticks);
+      this._memory.Step(ticks);
+      this._display.Step(ticks);
+      this._apu.Step(ticks);
+      this._stepCounter++;
+      this._serial.Step(ticks);
     }
 
     /// <summary>
@@ -309,19 +308,19 @@ namespace GBSharp
     /// </summary>
     private void CalculateFrame()
     {
-      display.StartFrame();
+      _display.StartFrame();
       while ((_state.Run) && (!_state.FrameReady))
       {
         // We check if the thread has been paused
         if (_state.Pause)
         {
           PauseRequested();
-          this.pauseEvent.WaitOne(Timeout.Infinite);
+          this._pauseEvent.WaitOne(Timeout.Infinite);
         }
 
         MachineStep(false);
       }
-      display.EndFrame();
+      _display.EndFrame();
     }
 
     /// <summary>
@@ -332,25 +331,25 @@ namespace GBSharp
       // We first try to unpause
       if (_state.Pause)
       {
-        this.pauseEvent.Set();
+        this._pauseEvent.Set();
         _state.Pause = false;
-        this.stopwatch.Start();
+        this._stopwatch.Start();
       }
 
       // NOTE(cdonoso): If we're running, we shouldn't restart. Or should we?
       if (_state.Run) { return; }
-      if (this.cartridge == null) { return; }
+      if (this._cartridge == null) { return; }
 
       _state.Run = true;
-      this.stepCounter = 0;
-      this.stopwatch.Restart();
-      this.manualResetEvent.Set();
+      this._stepCounter = 0;
+      this._stopwatch.Restart();
+      this._manualResetEvent.Set();
 
-      if(gameLoopThread == null)
+      if(_gameLoopThread == null)
       {
         // This is the case if the gameboy is started of has been stoped
-        this.gameLoopThread = new Thread(new ThreadStart(this.ThreadedRun));
-        this.gameLoopThread.Start();
+        this._gameLoopThread = new Thread(new ThreadStart(this.ThreadedRun));
+        this._gameLoopThread.Start();
       }
     }
 
@@ -362,8 +361,8 @@ namespace GBSharp
       if (!_state.Run) { return; }
       if (_state.Pause) { return; }
       _state.Pause = true;
-      this.stopwatch.Stop();
-      this.pauseEvent.Reset();
+      this._stopwatch.Stop();
+      this._pauseEvent.Reset();
     }
 
     /// <summary>
@@ -373,15 +372,15 @@ namespace GBSharp
     {
       if (!_state.Run) { return; }
       _state.Run = false;
-      this.stopwatch.Stop();
+      this._stopwatch.Stop();
 
       // We unpause if needed
-      this.manualResetEvent.Set();
-      this.pauseEvent.Set();
+      this._manualResetEvent.Set();
+      this._pauseEvent.Set();
 
-      this.gameLoopThread.Join();
+      this._gameLoopThread.Join();
       // We get rid of the current thread (a new will be created on restart)
-      this.gameLoopThread = null;
+      this._gameLoopThread = null;
       StopRequested();
     }
 
@@ -396,67 +395,67 @@ namespace GBSharp
         CalculateFrame();
 
         // Check timing issues
-        long ellapsedStopwatchTicks = this.stopwatch.ElapsedTicks;
+        long ellapsedStopwatchTicks = this._stopwatch.ElapsedTicks;
         ellapsedStopwatchTicks += drama;
 
         // Should we sleep?
         if (ellapsedStopwatchTicks < stopwatchTicksPerFrame)
         {
-          this.manualResetEvent.Reset();
+          this._manualResetEvent.Reset();
           int timeToWait = (int)(/* 0.5 + */1000.0 * (stopwatchTicksPerFrame - ellapsedStopwatchTicks) / Stopwatch.Frequency);
-          this.manualResetEvent.Wait(timeToWait);
-          this.manualResetEvent.Set();
+          this._manualResetEvent.Wait(timeToWait);
+          this._manualResetEvent.Set();
         }
 
-        long finalTicks = this.stopwatch.ElapsedTicks;
+        long finalTicks = this._stopwatch.ElapsedTicks;
         while (finalTicks < stopwatchTicksPerFrame)
         {
           // NOTE(Cristian): Sometimes the thread would be trapped here because when
           //                 the process close signal gets, the timers stop working and
           //                 the finalTicks variable would never update.
           if ((!_state.Run) || (_state.Pause)) { break; }
-          finalTicks = this.stopwatch.ElapsedTicks;
+          finalTicks = this._stopwatch.ElapsedTicks;
         }
 
         drama = finalTicks - (long)stopwatchTicksPerFrame;
 
         // We calculate how many FPS we're giving
-        totalFrameTicks += finalTicks;
-        ++frameCounter;
-        if (frameCounter >= 30)
+        _totalFrameTicks += finalTicks;
+        ++_frameCounter;
+        if (_frameCounter >= 30)
         {
-          FPS = Math.Round(60 * (double)(30 * stopwatchTicksPerFrame) / (double)totalFrameTicks);
-          frameCounter = 0;
-          totalFrameTicks = 0;
+          FPS = Math.Round(60 * (double)(30 * stopwatchTicksPerFrame) / (double)_totalFrameTicks);
+          _frameCounter = 0;
+          _totalFrameTicks = 0;
         }
-
 
 #if TIMING
-        if (sampleCounter < maxSamples)
+        if (_sampleCounter < _maxSamples)
         {
-          int index = sampleCounter * sampleAmount;
-          timingSamples[index + 0] = swCPU.ElapsedTicks;
-          timingSamples[index + 1] = swClockMem.ElapsedTicks;
-          timingSamples[index + 2] = swDisplay.ElapsedTicks;
-          timingSamples[index + 3] = swBlit.ElapsedTicks;
-          timingSamples[index + 4] = swBeginInvoke.ElapsedTicks;
-          ++sampleCounter;
+          int index = _sampleCounter * _sampleAmount;
+          _timingSamples[index + 0] = _swCPU.ElapsedTicks;
+          _timingSamples[index + 1] = _swClockMem.ElapsedTicks;
+          _timingSamples[index + 2] = _swDisplay.ElapsedTicks;
+          _timingSamples[index + 3] = _swBlit.ElapsedTicks;
+          _timingSamples[index + 4] = _swBeginInvoke.ElapsedTicks;
+          ++_sampleCounter;
         }
-        ++timingFrameCounter;
+        ++_timingFrameCounter;
 
-        swCPU.Reset();
-        swClockMem.Reset();
-        swDisplay.Reset();
-        swBlit.Reset();
-        swBeginInvoke.Reset();
+        _swCPU.Reset();
+        _swClockMem.Reset();
+        _swDisplay.Reset();
+        _swBlit.Reset();
+
+        _swBeginInvoke.Reset();
 #endif
 
-        this.stopwatch.Restart();
-        this.stepCounter = 0;
+        _stopwatch.Restart();
+        _stepCounter = 0;
         _state.FrameReady = false;
 
         // We see if the APU needs to close things this frame
-        apu.EndFrame();
+        _apu.EndFrame();
 
         // Finally here we trigger the notification
         NotifyFrameCompleted();
@@ -506,9 +505,9 @@ namespace GBSharp
     /// <param name="button">The button that was pressed. It can be a combination of buttons too.</param>
     public void PressButton(Keypad button)
     {
-      this.buttons |= button;
-      this.interruptController.UpdateKeypadState(this.buttons);
-      if (cpu.stopped) { cpu.stopped = false; }
+      _buttons |= button;
+      _interruptController.UpdateKeypadState(_buttons);
+      if (_cpu.stopped) { _cpu.stopped = false; }
     }
 
     /// <summary>
@@ -519,8 +518,8 @@ namespace GBSharp
     {
       if (ReleaseButtons)
       {
-        this.buttons &= ~button;
-        this.interruptController.UpdateKeypadState(this.buttons);
+        _buttons &= ~button;
+        _interruptController.UpdateKeypadState(_buttons);
       }
     }
 
@@ -543,11 +542,11 @@ namespace GBSharp
       if (FrameCompleted != null)
       {
 #if TIMING
-        swBlit.Start();
-        display.CopyTargets();
-        swBlit.Stop();
+        _swBlit.Start();
+        _display.CopyTargets();
+        _swBlit.Stop();
 #else
-        display.CopyTargets();
+        _display.CopyTargets();
 #endif
 
         FrameCompleted();
@@ -559,15 +558,15 @@ namespace GBSharp
       Dictionary<MMR, ushort> registerDic = new Dictionary<MMR, ushort>();
       foreach (MMR registerEnum in Enum.GetValues(typeof(MMR)))
       {
-        registerDic.Add(registerEnum, memory.LowLevelRead((ushort)registerEnum));
+        registerDic.Add(registerEnum, _memory.LowLevelRead((ushort)registerEnum));
       }
       return registerDic;
     }
 
     public void Dispose()
     {
-      apu.Dispose();
-      memory.Dispose();
+      _apu.Dispose();
+      _memory.Dispose();
     }
 
     ~GameBoy()
@@ -582,15 +581,15 @@ namespace GBSharp
         file.WriteLine("{0},{1},{2},{3},{4}", "CPU", "Clock & Mem", "Display", "Blit", "BeginInvoke");
 
         // We write the data
-        for (int i = 0; i < sampleCounter; ++i)
+        for (int i = 0; i < _sampleCounter; ++i)
         {
-          int index = i * sampleAmount;
+          int index = i * _sampleAmount;
           file.WriteLine("{0},{1},{2},{3},{4}",
-                         timingSamples[index + 0],
-                         timingSamples[index + 1],
-                         timingSamples[index + 2],
-                         timingSamples[index + 3],
-                         timingSamples[index + 4]);
+                         _timingSamples[index + 0],
+                         _timingSamples[index + 1],
+                         _timingSamples[index + 2],
+                         _timingSamples[index + 3],
+                         _timingSamples[index + 4]);
         }
       }
 #endif

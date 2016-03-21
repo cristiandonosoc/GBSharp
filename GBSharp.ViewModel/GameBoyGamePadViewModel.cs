@@ -137,9 +137,9 @@ namespace GBSharp.ViewModel
     private void OnFrameCompleted()
     {
 #if TIMING
-      GameBoy.swBeginInvoke.Start();
+      GameBoy._swBeginInvoke.Start();
       _dispatcher.BeginInvoke(new Action(UpdateFromGameboy), null);
-      GameBoy.swBeginInvoke.Stop();
+      GameBoy._swBeginInvoke.Stop();
 #else
       _dispatcher.BeginInvoke(new Action(UpdateFromGameboy), null);
 #endif
