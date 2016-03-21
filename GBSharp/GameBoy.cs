@@ -7,6 +7,8 @@ using GBSharp.VideoSpace;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
 
 namespace GBSharp
 {
@@ -465,12 +467,45 @@ namespace GBSharp
 
     public void SaveState()
     {
+      // We stop pause the simulation
+      Pause();
 
+      SaveStateFileFormat saveState = new SaveStateFileFormat();
+      // We ge the states
+      saveState.MemoryState = _memory.GetState();
+      saveState.CartridgeState = _cartridge.GetState();
+
+      FileStream saveStateStream;
+      if (!File.Exists("save_state.stt"))
+      {
+        saveStateStream = File.Create("save_state.stt");
+      }
+      else
+      {
+        saveStateStream = File.Open("save_state.stt", FileMode.Truncate);
+      }
+      IFormatter formatter = new BinaryFormatter();
+      formatter.Serialize(saveStateStream, saveState);
+
+      Run();
     }
 
     public void LoadState()
     {
+      Pause();
+      string filename = "save_state.stt";
 
+      if (File.Exists(filename))
+      {
+        FileStream loadStateStream = File.Open(filename, FileMode.Open);
+
+        BinaryFormatter formatter = new BinaryFormatter();
+        SaveStateFileFormat state = formatter.Deserialize(loadStateStream) as SaveStateFileFormat;
+        _memory.SetState(state.MemoryState);
+        _cartridge.SetState(state.CartridgeState);
+      }
+
+      Run();
     }
 
     /// <summary>

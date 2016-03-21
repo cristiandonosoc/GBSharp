@@ -18,6 +18,9 @@ namespace GBSharp
     void Stop();
     void Step(bool ignoreBreakpoints);
 
+    void SaveState();
+    void LoadState();
+
     void PressButton(Keypad button);
     void ReleaseButton(Keypad button);
     bool ReleaseButtons { get; set; }

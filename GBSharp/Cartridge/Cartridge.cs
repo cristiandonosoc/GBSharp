@@ -11,7 +11,8 @@ namespace GBSharp.Cartridge
     public ushort MemoryChangedLow { get; private set; }
     public ushort MemoryChangedHigh { get; private set; }
 
-    class State
+    [Serializable]
+    internal class State
     {
       internal byte[] Rom;
       internal int RomSize;
@@ -20,6 +21,8 @@ namespace GBSharp.Cartridge
       internal string Title;
     }
     State _state = new State();
+    internal State GetState() { return _state; }
+    internal void SetState(State state) { _state = state; }
 
     /// <summary>
     /// Loads the contents of the catridge rom from a byte array.

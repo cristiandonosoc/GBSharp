@@ -18,7 +18,8 @@ namespace GBSharp.MemorySpace
     public ushort MemoryChangedLow { get; private set; }
     public ushort MemoryChangedHigh { get; private set; }
 
-    class State
+    [Serializable]
+    internal class State
     {
       /// <summary>
       /// This is what can be addressed.
@@ -29,8 +30,20 @@ namespace GBSharp.MemorySpace
       internal ushort DmaStartAddress;
       internal ushort DmaCurrentTickCount;
       internal bool DmaActive;
+
+      internal byte[] MemoryHandlerData;
     }
     State _state = new State();
+    internal State GetState()
+    {
+      // TODO(Cristian): Serialize MemoryHandlerData
+      return _state;
+    }
+    internal void SetState(State state)
+    {
+      // TODO(Cristian): De-Serialize MemoryHandlerData
+      _state = state;
+    }
 
     // This is an pointer needed by the DMA
     internal byte[] MemoryData
