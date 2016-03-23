@@ -50,7 +50,6 @@ namespace GBSharp.CPUSpace
     };
 
     // Timing
-
     private ushort _divCounter;
     private byte _timaCounter;
     private int _tacCounter;

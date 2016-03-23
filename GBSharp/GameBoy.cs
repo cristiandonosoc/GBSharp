@@ -317,7 +317,7 @@ namespace GBSharp
         if (_state.Pause)
         {
           PauseRequested();
-          this._pauseEvent.WaitOne(Timeout.Infinite);
+          _pauseEvent.WaitOne(Timeout.Infinite);
         }
 
         MachineStep(false);
@@ -476,6 +476,7 @@ namespace GBSharp
       // We ge the states
       saveState.MemoryState = _memory.GetState();
       saveState.CartridgeState = _cartridge.GetState();
+      saveState.DisplayState = _display.GetState();
 
       FileStream saveStateStream;
       if (!File.Exists("save_state.stt"))
@@ -495,6 +496,7 @@ namespace GBSharp
     public void LoadState()
     {
       Pause();
+
       string filename = "save_state.stt";
 
       if (File.Exists(filename))
@@ -505,6 +507,7 @@ namespace GBSharp
         SaveStateFileFormat state = formatter.Deserialize(loadStateStream) as SaveStateFileFormat;
         _memory.SetState(state.MemoryState);
         _cartridge.SetState(state.CartridgeState);
+        _display.SetState(state.DisplayState);
       }
 
       Run();

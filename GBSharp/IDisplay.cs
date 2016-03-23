@@ -21,7 +21,7 @@ namespace GBSharp
     uint[] GetSprite(int index);
 
     DisplayDefinition GetDisplayDefinition();
-    DisplayStatus GetDisplayStatus();
+    State GetState();
 
     void DrawFrame(int rowStart = 0, int rowEnd = 144);
     void DrawTiles();

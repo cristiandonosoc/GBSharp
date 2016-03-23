@@ -11,5 +11,6 @@ namespace GBSharp
   {
     internal MemorySpace.Memory.State MemoryState { get; set; }
     internal Cartridge.Cartridge.State CartridgeState { get; set; }
+    internal VideoSpace.State DisplayState { get; set; }
   }
 }

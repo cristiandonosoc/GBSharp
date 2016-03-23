@@ -110,7 +110,7 @@ namespace GBSharp.ViewModel
       UpdateDisplayTiming = _display.GetUpdateDebugTarget(DebugTargets.DisplayTiming);
       if (UpdateDisplayTiming)
       {
-        DisplayStatus disStat = _display.GetDisplayStatus();
+        State disStat = _display.GetState();
         Enabled = disStat.Enabled;
         CurrentLine = disStat.CurrentLine;
         DisplayMode = disStat.DisplayMode;

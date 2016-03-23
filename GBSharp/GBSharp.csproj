@@ -127,7 +127,6 @@
     <Compile Include="VideoSpace\Display.cs" />
     <Compile Include="VideoSpace\DisplayFunctions.cs" />
     <Compile Include="VideoSpace\DrawFunctions.cs" />
-    <Compile Include="VideoSpace\LCDControlFlags.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

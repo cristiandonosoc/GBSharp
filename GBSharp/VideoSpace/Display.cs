@@ -75,7 +75,8 @@ namespace GBSharp.VideoSpace
     public uint RectangleColor { get; set; }
   }
 
-  public class DisplayStatus
+  [Serializable]
+  public class State
   {
     public int PrevTickCount { get; internal set; }
     public int CurrentLineTickCount { get; internal set; }
@@ -125,10 +126,15 @@ namespace GBSharp.VideoSpace
       return _disDef;
     }
 
-    private DisplayStatus _disStat;
-    public DisplayStatus GetDisplayStatus()
+    private State _state;
+    public State GetState()
     {
-      return _disStat;
+      return _state;
+    }
+
+    public void SetState(State state)
+    {
+      _state = state;
     }
 
     private bool[] _updateDebugTargets;
@@ -161,18 +167,18 @@ namespace GBSharp.VideoSpace
 
     public bool TileBase
     {
-      get { return _disStat.TileBase; }
-      set { _disStat.TileBase = value; }
+      get { return _state.TileBase; }
+      set { _state.TileBase = value; }
     }
     public bool NoTileMap
     {
-      get { return _disStat.NoTileMap; }
-      set { _disStat.NoTileMap = value; }
+      get { return _state.NoTileMap; }
+      set { _state.NoTileMap = value; }
     }
     public bool TileMap
     {
-      get { return _disStat.TileMap; }
-      set { _disStat.TileMap = value; }
+      get { return _state.TileMap; }
+      set { _state.TileMap = value; }
     }
 
     // Temporary buffer used or not allocating a local one on each iteration
@@ -189,7 +195,7 @@ namespace GBSharp.VideoSpace
       _interruptController = interruptController;
       _memory = memory;
       _disDef = new DisplayDefinition();
-      _disStat = new DisplayStatus();
+      _state = new State();
       GeneratePixelLookupTable();
 
       Reset();
@@ -244,23 +250,23 @@ namespace GBSharp.VideoSpace
 
       /*** DISPLAY STATUS ***/
 
-      _disStat.PrevTickCount = 0;
-      _disStat.CurrentLineTickCount = 0;
-      _disStat.CurrentLine = 0;
+      _state.PrevTickCount = 0;
+      _state.CurrentLineTickCount = 0;
+      _state.CurrentLine = 0;
       // NOTE(Cristian): This are default values when there are no sprites
       //                 They should change on runtime
-      _disStat.OAMSearchTickCount = 83;
-      _disStat.DataTransferTickCount = 83 + 175;
-      _disStat.TotalLineTickCount = 456;
-      _disStat.Enabled = true;
+      _state.OAMSearchTickCount = 83;
+      _state.DataTransferTickCount = 83 + 175;
+      _state.TotalLineTickCount = 456;
+      _state.Enabled = true;
       // TODO(Cristian): Find out at what state the display starts!
-      _disStat.DisplayMode = DisplayModes.Mode10;
+      _state.DisplayMode = DisplayModes.Mode10;
 
-      _disStat.TileBase = true;
-      _disStat.NoTileMap = false;
-      _disStat.TileMap = false;
+      _state.TileBase = true;
+      _state.NoTileMap = false;
+      _state.TileMap = false;
 
-      _disStat.LCDCBits = new bool[8];
+      _state.LCDCBits = new bool[8];
 
       // We start the registers correctly
       HandleMemoryChange(MMR.LCDC, _memory.LowLevelRead((ushort)MMR.LCDC));
@@ -365,23 +371,23 @@ namespace GBSharp.VideoSpace
           // We set all the LCDC bits
           for (int i = 0; i < 8; ++i)
           {
-            _disStat.LCDCBits[i] = (value & (1 << i)) != 0;
+            _state.LCDCBits[i] = (value & (1 << i)) != 0;
           }
           break;
         case MMR.STAT:
-          _disStat.STAT = value;
+          _state.STAT = value;
           break;
         case MMR.SCY:
-          _disStat.SCY = value;
+          _state.SCY = value;
           break;
         case MMR.SCX:
-          _disStat.SCX = value;
+          _state.SCX = value;
           break;
         case MMR.LY:
-          _disStat.CurrentLine = 0;
+          _state.CurrentLine = 0;
           break;
         case MMR.LYC:
-          _disStat.LYC = value;
+          _state.LYC = value;
           break;
         case MMR.DMA:
           LoadSprites();
@@ -396,10 +402,10 @@ namespace GBSharp.VideoSpace
           DisFuncs.SetupSpritePalletes(_disDef, _memory, MMR.OBP1);
           break;
         case MMR.WY:
-          _disStat.WY = value;
+          _state.WY = value;
           break;
         case MMR.WX:
-          _disStat.WX = value;
+          _state.WX = value;
           break;
         default:
           throw new InvalidProgramException("All cases should be handled...");
@@ -417,13 +423,13 @@ namespace GBSharp.VideoSpace
     {
       DrawFuncs.DrawTransparency(_disDef, spriteData, 8, 0, 0, 8, 16);
 
-      if (_disStat.LCDCBits[2])
+      if (_state.LCDCBits[2])
       {
         spriteCode = spriteCode & 0xFE; // We remove the last bit
       }
 
       // We draw the top part
-      byte[] pixels = DisFuncs.GetTileData(_disDef, _memory, 0x8000, spriteCode, _disStat.LCDCBits[2]);
+      byte[] pixels = DisFuncs.GetTileData(_disDef, _memory, 0x8000, spriteCode, _state.LCDCBits[2]);
       DrawFuncs.DrawTile(_pixelLookupTable,
                          _disDef, spriteData, _tempPixelBuffer,
                          8, pixels, pX, pY,
@@ -432,10 +438,10 @@ namespace GBSharp.VideoSpace
 
     internal void StartFrame()
     {
-      _disStat.CurrentLine = 0;
-      _disStat.CurrentWY = _disStat.WY;
+      _state.CurrentLine = 0;
+      _state.CurrentWY = _state.WY;
 
-      if (!_disStat.Enabled) { return; }
+      if (!_state.Enabled) { return; }
 
       // WINDOW TRANSPARENCY
       if (_updateDebugTargets[(int)DebugTargets.Window])
@@ -458,23 +464,23 @@ namespace GBSharp.VideoSpace
 
     public void DrawFrame(int rowBegin, int rowEnd)
     {
-      if (!_disStat.Enabled) { return; }
+      if (!_state.Enabled) { return; }
       if (rowBegin > 143) { return; }
 
       #region BACKGROUND
 
-      bool drawBackground = _disStat.LCDCBits[0];
+      bool drawBackground = _state.LCDCBits[0];
       // We copy the information from the background tile to the effective screen
       for (int y = rowBegin; y < rowEnd; y++)
       {
 
         // We obtain the correct row
-        int bY = (y + _disStat.SCY) % _disDef.FramePixelCountY;
+        int bY = (y + _state.SCY) % _disDef.FramePixelCountY;
         DisFuncs.GetRowPixels(ref _tempFrameLineBuffer,
                               _pixelLookupTable,
                               _disDef, _memory,
                               _tempPixelBuffer,
-                              bY, _disStat.LCDCBits[3], _disStat.LCDCBits[4]);
+                              bY, _state.LCDCBits[3], _state.LCDCBits[4]);
 
         if (_updateDebugTargets[(int)DebugTargets.Background])
         {
@@ -492,7 +498,7 @@ namespace GBSharp.VideoSpace
                              _disDef.ScreenPixelCountX,
                              _tempFrameLineBuffer,
                              0, y,
-                             _disStat.SCX, _disDef.FramePixelCountX,
+                             _state.SCX, _disDef.FramePixelCountX,
                              false, true);
         }
       }
@@ -501,21 +507,21 @@ namespace GBSharp.VideoSpace
 
       #region WINDOW
 
-      int rWX = _disStat.WX - 7; // The window pos is (WX - 7, WY)
+      int rWX = _state.WX - 7; // The window pos is (WX - 7, WY)
 
       // TODO(Cristian): If BG display is off, it actually prints white
-      bool drawWindow = _disStat.LCDCBits[5];
+      bool drawWindow = _state.LCDCBits[5];
       for (int row = rowBegin; row < rowEnd; row++)
       {
-        if ((row >= _disStat.CurrentWY) && (row < 144))
+        if ((row >= _state.CurrentWY) && (row < 144))
         {
           // The offset indexes represent that the window is drawn from it's beggining
           // at (WX, WY)
           DisFuncs.GetRowPixels(ref _tempFrameLineBuffer,
                                 _pixelLookupTable,
                                 _disDef, _memory, _tempPixelBuffer,
-                                row - _disStat.CurrentWY,
-                                _disStat.LCDCBits[6], _disStat.LCDCBits[4]);
+                                row - _state.CurrentWY,
+                                _state.LCDCBits[6], _state.LCDCBits[4]);
 
           // Independent target
           if (_updateDebugTargets[(int)DebugTargets.Window])
@@ -543,7 +549,7 @@ namespace GBSharp.VideoSpace
 
       #region SPRITES
 
-      bool drawSprites = _disStat.LCDCBits[1];
+      bool drawSprites = _state.LCDCBits[1];
       for (int row = rowBegin; row < rowEnd; row++)
       {
         if (_updateDebugTargets[(int)DebugTargets.SpriteLayer])
@@ -553,7 +559,7 @@ namespace GBSharp.VideoSpace
           DisFuncs.GetSpriteRowPixels(_pixelLookupTable,
                                       _disDef, _memory, _spriteOAMs, pixels,
                                       _tempPixelBuffer,
-                                      row, _disStat.LCDCBits[2],
+                                      row, _state.LCDCBits[2],
                                       true);
           DrawFuncs.DrawLine(_disDef, _debugInternalTargets[(int)DebugTargets.SpriteLayer],
                             _disDef.ScreenPixelCountX,
@@ -571,7 +577,7 @@ namespace GBSharp.VideoSpace
           DisFuncs.GetSpriteRowPixels(_pixelLookupTable,
                                       _disDef, _memory, _spriteOAMs,
                                       _tempFrameLineBuffer, _tempPixelBuffer,
-                                      row, _disStat.LCDCBits[2]);
+                                      row, _state.LCDCBits[2]);
           DrawFuncs.DrawLine(_disDef, _screenInternalBuffer, _disDef.ScreenPixelCountX,
                             _tempFrameLineBuffer,
                             0, row,
@@ -584,13 +590,13 @@ namespace GBSharp.VideoSpace
 
     internal void EndFrame()
     {
-      if (_disStat.Enabled)
+      if (_state.Enabled)
       {
         if (_updateDebugTargets[(int)DebugTargets.Background])
         {
           DrawFuncs.DrawRectangle(_disDef, _debugInternalTargets[(int)DebugTargets.Background],
                                  _disDef.FramePixelCountX,
-                                 _disStat.SCX, _disStat.SCY,
+                                 _state.SCX, _state.SCY,
                                  _disDef.ScreenPixelCountX, _disDef.ScreenPixelCountY,
                                  _disDef.RectangleColor);
         }
@@ -605,21 +611,21 @@ namespace GBSharp.VideoSpace
 
     public void DrawTiles()
     {
-      ushort tileBaseAddress = DisFuncs.GetTileBaseAddress(_disStat.TileBase);
-      ushort tileMapBaseAddress = DisFuncs.GetTileMapBaseAddress(_disStat.TileMap);
+      ushort tileBaseAddress = DisFuncs.GetTileBaseAddress(_state.TileBase);
+      ushort tileMapBaseAddress = DisFuncs.GetTileMapBaseAddress(_state.TileMap);
       for (int tileY = 0; tileY < 18; ++tileY)
       {
         for (int tileX = 0; tileX < 20; ++tileX)
         {
           int tileOffset;
-          if (_disStat.NoTileMap)
+          if (_state.NoTileMap)
           {
             tileOffset = 16 * tileY + tileX;
           }
           else
           {
             tileOffset = DisFuncs.GetTileOffset(_disDef, _memory, tileMapBaseAddress,
-                                                  _disStat.TileBase, tileX, tileY);
+                                                  _state.TileBase, tileX, tileY);
           }
           byte[] tileData = DisFuncs.GetTileData(_disDef, _memory, tileBaseAddress, tileOffset, false);
 
@@ -633,7 +639,6 @@ namespace GBSharp.VideoSpace
       }
     }
 
-    private double pixelsPerTick = (double)256 / (double)456;
     private bool firstRun = true;
 
     /// <summary>
@@ -644,21 +649,21 @@ namespace GBSharp.VideoSpace
     internal void Step(int ticks)
     {
       // We check if the display is supposed to run
-      bool activate = _disStat.LCDCBits[7];
+      bool activate = _state.LCDCBits[7];
 
-      if (activate && !_disStat.Enabled) // We need to turn on the LCD
+      if (activate && !_state.Enabled) // We need to turn on the LCD
       {
-        _disStat.Enabled = true;
+        _state.Enabled = true;
       }
-      if (!activate && _disStat.Enabled) // We need to turn off the LCD
+      if (!activate && _state.Enabled) // We need to turn off the LCD
       {
-        if (_disStat.CurrentLine < 144)
+        if (_state.CurrentLine < 144)
         {
           // NOTE(Cristian): Turning off the gameboy *should* be made only during V-BLANK.
           //                 Apparently it damages the hardware otherwise.
           throw new InvalidOperationException("Stopping LCD should be made during V-BLANK");
         }
-        _disStat.Enabled = false;
+        _state.Enabled = false;
       }
 
       /**
@@ -666,35 +671,35 @@ namespace GBSharp.VideoSpace
        * So the simulation is to decrease the tick count and simulating
        * the display accordingly
        **/
-      _disStat.PrevTickCount = _disStat.CurrentLineTickCount;
+      _state.PrevTickCount = _state.CurrentLineTickCount;
       while (ticks > 0)
       {
         // We try to advance to the next state
         // The display behaves differently if it's on V-BLANK or not
-        if (_disStat.DisplayMode != DisplayModes.Mode01)
+        if (_state.DisplayMode != DisplayModes.Mode01)
         {
-          if (_disStat.DisplayMode == DisplayModes.Mode10)
+          if (_state.DisplayMode == DisplayModes.Mode10)
           {
-            if (CalculateTickChange(_disStat.OAMSearchTickCount, ref ticks))
+            if (CalculateTickChange(_state.OAMSearchTickCount, ref ticks))
             {
               ChangeDisplayMode(DisplayModes.Mode11);
             }
           }
-          else if (_disStat.DisplayMode == DisplayModes.Mode11)
+          else if (_state.DisplayMode == DisplayModes.Mode11)
           {
-            if (CalculateTickChange(_disStat.DataTransferTickCount, ref ticks))
+            if (CalculateTickChange(_state.DataTransferTickCount, ref ticks))
             {
               ChangeDisplayMode(DisplayModes.Mode00);
-              DrawFrame(_disStat.CurrentLine, _disStat.CurrentLine + 1);
+              DrawFrame(_state.CurrentLine, _state.CurrentLine + 1);
             }
           }
-          else if (_disStat.DisplayMode == DisplayModes.Mode00)
+          else if (_state.DisplayMode == DisplayModes.Mode00)
           {
-            if (CalculateTickChange(_disStat.TotalLineTickCount, ref ticks))
+            if (CalculateTickChange(_state.TotalLineTickCount, ref ticks))
             {
               // We start a new line
               UpdateDisplayLineInfo();
-              if (_disStat.CurrentLine < 144) // We continue on normal mode
+              if (_state.CurrentLine < 144) // We continue on normal mode
               {
                 ChangeDisplayMode(DisplayModes.Mode10);
               }
@@ -709,10 +714,10 @@ namespace GBSharp.VideoSpace
         {
           // TODO(Cristian): Find out if the display triggers H-BLANK
           //                 events during V-BLANK
-          if (CalculateTickChange(_disStat.TotalLineTickCount, ref ticks))
+          if (CalculateTickChange(_state.TotalLineTickCount, ref ticks))
           {
             UpdateDisplayLineInfo();
-            if (_disStat.CurrentLine >= 154)
+            if (_state.CurrentLine >= 154)
             {
               ChangeDisplayMode(DisplayModes.Mode10);
               FrameReady();
@@ -731,23 +736,24 @@ namespace GBSharp.VideoSpace
       if (firstRun)
       {
         firstRun = false;
-        _disStat.CurrentWY = 0;
+        _state.CurrentWY = 0;
       }
     }
 
+    private double pixelsPerTick = (double)256 / (double)456;
     internal void DrawTiming()
     {
       // This probably means an empty step (breakpoint)
-      if (_disStat.PrevTickCount == _disStat.CurrentLineTickCount) { return; }
+      if (_state.PrevTickCount == _state.CurrentLineTickCount) { return; }
 
-      int beginX = (int)(pixelsPerTick * _disStat.PrevTickCount);
-      int endX = (int)(pixelsPerTick * _disStat.CurrentLineTickCount);
+      int beginX = (int)(pixelsPerTick * _state.PrevTickCount);
+      int endX = (int)(pixelsPerTick * _state.CurrentLineTickCount);
       if (beginX >= 256 || endX >= 256)
       {
         return;
       }
 
-      if ((_disStat.CurrentLine == 0) &&
+      if ((_state.CurrentLine == 0) &&
          ((endX <= beginX) || firstRun))
       {
         //DisplayFunctions.DrawTransparency(disDef, displayTimingBmpData, 0, 0, 256, 154);
@@ -758,13 +764,13 @@ namespace GBSharp.VideoSpace
                                0xFF000000, true);
       }
 
-      byte mode = (byte)_disStat.DisplayMode;
+      byte mode = (byte)_state.DisplayMode;
       uint color = 0xFFFFFF00;
       if (mode == 1) { color = 0xFFFF0000; }
       if (mode == 2) { color = 0xFF00FF00; }
       if (mode == 3) { color = 0xFF0000FF; }
 
-      int rowIndex = _disStat.CurrentLine * _disDef.TimingPixelCountX;
+      int rowIndex = _state.CurrentLine * _disDef.TimingPixelCountX;
 
       for (int i = beginX; i < endX; ++i)
       {
@@ -775,22 +781,22 @@ namespace GBSharp.VideoSpace
     // Returns whether the tick count is enough to get to the target
     private bool CalculateTickChange(int target, ref int ticks)
     {
-      if (_disStat.CurrentLineTickCount > target)
+      if (_state.CurrentLineTickCount > target)
       {
         throw new ArgumentOutOfRangeException("currentLineTickCount in invalid state");
       }
 
-      int remainder = target - _disStat.CurrentLineTickCount;
+      int remainder = target - _state.CurrentLineTickCount;
       if (ticks >= remainder)
       {
         // We got to the target
-        _disStat.CurrentLineTickCount += remainder;
+        _state.CurrentLineTickCount += remainder;
         ticks -= remainder;
         return true;
       }
       else
       {
-        _disStat.CurrentLineTickCount += ticks;
+        _state.CurrentLineTickCount += ticks;
         ticks = 0;
         return false;
       }
@@ -798,17 +804,17 @@ namespace GBSharp.VideoSpace
 
     private void ChangeDisplayMode(DisplayModes newDisplayMode)
     {
-      _disStat.DisplayMode = newDisplayMode;
-      byte byteDisplayMode = (byte)_disStat.DisplayMode;
+      _state.DisplayMode = newDisplayMode;
+      byte byteDisplayMode = (byte)_state.DisplayMode;
 
-      if (!_disStat.Enabled) { return; }
+      if (!_state.Enabled) { return; }
 
       // We strip the last 2 bits of STAT and replace them with the mode
-      _disStat.STAT = (byte)((_disStat.STAT & 0xFC) | byteDisplayMode);
-      this._memory.LowLevelWrite((ushort)MMR.STAT, _disStat.STAT);
+      _state.STAT = (byte)((_state.STAT & 0xFC) | byteDisplayMode);
+      this._memory.LowLevelWrite((ushort)MMR.STAT, _state.STAT);
 
       // We check if we have to trigger vertical blanking
-      if (_disStat.DisplayMode == DisplayModes.Mode01) // We just change to V-BLANK Mode
+      if (_state.DisplayMode == DisplayModes.Mode01) // We just change to V-BLANK Mode
       {
         _interruptController.SetInterrupt(Interrupts.VerticalBlanking);
       }
@@ -821,7 +827,7 @@ namespace GBSharp.VideoSpace
       // 								 Bit 4: Mode 01
       // 								 Bit 3: Mode 00
       if ((newDisplayMode != DisplayModes.Mode11) &&
-          ((_disStat.STAT >> (byteDisplayMode + 3)) & 1) == 1)
+          ((_state.STAT >> (byteDisplayMode + 3)) & 1) == 1)
       {
         _interruptController.SetInterrupt(Interrupts.LCDCStatus);
       }
@@ -840,21 +846,21 @@ namespace GBSharp.VideoSpace
     {
       if (updateLineCount)
       {
-        _disStat.CurrentLineTickCount = 0;
-        ++_disStat.CurrentLine;
+        _state.CurrentLineTickCount = 0;
+        ++_state.CurrentLine;
       }
 
-      if (!_disStat.Enabled) { return; }
+      if (!_state.Enabled) { return; }
 
-      this._memory.LowLevelWrite((ushort)MMR.LY, _disStat.CurrentLine);
+      this._memory.LowLevelWrite((ushort)MMR.LY, _state.CurrentLine);
 
       // We update the STAT corresponding to the LY=LYC coincidence
-      if (_disStat.LYC == _disStat.CurrentLine)
+      if (_state.LYC == _state.CurrentLine)
       {
         byte STATMask = 0x04; // Bit 2 is set 1
-        _disStat.STAT = (byte)(_disStat.STAT | STATMask);
+        _state.STAT = (byte)(_state.STAT | STATMask);
 
-        if (Utils.UtilFuncs.TestBit(_disStat.STAT, 6) != 0)
+        if (Utils.UtilFuncs.TestBit(_state.STAT, 6) != 0)
         {
           _interruptController.SetInterrupt(Interrupts.LCDCStatus);
         }
@@ -862,10 +868,10 @@ namespace GBSharp.VideoSpace
       else
       {
         byte STATMask = 0xFB; // Bit 2 is set to 0 
-        _disStat.STAT = (byte)(_disStat.STAT & STATMask);
+        _state.STAT = (byte)(_state.STAT & STATMask);
       }
 
-      this._memory.LowLevelWrite((ushort)MMR.STAT, _disStat.STAT);
+      this._memory.LowLevelWrite((ushort)MMR.STAT, _state.STAT);
     }
 
     internal void CopyTargets()
