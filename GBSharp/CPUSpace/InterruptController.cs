@@ -13,12 +13,16 @@ namespace GBSharp.CPUSpace
     private static ushort IFAddress = 0xFF0F; // Interrupt Request Address, see Interrupts.cs
     private static ushort IEAddress = 0xFFFF; // Interrupt Enable Address, see Interrupts.cs
 
-    class State
+    [Serializable]
+    internal class State
     {
       internal bool IME; // Interrupt Master Enable
       internal byte PressedButtons; // 8 bits: Start, Select, B, A, Down, Up, Left, Right
     }
     State _state = new State();
+
+    internal State GetState() { return _state; }
+    internal void SetState(State state) { _state = state; }
 
     /// <summary>
     /// Class constructor.
