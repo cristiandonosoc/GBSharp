@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -23,10 +25,16 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     private const ushort romBankLength = 0x4000;
     private const ushort ramBank0Start = 0xA000;
     private const ushort ramBankLength = 0x2000;
-    private byte currentRomBank;
-    private byte currentRamBank;
-    private byte[] ramBanksData;
-    private byte[] romBanksData;
+
+    [Serializable]
+    class State
+    {
+      internal byte CurrentRomBank;
+      internal byte CurrentRamBank;
+      internal byte[] RamBanksData;
+      internal byte[] RomBanksData;
+    }
+    State _state = new State();
 
     /// <summary>
     /// Class constructor. Performs the loading of the current cartridge into memory.
@@ -35,23 +43,46 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     internal MBC3MemoryHandler(GameBoy gameboy)
       : base(gameboy)
     {
-      this.currentRamBank = 0;
-      this.currentRomBank = 0;
-      this.ramBanksData = new byte[0x8000]; // 32768 bytes
-      this.romBanksData = new byte[0x200000]; // 2097152 bytes
+      _state.CurrentRamBank = 0;
+      _state.CurrentRomBank = 0;
+      _state.RamBanksData = new byte[0x8000]; // 32768 bytes
+      _state.RomBanksData = new byte[0x200000]; // 2097152 bytes
 
       // We get the memory pointer
       byte[] memoryData = memory.MemoryData;
 
       // Copy ROM banks
       Buffer.BlockCopy(this.cartridge.Data, romBank0Start,
-                       this.romBanksData, romBank0Start,
-                       Math.Min(this.cartridge.Data.Length, this.romBanksData.Length));
+                       _state.RomBanksData, romBank0Start,
+                       Math.Min(this.cartridge.Data.Length, _state.RomBanksData.Length));
 
       // Copy first and second ROM banks
       Buffer.BlockCopy(this.cartridge.Data, romBank0Start,
                        memoryData, romBank0Start,
                        Math.Min(this.cartridge.Data.Length, romBankLength * 2));
+    }
+
+    internal override byte[] GetStateData()
+    {
+      byte[] result;
+      BinaryFormatter formatter = new BinaryFormatter();
+      using (MemoryStream memoryStream = new MemoryStream())
+      {
+        formatter.Serialize(memoryStream, _state);
+        result = memoryStream.ToArray();
+      }
+      return result;
+    }
+
+    internal override void SetStateData(byte[] data)
+    {
+      using (MemoryStream memoryStream = new MemoryStream())
+      {
+        BinaryFormatter formatter = new BinaryFormatter();
+        memoryStream.Write(data, 0, data.Length);
+        memoryStream.Seek(0, SeekOrigin.Begin);
+        _state = formatter.Deserialize(memoryStream) as State;
+      }
     }
 
     internal override void Write(ushort address, byte value)
@@ -74,11 +105,11 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           // ROM bank select
           byte bank = (byte)(value & 0x7F);
 
-          if (bank == currentRomBank) { return; } // Avoid unnecessary switching
+          if (bank == _state.CurrentRomBank) { return; } // Avoid unnecessary switching
 
-          currentRomBank = bank;
+          _state.CurrentRomBank = bank;
 
-          Buffer.BlockCopy(this.cartridge.Data, currentRomBank * romBankLength,
+          Buffer.BlockCopy(this.cartridge.Data, _state.CurrentRomBank * romBankLength,
                            memoryData, romBankLength, romBankLength);
           
         }
@@ -90,15 +121,15 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           {
             byte newRamBank = (byte)(value & 0x03);
 
-            if (newRamBank == currentRamBank) { return; } // Avoid unnecessary switching
+            if (newRamBank == _state.CurrentRamBank) { return; } // Avoid unnecessary switching
 
             // Backup current bank
-            Buffer.BlockCopy(memoryData, ramBank0Start, this.ramBanksData,
-                             currentRamBank * ramBankLength, ramBankLength);
+            Buffer.BlockCopy(memoryData, ramBank0Start, _state.RamBanksData,
+                             _state.CurrentRamBank * ramBankLength, ramBankLength);
 
             // Copy the new one
-            currentRamBank = newRamBank;
-            Buffer.BlockCopy(this.ramBanksData, currentRamBank * ramBankLength,
+            _state.CurrentRamBank = newRamBank;
+            Buffer.BlockCopy(_state.RamBanksData, _state.CurrentRamBank * ramBankLength,
                              memoryData, ramBank0Start, ramBankLength);
           }
           else

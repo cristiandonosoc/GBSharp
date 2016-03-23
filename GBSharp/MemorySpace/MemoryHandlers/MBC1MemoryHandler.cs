@@ -46,7 +46,6 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     private string saveFilePath = "";
 
     private enum MBC1Modes : byte { Rom2048KBRam8KB = 0, Rom512KBRam32KB = 1 }
-
     [Serializable]
     class State
     {
