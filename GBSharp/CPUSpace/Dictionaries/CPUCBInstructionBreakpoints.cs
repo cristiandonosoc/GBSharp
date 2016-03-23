@@ -33,9 +33,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RLC (HL): Rotate value pointed by HL left with carry
         case 0x06:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -57,9 +57,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RRC (HL): Rotate value pointed by HL right with carry
         case 0x0E:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -81,9 +81,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RL (HL): Rotate value pointed by HL left
         case 0x16:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -105,9 +105,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RR (HL): Rotate value pointed by HL right
         case 0x1E:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -129,9 +129,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SLA (HL): Shift value pointed by HL left preserving sign
         case 0x26:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -153,9 +153,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SRA (HL): Shift value pointed by HL right preserving sign
         case 0x2E:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -177,9 +177,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SWAP (HL): Swap nybbles in value pointed by HL
         case 0x36:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -201,9 +201,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SRL (HL): Shift value pointed by HL right
         case 0x3E:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -225,9 +225,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // BIT 0,(HL): Test bit 0 of value pointed by HL
         case 0x46:
           {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.READ;
             }
             break;
@@ -249,9 +249,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // BIT 1,(HL): Test bit 1 of value pointed by HL
         case 0x4E:
           {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.READ;
             }
             break;
@@ -273,9 +273,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // BIT 2,(HL): Test bit 2 of value pointed by HL
         case 0x56:
           {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.READ;
             }
             break;
@@ -297,9 +297,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // BIT 3,(HL): Test bit 3 of value pointed by HL
         case 0x5E:
           {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.READ;
             }
             break;
@@ -321,9 +321,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // BIT 4,(HL): Test bit 4 of value pointed by HL
         case 0x66:
           {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.READ;
             }
             break;
@@ -345,9 +345,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // BIT 5,(HL): Test bit 5 of value pointed by HL
         case 0x6E:
           {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.READ;
             }
             break;
@@ -369,9 +369,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // BIT 6,(HL): Test bit 6 of value pointed by HL
         case 0x76:
           {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.READ;
             }
             break;
@@ -393,9 +393,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // BIT 7,(HL): Test bit 7 of value pointed by HL
         case 0x7E:
           {
-            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.ReadBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.READ;
             }
             break;
@@ -417,9 +417,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 0,(HL): Clear (reset) bit 0 of value pointed by HL
         case 0x86:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -441,9 +441,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 1,(HL): Clear (reset) bit 1 of value pointed by HL
         case 0x8E:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -465,9 +465,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 2,(HL): Clear (reset) bit 2 of value pointed by HL
         case 0x96:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -489,9 +489,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 3,(HL): Clear (reset) bit 3 of value pointed by HL
         case 0x9E:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -513,9 +513,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 4,(HL): Clear (reset) bit 4 of value pointed by HL
         case 0xA6:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -537,9 +537,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 5,(HL): Clear (reset) bit 5 of value pointed by HL
         case 0xAE:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -561,9 +561,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 6,(HL): Clear (reset) bit 6 of value pointed by HL
         case 0xB6:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -585,9 +585,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RES 7,(HL): Clear (reset) bit 7 of value pointed by HL
         case 0xBE:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -609,9 +609,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 0,(HL): Set bit 0 of value pointed by HL
         case 0xC6:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -633,9 +633,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 1,(HL): Set bit 1 of value pointed by HL
         case 0xCE:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -657,9 +657,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 2,(HL): Set bit 2 of value pointed by HL
         case 0xD6:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -681,9 +681,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 3,(HL): Set bit 3 of value pointed by HL
         case 0xDE:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -705,9 +705,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 4,(HL): Set bit 4 of value pointed by HL
         case 0xE6:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -729,9 +729,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 5,(HL): Set bit 5 of value pointed by HL
         case 0xEE:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -753,9 +753,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 6,(HL): Set bit 6 of value pointed by HL
         case 0xF6:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;
@@ -777,9 +777,9 @@ namespace GBSharp.CPUSpace.Dictionaries
         // SET 7,(HL): Set bit 7 of value pointed by HL
         case 0xFE:
           {
-            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.registers.HL))
+            if (!ignoreBreakpoints && cpu.WriteBreakpoints.Contains(cpu.Registers.HL))
             {
-              cpu.CurrentBreakpoint.Target = cpu.registers.HL;
+              cpu.CurrentBreakpoint.Target = cpu.Registers.HL;
               return BreakpointKinds.WRITE;
             }
             break;

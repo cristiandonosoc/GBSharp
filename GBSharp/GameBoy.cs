@@ -260,7 +260,7 @@ namespace GBSharp
 
       // NOTE(Cristian): If the CPU is halted, the hardware carry on at a simulated clock
       byte postTicks = 0;
-      if (_cpu.halted)
+      if (_cpu.Halted)
       {
         prevTicks = 4;
         StepPeripherals(prevTicks);
@@ -547,7 +547,7 @@ namespace GBSharp
     {
       _buttons |= button;
       _interruptController.UpdateKeypadState(_buttons);
-      if (_cpu.stopped) { _cpu.stopped = false; }
+      if (_cpu.Stopped) { _cpu.Stopped = false; }
     }
 
     /// <summary>

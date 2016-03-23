@@ -26,20 +26,54 @@ namespace GBSharp.CPUSpace
 
   class CPU : ICPU
   {
+    class State
+    {
+      internal ushort NextPC;
+      internal ushort Clock; // 16 bit oscillation counter at 4194304 Hz (2^22).
+      internal bool Halted;
+      internal bool HaltLoad;
+      internal bool Stopped;
+      internal bool InterruptRequired;
+      internal bool InterruptInProgress;
+      // Whether the next step should trigger an interrupt event
+      internal Interrupts InterruptToTrigger;
+      internal Interrupts InterruptTriggered;
 
-    internal CPURegisters registers;
+      internal CPURegisters Registers = new CPURegisters();
+    }
+    State _state = new State();
+
+    #region STATE GETTERS/SETTERS
+
+    internal ushort NextPC
+    {
+      get { return _state.NextPC; }
+      set { _state.NextPC = value; }
+    }
+
+    internal bool Halted
+    {
+      get { return _state.Halted; }
+      set { _state.Halted = value; }
+    }
+
+    internal bool HaltLoad
+    {
+      get { return _state.HaltLoad; }
+      set { _state.HaltLoad = value; }
+    }
+
+    internal bool Stopped
+    {
+      get { return _state.Stopped; }
+      set { _state.Stopped = value; }
+    }
+
+    #endregion
+
     internal MemorySpace.Memory memory;
     internal InterruptController interruptController;
-    internal ushort nextPC;
-    internal ushort clock; // 16 bit oscillation counter at 4194304 Hz (2^22).
-    internal bool halted;
-    internal bool haltLoad;
-    internal bool stopped;
-    internal bool interruptRequired;
-    internal bool interruptInProgress;
-    // Whether the next step should trigger an interrupt event
-    internal Interrupts interruptToTrigger;
-    internal Interrupts interruptTriggered;
+
     internal Dictionary<Interrupts, bool> _breakableInterrupts = new Dictionary<Interrupts, bool>()
     {
       {Interrupts.VerticalBlanking, false},
@@ -162,7 +196,7 @@ namespace GBSharp.CPUSpace
     {
       get
       {
-        FetchAndDecode(ref _exportInstruction, registers.PC);
+        FetchAndDecode(ref _exportInstruction, _state.Registers.PC);
         return _exportInstruction;
       }
     }
@@ -177,12 +211,9 @@ namespace GBSharp.CPUSpace
       {Interrupts.P10to13TerminalNegativeEdge, 0x0060}
     };
 
-    CPURegisters ICPU.Registers
+    public CPURegisters Registers
     {
-      get
-      {
-        return this.registers;
-      }
+      get { return _state.Registers; }
     }
 
     public bool InterruptMasterEnable
@@ -220,20 +251,19 @@ namespace GBSharp.CPUSpace
     internal void Reset()
     {
       // Reset the clock state
-      this.clock = 0;
+      _state.Clock = 0;
 
-
-      this.halted = false;
-      this.haltLoad = false;
-      this.stopped = false;
+      _state.Halted = false;
+      _state.HaltLoad = false;
+      _state.Stopped = false;
 
       // Magic CPU initial values (after bios execution).
-      this.registers.A = 1;
-      this.registers.BC = 0x0013;
-      this.registers.DE = 0x00D8;
-      this.registers.HL = 0x014D;
-      this.registers.PC = 0x0100;
-      this.registers.SP = 0xFFFE;
+      _state.Registers.A = 1;
+      _state.Registers.BC = 0x0013;
+      _state.Registers.DE = 0x00D8;
+      _state.Registers.HL = 0x014D;
+      _state.Registers.PC = 0x0100;
+      _state.Registers.SP = 0xFFFE;
 
       // We restart the timer
       _divCounter = 0xABFF;
@@ -347,18 +377,18 @@ namespace GBSharp.CPUSpace
     /// </returns>
     internal byte DetermineStep(bool ignoreBreakpoints)
     {
-      if (stopped) { return 0; }
-      if (halted) { return 0; }
+      if (_state.Stopped) { return 0; }
+      if (_state.Halted) { return 0; }
 
-      if (interruptRequired)
+      if (_state.InterruptRequired)
       {
         // NOTE(Cristian): We store the interrupt so we break on the next
         //                 step. This will enable that we're breaking on the
         //                 first instruction of the interrupt handler, vs
         //                 an invented CALL
-        interruptInProgress = true;
-        interruptTriggered = interruptToTrigger;
-        _currentInstruction = InterruptHandler(interruptToTrigger);
+        _state.InterruptInProgress = true;
+        _state.InterruptTriggered = _state.InterruptToTrigger;
+        _currentInstruction = InterruptHandler(_state.InterruptToTrigger);
 
         // We need to check if there is another interrupt waiting
         CheckForInterruptRequired();
@@ -366,21 +396,21 @@ namespace GBSharp.CPUSpace
       else
       {
         // If we have set an interupt to trigger a breakpoint, we break
-        if (interruptInProgress)
+        if (_state.InterruptInProgress)
         {
           // TODO(Cristian): Change this to an array!
-          if (_breakableInterrupts[interruptTriggered])
+          if (_breakableInterrupts[_state.InterruptTriggered])
           {
-            InterruptHappened(interruptTriggered);
+            InterruptHappened(_state.InterruptTriggered);
             return 0; // We don't advance the state because we're breaking
           }
 
-          interruptInProgress = false;
+          _state.InterruptInProgress = false;
         }
 
         // Otherwise we fetch as usual
-        FetchAndDecode(ref _currentInstruction, this.registers.PC, haltLoad);
-        haltLoad = false;
+        FetchAndDecode(ref _currentInstruction, _state.Registers.PC, _state.HaltLoad);
+        _state.HaltLoad = false;
       }
 
       // We see if there is an breakpoint to this address
@@ -435,14 +465,14 @@ namespace GBSharp.CPUSpace
     internal byte ExecuteInstruction()
     {
       // Prepare for program counter movement, but wait for instruction execution.
-      // Overwrite nextPC in the instruction lambdas if you want to implement jumps.
+      // Overwrite _state.NextPC in the instruction lambdas if you want to implement jumps.
       // NOTE(Cristian): If we don't differentiate this case, the CALL instruction of the
-      //                 interrupt will be added to nextPC, which will in turn be written
+      //                 interrupt will be added to _state.NextPC, which will in turn be written
       //                 into the stack. This means that when we RET, we would have jumped
       //                 into the address we *should* have jumped plus some meaningless offset!
-      if (!interruptInProgress)
+      if (!_state.InterruptInProgress)
       {
-        this.nextPC = (ushort)(this.registers.PC + _currentInstruction.Length);
+        this._state.NextPC = (ushort)(_state.Registers.PC + _currentInstruction.Length);
       }
 
       if(!_currentInstruction.CB)
@@ -459,7 +489,7 @@ namespace GBSharp.CPUSpace
       }
 
       // Push the next program counter value into the real program counter!
-      this.registers.PC = this.nextPC;
+      _state.Registers.PC = this._state.NextPC;
 
       // We calculate how many more ticks have to run
       byte remainingSteps = GetPostTicks();
@@ -611,7 +641,7 @@ namespace GBSharp.CPUSpace
     /// <returns></returns>
     internal void CheckForInterruptRequired()
     {
-      interruptRequired = false;
+      _state.InterruptRequired = false;
 
       // Read interrupt flags
       int interruptRequest = this.memory.LowLevelRead((ushort)MMR.IF);
@@ -625,18 +655,18 @@ namespace GBSharp.CPUSpace
       if (interrupt == 0x00)  { return; }
 
       // Interrupts unhaltd the CPU *even* if the IME is disabled
-      this.halted = false;
+      _state.Halted = false;
 
       if (this.interruptController.InterruptMasterEnable)
       {
         // There is an interrupt waiting
-        interruptRequired = true;
+        _state.InterruptRequired = true;
 
         // Ok, find the interrupt with the highest priority, check the first bit set
         interrupt &= -interrupt; // Magics ;)
 
         // Return the first interrupt
-        interruptToTrigger = (Interrupts)(interrupt & 0x1F);
+        _state.InterruptToTrigger = (Interrupts)(interrupt & 0x1F);
       }
     }
 
@@ -656,7 +686,7 @@ namespace GBSharp.CPUSpace
       // Update clock adding only base ticks. 
       // NOTE(Cristian): Conditional instructions times are already added at this point.
       //                 The instruction modifies the currentInstruction ticks
-      this.clock += ticks;
+      _state.Clock += ticks;
 
       // Upper 8 bits of the clock should be accessible through DIV register.
       _divCounter += ticks;
@@ -730,7 +760,7 @@ namespace GBSharp.CPUSpace
 
     public override string ToString()
     {
-      return registers.ToString();
+      return _state.Registers.ToString();
     }
   }
 }

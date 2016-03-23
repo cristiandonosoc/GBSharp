@@ -15,7 +15,7 @@ namespace GBSharp.CPUSpace.Dictionaries
     /// opcodes. In the two-stage case, some post code will be run after this post clock ticks
     /// happen
     /// </summary>
-    /// <param name="cpu">CPU reference so we can access registers values</param>
+    /// <param name="cpu">CPU reference so we can access Registers values</param>
     /// <param name="opcode">opcode to check</param>
     /// <param name="n">argument of the instruction</param>
     /// <returns>clock ticks to run after</returns>
@@ -91,7 +91,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // JR NZ,n: Relative jump by signed immediate if last result was not zero
         case 0x20:
           {
-            if (cpu.registers.FZ != 0) { break; }
+            if (cpu.Registers.FZ != 0) { break; }
             result = 4;
             break;
           }
@@ -112,7 +112,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // JR Z,n: Relative jump by signed immediate if last result was zero
         case 0x28:
           {
-            if (cpu.registers.FZ == 0) { break; }
+            if (cpu.Registers.FZ == 0) { break; }
             result = 4;
             break;
           }
@@ -133,7 +133,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // JR NC,n: Relative jump by signed immediate if last result caused no carry
         case 0x30:
           {
-            if (cpu.registers.FC != 0) { break; }
+            if (cpu.Registers.FC != 0) { break; }
             result = 4;
             break;
           }
@@ -162,7 +162,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // JR C,n: Relative jump by signed immediate if last result caused carry
         case 0x38:
           {
-            if (cpu.registers.FC == 0) { break; }
+            if (cpu.Registers.FC == 0) { break; }
             result = 4;
             break;
           }
@@ -439,7 +439,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RET NZ: Return if last result was not zero
         case 0xC0:
           {
-            if (cpu.registers.FZ != 0) { break; }
+            if (cpu.Registers.FZ != 0) { break; }
             result = 12;
             break;
           }
@@ -448,7 +448,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // JP NZ,nn: Absolute jump to 16-bit location if last result was not zero
         case 0xC2:
           {
-            if (cpu.registers.FZ != 0) { break; }
+            if (cpu.Registers.FZ != 0) { break; }
             result = 4;
             break;
           }
@@ -457,7 +457,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // CALL NZ,nn: Call routine at 16-bit location if last result was not zero
         case 0xC4:
           {
-            if (cpu.registers.FZ != 0) { break; }
+            if (cpu.Registers.FZ != 0) { break; }
             result = 12;
             break;
           }
@@ -473,7 +473,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RET Z: Return if last result was zero
         case 0xC8:
           {
-            if (cpu.registers.FZ == 0) { break; }
+            if (cpu.Registers.FZ == 0) { break; }
             result = 12;
             break;
           }
@@ -482,7 +482,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // JP Z,nn: Absolute jump to 16-bit location if last result was zero
         case 0xCA:
           {
-            if (cpu.registers.FZ == 0) { break; }
+            if (cpu.Registers.FZ == 0) { break; }
             result = 4;
             break;
           }
@@ -494,7 +494,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // CALL Z,nn: Call routine at 16-bit location if last result was zero
         case 0xCC:
           {
-            if (cpu.registers.FZ == 0) { break; }
+            if (cpu.Registers.FZ == 0) { break; }
             result = 12;
             break;
           }
@@ -510,7 +510,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RET NC: Return if last result caused no carry
         case 0xD0:
           {
-            if (cpu.registers.FC != 0) { break; }
+            if (cpu.Registers.FC != 0) { break; }
             result = 12;
             break;
           }
@@ -519,7 +519,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // JP NC,nn: Absolute jump to 16-bit location if last result caused no carry
         case 0xD2:
           {
-            if (cpu.registers.FC != 0) { break; }
+            if (cpu.Registers.FC != 0) { break; }
             result = 4;
             break;
           }
@@ -531,7 +531,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // CALL NC,nn: Call routine at 16-bit location if last result caused no carry
         case 0xD4:
           {
-            if (cpu.registers.FC != 0) { break; }
+            if (cpu.Registers.FC != 0) { break; }
             result = 12;
             break;
           }
@@ -547,7 +547,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RET C: Return if last result caused carry
         case 0xD8:
           {
-            if (cpu.registers.FC == 0) { break; }
+            if (cpu.Registers.FC == 0) { break; }
             result = 12;
             break;
           }
@@ -556,7 +556,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // JP C,nn: Absolute jump to 16-bit location if last result caused carry
         case 0xDA:
           {
-            if (cpu.registers.FC == 0) { break; }
+            if (cpu.Registers.FC == 0) { break; }
             result = 4;
             break;
           }
@@ -568,7 +568,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // CALL C,nn: Call routine at 16-bit location if last result caused carry
         case 0xDC:
           {
-            if (cpu.registers.FC == 0) { break; }
+            if (cpu.Registers.FC == 0) { break; }
             result = 12;
             break;
           }

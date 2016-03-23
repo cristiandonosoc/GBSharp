@@ -66,17 +66,17 @@ namespace GBSharpTest.CPUSpace
 
     internal void LoadRow(DataRow row, CPU cpu, Memory memory, GameBoy gameboy)
     {
-      // We load the registers
-      cpu.registers.A = GetByte(row["Ai"]);
-      cpu.registers.F = GetByte(row["Fi"]);
-      cpu.registers.B = GetByte(row["Bi"]);
-      cpu.registers.C = GetByte(row["Ci"]);
-      cpu.registers.D = GetByte(row["Di"]);
-      cpu.registers.E = GetByte(row["Ei"]);
-      cpu.registers.H = GetByte(row["Hi"]);
-      cpu.registers.L = GetByte(row["Li"]);
-      cpu.registers.PC = GetUShort(row["PCi"]);
-      cpu.registers.SP = GetUShort(row["SPi"]);
+      // We load the Registers
+      cpu.Registers.A = GetByte(row["Ai"]);
+      cpu.Registers.F = GetByte(row["Fi"]);
+      cpu.Registers.B = GetByte(row["Bi"]);
+      cpu.Registers.C = GetByte(row["Ci"]);
+      cpu.Registers.D = GetByte(row["Di"]);
+      cpu.Registers.E = GetByte(row["Ei"]);
+      cpu.Registers.H = GetByte(row["Hi"]);
+      cpu.Registers.L = GetByte(row["Li"]);
+      cpu.Registers.PC = GetUShort(row["PCi"]);
+      cpu.Registers.SP = GetUShort(row["SPi"]);
 
       // We load the rom
       ushort memoryAddress = 0x0000;
@@ -104,16 +104,16 @@ namespace GBSharpTest.CPUSpace
       var testName = (String)row["Test"];
 
       // We test the flags
-      Assert.AreEqual<byte>(GetByte(row["Af"]), cpu.registers.A, testName + " Register A");
-      Assert.AreEqual<byte>(GetByte(row["Ff"]), cpu.registers.F, testName + " Register F");
-      Assert.AreEqual<byte>(GetByte(row["Bf"]), cpu.registers.B, testName + " Replace B");
-      Assert.AreEqual<byte>(GetByte(row["Cf"]), cpu.registers.C, testName + " Replace C");
-      Assert.AreEqual<byte>(GetByte(row["Df"]), cpu.registers.D, testName + " Replace D");
-      Assert.AreEqual<byte>(GetByte(row["Ef"]), cpu.registers.E, testName + " Replace E");
-      Assert.AreEqual<byte>(GetByte(row["Hf"]), cpu.registers.H, testName + " Replace H");
-      Assert.AreEqual<byte>(GetByte(row["Lf"]), cpu.registers.L, testName + " Replace L");
-      Assert.AreEqual<ushort>(GetUShort(row["PCf"]), cpu.registers.PC, testName + " PC");
-      Assert.AreEqual<ushort>(GetUShort(row["SPf"]), cpu.registers.SP, testName + " SP");
+      Assert.AreEqual<byte>(GetByte(row["Af"]), cpu.Registers.A, testName + " Register A");
+      Assert.AreEqual<byte>(GetByte(row["Ff"]), cpu.Registers.F, testName + " Register F");
+      Assert.AreEqual<byte>(GetByte(row["Bf"]), cpu.Registers.B, testName + " Replace B");
+      Assert.AreEqual<byte>(GetByte(row["Cf"]), cpu.Registers.C, testName + " Replace C");
+      Assert.AreEqual<byte>(GetByte(row["Df"]), cpu.Registers.D, testName + " Replace D");
+      Assert.AreEqual<byte>(GetByte(row["Ef"]), cpu.Registers.E, testName + " Replace E");
+      Assert.AreEqual<byte>(GetByte(row["Hf"]), cpu.Registers.H, testName + " Replace H");
+      Assert.AreEqual<byte>(GetByte(row["Lf"]), cpu.Registers.L, testName + " Replace L");
+      Assert.AreEqual<ushort>(GetUShort(row["PCf"]), cpu.Registers.PC, testName + " PC");
+      Assert.AreEqual<ushort>(GetUShort(row["SPf"]), cpu.Registers.SP, testName + " SP");
 
       // We test the memory address
       var testMemoryAddress = GetUShort(row["TestAddr"]);

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace GBSharp
 {
   [StructLayout(LayoutKind.Explicit)]
-  public struct CPURegisters
+  public class CPURegisters
   {
     // 1 byte registers
     [FieldOffset(0)]

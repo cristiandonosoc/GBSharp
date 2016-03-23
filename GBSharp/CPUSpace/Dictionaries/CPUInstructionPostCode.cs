@@ -120,25 +120,25 @@ namespace GBSharp.CPUSpace.Dictionaries
         // INC (HL): Increment value pointed by HL
         case 0x34:
           {
-            byte value = cpu.registers.TEMP;
+            byte value = cpu.Registers.TEMP;
             ++value;
-            cpu.memory.Write(cpu.registers.HL, value);
+            cpu.memory.Write(cpu.Registers.HL, value);
 
-            cpu.registers.FZ = (byte)(value == 0 ? 1 : 0);
-            cpu.registers.FN = 0;
-            cpu.registers.FH = (byte)((value & 0x0F) == 0x00 ? 1 : 0);
+            cpu.Registers.FZ = (byte)(value == 0 ? 1 : 0);
+            cpu.Registers.FN = 0;
+            cpu.Registers.FH = (byte)((value & 0x0F) == 0x00 ? 1 : 0);
             break;
           }
         // DEC (HL): Decrement value pointed by HL
         case 0x35:
           {
-            byte value = cpu.registers.TEMP;
+            byte value = cpu.Registers.TEMP;
             --value;
-            cpu.memory.Write(cpu.registers.HL, value);
+            cpu.memory.Write(cpu.Registers.HL, value);
 
-            cpu.registers.FZ = (byte)(value == 0 ? 1 : 0);
-            cpu.registers.FN = 1;
-            cpu.registers.FH = (byte)((value & 0x0F) == 0x0F ? 1 : 0);
+            cpu.Registers.FZ = (byte)(value == 0 ? 1 : 0);
+            cpu.Registers.FN = 1;
+            cpu.Registers.FH = (byte)((value & 0x0F) == 0x0F ? 1 : 0);
             break;
           }
         // LD (HL),n: Load 8-bit immediate into address pointed by HL

@@ -117,7 +117,7 @@ namespace GBSharp.Utils
     }
 
     public static void
-    SBC(ref CPURegisters registers, ref byte substractee,
+    SBC(CPURegisters registers, ref byte substractee,
                                     byte substractor,
                                     byte extraSub)
     {
