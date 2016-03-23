@@ -49,6 +49,16 @@ namespace GBSharp.MemorySpace.MemoryHandlers
       this.display.HandleMemoryChange(MMR.DMA, 0);
     }
 
+    internal virtual byte[] GetStateData()
+    {
+      return null;
+    }
+
+    internal virtual void SetStateData(byte[] data)
+    {
+      // No data to maintain
+    }
+
     /// <summary>
     /// Writes 8 bits value to memory according to
     /// the correspondant memory management scheme.

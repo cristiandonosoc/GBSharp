@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -40,17 +41,23 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     private const ushort romBankLength = 0x4000;
     private const ushort ramBank0Start = 0xA000;
     private const ushort ramBankLength = 0x2000;
-    private enum MBC1Modes : byte { Rom2048KBRam8KB = 0, Rom512KBRam32KB = 1 }
-    /// The MBC1 defaults to 2048KB ROM/8KB RAM mode on power up.
-    private MBC1Modes mode = MBC1Modes.Rom2048KBRam8KB;
-    private byte currentRomBank;
-    private byte currentRamBank;
-    private byte[] ramBanksData;
-    private byte[] romBanksData;
 
     private bool hasBattery;
-
     private string saveFilePath = "";
+
+    private enum MBC1Modes : byte { Rom2048KBRam8KB = 0, Rom512KBRam32KB = 1 }
+
+    [Serializable]
+    class State
+    {
+      /// The MBC1 defaults to 2048KB ROM/8KB RAM mode on power up.
+      internal MBC1Modes Mode = MBC1Modes.Rom2048KBRam8KB;
+      internal byte CurrentRomBank;
+      internal byte CurrentRamBank;
+      internal byte[] RamBanksData;
+      internal byte[] RomBanksData;
+    }
+    private State _state = new State();
 
     /// <summary>
     /// Class constructor. Performs the loading of the current cartridge into memory.
@@ -59,18 +66,18 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     internal MBC1MemoryHandler(GameBoy gameboy, bool hasBattery = false)
       : base(gameboy)
     {
-      this.currentRamBank = 0;
-      this.currentRomBank = 1;
-      this.ramBanksData = new byte[0x8000]; // 32768 bytes
-      this.romBanksData = new byte[0x200000]; // 2097152 bytes
+      _state.CurrentRamBank = 0;
+      _state.CurrentRomBank = 1;
+      _state.RamBanksData = new byte[0x8000]; // 32768 bytes
+      _state.RomBanksData = new byte[0x200000]; // 2097152 bytes
 
       // We obtain the memory pointer
       byte[] memoryData = memory.MemoryData;
 
       // Copy ROM banks
       Buffer.BlockCopy(this.cartridge.Data, romBank0Start,
-                       this.romBanksData, romBank0Start,
-                       Math.Min(this.cartridge.Data.Length, this.romBanksData.Length));
+                       _state.RomBanksData, romBank0Start,
+                       Math.Min(this.cartridge.Data.Length, _state.RomBanksData.Length));
 
       // Copy first and second ROM banks
       Buffer.BlockCopy(this.cartridge.Data, romBank0Start,
@@ -85,14 +92,36 @@ namespace GBSharp.MemorySpace.MemoryHandlers
         if(File.Exists(saveFilePath))
         {
           byte[] savedRAM = File.ReadAllBytes(saveFilePath);
-          Array.Copy(savedRAM, ramBanksData, savedRAM.Length);
+          Array.Copy(savedRAM, _state.RamBanksData, savedRAM.Length);
 
           // We send it to main memory
-          Buffer.BlockCopy(this.ramBanksData, currentRamBank * ramBankLength,
+          Buffer.BlockCopy(_state.RamBanksData, _state.CurrentRamBank * ramBankLength,
                            memoryData, ramBank0Start, ramBankLength);
         }
       }
+    }
 
+    internal override byte[] GetStateData()
+    {
+      byte[] result;
+      BinaryFormatter formatter = new BinaryFormatter();
+      using (MemoryStream memoryStream = new MemoryStream())
+      {
+        formatter.Serialize(memoryStream, _state);
+        result = memoryStream.ToArray();
+      }
+      return result;
+    }
+
+    internal override void SetStateData(byte[] data)
+    {
+      using (MemoryStream memoryStream = new MemoryStream())
+      {
+        BinaryFormatter formatter = new BinaryFormatter();
+        memoryStream.Write(data, 0, data.Length);
+        memoryStream.Seek(0, SeekOrigin.Begin);
+        _state = formatter.Deserialize(memoryStream) as State;
+      }
     }
 
     internal override void Write(ushort address, byte value)
@@ -117,23 +146,23 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           if (bank == 0) { value = 1; } // 0 and 1 point to bank 1.
 
           // Replace only the lower 5 bits
-          currentRomBank = (byte)((currentRomBank & 0xE0) | (bank & 0x1F));
+          _state.CurrentRomBank = (byte)((_state.CurrentRomBank & 0xE0) | (bank & 0x1F));
 
-          Buffer.BlockCopy(this.cartridge.Data, currentRomBank * romBankLength,
+          Buffer.BlockCopy(this.cartridge.Data, _state.CurrentRomBank * romBankLength,
                            memoryData, romBankLength, romBankLength);
         }
         /* [0x4000 - 0x5FFF]: RAM Bank select or Upper ROM bank bits */
         else if (address < 0x6000)
         {
           // ROM bank select
-          if (this.mode == MBC1Modes.Rom2048KBRam8KB)
+          if (_state.Mode == MBC1Modes.Rom2048KBRam8KB)
           {
             byte highBank = (byte)((value & 0x03) << 5);
 
             // Replace only the bit 5 and 6
-            currentRomBank = (byte)((highBank) | (currentRamBank & 0x1F));
+            _state.CurrentRomBank = (byte)((highBank) | (_state.CurrentRamBank & 0x1F));
 
-            Buffer.BlockCopy(this.cartridge.Data, currentRomBank * romBankLength,
+            Buffer.BlockCopy(this.cartridge.Data, _state.CurrentRomBank * romBankLength,
                              memoryData, romBankLength, romBankLength);
           }
           // RAM bank select
@@ -141,22 +170,22 @@ namespace GBSharp.MemorySpace.MemoryHandlers
           {
             byte newRamBank = (byte)(value & 0x03);
 
-            if (newRamBank == currentRamBank) { return; } // Avoid unnecessary switching
+            if (newRamBank == _state.CurrentRamBank) { return; } // Avoid unnecessary switching
 
             // Backup current bank
-            Buffer.BlockCopy(memoryData, ramBank0Start, this.ramBanksData,
-                             currentRamBank * ramBankLength, ramBankLength);
+            Buffer.BlockCopy(memoryData, ramBank0Start, _state.RamBanksData,
+                             _state.CurrentRamBank * ramBankLength, ramBankLength);
 
             // Copy the new one
-            currentRamBank = newRamBank;
-            Buffer.BlockCopy(this.ramBanksData, currentRamBank * ramBankLength,
+            _state.CurrentRamBank = newRamBank;
+            Buffer.BlockCopy(_state.RamBanksData, _state.CurrentRamBank * ramBankLength,
                              memoryData, ramBank0Start, ramBankLength);
           }
         }
         /* [0x6000 - 0x7FFF]: Mode select */
         else
         {
-          this.mode = (MBC1Modes)(value & 0x01);
+          _state.Mode = (MBC1Modes)(value & 0x01);
         }
       } // < 0x8000
       else
@@ -176,9 +205,9 @@ namespace GBSharp.MemorySpace.MemoryHandlers
         byte[] memoryData = memory.MemoryData;
 
         // We need to save the current data into the rombanks
-        Buffer.BlockCopy(memoryData, ramBank0Start, this.ramBanksData,
-                         currentRamBank * ramBankLength, ramBankLength);
-        file.Write(ramBanksData);
+        Buffer.BlockCopy(memoryData, ramBank0Start, _state.RamBanksData,
+                         _state.CurrentRamBank * ramBankLength, ramBankLength);
+        file.Write(_state.RamBanksData);
       }
     }
   }

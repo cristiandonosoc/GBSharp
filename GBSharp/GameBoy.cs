@@ -187,19 +187,19 @@ namespace GBSharp
     public void LoadCartridge(string cartridgeFullFilename, byte[] cartridgeData)
     {
       if (_state.Run) { Reset(); }
-      this._cartridge = new Cartridge.Cartridge();
-      this._cartridge.Load(cartridgeData);
+      _cartridge = new Cartridge.Cartridge();
+      _cartridge.Load(cartridgeData);
 
-      this._cpu.ResetBreakpoints();
-      this.CartridgeFilename = Path.GetFileNameWithoutExtension(cartridgeFullFilename);
-      this.CartridgeDirectory = Path.GetDirectoryName(cartridgeFullFilename);
-      this._apu.CartridgeFilename = this.CartridgeFilename; 
+      _cpu.ResetBreakpoints();
+      CartridgeFilename = Path.GetFileNameWithoutExtension(cartridgeFullFilename);
+      CartridgeDirectory = Path.GetDirectoryName(cartridgeFullFilename);
+      _apu.CartridgeFilename = this.CartridgeFilename; 
       // We create the MemoryHandler according to the data
       // from the cartridge and set it to the memory.
       // From this point onwards, all the access to memory
       // are done throught the MemoryHandler
-      this._memory.SetMemoryHandler(GBSharp.MemorySpace.MemoryHandlers.
-                                   MemoryHandlerFactory.CreateMemoryHandler(this));
+      _memory.SetMemoryHandler(GBSharp.MemorySpace.MemoryHandlers.
+                               MemoryHandlerFactory.CreateMemoryHandler(this));
     }
 
     public void Step(bool ignoreBreakpoints)
@@ -470,6 +470,8 @@ namespace GBSharp
       // We stop pause the simulation
       Pause();
 
+      string filename = "save_state.stt";
+
       SaveStateFileFormat saveState = new SaveStateFileFormat();
       // We ge the states
       saveState.MemoryState = _memory.GetState();
@@ -478,11 +480,11 @@ namespace GBSharp
       FileStream saveStateStream;
       if (!File.Exists("save_state.stt"))
       {
-        saveStateStream = File.Create("save_state.stt");
+        saveStateStream = File.Create(filename);
       }
       else
       {
-        saveStateStream = File.Open("save_state.stt", FileMode.Truncate);
+        saveStateStream = File.Open(filename, FileMode.Truncate);
       }
       IFormatter formatter = new BinaryFormatter();
       formatter.Serialize(saveStateStream, saveState);

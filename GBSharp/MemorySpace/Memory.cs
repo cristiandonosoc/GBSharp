@@ -18,6 +18,11 @@ namespace GBSharp.MemorySpace
     public ushort MemoryChangedLow { get; private set; }
     public ushort MemoryChangedHigh { get; private set; }
 
+    /// <summary>
+    /// The class that is going to handle the memory writes depending on the cartridge type.
+    /// </summary>
+    private MemoryHandler _memoryHandler;
+
     [Serializable]
     internal class State
     {
@@ -36,13 +41,13 @@ namespace GBSharp.MemorySpace
     State _state = new State();
     internal State GetState()
     {
-      // TODO(Cristian): Serialize MemoryHandlerData
+      _state.MemoryHandlerData = _memoryHandler.GetStateData();
       return _state;
     }
     internal void SetState(State state)
     {
-      // TODO(Cristian): De-Serialize MemoryHandlerData
       _state = state;
+      _memoryHandler.SetStateData(_state.MemoryHandlerData);
     }
 
     // This is an pointer needed by the DMA
@@ -50,11 +55,6 @@ namespace GBSharp.MemorySpace
     {
       get { return _state.Data; }
     }
-
-    /// <summary>
-    /// The class that is going to handle the memory writes depending on the cartridge type.
-    /// </summary>
-    private MemoryHandler memoryHandler;
 
     /// <summary>
     /// Class constructor, does nothing.
@@ -117,7 +117,7 @@ namespace GBSharp.MemorySpace
 
         // We notify the display that the sprites must be sorted
         // We use the memoryHandler as it has the display reference
-        memoryHandler.DmaReady();
+        _memoryHandler.DmaReady();
       }
     }
 
@@ -148,7 +148,7 @@ namespace GBSharp.MemorySpace
     /// <param name="memoryHandler">A reference to an initialized memory handler.</param>
     internal void SetMemoryHandler(MemoryHandler memoryHandler)
     {
-      this.memoryHandler = memoryHandler;
+      _memoryHandler = memoryHandler;
     }
 
     /// <summary>
@@ -158,7 +158,7 @@ namespace GBSharp.MemorySpace
     /// <param name="value">8 bits value.</param>
     internal void Write(ushort address, byte value)
     {
-      this.memoryHandler.Write(address, value);
+      _memoryHandler.Write(address, value);
       MemoryChangedLow = address;
       MemoryChangedLow = address;
     }
@@ -170,7 +170,7 @@ namespace GBSharp.MemorySpace
     /// <param name="value">16 bit value.</param>
     internal void Write(ushort address, ushort value)
     {
-      this.memoryHandler.Write(address, value);
+      _memoryHandler.Write(address, value);
       MemoryChangedLow = address;
       MemoryChangedLow = ++address;
     }
@@ -195,7 +195,7 @@ namespace GBSharp.MemorySpace
     /// <returns>8 bit value located at Mem[address]</returns>
     internal byte Read(ushort address)
     {
-      return this.memoryHandler.Read(address);
+      return _memoryHandler.Read(address);
     }
 
     internal byte LowLevelRead(ushort address)
@@ -228,9 +228,9 @@ namespace GBSharp.MemorySpace
 
     public void Dispose()
     {
-      if (memoryHandler != null)
+      if (_memoryHandler != null)
       {
-        memoryHandler.Dispose();
+        _memoryHandler.Dispose();
       }
     }
 
