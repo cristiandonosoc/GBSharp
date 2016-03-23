@@ -104,7 +104,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0x06:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -203,7 +203,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0x0E:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -302,7 +302,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0x16:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -401,7 +401,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0x1E:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -500,7 +500,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0x26:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -598,7 +598,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0x2E:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -697,7 +697,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0x36:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -796,7 +796,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0x3E:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -870,7 +870,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // BIT 0,(HL): Test bit 0 of value pointed by HL
         case 0x46:
           {
-            cpu.Registers.FZ = (byte)(UtilFuncs.TestBit(cpu.memory.Read(cpu.Registers.HL), 0) == 0 ? 1 : 0);
+            cpu.Registers.FZ = (byte)(UtilFuncs.TestBit(cpu._memory.Read(cpu.Registers.HL), 0) == 0 ? 1 : 0);
             cpu.Registers.FN = 0;
             cpu.Registers.FH = 1;
             break;
@@ -942,7 +942,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // BIT 1,(HL): Test bit 1 of value pointed by HL
         case 0x4E:
           {
-            cpu.Registers.FZ = (byte)(UtilFuncs.TestBit(cpu.memory.Read(cpu.Registers.HL), 1) == 0 ? 1 : 0);
+            cpu.Registers.FZ = (byte)(UtilFuncs.TestBit(cpu._memory.Read(cpu.Registers.HL), 1) == 0 ? 1 : 0);
             cpu.Registers.FN = 0;
             cpu.Registers.FH = 1;
             break;
@@ -1014,7 +1014,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // BIT 2,(HL): Test bit 2 of value pointed by HL
         case 0x56:
           {
-            cpu.Registers.FZ = (byte)(UtilFuncs.TestBit(cpu.memory.Read(cpu.Registers.HL), 2) == 0 ? 1 : 0);
+            cpu.Registers.FZ = (byte)(UtilFuncs.TestBit(cpu._memory.Read(cpu.Registers.HL), 2) == 0 ? 1 : 0);
             cpu.Registers.FN = 0;
             cpu.Registers.FH = 1;
             break;
@@ -1086,7 +1086,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // BIT 3,(HL): Test bit 3 of value pointed by HL
         case 0x5E:
           {
-            cpu.Registers.FZ = (byte)(UtilFuncs.TestBit(cpu.memory.Read(cpu.Registers.HL), 3) == 0 ? 1 : 0);
+            cpu.Registers.FZ = (byte)(UtilFuncs.TestBit(cpu._memory.Read(cpu.Registers.HL), 3) == 0 ? 1 : 0);
             cpu.Registers.FN = 0;
             cpu.Registers.FH = 1;
             break;
@@ -1158,7 +1158,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // BIT 4,(HL): Test bit 4 of value pointed by HL
         case 0x66:
           {
-            cpu.Registers.FZ = (byte)(UtilFuncs.TestBit(cpu.memory.Read(cpu.Registers.HL), 4) == 0 ? 1 : 0);
+            cpu.Registers.FZ = (byte)(UtilFuncs.TestBit(cpu._memory.Read(cpu.Registers.HL), 4) == 0 ? 1 : 0);
             cpu.Registers.FN = 0;
             cpu.Registers.FH = 1;
             break;
@@ -1230,7 +1230,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // BIT 5,(HL): Test bit 5 of value pointed by HL
         case 0x6E:
           {
-            cpu.Registers.FZ = (byte)(UtilFuncs.TestBit(cpu.memory.Read(cpu.Registers.HL), 5) == 0 ? 1 : 0);
+            cpu.Registers.FZ = (byte)(UtilFuncs.TestBit(cpu._memory.Read(cpu.Registers.HL), 5) == 0 ? 1 : 0);
             cpu.Registers.FN = 0;
             cpu.Registers.FH = 1;
             break;
@@ -1302,7 +1302,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // BIT 6,(HL): Test bit 6 of value pointed by HL
         case 0x76:
           {
-            cpu.Registers.FZ = (byte)(UtilFuncs.TestBit(cpu.memory.Read(cpu.Registers.HL), 6) == 0 ? 1 : 0);
+            cpu.Registers.FZ = (byte)(UtilFuncs.TestBit(cpu._memory.Read(cpu.Registers.HL), 6) == 0 ? 1 : 0);
             cpu.Registers.FN = 0;
             cpu.Registers.FH = 1;
             break;
@@ -1374,7 +1374,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // BIT 7,(HL): Test bit 7 of value pointed by HL
         case 0x7E:
           {
-            cpu.Registers.FZ = (byte)(UtilFuncs.TestBit(cpu.memory.Read(cpu.Registers.HL), 7) == 0 ? 1 : 0);
+            cpu.Registers.FZ = (byte)(UtilFuncs.TestBit(cpu._memory.Read(cpu.Registers.HL), 7) == 0 ? 1 : 0);
             cpu.Registers.FN = 0;
             cpu.Registers.FH = 1;
             break;
@@ -1435,7 +1435,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0x86:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -1492,7 +1492,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0x8E:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -1549,7 +1549,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0x96:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -1606,7 +1606,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0x9E:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -1663,7 +1663,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xA6:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -1720,7 +1720,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xAE:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -1777,7 +1777,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xB6:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -1834,7 +1834,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xBE:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -1891,7 +1891,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xC6:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -1948,7 +1948,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xCE:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -2005,7 +2005,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xD6:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -2062,7 +2062,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xDE:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -2119,7 +2119,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xE6:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -2176,7 +2176,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xEE:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -2233,7 +2233,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xF6:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -2290,7 +2290,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xFE:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 

@@ -122,7 +122,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             byte value = cpu.Registers.TEMP;
             ++value;
-            cpu.memory.Write(cpu.Registers.HL, value);
+            cpu._memory.Write(cpu.Registers.HL, value);
 
             cpu.Registers.FZ = (byte)(value == 0 ? 1 : 0);
             cpu.Registers.FN = 0;
@@ -134,7 +134,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             byte value = cpu.Registers.TEMP;
             --value;
-            cpu.memory.Write(cpu.Registers.HL, value);
+            cpu._memory.Write(cpu.Registers.HL, value);
 
             cpu.Registers.FZ = (byte)(value == 0 ? 1 : 0);
             cpu.Registers.FN = 1;

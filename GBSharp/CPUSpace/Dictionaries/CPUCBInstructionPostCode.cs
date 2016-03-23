@@ -36,7 +36,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0x06:
           {
             var rotateCarry = UtilFuncs.RotateLeftAndCarry(cpu.Registers.TEMP);
-            cpu.memory.Write(cpu.Registers.HL, rotateCarry.Item1);
+            cpu._memory.Write(cpu.Registers.HL, rotateCarry.Item1);
 
             cpu.Registers.FC = rotateCarry.Item2;
             cpu.Registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
@@ -63,7 +63,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0x0E:
           {
             var rotateCarry = UtilFuncs.RotateRightAndCarry(cpu.Registers.TEMP);
-            cpu.memory.Write(cpu.Registers.HL, rotateCarry.Item1);
+            cpu._memory.Write(cpu.Registers.HL, rotateCarry.Item1);
 
             cpu.Registers.FC = rotateCarry.Item2;
             cpu.Registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
@@ -90,7 +90,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0x16:
           {
             var rotateCarry = UtilFuncs.RotateLeftThroughCarry(cpu.Registers.TEMP, 1, cpu.Registers.FC);
-            cpu.memory.Write(cpu.Registers.HL, rotateCarry.Item1);
+            cpu._memory.Write(cpu.Registers.HL, rotateCarry.Item1);
 
             cpu.Registers.FC = rotateCarry.Item2;
             cpu.Registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
@@ -117,7 +117,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0x1E:
           {
             var rotateCarry = UtilFuncs.RotateRightThroughCarry(cpu.Registers.TEMP, 1, cpu.Registers.FC);
-            cpu.memory.Write(cpu.Registers.HL, rotateCarry.Item1);
+            cpu._memory.Write(cpu.Registers.HL, rotateCarry.Item1);
 
             cpu.Registers.FC = rotateCarry.Item2;
             cpu.Registers.FZ = (byte)((rotateCarry.Item1 == 0) ? 1 : 0);
@@ -144,7 +144,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0x26:
           {
             var shiftCarry = UtilFuncs.ShiftLeft(cpu.Registers.TEMP);
-            cpu.memory.Write(cpu.Registers.HL, shiftCarry.Item1);
+            cpu._memory.Write(cpu.Registers.HL, shiftCarry.Item1);
 
             cpu.Registers.FC = shiftCarry.Item2;
             cpu.Registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
@@ -170,7 +170,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0x2E:
           {
             var shiftCarry = UtilFuncs.ShiftRightArithmetic(cpu.Registers.TEMP);
-            cpu.memory.Write(cpu.Registers.HL, shiftCarry.Item1);
+            cpu._memory.Write(cpu.Registers.HL, shiftCarry.Item1);
 
             cpu.Registers.FC = shiftCarry.Item2;
             cpu.Registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
@@ -197,7 +197,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0x36:
           {
             byte result = UtilFuncs.SwapNibbles(cpu.Registers.TEMP);
-            cpu.memory.Write(cpu.Registers.HL, result);
+            cpu._memory.Write(cpu.Registers.HL, result);
 
             cpu.Registers.FZ = (byte)(result == 0 ? 1 : 0);
             cpu.Registers.FN = 0;
@@ -224,7 +224,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0x3E:
           {
             var shiftCarry = UtilFuncs.ShiftRightLogic(cpu.Registers.TEMP);
-            cpu.memory.Write(cpu.Registers.HL, shiftCarry.Item1);
+            cpu._memory.Write(cpu.Registers.HL, shiftCarry.Item1);
 
             cpu.Registers.FC = shiftCarry.Item2;
             cpu.Registers.FZ = (byte)((shiftCarry.Item1 == 0) ? 1 : 0);
@@ -378,7 +378,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0x86:
           {
-            cpu.memory.Write(cpu.Registers.HL, UtilFuncs.ClearBit(cpu.Registers.TEMP, 0));
+            cpu._memory.Write(cpu.Registers.HL, UtilFuncs.ClearBit(cpu.Registers.TEMP, 0));
             break;
           }
         // RES 0,A: Clear (reset) bit 0 of A
@@ -399,7 +399,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0x8E:
           {
-            cpu.memory.Write(cpu.Registers.HL, UtilFuncs.ClearBit(cpu.Registers.TEMP, 1));
+            cpu._memory.Write(cpu.Registers.HL, UtilFuncs.ClearBit(cpu.Registers.TEMP, 1));
             break;
           }
         // RES 1,A: Clear (reset) bit 1 of A
@@ -420,7 +420,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0x96:
           {
-            cpu.memory.Write(cpu.Registers.HL, UtilFuncs.ClearBit(cpu.Registers.TEMP, 2));
+            cpu._memory.Write(cpu.Registers.HL, UtilFuncs.ClearBit(cpu.Registers.TEMP, 2));
             break;
           }
         // RES 2,A: Clear (reset) bit 2 of A
@@ -441,7 +441,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0x9E: 
           { 
-            cpu.memory.Write(cpu.Registers.HL, UtilFuncs.ClearBit(cpu.Registers.TEMP, 3));
+            cpu._memory.Write(cpu.Registers.HL, UtilFuncs.ClearBit(cpu.Registers.TEMP, 3));
             break; 
           }
         // RES 3,A: Clear (reset) bit 3 of A
@@ -462,7 +462,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xA6: 
           { 
-            cpu.memory.Write(cpu.Registers.HL, UtilFuncs.ClearBit(cpu.Registers.TEMP, 4));
+            cpu._memory.Write(cpu.Registers.HL, UtilFuncs.ClearBit(cpu.Registers.TEMP, 4));
             break; 
           }
         // RES 4,A: Clear (reset) bit 4 of A
@@ -483,7 +483,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xAE: 
           { 
-            cpu.memory.Write(cpu.Registers.HL, UtilFuncs.ClearBit(cpu.Registers.TEMP, 5));
+            cpu._memory.Write(cpu.Registers.HL, UtilFuncs.ClearBit(cpu.Registers.TEMP, 5));
             break; 
           }
         // RES 5,A: Clear (reset) bit 5 of A
@@ -504,7 +504,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xB6: 
           { 
-            cpu.memory.Write(cpu.Registers.HL, UtilFuncs.ClearBit(cpu.Registers.TEMP, 6));
+            cpu._memory.Write(cpu.Registers.HL, UtilFuncs.ClearBit(cpu.Registers.TEMP, 6));
             break; 
           }
         // RES 6,A: Clear (reset) bit 6 of A
@@ -525,7 +525,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xBE: 
           { 
-            cpu.memory.Write(cpu.Registers.HL, UtilFuncs.ClearBit(cpu.Registers.TEMP, 7));
+            cpu._memory.Write(cpu.Registers.HL, UtilFuncs.ClearBit(cpu.Registers.TEMP, 7));
             break; 
           }
         // RES 7,A: Clear (reset) bit 7 of A
@@ -546,7 +546,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xC6: 
           { 
-            cpu.memory.Write(cpu.Registers.HL, UtilFuncs.SetBit(cpu.Registers.TEMP, 0));
+            cpu._memory.Write(cpu.Registers.HL, UtilFuncs.SetBit(cpu.Registers.TEMP, 0));
             break; 
           }
         // SET 0,A: Set bit 0 of A
@@ -567,7 +567,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xCE: 
           { 
-            cpu.memory.Write(cpu.Registers.HL, UtilFuncs.SetBit(cpu.Registers.TEMP, 1));
+            cpu._memory.Write(cpu.Registers.HL, UtilFuncs.SetBit(cpu.Registers.TEMP, 1));
             break; 
           }
         // SET 1,A: Set bit 1 of A
@@ -588,7 +588,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xD6: 
           { 
-            cpu.memory.Write(cpu.Registers.HL, UtilFuncs.SetBit(cpu.Registers.TEMP, 2));
+            cpu._memory.Write(cpu.Registers.HL, UtilFuncs.SetBit(cpu.Registers.TEMP, 2));
             break; 
           }
         // SET 2,A: Set bit 2 of A
@@ -609,7 +609,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xDE: 
           { 
-            cpu.memory.Write(cpu.Registers.HL, UtilFuncs.SetBit(cpu.Registers.TEMP, 3));
+            cpu._memory.Write(cpu.Registers.HL, UtilFuncs.SetBit(cpu.Registers.TEMP, 3));
             break; 
           }
         // SET 3,A: Set bit 3 of A
@@ -630,7 +630,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xE6: 
           { 
-            cpu.memory.Write(cpu.Registers.HL, UtilFuncs.SetBit(cpu.Registers.TEMP, 4));
+            cpu._memory.Write(cpu.Registers.HL, UtilFuncs.SetBit(cpu.Registers.TEMP, 4));
             break; 
           }
         // SET 4,A: Set bit 4 of A
@@ -651,7 +651,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xEE: 
           { 
-            cpu.memory.Write(cpu.Registers.HL, UtilFuncs.SetBit(cpu.Registers.TEMP, 5));
+            cpu._memory.Write(cpu.Registers.HL, UtilFuncs.SetBit(cpu.Registers.TEMP, 5));
             break; 
           }
         // SET 5,A: Set bit 5 of A
@@ -672,7 +672,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xF6: 
           { 
-            cpu.memory.Write(cpu.Registers.HL, UtilFuncs.SetBit(cpu.Registers.TEMP, 6));
+            cpu._memory.Write(cpu.Registers.HL, UtilFuncs.SetBit(cpu.Registers.TEMP, 6));
             break; 
           }
         // SET 6,A: Set bit 6 of A
@@ -693,7 +693,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: two-stage opcode
         case 0xFE:
           {
-            cpu.memory.Write(cpu.Registers.HL, UtilFuncs.SetBit(cpu.Registers.TEMP, 7));
+            cpu._memory.Write(cpu.Registers.HL, UtilFuncs.SetBit(cpu.Registers.TEMP, 7));
             break;
           }
         // SET 7,A: Set bit 7 of A

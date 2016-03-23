@@ -10,7 +10,6 @@ namespace GBSharp.CPUSpace
     public ushort OpCode { get; internal set; }
     public ushort Literal { get; internal set; }
     public byte?[] Operands { get; internal set; }
-    internal Action<ushort> Lambda { get; set; }
     internal byte Length { get; set; }
     internal byte Ticks { get; set; }
     public bool CB { get; internal set; }

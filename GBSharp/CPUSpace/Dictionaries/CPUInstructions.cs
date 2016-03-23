@@ -38,7 +38,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD (BC),A: Save A to address pointed by BC
         case 0x02:
           {
-            cpu.memory.Write(cpu.Registers.BC, cpu.Registers.A);
+            cpu._memory.Write(cpu.Registers.BC, cpu.Registers.A);
             break;
           }
 
@@ -94,7 +94,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD (nn),SP: Save SP to given address
         case 0x08:
           {
-            cpu.memory.Write(n, cpu.Registers.SP);
+            cpu._memory.Write(n, cpu.Registers.SP);
             break;
           }
 
@@ -115,7 +115,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD A,(BC): Load A from address pointed to by BC
         case 0x0A:
           {
-            cpu.Registers.A = cpu.memory.Read(cpu.Registers.BC);
+            cpu.Registers.A = cpu._memory.Read(cpu.Registers.BC);
             break;
           }
 
@@ -185,7 +185,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD (DE),A: Save A to address pointed by DE
         case 0x12:
           {
-            cpu.memory.Write(cpu.Registers.DE, cpu.Registers.A);
+            cpu._memory.Write(cpu.Registers.DE, cpu.Registers.A);
             break;
           }
 
@@ -265,7 +265,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD A,(DE): Load A from address pointed to by DE
         case 0x1A:
           {
-            cpu.Registers.A = cpu.memory.Read(cpu.Registers.DE);
+            cpu.Registers.A = cpu._memory.Read(cpu.Registers.DE);
             break;
           }
 
@@ -342,7 +342,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LDI (HL),A: Save A to address pointed by HL, and increment HL
         case 0x22:
           {
-            cpu.memory.Write(cpu.Registers.HL++, cpu.Registers.A);
+            cpu._memory.Write(cpu.Registers.HL++, cpu.Registers.A);
             break;
           }
 
@@ -442,7 +442,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LDI A,(HL): Load A from address pointed to by HL, and increment HL
         case 0x2A:
           {
-            cpu.Registers.A = cpu.memory.Read(cpu.Registers.HL++);
+            cpu.Registers.A = cpu._memory.Read(cpu.Registers.HL++);
             break;
           }
 
@@ -516,7 +516,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LDD (HL),A: Save A to address pointed by HL, and decrement HL
         case 0x32:
           {
-            cpu.memory.Write(cpu.Registers.HL--, cpu.Registers.A);
+            cpu._memory.Write(cpu.Registers.HL--, cpu.Registers.A);
             break;
           }
 
@@ -531,7 +531,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: Two-stage opcode
         case 0x34:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -539,14 +539,14 @@ namespace GBSharp.CPUSpace.Dictionaries
         // NOTE: Two-stage opcode
         case 0x35:
           {
-            cpu.Registers.TEMP = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.TEMP = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
         // LD (HL),n: Load 8-bit immediate into address pointed by HL
         case 0x36:
           {
-            cpu.memory.Write(cpu.Registers.HL, (byte)n);
+            cpu._memory.Write(cpu.Registers.HL, (byte)n);
             break;
           }
 
@@ -590,7 +590,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LDD A,(HL): Load A from address pointed to by HL, and decrement HL
         case 0x3A:
           {
-            cpu.Registers.A = cpu.memory.Read(cpu.Registers.HL--);
+            cpu.Registers.A = cpu._memory.Read(cpu.Registers.HL--);
             break;
           }
 
@@ -686,7 +686,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD B,(HL): Copy value pointed by HL to B
         case 0x46:
           {
-            cpu.Registers.B = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.B = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -744,7 +744,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD C,(HL): Copy value pointed by HL to C
         case 0x4E:
           {
-            cpu.Registers.C = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.C = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -802,7 +802,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD D,(HL): Copy value pointed by HL to D
         case 0x56:
           {
-            cpu.Registers.D = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.D = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -860,7 +860,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD E,(HL): Copy value pointed by HL to E
         case 0x5E:
           {
-            cpu.Registers.E = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.E = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -918,7 +918,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD H,(HL): Copy value pointed by HL to H
         case 0x66:
           {
-            cpu.Registers.H = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.H = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -976,7 +976,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD L,(HL): Copy value pointed by HL to L
         case 0x6E:
           {
-            cpu.Registers.L = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.L = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -990,49 +990,49 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD (HL),B: Copy B to address pointed by HL
         case 0x70:
           {
-            cpu.memory.Write(cpu.Registers.HL, cpu.Registers.B);
+            cpu._memory.Write(cpu.Registers.HL, cpu.Registers.B);
             break;
           }
 
         // LD (HL),C: Copy C to address pointed by HL
         case 0x71:
           {
-            cpu.memory.Write(cpu.Registers.HL, cpu.Registers.C);
+            cpu._memory.Write(cpu.Registers.HL, cpu.Registers.C);
             break;
           }
 
         // LD (HL),D: Copy D to address pointed by HL
         case 0x72:
           {
-            cpu.memory.Write(cpu.Registers.HL, cpu.Registers.D);
+            cpu._memory.Write(cpu.Registers.HL, cpu.Registers.D);
             break;
           }
 
         // LD (HL),E: Copy E to address pointed by HL
         case 0x73:
           {
-            cpu.memory.Write(cpu.Registers.HL, cpu.Registers.E);
+            cpu._memory.Write(cpu.Registers.HL, cpu.Registers.E);
             break;
           }
 
         // LD (HL),H: Copy H to address pointed by HL
         case 0x74:
           {
-            cpu.memory.Write(cpu.Registers.HL, cpu.Registers.H);
+            cpu._memory.Write(cpu.Registers.HL, cpu.Registers.H);
             break;
           }
 
         // LD (HL),L: Copy L to address pointed by HL
         case 0x75:
           {
-            cpu.memory.Write(cpu.Registers.HL, cpu.Registers.L);
+            cpu._memory.Write(cpu.Registers.HL, cpu.Registers.L);
             break;
           }
 
         // HALT: Halt processor
         case 0x76:
           {
-            if (cpu.interruptController.InterruptMasterEnable)
+            if (cpu._interruptController.InterruptMasterEnable)
             {
               cpu.Halted = true;
             }
@@ -1047,7 +1047,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD (HL),A: Copy A to address pointed by HL
         case 0x77:
           {
-            cpu.memory.Write(cpu.Registers.HL, cpu.Registers.A);
+            cpu._memory.Write(cpu.Registers.HL, cpu.Registers.A);
             break;
           }
 
@@ -1096,7 +1096,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD A,(HL): Copy value pointed by HL to A
         case 0x7E:
           {
-            cpu.Registers.A = cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.A = cpu._memory.Read(cpu.Registers.HL);
             break;
           }
 
@@ -1203,7 +1203,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0x86:
           {
             byte initial = cpu.Registers.A;
-            byte toSum = cpu.memory.Read(cpu.Registers.HL);
+            byte toSum = cpu._memory.Read(cpu.Registers.HL);
             int sum = initial + toSum;
             cpu.Registers.A += toSum;
             // Update flags
@@ -1336,7 +1336,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             ushort A = cpu.Registers.A;
             byte initial = cpu.Registers.A;
-            byte m = cpu.memory.Read(cpu.Registers.HL);
+            byte m = cpu._memory.Read(cpu.Registers.HL);
             A += m;
             A += cpu.Registers.FC;
             cpu.Registers.A = (byte)A;
@@ -1431,7 +1431,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             UtilFuncs.SBC(cpu.Registers,
                           ref cpu.Registers.A,
-                          cpu.memory.Read(cpu.Registers.HL),
+                          cpu._memory.Read(cpu.Registers.HL),
                           0);
             break;
           }
@@ -1511,7 +1511,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             UtilFuncs.SBC(cpu.Registers,
                           ref cpu.Registers.A,
-                          cpu.memory.Read(cpu.Registers.HL),
+                          cpu._memory.Read(cpu.Registers.HL),
                           cpu.Registers.FC);
             break;
           }
@@ -1595,7 +1595,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // AND (HL): Logical AND value pointed by HL against A
         case 0xA6:
           {
-            cpu.Registers.A &= cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.A &= cpu._memory.Read(cpu.Registers.HL);
             cpu.Registers.FZ = (byte)(cpu.Registers.A == 0 ? 1 : 0);
             cpu.Registers.FH = (byte)1;
             cpu.Registers.FN = (byte)0;
@@ -1683,7 +1683,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // XOR (HL): Logical XOR value pointed by HL against A
         case 0xAE:
           {
-            cpu.Registers.A ^= cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.A ^= cpu._memory.Read(cpu.Registers.HL);
             cpu.Registers.FZ = (byte)(cpu.Registers.A == 0 ? 1 : 0);
             cpu.Registers.FH = (byte)0;
             cpu.Registers.FN = (byte)0;
@@ -1771,7 +1771,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // OR (HL): Logical OR value pointed by HL against A
         case 0xB6:
           {
-            cpu.Registers.A |= cpu.memory.Read(cpu.Registers.HL);
+            cpu.Registers.A |= cpu._memory.Read(cpu.Registers.HL);
             cpu.Registers.FZ = (byte)(cpu.Registers.A == 0 ? 1 : 0);
             cpu.Registers.FH = (byte)0;
             cpu.Registers.FN = (byte)0;
@@ -1937,7 +1937,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // CP (HL): Compare value pointed by HL against A
         case 0xBE:
           {
-            byte operand = cpu.memory.Read(cpu.Registers.HL);
+            byte operand = cpu._memory.Read(cpu.Registers.HL);
             cpu.Registers.FN = 1;
             cpu.Registers.FC = 0; // cpu flag might get changed
             cpu.Registers.FH = (byte)
@@ -1987,8 +1987,8 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (cpu.Registers.FZ != 0) { break; }
             // We load the program counter (high byte is in higher address)
-            cpu.NextPC = cpu.memory.Read(cpu.Registers.SP++);
-            cpu.NextPC += (ushort)(cpu.memory.Read(cpu.Registers.SP++) << 8);
+            cpu.NextPC = cpu._memory.Read(cpu.Registers.SP++);
+            cpu.NextPC += (ushort)(cpu._memory.Read(cpu.Registers.SP++) << 8);
             cpu.InternalCurrentInstruction.Ticks = 20;
             break;
           }
@@ -1996,8 +1996,8 @@ namespace GBSharp.CPUSpace.Dictionaries
         // POP BC: Pop 16-bit value from stack into BC
         case 0xC1:
           {
-            ushort res = cpu.memory.Read(cpu.Registers.SP++);
-            res += (ushort)(cpu.memory.Read(cpu.Registers.SP++) << 8);
+            ushort res = cpu._memory.Read(cpu.Registers.SP++);
+            res += (ushort)(cpu._memory.Read(cpu.Registers.SP++) << 8);
             cpu.Registers.BC = res;
             break;
           }
@@ -2028,7 +2028,7 @@ namespace GBSharp.CPUSpace.Dictionaries
 
             ushort target = n;
             cpu.Registers.SP -= 2;
-            cpu.memory.Write(cpu.Registers.SP, cpu.NextPC);
+            cpu._memory.Write(cpu.Registers.SP, cpu.NextPC);
 
             // We jump
             cpu.NextPC = target;
@@ -2040,7 +2040,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0xC5:
           {
             cpu.Registers.SP -= 2;
-            cpu.memory.Write(cpu.Registers.SP, cpu.Registers.BC);
+            cpu._memory.Write(cpu.Registers.SP, cpu.Registers.BC);
             break;
           }
 
@@ -2071,8 +2071,8 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (cpu.Registers.FZ == 0) { break; }
             // We load the program counter (high byte is in higher address)
-            cpu.NextPC = cpu.memory.Read(cpu.Registers.SP++);
-            cpu.NextPC += (ushort)(cpu.memory.Read(cpu.Registers.SP++) << 8);
+            cpu.NextPC = cpu._memory.Read(cpu.Registers.SP++);
+            cpu.NextPC += (ushort)(cpu._memory.Read(cpu.Registers.SP++) << 8);
             cpu.InternalCurrentInstruction.Ticks = 20;
             break;
           }
@@ -2081,8 +2081,8 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0xC9:
           {
             // We load the program counter (high byte is in higher address)
-            cpu.NextPC = cpu.memory.Read(cpu.Registers.SP++);
-            cpu.NextPC += (ushort)(cpu.memory.Read(cpu.Registers.SP++) << 8);
+            cpu.NextPC = cpu._memory.Read(cpu.Registers.SP++);
+            cpu.NextPC += (ushort)(cpu._memory.Read(cpu.Registers.SP++) << 8);
             break;
           }
 
@@ -2110,7 +2110,7 @@ namespace GBSharp.CPUSpace.Dictionaries
 
             ushort target = n;
             cpu.Registers.SP -= 2;
-            cpu.memory.Write(cpu.Registers.SP, cpu.NextPC);
+            cpu._memory.Write(cpu.Registers.SP, cpu.NextPC);
 
             // We jump
             cpu.NextPC = target;
@@ -2123,7 +2123,7 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             ushort target = n;
             cpu.Registers.SP -= 2;
-            cpu.memory.Write(cpu.Registers.SP, cpu.NextPC);
+            cpu._memory.Write(cpu.Registers.SP, cpu.NextPC);
 
             // We jump
             cpu.NextPC = target;
@@ -2159,8 +2159,8 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (cpu.Registers.FC != 0) { break; }
             // We load the program counter (high byte is in higher address)
-            cpu.NextPC = cpu.memory.Read(cpu.Registers.SP++);
-            cpu.NextPC += (ushort)(cpu.memory.Read(cpu.Registers.SP++) << 8);
+            cpu.NextPC = cpu._memory.Read(cpu.Registers.SP++);
+            cpu.NextPC += (ushort)(cpu._memory.Read(cpu.Registers.SP++) << 8);
             cpu.InternalCurrentInstruction.Ticks = 20;
             break;
           }
@@ -2168,8 +2168,8 @@ namespace GBSharp.CPUSpace.Dictionaries
         // POP DE: Pop 16-bit value from stack into DE
         case 0xD1:
           {
-            ushort res = cpu.memory.Read(cpu.Registers.SP++);
-            res += (ushort)(cpu.memory.Read(cpu.Registers.SP++) << 8);
+            ushort res = cpu._memory.Read(cpu.Registers.SP++);
+            res += (ushort)(cpu._memory.Read(cpu.Registers.SP++) << 8);
             cpu.Registers.DE = res;
             break;
           }
@@ -2198,7 +2198,7 @@ namespace GBSharp.CPUSpace.Dictionaries
 
             ushort target = n;
             cpu.Registers.SP -= 2;
-            cpu.memory.Write(cpu.Registers.SP, cpu.NextPC);
+            cpu._memory.Write(cpu.Registers.SP, cpu.NextPC);
 
             // We jump
             cpu.NextPC = target;
@@ -2210,7 +2210,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0xD5:
           {
             cpu.Registers.SP -= 2;
-            cpu.memory.Write(cpu.Registers.SP, cpu.Registers.DE);
+            cpu._memory.Write(cpu.Registers.SP, cpu.Registers.DE);
             break;
           }
 
@@ -2237,8 +2237,8 @@ namespace GBSharp.CPUSpace.Dictionaries
           {
             if (cpu.Registers.FC == 0) { break; }
             // We load the program counter (high byte is in higher address)
-            cpu.NextPC = cpu.memory.Read(cpu.Registers.SP++);
-            cpu.NextPC += (ushort)(cpu.memory.Read(cpu.Registers.SP++) << 8);
+            cpu.NextPC = cpu._memory.Read(cpu.Registers.SP++);
+            cpu.NextPC += (ushort)(cpu._memory.Read(cpu.Registers.SP++) << 8);
             cpu.InternalCurrentInstruction.Ticks = 20;
             break;
           }
@@ -2246,11 +2246,11 @@ namespace GBSharp.CPUSpace.Dictionaries
         // RETI: Enable interrupts and return to calling routine
         case 0xD9:
           {
-            cpu.interruptController.InterruptMasterEnable = true;
+            cpu._interruptController.InterruptMasterEnable = true;
 
             // We load the program counter (high byte is in higher address)
-            cpu.NextPC = cpu.memory.Read(cpu.Registers.SP++);
-            cpu.NextPC += (ushort)(cpu.memory.Read(cpu.Registers.SP++) << 8);
+            cpu.NextPC = cpu._memory.Read(cpu.Registers.SP++);
+            cpu.NextPC += (ushort)(cpu._memory.Read(cpu.Registers.SP++) << 8);
             break;
           }
 
@@ -2278,7 +2278,7 @@ namespace GBSharp.CPUSpace.Dictionaries
 
             ushort target = n;
             cpu.Registers.SP -= 2;
-            cpu.memory.Write(cpu.Registers.SP, cpu.NextPC);
+            cpu._memory.Write(cpu.Registers.SP, cpu.NextPC);
 
             // We jump
             cpu.NextPC = target;
@@ -2315,15 +2315,15 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0xE0:
           {
             ushort address = (ushort)(0xFF00 | (byte)n);
-            cpu.memory.Write(address, cpu.Registers.A);
+            cpu._memory.Write(address, cpu.Registers.A);
             break;
           }
 
         // POP HL: Pop 16-bit value from stack into HL
         case 0xE1:
           {
-            ushort res = cpu.memory.Read(cpu.Registers.SP++);
-            res += (ushort)(cpu.memory.Read(cpu.Registers.SP++) << 8);
+            ushort res = cpu._memory.Read(cpu.Registers.SP++);
+            res += (ushort)(cpu._memory.Read(cpu.Registers.SP++) << 8);
             cpu.Registers.HL = res;
             break;
           }
@@ -2332,7 +2332,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0xE2:
           {
             ushort address = (ushort)(0xFF00 | cpu.Registers.C);
-            cpu.memory.Write(address, cpu.Registers.A);
+            cpu._memory.Write(address, cpu.Registers.A);
             break;
           }
 
@@ -2352,7 +2352,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0xE5:
           {
             cpu.Registers.SP -= 2;
-            cpu.memory.Write(cpu.Registers.SP, cpu.Registers.HL);
+            cpu._memory.Write(cpu.Registers.SP, cpu.Registers.HL);
             break;
           }
 
@@ -2406,7 +2406,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD (nn),A: Save A at given 16-bit address
         case 0xEA:
           {
-            cpu.memory.Write(n, cpu.Registers.A);
+            cpu._memory.Write(n, cpu.Registers.A);
             break;
           }
 
@@ -2450,15 +2450,15 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0xF0:
           {
             ushort address = (ushort)(0xFF00 | (byte)n);
-            cpu.Registers.A = cpu.memory.Read(address);
+            cpu.Registers.A = cpu._memory.Read(address);
             break;
           }
 
         // POP AF: Pop 16-bit value from stack into AF
         case 0xF1:
           {
-            ushort res = cpu.memory.Read(cpu.Registers.SP++);
-            res += (ushort)(cpu.memory.Read(cpu.Registers.SP++) << 8);
+            ushort res = cpu._memory.Read(cpu.Registers.SP++);
+            res += (ushort)(cpu._memory.Read(cpu.Registers.SP++) << 8);
             cpu.Registers.AF = res;
             break;
           }
@@ -2467,14 +2467,14 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0xF2:
           {
             ushort address = (ushort)(0xFF00 | cpu.Registers.C);
-            cpu.Registers.A = cpu.memory.Read(address);
+            cpu.Registers.A = cpu._memory.Read(address);
             break;
           }
 
         // DI: DIsable interrupts
         case 0xF3:
           {
-            cpu.interruptController.InterruptMasterEnable = false;
+            cpu._interruptController.InterruptMasterEnable = false;
             break;
           }
 
@@ -2488,7 +2488,7 @@ namespace GBSharp.CPUSpace.Dictionaries
         case 0xF5:
           {
             cpu.Registers.SP -= 2;
-            cpu.memory.Write(cpu.Registers.SP, cpu.Registers.AF);
+            cpu._memory.Write(cpu.Registers.SP, cpu.Registers.AF);
             break;
           }
 
@@ -2540,14 +2540,14 @@ namespace GBSharp.CPUSpace.Dictionaries
         // LD A,(nn): Load A from given 16-bit address
         case 0xFA:
           {
-            cpu.Registers.A = cpu.memory.Read(n);
+            cpu.Registers.A = cpu._memory.Read(n);
             break;
           }
 
         // EI: Enable interrupts
         case 0xFB:
           {
-            cpu.interruptController.InterruptMasterEnable = true;
+            cpu._interruptController.InterruptMasterEnable = true;
             break;
           }
 

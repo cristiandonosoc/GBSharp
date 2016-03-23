@@ -119,7 +119,7 @@ namespace GBSharpTest.CPUSpace
       var testMemoryAddress = GetUShort(row["TestAddr"]);
       var testValue = GetByte(row["TestValue"]);
       Assert.AreEqual<byte>(
-        cpu.memory.Read(testMemoryAddress),
+        cpu._memory.Read(testMemoryAddress),
         testValue,
         testName + " Memory Test");
     }

@@ -39,7 +39,16 @@ namespace GBSharp.CPUSpace
       internal Interrupts InterruptToTrigger;
       internal Interrupts InterruptTriggered;
 
+      // Timing
+      internal ushort DivCounter;
+      internal byte TimaCounter;
+      internal int TacCounter;
+      internal int TacMask;
+      internal byte TmaValue;
+
       internal CPURegisters Registers = new CPURegisters();
+
+      internal Instruction CurrentInstruction = null;
     }
     State _state = new State();
 
@@ -69,10 +78,38 @@ namespace GBSharp.CPUSpace
       set { _state.Stopped = value; }
     }
 
+    // NOTE(Cristian): This Instruction instance is no longer used to communicate
+    //                 the current state to the CPUView. This is because it's always
+    //                 one instruction behing because the PC advances after the Step.
+    //                 What it's done is that the current PC is decoded on-demand by the view.
+    internal Instruction InternalCurrentInstruction
+    {
+      get { return _state.CurrentInstruction; }
+    }
+    private Instruction _exportInstruction = null;
+    /// <summary>
+    /// The current operands (extra bytes) used by the current instruction
+    /// running in the CPU. This is (for now) mainly used to display this
+    /// information in the CPU view
+    /// NOTE is nullable so we can signify less operands
+    /// </summary>
+    public IInstruction CurrentInstruction
+    {
+      get
+      {
+        FetchAndDecode(ref _exportInstruction, _state.Registers.PC);
+        return _exportInstruction;
+      }
+    }
+
+
+
     #endregion
 
-    internal MemorySpace.Memory memory;
-    internal InterruptController interruptController;
+    internal MemorySpace.Memory _memory;
+    internal InterruptController _interruptController;
+
+    #region BREAKPOINTS
 
     internal Dictionary<Interrupts, bool> _breakableInterrupts = new Dictionary<Interrupts, bool>()
     {
@@ -83,14 +120,10 @@ namespace GBSharp.CPUSpace
       {Interrupts.P10to13TerminalNegativeEdge, false}
     };
 
-    // Timing
-    private ushort _divCounter;
-    private byte _timaCounter;
-    private int _tacCounter;
-    private int _tacMask;
-    private byte _tmaValue;
-
-    #region BREAKPOINTS
+    public void SetInterruptBreakable(Interrupts interrupt, bool isBreakable)
+    {
+      _breakableInterrupts[interrupt] = isBreakable;
+    }
 
     public event Action BreakpointFound;
     public event Action<Interrupts> InterruptHappened;
@@ -176,31 +209,6 @@ namespace GBSharp.CPUSpace
 
     #endregion
 
-    // NOTE(Cristian): This Instruction instance is no longer used to communicate
-    //                 the current state to the CPUView. This is because it's always
-    //                 one instruction behing because the PC advances after the Step.
-    //                 What it's done is that the current PC is decoded on-demand by the view.
-    private Instruction _currentInstruction = null;
-    internal Instruction InternalCurrentInstruction
-    {
-      get { return _currentInstruction; }
-    }
-    private Instruction _exportInstruction = null;
-    /// <summary>
-    /// The current operands (extra bytes) used by the current instruction
-    /// running in the CPU. This is (for now) mainly used to display this
-    /// information in the CPU view
-    /// NOTE is nullable so we can signify less operands
-    /// </summary>
-    public IInstruction CurrentInstruction
-    {
-      get
-      {
-        FetchAndDecode(ref _exportInstruction, _state.Registers.PC);
-        return _exportInstruction;
-      }
-    }
-
     // Interrupt starting addresses
     Dictionary<Interrupts, ushort> interruptHandlers = new Dictionary<Interrupts, ushort>()
     {
@@ -218,26 +226,36 @@ namespace GBSharp.CPUSpace
 
     public bool InterruptMasterEnable
     {
-      get { return interruptController.InterruptMasterEnable; }
+      get { return _interruptController.InterruptMasterEnable; }
     }
+
+    #region HISTOGRAM
+
+    internal ushort[] _instructionHistogram = new ushort[256];
+    internal ushort[] _cbInstructionHistogram = new ushort[256];
 
     public ushort[] InstructionHistogram
     {
-      get { return instructionHistogram; }
+      get { return _instructionHistogram; }
     }
 
     public ushort[] CbInstructionHistogram
     {
-      get { return cbInstructionHistogram; }
+      get { return _cbInstructionHistogram; }
     }
 
-    internal ushort[] instructionHistogram = new ushort[256];
-    internal ushort[] cbInstructionHistogram = new ushort[256];
+    public void ResetInstructionHistograms()
+    {
+      _instructionHistogram = new ushort[256];
+      _cbInstructionHistogram = new ushort[256];
+    }
+
+    #endregion
 
     public CPU(MemorySpace.Memory memory)
     {
-      this.memory = memory;
-      this.interruptController = new InterruptController(this.memory);
+      this._memory = memory;
+      this._interruptController = new InterruptController(this._memory);
 
       // Initialize registers 
       Reset();
@@ -266,61 +284,49 @@ namespace GBSharp.CPUSpace
       _state.Registers.SP = 0xFFFE;
 
       // We restart the timer
-      _divCounter = 0xABFF;
-      _timaCounter = 0;
-      _tacCounter = 0;
-      _tacMask = 0;
-      _tmaValue = 0;
+      _state.DivCounter = 0xABFF;
+      _state.TimaCounter = 0;
+      _state.TacCounter = 0;
+      _state.TacMask = 0;
+      _state.TmaValue = 0;
 
       // Initialize memory mapped registers
-      this.memory.LowLevelWrite(0xFF04, 0xAB); // DIV
-      this.memory.LowLevelWrite(0xFF05, 0x00); // TIMA
-      this.memory.LowLevelWrite(0xFF06, 0x00); // TMA
-      this.memory.LowLevelWrite(0xFF07, 0x00); // TAC
-      this.memory.LowLevelWrite(0xFF10, 0x80); // NR10
-      this.memory.LowLevelWrite(0xFF11, 0xBF); // NR11
-      this.memory.LowLevelWrite(0xFF12, 0xF3); // NR12
-      this.memory.LowLevelWrite(0xFF14, 0xBF); // NR14
-      this.memory.LowLevelWrite(0xFF16, 0x3F); // NR21
-      this.memory.LowLevelWrite(0xFF17, 0x00); // NR22
-      this.memory.LowLevelWrite(0xFF19, 0xBF); // NR24
-      this.memory.LowLevelWrite(0xFF1A, 0x7F); // NR30
-      this.memory.LowLevelWrite(0xFF1B, 0xFF); // NR31
-      this.memory.LowLevelWrite(0xFF1C, 0x9F); // NR32
-      this.memory.LowLevelWrite(0xFF1E, 0xBF); // NR33
-      this.memory.LowLevelWrite(0xFF20, 0xFF); // NR41
-      this.memory.LowLevelWrite(0xFF21, 0x00); // NR42
-      this.memory.LowLevelWrite(0xFF22, 0x00); // NR43
-      this.memory.LowLevelWrite(0xFF23, 0xBF); // NR30
-      this.memory.LowLevelWrite(0xFF24, 0x77); // NR50
-      this.memory.LowLevelWrite(0xFF25, 0xF3); // NR51
-      this.memory.LowLevelWrite(0xFF26, 0xF1); // NR52 GB: 0xF1, SGB: 0xF0
-      this.memory.LowLevelWrite(0xFF40, 0x91); // LCDC
-      this.memory.LowLevelWrite(0xFF42, 0x00); // SCY
-      this.memory.LowLevelWrite(0xFF43, 0x00); // SCX
-      this.memory.LowLevelWrite(0xFF45, 0x00); // LYC
-      this.memory.LowLevelWrite(0xFF47, 0xFC); // BGP
-      this.memory.LowLevelWrite(0xFF48, 0xFF); // OBP0
-      this.memory.LowLevelWrite(0xFF49, 0xFF); // OBP1
-      this.memory.LowLevelWrite(0xFF4A, 0x00); // WY
-      this.memory.LowLevelWrite(0xFF4B, 0x00); // WX
-      this.memory.LowLevelWrite(0xFFFF, 0x00); // IE
+      this._memory.LowLevelWrite(0xFF04, 0xAB); // DIV
+      this._memory.LowLevelWrite(0xFF05, 0x00); // TIMA
+      this._memory.LowLevelWrite(0xFF06, 0x00); // TMA
+      this._memory.LowLevelWrite(0xFF07, 0x00); // TAC
+      this._memory.LowLevelWrite(0xFF10, 0x80); // NR10
+      this._memory.LowLevelWrite(0xFF11, 0xBF); // NR11
+      this._memory.LowLevelWrite(0xFF12, 0xF3); // NR12
+      this._memory.LowLevelWrite(0xFF14, 0xBF); // NR14
+      this._memory.LowLevelWrite(0xFF16, 0x3F); // NR21
+      this._memory.LowLevelWrite(0xFF17, 0x00); // NR22
+      this._memory.LowLevelWrite(0xFF19, 0xBF); // NR24
+      this._memory.LowLevelWrite(0xFF1A, 0x7F); // NR30
+      this._memory.LowLevelWrite(0xFF1B, 0xFF); // NR31
+      this._memory.LowLevelWrite(0xFF1C, 0x9F); // NR32
+      this._memory.LowLevelWrite(0xFF1E, 0xBF); // NR33
+      this._memory.LowLevelWrite(0xFF20, 0xFF); // NR41
+      this._memory.LowLevelWrite(0xFF21, 0x00); // NR42
+      this._memory.LowLevelWrite(0xFF22, 0x00); // NR43
+      this._memory.LowLevelWrite(0xFF23, 0xBF); // NR30
+      this._memory.LowLevelWrite(0xFF24, 0x77); // NR50
+      this._memory.LowLevelWrite(0xFF25, 0xF3); // NR51
+      this._memory.LowLevelWrite(0xFF26, 0xF1); // NR52 GB: 0xF1, SGB: 0xF0
+      this._memory.LowLevelWrite(0xFF40, 0x91); // LCDC
+      this._memory.LowLevelWrite(0xFF42, 0x00); // SCY
+      this._memory.LowLevelWrite(0xFF43, 0x00); // SCX
+      this._memory.LowLevelWrite(0xFF45, 0x00); // LYC
+      this._memory.LowLevelWrite(0xFF47, 0xFC); // BGP
+      this._memory.LowLevelWrite(0xFF48, 0xFF); // OBP0
+      this._memory.LowLevelWrite(0xFF49, 0xFF); // OBP1
+      this._memory.LowLevelWrite(0xFF4A, 0x00); // WY
+      this._memory.LowLevelWrite(0xFF4B, 0x00); // WX
+      this._memory.LowLevelWrite(0xFFFF, 0x00); // IE
 
-      _currentInstruction = new Instruction();
+      _state.CurrentInstruction = new Instruction();
       _exportInstruction = new Instruction();
     }
-
-    public void ResetInstructionHistograms()
-    {
-      instructionHistogram = new ushort[256];
-      cbInstructionHistogram = new ushort[256];
-    }
-
-    public void SetInterruptBreakable(Interrupts interrupt, bool isBreakable)
-    {
-      _breakableInterrupts[interrupt] = isBreakable;
-    }
-
 
     /// <summary>
     /// Get the amount of ticks to be run before the opcode execution
@@ -330,13 +336,13 @@ namespace GBSharp.CPUSpace
     {
       byte ticks = 0;
       // We return the ticks that the instruction took
-      if(!_currentInstruction.CB)
+      if(!_state.CurrentInstruction.CB)
       {
-        ticks = CPUInstructionPreClocks.Get((byte)_currentInstruction.OpCode);
+        ticks = CPUInstructionPreClocks.Get((byte)_state.CurrentInstruction.OpCode);
       }
       else
       {
-        ticks = CPUCBInstructionPreClocks.Get((byte)_currentInstruction.OpCode);
+        ticks = CPUCBInstructionPreClocks.Get((byte)_state.CurrentInstruction.OpCode);
       }
       return ticks;
     }
@@ -350,17 +356,17 @@ namespace GBSharp.CPUSpace
     {
       // We calculate how many more ticks have to run
       byte ticks = 0;
-      if(!_currentInstruction.CB)
+      if(!_state.CurrentInstruction.CB)
       {
         ticks = CPUInstructionPostClocks.Get(this,
-                                             (byte)_currentInstruction.OpCode,
-                                             _currentInstruction.Literal);
+                                             (byte)_state.CurrentInstruction.OpCode,
+                                             _state.CurrentInstruction.Literal);
       }
       else
       {
         ticks = CPUCBInstructionPostClocks.Get(this,
-                                               (byte)_currentInstruction.OpCode,
-                                               _currentInstruction.Literal);
+                                               (byte)_state.CurrentInstruction.OpCode,
+                                               _state.CurrentInstruction.Literal);
       }
       return ticks;
     }
@@ -388,7 +394,7 @@ namespace GBSharp.CPUSpace
         //                 an invented CALL
         _state.InterruptInProgress = true;
         _state.InterruptTriggered = _state.InterruptToTrigger;
-        _currentInstruction = InterruptHandler(_state.InterruptToTrigger);
+        _state.CurrentInstruction = InterruptHandler(_state.InterruptToTrigger);
 
         // We need to check if there is another interrupt waiting
         CheckForInterruptRequired();
@@ -409,15 +415,15 @@ namespace GBSharp.CPUSpace
         }
 
         // Otherwise we fetch as usual
-        FetchAndDecode(ref _currentInstruction, _state.Registers.PC, _state.HaltLoad);
+        FetchAndDecode(ref _state.CurrentInstruction, _state.Registers.PC, _state.HaltLoad);
         _state.HaltLoad = false;
       }
 
       // We see if there is an breakpoint to this address
-      if(!ignoreBreakpoints && _executionBreakpoints.Contains(_currentInstruction.Address))
+      if(!ignoreBreakpoints && _executionBreakpoints.Contains(_state.CurrentInstruction.Address))
       {
-        CurrentBreakpoint.Address = _currentInstruction.Address;
-        CurrentBreakpoint.Target = _currentInstruction.Address;
+        CurrentBreakpoint.Address = _state.CurrentInstruction.Address;
+        CurrentBreakpoint.Target = _state.CurrentInstruction.Address;
         CurrentBreakpoint.Kind = BreakpointKinds.EXECUTION;
         BreakpointFound();
         return 0;
@@ -425,18 +431,18 @@ namespace GBSharp.CPUSpace
 
       // We check to see if there is breakpoint to be triggered
       BreakpointKinds breakpointKind = BreakpointKinds.NONE;
-      if(!_currentInstruction.CB)
+      if(!_state.CurrentInstruction.CB)
       {
         breakpointKind = CPUInstructionBreakpoints.Check(this,
-                                                         (byte)_currentInstruction.OpCode, 
-                                                         _currentInstruction.Literal,
+                                                         (byte)_state.CurrentInstruction.OpCode, 
+                                                         _state.CurrentInstruction.Literal,
                                                          ignoreBreakpoints);
       }
       else
       {
         breakpointKind = CPUCBInstructionBreakpoints.Check(this,
-                                                           (byte)_currentInstruction.OpCode,  
-                                                           _currentInstruction.Literal, 
+                                                           (byte)_state.CurrentInstruction.OpCode,  
+                                                           _state.CurrentInstruction.Literal, 
                                                            ignoreBreakpoints);
       }
 
@@ -444,7 +450,7 @@ namespace GBSharp.CPUSpace
       // NOTE(Cristian): CurrentBreakpoint.Target was calculated by Check
       if(breakpointKind != BreakpointKinds.NONE)
       {
-        CurrentBreakpoint.Address = _currentInstruction.Address;
+        CurrentBreakpoint.Address = _state.CurrentInstruction.Address;
         CurrentBreakpoint.Kind = breakpointKind;
         BreakpointFound();
         return 0;
@@ -472,20 +478,20 @@ namespace GBSharp.CPUSpace
       //                 into the address we *should* have jumped plus some meaningless offset!
       if (!_state.InterruptInProgress)
       {
-        this._state.NextPC = (ushort)(_state.Registers.PC + _currentInstruction.Length);
+        this._state.NextPC = (ushort)(_state.Registers.PC + _state.CurrentInstruction.Length);
       }
 
-      if(!_currentInstruction.CB)
+      if(!_state.CurrentInstruction.CB)
       {
         CPUInstructions.RunInstruction(this, 
-                                       (byte)_currentInstruction.OpCode, 
-                                       _currentInstruction.Literal);
+                                       (byte)_state.CurrentInstruction.OpCode, 
+                                       _state.CurrentInstruction.Literal);
       }
       else
       {
         CPUCBInstructions.RunCBInstruction(this,
-                                           (byte)_currentInstruction.OpCode,
-                                           _currentInstruction.Literal);
+                                           (byte)_state.CurrentInstruction.OpCode,
+                                           _state.CurrentInstruction.Literal);
       }
 
       // Push the next program counter value into the real program counter!
@@ -503,17 +509,17 @@ namespace GBSharp.CPUSpace
     /// </summary>
     internal void PostExecuteInstruction()
     {
-      if(!_currentInstruction.CB)
+      if(!_state.CurrentInstruction.CB)
       {
         CPUInstructionPostCode.Run(this,
-                                    (byte)_currentInstruction.OpCode,
-                                    _currentInstruction.Literal);
+                                    (byte)_state.CurrentInstruction.OpCode,
+                                    _state.CurrentInstruction.Literal);
       }
       else
       {
         CPUCBInstructionPostCode.Run(this,
-                                     (byte)_currentInstruction.OpCode,
-                                     _currentInstruction.Literal);
+                                     (byte)_state.CurrentInstruction.OpCode,
+                                     _state.CurrentInstruction.Literal);
       }
     }
 
@@ -530,10 +536,10 @@ namespace GBSharp.CPUSpace
       instruction.Description = CPUInstructionDescriptions.Get(lowOpcode);
 
       // Disable interrupts during interrupt handling and clear the current one
-      this.interruptController.InterruptMasterEnable = false;
-      byte IF = this.memory.LowLevelRead((ushort)MMR.IF);
+      this._interruptController.InterruptMasterEnable = false;
+      byte IF = this._memory.LowLevelRead((ushort)MMR.IF);
       IF &= (byte)~(byte)interrupt;
-      this.memory.LowLevelWrite((ushort)MMR.IF, IF);
+      this._memory.LowLevelWrite((ushort)MMR.IF, IF);
       return instruction;
     }
 
@@ -553,15 +559,15 @@ namespace GBSharp.CPUSpace
                                         ushort instructionAddress, bool haltLoad = false)
     {
       instruction.Address = instructionAddress;
-      byte opcode = this.memory.LowLevelRead(instructionAddress);
+      byte opcode = this._memory.LowLevelRead(instructionAddress);
       instruction.OpCode = opcode;
 
       if (instruction.OpCode != 0xCB)
       {
         instruction.CB = false;
         byte lowOpcode = (byte)instruction.OpCode;
-        if(instructionHistogram[lowOpcode] < ushort.MaxValue)
-          instructionHistogram[lowOpcode]++;
+        if(_instructionHistogram[lowOpcode] < ushort.MaxValue)
+          _instructionHistogram[lowOpcode]++;
         // Normal instructions
         instruction.Length = CPUInstructionLengths.Get(lowOpcode);
 
@@ -569,7 +575,7 @@ namespace GBSharp.CPUSpace
         if (instruction.Length == 2)
         {
           // 8 bit literal
-          instruction.Operands[0] = this.memory.LowLevelRead((ushort)(instructionAddress + 1));
+          instruction.Operands[0] = this._memory.LowLevelRead((ushort)(instructionAddress + 1));
           if(haltLoad)
           {
             instruction.Operands[0] = opcode;
@@ -579,8 +585,8 @@ namespace GBSharp.CPUSpace
         else if (instruction.Length == 3)
         {
           // 16 bit literal, little endian
-          instruction.Operands[0] = this.memory.LowLevelRead((ushort)(instructionAddress + 2));
-          instruction.Operands[1] = this.memory.LowLevelRead((ushort)(instructionAddress + 1));
+          instruction.Operands[0] = this._memory.LowLevelRead((ushort)(instructionAddress + 2));
+          instruction.Operands[1] = this._memory.LowLevelRead((ushort)(instructionAddress + 1));
 
           if(haltLoad)
           {
@@ -603,7 +609,7 @@ namespace GBSharp.CPUSpace
         instruction.OpCode <<= 8;
         if (!haltLoad)
         {
-          instruction.OpCode += this.memory.LowLevelRead((ushort)(instructionAddress + 1));
+          instruction.OpCode += this._memory.LowLevelRead((ushort)(instructionAddress + 1));
         }
         else
         {
@@ -612,9 +618,9 @@ namespace GBSharp.CPUSpace
 
         byte lowOpcode = (byte)instruction.OpCode;
 
-        if (cbInstructionHistogram[lowOpcode] < ushort.MaxValue)
+        if (_cbInstructionHistogram[lowOpcode] < ushort.MaxValue)
         {
-          cbInstructionHistogram[lowOpcode]++;
+          _cbInstructionHistogram[lowOpcode]++;
         }
         instruction.Length = CPUCBInstructionLengths.Get(lowOpcode);
         // There is no literal in CB instructions!
@@ -644,9 +650,9 @@ namespace GBSharp.CPUSpace
       _state.InterruptRequired = false;
 
       // Read interrupt flags
-      int interruptRequest = this.memory.LowLevelRead((ushort)MMR.IF);
+      int interruptRequest = this._memory.LowLevelRead((ushort)MMR.IF);
       // Mask enabled interrupts
-      int interruptEnable = this.memory.LowLevelRead((ushort)MMR.IE);
+      int interruptEnable = this._memory.LowLevelRead((ushort)MMR.IE);
 
       int interrupt = interruptEnable & interruptRequest;
       interrupt &= 0x1F; // 0x1F masks the useful bits of IE and IF, there is only 5 interrupts.
@@ -657,7 +663,7 @@ namespace GBSharp.CPUSpace
       // Interrupts unhaltd the CPU *even* if the IME is disabled
       _state.Halted = false;
 
-      if (this.interruptController.InterruptMasterEnable)
+      if (this._interruptController.InterruptMasterEnable)
       {
         // There is an interrupt waiting
         _state.InterruptRequired = true;
@@ -689,32 +695,32 @@ namespace GBSharp.CPUSpace
       _state.Clock += ticks;
 
       // Upper 8 bits of the clock should be accessible through DIV register.
-      _divCounter += ticks;
-      this.memory.LowLevelWrite((ushort)MMR.DIV, (byte)(_divCounter >> 8));
+      _state.DivCounter += ticks;
+      this._memory.LowLevelWrite((ushort)MMR.DIV, (byte)(_state.DivCounter >> 8));
 
       // Configurable timer TIMA/TMA/TAC system:
-      byte TAC = this.memory.LowLevelRead((ushort)MMR.TAC);
+      byte TAC = this._memory.LowLevelRead((ushort)MMR.TAC);
       bool runTimer = (TAC & 0x04) == 0x04; // Run timer is the bit 2 of the TAC register
       if (runTimer)
       {
         // Simulate every tick that occurred during the execution of the instruction
         for (int i = 1; i <= ticks; ++i)
         {
-          ++_tacCounter;
+          ++_state.TacCounter;
           // Maybe there is a faster way to do this without checking every clock value (??)
-          if ((_tacCounter & _tacMask) == 0x0000)
+          if ((_state.TacCounter & _state.TacMask) == 0x0000)
           {
-            ++_timaCounter;
+            ++_state.TimaCounter;
 
             // If overflow, we trigger the event
-            if (_timaCounter == 0x0000)
+            if (_state.TimaCounter == 0x0000)
             {
-              _timaCounter = _tmaValue;
-              this.interruptController.SetInterrupt(Interrupts.TimerOverflow);
+              _state.TimaCounter = _state.TmaValue;
+              this._interruptController.SetInterrupt(Interrupts.TimerOverflow);
             }
 
             // Update memory mapped timer
-            this.memory.LowLevelWrite((ushort)MemorySpace.MMR.TIMA, _timaCounter);
+            this._memory.LowLevelWrite((ushort)MemorySpace.MMR.TIMA, _state.TimaCounter);
           }
         }
       }
@@ -725,12 +731,12 @@ namespace GBSharp.CPUSpace
       switch (register)
       {
         case MMR.TIMA:
-          _timaCounter = value;
-          this.memory.LowLevelWrite((ushort)MMR.TIMA, value);
+          _state.TimaCounter = value;
+          this._memory.LowLevelWrite((ushort)MMR.TIMA, value);
           break;
         case MMR.TMA:
-          _tmaValue = value;
-          this.memory.LowLevelWrite((ushort)MMR.TMA, value);
+          _state.TmaValue = value;
+          this._memory.LowLevelWrite((ushort)MMR.TMA, value);
           break;
         case MMR.TAC:
           // Clock select is the bits 0 and 1 of the TAC register
@@ -738,22 +744,22 @@ namespace GBSharp.CPUSpace
           switch (clockSelect)
           {
             case 1:
-              _tacMask = 0x000F; // f/2^4  0000 0000 0000 1111, (262144 Hz)
+              _state.TacMask = 0x000F; // f/2^4  0000 0000 0000 1111, (262144 Hz)
               break;
             case 2:
-              _tacMask = 0x003F; // f/2^6  0000 0000 0011 1111, (65536 Hz)
+              _state.TacMask = 0x003F; // f/2^6  0000 0000 0011 1111, (65536 Hz)
               break;
             case 3:
-              _tacMask = 0x00FF; // f/2^8  0000 0000 1111 1111, (16384 Hz)
+              _state.TacMask = 0x00FF; // f/2^8  0000 0000 1111 1111, (16384 Hz)
               break;
             default:
-              _tacMask = 0x03FF; // f/2^10 0000 0011 1111 1111, (4096 Hz)
+              _state.TacMask = 0x03FF; // f/2^10 0000 0011 1111 1111, (4096 Hz)
               break;
           }
           // We restart the counter
-          _tacCounter = 0;
+          _state.TacCounter = 0;
           // TAC has a 0xF8 mask (only lower 3 bits are useful)
-          this.memory.LowLevelWrite((ushort)MMR.TAC, (byte)(0xF8 | value));
+          this._memory.LowLevelWrite((ushort)MMR.TAC, (byte)(0xF8 | value));
           break;
       }
     }
