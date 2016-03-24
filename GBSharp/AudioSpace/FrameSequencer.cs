@@ -8,33 +8,46 @@ namespace GBSharp.AudioSpace
 {
   public class FrameSequencer
   {
-    public uint InternalCounter { get; private set; }
+    internal class State
+    {
+      internal uint InternalCounter;
+      internal uint Value;
+      internal bool Clocked;
+    }
+    State _state = new State();
+    internal State GetState() { return _state; }
+    internal void SetState(State state) { _state = state; }
 
-    public uint Value { get; private set; }
-    internal bool Clocked { get; private set; }
+    #region STATE INTERNALS GETTERS/SETTERS
+
+    internal bool Clocked { get { return _state.Clocked; } }
+    public uint Value { get { return _state.Value; } }
+    public uint InternalCounter { get { return _state.InternalCounter; } }
+
+    #endregion
 
     internal void Step(uint ticks)
     {
-      uint pre = InternalCounter & 0x1FFF;
-      InternalCounter += ticks;
-      uint post = InternalCounter & 0x1FFF;
+      uint pre = _state.InternalCounter & 0x1FFF;
+      _state.InternalCounter += ticks;
+      uint post = _state.InternalCounter & 0x1FFF;
       // If the bit 13 changed, the frameSequencer clocked
-      Clocked = post < pre;
+      _state.Clocked = post < pre;
 
-      Value = InternalCounter >> 13;
+      _state.Value = _state.InternalCounter >> 13;
     }
 
     internal void Reset()
     {
       // Next frame sequencer is 0, but the 512 Hz timer remains intact
-      InternalCounter |= ~(uint)0x1FFF;
-      Value = InternalCounter >> 13;
+      _state.InternalCounter |= ~(uint)0x1FFF;
+      _state.Value = _state.InternalCounter >> 13;
     }
 
     internal void AddTicks(uint ticks)
     {
-      InternalCounter += ticks;
-      Value = InternalCounter >> 13;
+      _state.InternalCounter += ticks;
+      _state.Value = _state.InternalCounter >> 13;
     }
   }
 }
