@@ -313,7 +313,7 @@ namespace GBSharp.AudioSpace
             _channel3.PowerOff();
             _channel3.SetEnabled(false);
             _channel4.PowerOff();
-            _channel4.Enabled = false;
+            _channel4.SetEnabled(false);
 
             _memory.LowLevelWrite((ushort)MMR.NR50, 0);
             _memory.LowLevelWrite((ushort)MMR.NR51, 0);
