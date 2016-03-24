@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
+using System.IO.Compression;
 
 namespace GBSharp
 {
@@ -489,8 +490,13 @@ namespace GBSharp
       {
         saveStateStream = File.Open(filename, FileMode.Truncate);
       }
-      IFormatter formatter = new BinaryFormatter();
-      formatter.Serialize(saveStateStream, saveState);
+
+      // We compress the state
+      using (GZipStream compressStream = new GZipStream(saveStateStream, CompressionMode.Compress))
+      {
+        BinaryFormatter formatter = new BinaryFormatter();
+        formatter.Serialize(compressStream, saveState);
+      }
 
       Run();
     }
@@ -505,13 +511,18 @@ namespace GBSharp
       {
         FileStream loadStateStream = File.Open(filename, FileMode.Open);
 
-        BinaryFormatter formatter = new BinaryFormatter();
-        SaveStateFileFormat state = formatter.Deserialize(loadStateStream) as SaveStateFileFormat;
-        _memory.SetState(state.MemoryState);
-        _cartridge.SetState(state.CartridgeState);
-        _display.SetState(state.DisplayState);
-        _interruptController.SetState(state.InterruptState);
-        _cpu.SetState(state.CPUState);
+        SaveStateFileFormat loadedState;
+        using (GZipStream decompressStream = new GZipStream(loadStateStream, CompressionMode.Decompress))
+        {
+          BinaryFormatter formatter = new BinaryFormatter();
+          loadedState = formatter.Deserialize(decompressStream) as SaveStateFileFormat;
+        }
+
+        _memory.SetState(loadedState.MemoryState);
+        _cartridge.SetState(loadedState.CartridgeState);
+        _display.SetState(loadedState.DisplayState);
+        _interruptController.SetState(loadedState.InterruptState);
+        _cpu.SetState(loadedState.CPUState);
       }
 
       Run();
