@@ -471,25 +471,31 @@ namespace GBSharp
       // We stop pause the simulation
       Pause();
 
-      string filename = "save_state.stt";
-
       SaveStateFileFormat saveState = new SaveStateFileFormat();
       // We ge the states
       saveState.MemoryState = _memory.GetState();
-      saveState.CartridgeState = _cartridge.GetState();
       saveState.DisplayState = _display.GetState();
       saveState.InterruptState = _interruptController.GetState();
       saveState.CPUState = _cpu.GetState();
       saveState.APUState = _apu.GetState();
 
       FileStream saveStateStream;
-      if (!File.Exists("save_state.stt"))
+      string filename = "save_state.stt";
+      if (!File.Exists(filename))
       {
         saveStateStream = File.Create(filename);
       }
       else
       {
-        saveStateStream = File.Open(filename, FileMode.Truncate);
+        try
+        {
+          saveStateStream = File.Open(filename, FileMode.Truncate);
+        }
+        catch(IOException)
+        {
+          Run();
+          return;
+        }
       }
 
       // We compress the state
@@ -498,6 +504,7 @@ namespace GBSharp
         BinaryFormatter formatter = new BinaryFormatter();
         formatter.Serialize(compressStream, saveState);
       }
+      saveStateStream.Close();
 
       Run();
     }
@@ -510,7 +517,16 @@ namespace GBSharp
 
       if (File.Exists(filename))
       {
-        FileStream loadStateStream = File.Open(filename, FileMode.Open);
+        FileStream loadStateStream;
+        try
+        {
+          loadStateStream = File.Open(filename, FileMode.Open);
+        }
+        catch (IOException)
+        {
+          Run();
+          return;
+        }
 
         SaveStateFileFormat loadedState;
         using (GZipStream decompressStream = new GZipStream(loadStateStream, CompressionMode.Decompress))
@@ -518,9 +534,9 @@ namespace GBSharp
           BinaryFormatter formatter = new BinaryFormatter();
           loadedState = formatter.Deserialize(decompressStream) as SaveStateFileFormat;
         }
+        loadStateStream.Close();
 
         _memory.SetState(loadedState.MemoryState);
-        _cartridge.SetState(loadedState.CartridgeState);
         _display.SetState(loadedState.DisplayState);
         _interruptController.SetState(loadedState.InterruptState);
         _cpu.SetState(loadedState.CPUState);

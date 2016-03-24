@@ -26,13 +26,15 @@ namespace GBSharp.MemorySpace.MemoryHandlers
     private const ushort ramBank0Start = 0xA000;
     private const ushort ramBankLength = 0x2000;
 
+    // ROM data doesn't need to be backuped
+    internal byte[] _romBanksData;
+
     [Serializable]
     class State
     {
       internal byte CurrentRomBank;
       internal byte CurrentRamBank;
       internal byte[] RamBanksData;
-      internal byte[] RomBanksData;
     }
     State _state = new State();
 
@@ -46,15 +48,15 @@ namespace GBSharp.MemorySpace.MemoryHandlers
       _state.CurrentRamBank = 0;
       _state.CurrentRomBank = 0;
       _state.RamBanksData = new byte[0x8000]; // 32768 bytes
-      _state.RomBanksData = new byte[0x200000]; // 2097152 bytes
+      _romBanksData = new byte[0x200000]; // 2097152 bytes
 
       // We get the memory pointer
       byte[] memoryData = memory.MemoryData;
 
       // Copy ROM banks
       Buffer.BlockCopy(this.cartridge.Data, romBank0Start,
-                       _state.RomBanksData, romBank0Start,
-                       Math.Min(this.cartridge.Data.Length, _state.RomBanksData.Length));
+                       _romBanksData, romBank0Start,
+                       Math.Min(this.cartridge.Data.Length, _romBanksData.Length));
 
       // Copy first and second ROM banks
       Buffer.BlockCopy(this.cartridge.Data, romBank0Start,

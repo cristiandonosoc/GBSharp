@@ -10,7 +10,6 @@ namespace GBSharp
   internal class SaveStateFileFormat
   {
     internal MemorySpace.Memory.State MemoryState { get; set; }
-    internal Cartridge.Cartridge.State CartridgeState { get; set; }
     internal VideoSpace.State DisplayState { get; set; }
     internal CPUSpace.InterruptController.State InterruptState { get; set; }
     internal CPUSpace.CPU.State CPUState { get; set; }
