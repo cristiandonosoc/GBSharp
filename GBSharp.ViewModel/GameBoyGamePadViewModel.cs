@@ -94,6 +94,8 @@ namespace GBSharp.ViewModel
 
     public ICommand ButtonStartDownCommand { get { return new DelegateCommand(ButtonStartDown); } }
     public ICommand ButtonStartUpCommand { get { return new DelegateCommand(ButtonStartUp); } }
+    private void ButtonStartDown() { _gameBoy.PressButton(Keypad.Start); }
+    private void ButtonStartUp() { _gameBoy.ReleaseButton(Keypad.Start); }
 
     public bool ScreenOnly
     {
@@ -115,8 +117,6 @@ namespace GBSharp.ViewModel
       }
     }
 
-    private void ButtonStartDown() { _gameBoy.PressButton(Keypad.Start); }
-    private void ButtonStartUp() { _gameBoy.ReleaseButton(Keypad.Start); }
 
     public GameBoyGamePadViewModel(IGameBoy gameBoy, IDispatcher dispatcher)
     {
@@ -200,6 +200,8 @@ namespace GBSharp.ViewModel
         _gameBoy.ReleaseButton(Keypad.Up);
       else if (args.Key == Key.S)
         _gameBoy.ReleaseButton(Keypad.Down); 
+      else if (args.Key == Key.Oem3)
+        _gameBoy.ReleaseButton(Keypad.Speed);
     }
 
     public void KeyDown(KeyEventArgs args)
@@ -219,8 +221,9 @@ namespace GBSharp.ViewModel
       else if (args.Key == Key.W)
         _gameBoy.PressButton(Keypad.Up);
       else if (args.Key == Key.S)
-        _gameBoy.PressButton(Keypad.Down); 
-      
+        _gameBoy.PressButton(Keypad.Down);
+      else if (args.Key == Key.Oem3)
+        _gameBoy.PressButton(Keypad.Speed);
     }
   }
 }

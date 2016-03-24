@@ -18,6 +18,7 @@ namespace GBSharp
     B      = 0x20, // P11 P15
     Select = 0x40, // P12 P15
     Start  = 0x80, // P13 P15
+    Speed  = 0xF0, // Accelerator key
     All    = 0xFF  // Special value, every button
   }
 }

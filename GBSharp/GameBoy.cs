@@ -29,8 +29,9 @@ namespace GBSharp
       internal bool FrameReady;
       internal bool InBreakpoint;
     }
-
     State _state = new State();
+
+    internal bool FastEmulation { get; private set; }
 
     public event Action StepCompleted;
     public event Action FrameCompleted;
@@ -401,26 +402,36 @@ namespace GBSharp
         long ellapsedStopwatchTicks = this._stopwatch.ElapsedTicks;
         ellapsedStopwatchTicks += drama;
 
-        // Should we sleep?
-        if (ellapsedStopwatchTicks < stopwatchTicksPerFrame)
+        long finalTicks;
+        if (!FastEmulation)
         {
-          this._manualResetEvent.Reset();
-          int timeToWait = (int)(/* 0.5 + */1000.0 * (stopwatchTicksPerFrame - ellapsedStopwatchTicks) / Stopwatch.Frequency);
-          this._manualResetEvent.Wait(timeToWait);
-          this._manualResetEvent.Set();
-        }
 
-        long finalTicks = this._stopwatch.ElapsedTicks;
-        while (finalTicks < stopwatchTicksPerFrame)
+          // Should we sleep?
+          if (ellapsedStopwatchTicks < stopwatchTicksPerFrame)
+          {
+            _manualResetEvent.Reset();
+            int timeToWait = (int)(/* 0.5 + */1000.0 * (stopwatchTicksPerFrame - ellapsedStopwatchTicks) / 
+                                                        Stopwatch.Frequency);
+            _manualResetEvent.Wait(timeToWait);
+            _manualResetEvent.Set();
+          }
+
+          finalTicks = _stopwatch.ElapsedTicks;
+          while (finalTicks < stopwatchTicksPerFrame)
+          {
+            // NOTE(Cristian): Sometimes the thread would be trapped here because when
+            //                 the process close signal gets, the timers stop working and
+            //                 the finalTicks variable would never update.
+            if ((!_state.Run) || (_state.Pause)) { break; }
+            finalTicks = _stopwatch.ElapsedTicks;
+          }
+
+          drama = finalTicks - (long)stopwatchTicksPerFrame;
+        }
+        else
         {
-          // NOTE(Cristian): Sometimes the thread would be trapped here because when
-          //                 the process close signal gets, the timers stop working and
-          //                 the finalTicks variable would never update.
-          if ((!_state.Run) || (_state.Pause)) { break; }
-          finalTicks = this._stopwatch.ElapsedTicks;
+          finalTicks = _stopwatch.ElapsedTicks;
         }
-
-        drama = finalTicks - (long)stopwatchTicksPerFrame;
 
         // We calculate how many FPS we're giving
         _totalFrameTicks += finalTicks;
@@ -578,9 +589,16 @@ namespace GBSharp
     /// <param name="button">The button that was pressed. It can be a combination of buttons too.</param>
     public void PressButton(Keypad button)
     {
-      _buttons |= button;
-      _interruptController.UpdateKeypadState(_buttons);
-      if (_cpu.Stopped) { _cpu.Stopped = false; }
+      if (button != Keypad.Speed)
+      {
+        _buttons |= button;
+        _interruptController.UpdateKeypadState(_buttons);
+        if (_cpu.Stopped) { _cpu.Stopped = false; }
+      }
+      else
+      {
+        FastEmulation = true;
+      }
     }
 
     /// <summary>
@@ -589,10 +607,17 @@ namespace GBSharp
     /// <param name="button">The button that was released. It can be a combination of buttons too.</param>
     public void ReleaseButton(Keypad button)
     {
-      if (ReleaseButtons)
+      if (button != Keypad.Speed)
       {
-        _buttons &= ~button;
-        _interruptController.UpdateKeypadState(_buttons);
+        if (ReleaseButtons)
+        {
+          _buttons &= ~button;
+          _interruptController.UpdateKeypadState(_buttons);
+        }
+      }
+      else
+      {
+        FastEmulation = false;
       }
     }
 
