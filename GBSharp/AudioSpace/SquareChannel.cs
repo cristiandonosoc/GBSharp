@@ -466,14 +466,13 @@ namespace GBSharp.AudioSpace
     }
     OutputState _outputState = new OutputState();
 
-
-    public void GenerateSamples(int fullSamples)
+    public void GenerateSamples(int fullSamples, int ticksPerSample)
     {
       int fullSampleCount = fullSamples;
       while (fullSampleCount > 0)
       {
         // We how many ticks will pass this sample
-        long ticks = APU.MinimumTickThreshold;
+        long ticks = ticksPerSample;
 
         // If the event already run, we try to see if there is a new one
         if (_outputState.EventAlreadyRun)

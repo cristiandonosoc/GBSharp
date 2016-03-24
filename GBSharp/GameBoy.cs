@@ -108,7 +108,7 @@ namespace GBSharp
       _cpu = new CPUSpace.CPU(this._memory);
       _interruptController = this._cpu._interruptController;
       _display = new Display(this._interruptController, this._memory);
-      _apu = new AudioSpace.APU(this._memory, 44000, 2, 2);
+      _apu = new AudioSpace.APU(this, this._memory, 44000, 2, 2);
       _serial = new SerialSpace.SerialController(this._interruptController, this._memory);
       _disassembler = new Disassembler(_cpu, _memory);
 

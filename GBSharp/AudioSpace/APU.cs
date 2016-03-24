@@ -109,6 +109,7 @@ namespace GBSharp.AudioSpace
 
     #endregion
 
+    private GameBoy _gameboy;
     private Memory _memory;
 
     SquareChannel _channel1;
@@ -146,8 +147,9 @@ namespace GBSharp.AudioSpace
     private WavExporter _channel4WavExporter;
 
 
-    internal APU(Memory memory, int sampleRate, int numChannels, int sampleSize)
+    internal APU(GameBoy gameboy, Memory memory, int sampleRate, int numChannels, int sampleSize)
     {
+      _gameboy = gameboy;
       _memory = memory;
 
       _sampleRate = sampleRate;
@@ -412,11 +414,19 @@ namespace GBSharp.AudioSpace
     {
       ClearBuffer();
 
+      int ticksPerSample = APU.MinimumTickThreshold;
+      if (_gameboy.FastEmulation)
+      {
+        // We get the FPS
+        double fps = _gameboy.FPS;
+        ticksPerSample = (int)((APU.MinimumTickThreshold * fps) / GameBoy.targetFramerate);
+      }
+
       // If the channels are disabled, all the channels will output 0
-      _channel1.GenerateSamples(fullSampleCount);
-      _channel2.GenerateSamples(fullSampleCount);
-      _channel3.GenerateSamples(fullSampleCount);
-      _channel4.GenerateSamples(fullSampleCount);
+      _channel1.GenerateSamples(fullSampleCount, ticksPerSample);
+      _channel2.GenerateSamples(fullSampleCount, ticksPerSample);
+      _channel3.GenerateSamples(fullSampleCount, ticksPerSample);
+      _channel4.GenerateSamples(fullSampleCount, ticksPerSample);
 
       // We transformate the samples
       int _channelSampleIndex = 0;

@@ -332,13 +332,13 @@ namespace GBSharp.AudioSpace
     }
     OutputState _outputState = new OutputState();
 
-    public void GenerateSamples(int sampleCount)
+    public void GenerateSamples(int sampleCount, int ticksPerSample)
     {
       while(sampleCount > 0)
       {
         --sampleCount;
         // We how many ticks will pass this sample
-        long eventTicks = APU.MinimumTickThreshold;
+        long eventTicks = ticksPerSample;
         eventTicks += _outputState.EventOnHoldCounter;
         _outputState.EventOnHoldCounter = 0;
 
@@ -409,7 +409,7 @@ namespace GBSharp.AudioSpace
         }
 
         // We simulate
-        int ticks = APU.MinimumTickThreshold;
+        int ticks = ticksPerSample;
         _outputState.SampleClockDividerCounter -= ticks;
         while (_outputState.SampleClockDividerCounter <= 0)
         {

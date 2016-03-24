@@ -18,7 +18,7 @@ namespace GBSharp.AudioSpace
     bool Enabled { get; }
 
     void HandleMemoryChange(MemorySpace.MMR register, byte value);
-    void GenerateSamples(int sampleCount);
+    void GenerateSamples(int sampleCount, int ticksPerSample = 96); /* 96 is 60 FPS, so scale appropiatelly */
     void ClearBuffer();
 
     void PowerOff();
