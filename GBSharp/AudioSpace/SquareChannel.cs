@@ -18,6 +18,7 @@ namespace GBSharp.AudioSpace
 
   internal class SquareChannel : IChannel, ISquareChannel
   {
+    [Serializable]
     internal class State
     {
       // Time passed since the last event was triggered (in ticks)

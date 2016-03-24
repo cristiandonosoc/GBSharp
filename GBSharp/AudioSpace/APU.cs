@@ -22,6 +22,7 @@ namespace GBSharp.AudioSpace
     internal static Stopwatch sw = new Stopwatch();
 #endif
 
+    [Serializable]
     internal class State
     {
       internal bool Enabled;
@@ -38,6 +39,10 @@ namespace GBSharp.AudioSpace
       internal bool OutputChannel4Right;
 
       internal FrameSequencer.State FrameSequencerState;
+      internal SquareChannel.State Channel1State;
+      internal SquareChannel.State Channel2State;
+      internal WaveChannel.State Channel3State;
+      internal NoiseChannel.State Channel4State;
     }
     State _state = new State();
 
@@ -45,13 +50,25 @@ namespace GBSharp.AudioSpace
     {
       // We collect the frameSequencer State
       _state.FrameSequencerState = _frameSequencer.GetState();
+      // We collect the channel states
+      _state.Channel1State = _channel1.GetState();
+      _state.Channel2State = _channel2.GetState();
+      _state.Channel3State = _channel3.GetState();
+      _state.Channel4State = _channel4.GetState();
+
       return _state;
     }
     internal void SetState(State state)
     {
+      // We restore the state
+      _state = state;
       // We restore the frameSequencer state
       _frameSequencer.SetState(_state.FrameSequencerState);
-      _state = state;
+      // We restore the channel states
+      _channel1.SetState(_state.Channel1State);
+      _channel2.SetState(_state.Channel2State);
+      _channel3.SetState(_state.Channel3State);
+      _channel4.SetState(_state.Channel4State);
     }
 
     private FrameSequencer _frameSequencer;

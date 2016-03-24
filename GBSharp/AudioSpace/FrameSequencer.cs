@@ -8,6 +8,7 @@ namespace GBSharp.AudioSpace
 {
   public class FrameSequencer
   {
+    [Serializable]
     internal class State
     {
       internal uint InternalCounter;

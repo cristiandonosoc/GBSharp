@@ -21,6 +21,7 @@ namespace GBSharp.AudioSpace
 
   class NoiseChannel : IChannel
   {
+    [Serializable]
     internal class State
     {
       internal long TickDiff;
@@ -465,7 +466,5 @@ namespace GBSharp.AudioSpace
     {
       _outputState.SampleIndex = 0;
     }
-
-
   }
 }

@@ -14,5 +14,6 @@ namespace GBSharp
     internal VideoSpace.State DisplayState { get; set; }
     internal CPUSpace.InterruptController.State InterruptState { get; set; }
     internal CPUSpace.CPU.State CPUState { get; set; }
+    internal AudioSpace.APU.State APUState { get; set; }
   }
 }

@@ -19,6 +19,7 @@ namespace GBSharp.AudioSpace
 
   internal class WaveChannel : IChannel, IWaveChannel
   {
+    [Serializable]
     internal class State
     {
       internal bool Enabled;

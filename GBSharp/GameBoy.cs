@@ -480,6 +480,7 @@ namespace GBSharp
       saveState.DisplayState = _display.GetState();
       saveState.InterruptState = _interruptController.GetState();
       saveState.CPUState = _cpu.GetState();
+      saveState.APUState = _apu.GetState();
 
       FileStream saveStateStream;
       if (!File.Exists("save_state.stt"))
@@ -523,6 +524,7 @@ namespace GBSharp
         _display.SetState(loadedState.DisplayState);
         _interruptController.SetState(loadedState.InterruptState);
         _cpu.SetState(loadedState.CPUState);
+        _apu.SetState(loadedState.APUState);
       }
 
       Run();
