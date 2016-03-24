@@ -13,5 +13,6 @@ namespace GBSharp
     internal Cartridge.Cartridge.State CartridgeState { get; set; }
     internal VideoSpace.State DisplayState { get; set; }
     internal CPUSpace.InterruptController.State InterruptState { get; set; }
+    internal CPUSpace.CPU.State CPUState { get; set; }
   }
 }

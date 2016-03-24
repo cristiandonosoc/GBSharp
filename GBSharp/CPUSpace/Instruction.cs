@@ -2,6 +2,7 @@
 
 namespace GBSharp.CPUSpace
 {
+  [Serializable]
   internal class Instruction : IInstruction
   {
     public string Name { get; internal set; }

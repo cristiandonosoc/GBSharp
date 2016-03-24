@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace GBSharp
 {
+  [Serializable]
   [StructLayout(LayoutKind.Explicit)]
   public class CPURegisters
   {

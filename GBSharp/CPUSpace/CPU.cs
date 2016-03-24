@@ -26,7 +26,8 @@ namespace GBSharp.CPUSpace
 
   class CPU : ICPU
   {
-    class State
+    [Serializable]
+    internal class State
     {
       internal ushort NextPC;
       internal ushort Clock; // 16 bit oscillation counter at 4194304 Hz (2^22).
@@ -51,8 +52,11 @@ namespace GBSharp.CPUSpace
       internal Instruction CurrentInstruction = null;
     }
     State _state = new State();
+    
+    internal State GetState() { return _state; }
+    internal void SetState(State state) { _state = state; }
 
-    #region STATE GETTERS/SETTERS
+    #region INTERNAL STATE GETTERS/SETTERS
 
     internal ushort NextPC
     {
