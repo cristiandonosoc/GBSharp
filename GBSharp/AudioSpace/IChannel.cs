@@ -16,7 +16,6 @@ namespace GBSharp.AudioSpace
     int SampleCount { get; }
 
     bool Enabled { get; }
-    int Volume { get; }
 
     void HandleMemoryChange(MemorySpace.MMR register, byte value);
     void GenerateSamples(int sampleCount);

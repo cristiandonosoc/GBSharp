@@ -12,7 +12,6 @@ namespace GBSharp
     // Sound Length
     int SoundLengthCounter { get; }
     bool ContinuousOutput { get; }
-    
     byte CurrentSampleIndex { get; }
     byte CurrentSample { get; }
   }

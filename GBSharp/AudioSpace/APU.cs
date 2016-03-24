@@ -311,7 +311,7 @@ namespace GBSharp.AudioSpace
             _channel2.PowerOff();
             _channel2.SetEnabled(false);
             _channel3.PowerOff();
-            _channel3.Enabled = false;
+            _channel3.SetEnabled(false);
             _channel4.PowerOff();
             _channel4.Enabled = false;
 
