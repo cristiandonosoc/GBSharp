@@ -66,6 +66,11 @@ namespace GBSharp.AudioSpace
 
     #region OUTPUT INFORMATION
 
+    public bool Channel1Run { get; set; }
+    public bool Channel2Run { get; set; }
+    public bool Channel3Run { get; set; }
+    public bool Channel4Run { get; set; }
+
     internal string CartridgeFilename { get; set; }
     private int _sampleRate;
     private int _msSampleRate;
@@ -82,12 +87,10 @@ namespace GBSharp.AudioSpace
     byte[] _buffer;
     public byte[] Buffer { get { return _buffer; } }
 
-    // TODO(Cristian): Join channels to make an unified sound channel
     private int _sampleIndex;
     public int SampleCount { get { return _sampleIndex; } }
 
     #endregion
-
 
     private Memory _memory;
 
@@ -174,10 +177,10 @@ namespace GBSharp.AudioSpace
       _state.LeftChannelEnabled = true;
       _state.RightChannelEnabled = true;
 
-      Channel1Run = false;
-      Channel2Run = false;
-      Channel3Run = false;
-      Channel4Run = false;
+      Channel1Run = true;
+      Channel2Run = true;
+      Channel3Run = true;
+      Channel4Run = true;
 
       _memory.LowLevelWrite((ushort)MMR.NR10, 0x80);
       _memory.LowLevelWrite((ushort)MMR.NR11, 0xBF);
@@ -304,9 +307,9 @@ namespace GBSharp.AudioSpace
             //  HandleMemoryChange((MMR)r, 0, false);
             //}
             _channel1.PowerOff();
-            _channel1.Enabled = false;
+            _channel1.SetEnabled(false);
             _channel2.PowerOff();
-            _channel2.Enabled = false;
+            _channel2.SetEnabled(false);
             _channel3.PowerOff();
             _channel3.Enabled = false;
             _channel4.PowerOff();
@@ -498,7 +501,6 @@ namespace GBSharp.AudioSpace
         _channel4WavExporter.UpdateExporter();
       }
     }
-
 
     public void ClearBuffer()
     {
