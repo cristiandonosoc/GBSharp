@@ -619,6 +619,7 @@ namespace GBSharp
       else
       {
         FastEmulation = false;
+        _apu.DepleteSoundEventQueues();
       }
     }
 

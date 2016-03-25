@@ -448,6 +448,59 @@ namespace GBSharp.AudioSpace
       }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void CalculateSweepChange(bool updateValue, bool redoCalculation)
+    {
+      int freqChange = _state.SweepFrequencyRegister;
+      freqChange >>= _state.SweepShifts;
+      if (!_state.SweepUp) { freqChange *= -1; }
+      int newFreq = _state.SweepFrequencyRegister + freqChange;
+
+      // Overflows turns off the channel
+      if (newFreq >= 0x800)
+      {
+        SetEnabled(false);
+      }
+      else
+      {
+        if ((_state.SweepShifts > 0) && (_state.SweepLength > 0))
+        {
+          if (!updateValue) { return; }
+
+          _state.SweepFrequencyRegister = newFreq;
+          SetFrequencyFactor((ushort)_state.SweepFrequencyRegister);
+
+          if (redoCalculation)
+          {
+            // We need to perform another check
+            freqChange = _state.SweepFrequencyRegister;
+            freqChange >>= _state.SweepShifts;
+            if (!_state.SweepUp) { freqChange *= -1; }
+            newFreq = _state.SweepFrequencyRegister + freqChange;
+
+            if (newFreq > 0x800)
+            {
+              SetEnabled(false);
+            }
+          }
+        }
+      }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ClockLengthCounter()
+    {
+      if (_state.SoundLengthCounter >= 0)
+      {
+        --_state.SoundLengthCounter;
+        if (_state.SoundLengthCounter < 0)
+        {
+          SetEnabled(false);
+        }
+      }
+    }
+ 
+
     // These are output variables
     class OutputState
     {
@@ -503,16 +556,7 @@ namespace GBSharp.AudioSpace
 
           if (_outputState.EventTickCounter <= 0)
           {
-            switch((SquareChannelEvents)_outputState.CurrentEvent.Kind)
-            {
-              case SquareChannelEvents.THRESHOLD_CHANGE:
-                _outputState.SampleTickThreshold = _outputState.CurrentEvent.Value;
-                break;
-              case SquareChannelEvents.VOLUME_CHANGE:
-                _outputState.SampleVolume = _outputState.CurrentEvent.Value;
-                break;
-            }
-            _outputState.EventAlreadyRun = true;
+            HandleSoundEvent();
           }
         }
 
@@ -546,63 +590,33 @@ namespace GBSharp.AudioSpace
       }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void HandleSoundEvent()
+    {
+      switch ((SquareChannelEvents)_outputState.CurrentEvent.Kind)
+      {
+        case SquareChannelEvents.THRESHOLD_CHANGE:
+          _outputState.SampleTickThreshold = _outputState.CurrentEvent.Value;
+          break;
+        case SquareChannelEvents.VOLUME_CHANGE:
+          _outputState.SampleVolume = _outputState.CurrentEvent.Value;
+          break;
+      }
+      _outputState.EventAlreadyRun = true;
+    }
+
+    internal void DepleteSoundEventQueue()
+    {
+      // We pop all the events
+      while (_soundEventQueue.GetNextEvent(ref _outputState.CurrentEvent))
+      {
+        HandleSoundEvent();
+      }
+    }
+
     public void ClearBuffer()
     {
       _outputState.SampleIndex = 0;
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ClockLengthCounter()
-    {
-      if (_state.SoundLengthCounter >= 0)
-      {
-        --_state.SoundLengthCounter;
-        if (_state.SoundLengthCounter < 0)
-        {
-          SetEnabled(false);
-        }
-      }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void CalculateSweepChange(bool updateValue, bool redoCalculation)
-    {
-      int freqChange = _state.SweepFrequencyRegister;
-      freqChange >>= _state.SweepShifts;
-      if (!_state.SweepUp) { freqChange *= -1; }
-      int newFreq = _state.SweepFrequencyRegister + freqChange;
-
-      // Overflows turns off the channel
-      if (newFreq >= 0x800)
-      {
-        SetEnabled(false);
-      }
-      else
-      {
-        if ((_state.SweepShifts > 0) && (_state.SweepLength > 0))
-        {
-          if (!updateValue) { return; }
-
-          _state.SweepFrequencyRegister = newFreq;
-          SetFrequencyFactor((ushort)_state.SweepFrequencyRegister);
-
-          if (redoCalculation)
-          {
-            // We need to perform another check
-            freqChange = _state.SweepFrequencyRegister;
-            freqChange >>= _state.SweepShifts;
-            if (!_state.SweepUp) { freqChange *= -1; }
-            newFreq = _state.SweepFrequencyRegister + freqChange;
-
-            if (newFreq > 0x800)
-            {
-              SetEnabled(false);
-            }
-          }
-        }
-      }
-    }
-    
-
   }
 }

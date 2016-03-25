@@ -374,36 +374,7 @@ namespace GBSharp.AudioSpace
 
             if (_outputState.EventTickCounter <= 0)
             {
-              switch ((NoiseChannelEvents)_outputState.CurrentEvent.Kind)
-              {
-                case NoiseChannelEvents.VOLUME_CHANGE:
-                  _outputState.SampleVolume = _outputState.CurrentEvent.Value;
-                  _outputState.SampleValue = (short)(_outputState.SampleUp ? _outputState.SampleVolume : 
-                                                                            -_outputState.SampleVolume);
-                  break;
-                case NoiseChannelEvents.NR43_WRITE:
-                  int dividerKey = _outputState.CurrentEvent.Value & 0x07;
-                  _outputState.SampleClockDividerThreshold = CalculateSampleClockDividerThreshold(dividerKey);
-
-                  _outputState.SampleLsfrBigSteps = ((_outputState.CurrentEvent.Value & 0x08) == 0);
-                  if (_outputState.SampleLsfrBigSteps) { _outputState.SampleLsfrRegister = 0x7FFF; }
-                  else { _outputState.SampleLsfrRegister = 0x7F; }
-
-                  int preScalerKey = _outputState.CurrentEvent.Value >> 4;
-                  if (preScalerKey < 0xDF) // Last two values are not used
-                  {
-                    _outputState.SampleClockPreScalerThreshold = (0x01 << (_outputState.CurrentEvent.Value >> 4));
-                  }
-                  break;
-                case NoiseChannelEvents.ENABLED_CHANGE:
-                  _outputState.SampleEnabled = (_outputState.CurrentEvent.Value == 1);
-                  break;
-                case NoiseChannelEvents.INIT:
-                  if (_outputState.SampleLsfrBigSteps) { _outputState.SampleLsfrRegister = 0x7FFF; }
-                  else { _outputState.SampleLsfrRegister = 0x7F; }
-                  break;
-              }
-              _outputState.EventAlreadyRun = true;
+              HandleSoundEvent();
             }
           }
         }
@@ -460,6 +431,49 @@ namespace GBSharp.AudioSpace
       if (dividerKey == 0) { result = 4; }
       else { result = 8 * dividerKey; }
       return result;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void HandleSoundEvent()
+    {
+      switch ((NoiseChannelEvents)_outputState.CurrentEvent.Kind)
+      {
+        case NoiseChannelEvents.VOLUME_CHANGE:
+          _outputState.SampleVolume = _outputState.CurrentEvent.Value;
+          _outputState.SampleValue = (short)(_outputState.SampleUp ? _outputState.SampleVolume :
+                                                                    -_outputState.SampleVolume);
+          break;
+        case NoiseChannelEvents.NR43_WRITE:
+          int dividerKey = _outputState.CurrentEvent.Value & 0x07;
+          _outputState.SampleClockDividerThreshold = CalculateSampleClockDividerThreshold(dividerKey);
+
+          _outputState.SampleLsfrBigSteps = ((_outputState.CurrentEvent.Value & 0x08) == 0);
+          if (_outputState.SampleLsfrBigSteps) { _outputState.SampleLsfrRegister = 0x7FFF; }
+          else { _outputState.SampleLsfrRegister = 0x7F; }
+
+          int preScalerKey = _outputState.CurrentEvent.Value >> 4;
+          if (preScalerKey < 0xDF) // Last two values are not used
+          {
+            _outputState.SampleClockPreScalerThreshold = (0x01 << (_outputState.CurrentEvent.Value >> 4));
+          }
+          break;
+        case NoiseChannelEvents.ENABLED_CHANGE:
+          _outputState.SampleEnabled = (_outputState.CurrentEvent.Value == 1);
+          break;
+        case NoiseChannelEvents.INIT:
+          if (_outputState.SampleLsfrBigSteps) { _outputState.SampleLsfrRegister = 0x7FFF; }
+          else { _outputState.SampleLsfrRegister = 0x7F; }
+          break;
+      }
+      _outputState.EventAlreadyRun = true;
+    }
+
+    internal void DepleteSoundEventQueue()
+    {
+      while (_soundEventQueue.GetNextEvent(ref _outputState.CurrentEvent))
+      {
+        HandleSoundEvent();
+      }
     }
 
     public void ClearBuffer()

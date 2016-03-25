@@ -417,9 +417,7 @@ namespace GBSharp.AudioSpace
       int ticksPerSample = APU.MinimumTickThreshold;
       if (_gameboy.FastEmulation)
       {
-        // We get the FPS
-        double fps = _gameboy.FPS;
-        ticksPerSample = (int)((APU.MinimumTickThreshold * fps) / GameBoy.targetFramerate);
+        DepleteSoundEventQueues();
       }
 
       // If the channels are disabled, all the channels will output 0
@@ -515,6 +513,18 @@ namespace GBSharp.AudioSpace
           }
         }
       }
+    }
+
+    /// <summary>
+    /// This method is intended for when the fast emulation mode ends
+    /// so the sound channels synchronize (deplete) their events queues
+    /// </summary>
+    internal void DepleteSoundEventQueues()
+    {
+      _channel1.DepleteSoundEventQueue();
+      _channel2.DepleteSoundEventQueue();
+      _channel3.DepleteSoundEventQueue();
+      _channel4.DepleteSoundEventQueue();
     }
 
     internal void EndFrame()

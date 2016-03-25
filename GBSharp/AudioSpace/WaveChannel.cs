@@ -407,31 +407,7 @@ namespace GBSharp.AudioSpace
 
             if (_outputState.EventTickCounter <= 0)
             {
-              switch ((WaveChannelEvents)_outputState.CurrentEvent.Kind)
-              {
-                case WaveChannelEvents.THRESHOLD_CHANGE:
-                  _outputState.SampleTickThreshold = _outputState.CurrentEvent.Value;
-                  break;
-                case WaveChannelEvents.VOLUME_CHANGE:
-                  _outputState.NewVolumeShift = _outputState.CurrentEvent.Value;
-                  _outputState.SampleVolume = CalculateWaveVolume(_outputState.NewVolumeShift, 
-                                                                  _outputState.NewCurrentSample);
-                  break;
-                case WaveChannelEvents.MEMORY_CHANGE:
-                  // The key is the actual address in memory
-                  int index = (_outputState.CurrentEvent.Value >> 8) - 0xFF30;
-                  byte value = (byte)(_outputState.CurrentEvent.Value & 0xFF);
-                  _outputState.SampleArray[index] = value;
-                  break;
-                case WaveChannelEvents.ENABLED_CHANGE:
-                  _outputState.SampleEnabled = (_outputState.CurrentEvent.Value == 1);
-                  break;
-                case WaveChannelEvents.INIT:
-                  _outputState.SampleTickCounter = _outputState.SampleTickThreshold;
-                  _outputState.SampleWaveIndex = 0;
-                  break;
-              }
-              _outputState.EventAlreadyRun = true;
+              HandleSoundEvent();
             }
           }
         }
@@ -484,6 +460,45 @@ namespace GBSharp.AudioSpace
         }
 
         --fullSampleCount;
+      }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void HandleSoundEvent()
+    {
+      switch ((WaveChannelEvents)_outputState.CurrentEvent.Kind)
+      {
+        case WaveChannelEvents.THRESHOLD_CHANGE:
+          _outputState.SampleTickThreshold = _outputState.CurrentEvent.Value;
+          break;
+        case WaveChannelEvents.VOLUME_CHANGE:
+          _outputState.NewVolumeShift = _outputState.CurrentEvent.Value;
+          _outputState.SampleVolume = CalculateWaveVolume(_outputState.NewVolumeShift,
+                                                          _outputState.NewCurrentSample);
+          break;
+        case WaveChannelEvents.MEMORY_CHANGE:
+          // The key is the actual address in memory
+          int index = (_outputState.CurrentEvent.Value >> 8) - 0xFF30;
+          byte value = (byte)(_outputState.CurrentEvent.Value & 0xFF);
+          _outputState.SampleArray[index] = value;
+          break;
+        case WaveChannelEvents.ENABLED_CHANGE:
+          _outputState.SampleEnabled = (_outputState.CurrentEvent.Value == 1);
+          break;
+        case WaveChannelEvents.INIT:
+          _outputState.SampleTickCounter = _outputState.SampleTickThreshold;
+          _outputState.SampleWaveIndex = 0;
+          break;
+      }
+      _outputState.EventAlreadyRun = true;
+    }
+
+    internal void DepleteSoundEventQueue()
+    {
+      // We pop all the events
+      while (_soundEventQueue.GetNextEvent(ref _outputState.CurrentEvent))
+      {
+        HandleSoundEvent();
       }
     }
 
