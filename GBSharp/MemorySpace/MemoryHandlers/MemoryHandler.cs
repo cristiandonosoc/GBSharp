@@ -287,10 +287,9 @@ namespace GBSharp.MemorySpace.MemoryHandlers
       return value;
     }
 
-    public virtual void Dispose()
-    {
+    internal virtual void Save() { }
 
-    }
+    public virtual void Dispose() { }
 
     #endregion
   }

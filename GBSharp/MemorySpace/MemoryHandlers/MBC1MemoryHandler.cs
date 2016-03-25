@@ -195,11 +195,9 @@ namespace GBSharp.MemorySpace.MemoryHandlers
       }
     }
 
-    public override void Dispose()
+    internal override void Save()
     {
-      base.Dispose();
       if (!hasBattery) { return; }
-
       using (var file = new System.IO.BinaryWriter(new FileStream(saveFilePath, FileMode.Create)))
       {
         // We get the pointer
@@ -210,6 +208,13 @@ namespace GBSharp.MemorySpace.MemoryHandlers
                          _state.CurrentRamBank * ramBankLength, ramBankLength);
         file.Write(_state.RamBanksData);
       }
+    }
+
+    public override void Dispose()
+    {
+      base.Dispose();
+      Save();
+
     }
   }
 }

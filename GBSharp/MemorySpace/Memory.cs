@@ -226,12 +226,16 @@ namespace GBSharp.MemorySpace
       _state.Data = data;
     }
 
+    internal void Save()
+    {
+      if (_memoryHandler == null) { return; }
+      _memoryHandler.Save();
+    }
+
     public void Dispose()
     {
-      if (_memoryHandler != null)
-      {
-        _memoryHandler.Dispose();
-      }
+      if (_memoryHandler == null) { return; }
+      _memoryHandler.Dispose();
     }
 
     #endregion

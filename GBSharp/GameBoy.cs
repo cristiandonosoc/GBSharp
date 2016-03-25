@@ -125,6 +125,7 @@ namespace GBSharp
     /// </summary>
     public void Reset()
     {
+      _memory.Save();
       InternalReset(true);
     }
 
