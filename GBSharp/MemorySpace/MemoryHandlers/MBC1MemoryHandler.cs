@@ -161,10 +161,15 @@ namespace GBSharp.MemorySpace.MemoryHandlers
             byte highBank = (byte)((value & 0x03) << 5);
 
             // Replace only the bit 5 and 6
-            _state.CurrentRomBank = (byte)((highBank) | (_state.CurrentRamBank & 0x1F));
+            byte newRomBank = (byte)((highBank) | (_state.CurrentRamBank & 0x1F));
+            int offset = newRomBank * romBankLength;
+            if (offset < this.cartridge.Data.Length)
+            {
+              _state.CurrentRamBank = newRomBank;
+              Buffer.BlockCopy(this.cartridge.Data, offset,
+                               memoryData, romBankLength, romBankLength);
+            }
 
-            Buffer.BlockCopy(this.cartridge.Data, _state.CurrentRomBank * romBankLength,
-                             memoryData, romBankLength, romBankLength);
           }
           // RAM bank select
           else
