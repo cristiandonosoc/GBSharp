@@ -151,27 +151,27 @@
                 <avalonDock:LayoutPanel Orientation="Horizontal">
                     <avalonDock:LayoutAnchorablePaneGroup DockWidth="Auto" Orientation="Vertical">
                         <avalonDock:LayoutAnchorablePane DockHeight="*">
-                            <avalonDock:LayoutAnchorable Title="Controller">
+                            <avalonDock:LayoutAnchorable Title="Controller" AutoHideMinWidth="500">
                                 <ContentPresenter Content="{Binding GameBoyController}" 
                                                   Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
                                                   Visibility="{Binding ElementName=ControllerSectionCheck, Path=IsChecked, 
                                                   Converter={StaticResource BoolToVis}}"/>
                             </avalonDock:LayoutAnchorable>
-                            <!--<avalonDock:LayoutAnchorable Title="Disassembler">
+                            <!--<avalonDock:LayoutAnchorable Title="Disassembler" AutoHideMinWidth="500">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
                                                   Visibility="{Binding ElementName=DisplaySectionCheck, 
                                                   Path=IsChecked, 
                                                   Converter={StaticResource BoolToVis}}" 
                                                   Content="{Binding Dissasemble}"/>
                             </avalonDock:LayoutAnchorable>-->
-                            <avalonDock:LayoutAnchorable Title="Breakpoints">
+                            <avalonDock:LayoutAnchorable Title="Breakpoints" AutoHideMinWidth="500">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
                                                   Visibility="{Binding ElementName=DisplaySectionCheck, 
                                                   Path=IsChecked, 
                                                   Converter={StaticResource BoolToVis}}" 
                                                   Content="{Binding Breakpoints}"/>
                             </avalonDock:LayoutAnchorable>
-                            <avalonDock:LayoutAnchorable Title="Sound Recording">
+                            <avalonDock:LayoutAnchorable Title="Sound Recording" AutoHideMinWidth="500">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
                                                   Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, 
                                                   Converter={StaticResource BoolToVis}}" 
@@ -179,42 +179,42 @@
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
                         <avalonDock:LayoutAnchorablePane>
-                            <avalonDock:LayoutAnchorable Title="Background">
+                            <avalonDock:LayoutAnchorable Title="Background" AutoHideMinWidth="500">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
                                                   Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" 
                                                   Content="{Binding Display.Background}"/>
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
                         <avalonDock:LayoutAnchorablePane>
-                            <avalonDock:LayoutAnchorable Title="TileMap">
+                            <avalonDock:LayoutAnchorable Title="TileMap" AutoHideMinWidth="500">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
                                                   Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" 
                                                   Content="{Binding Display.TileMap}"/>
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
                         <avalonDock:LayoutAnchorablePane>
-                            <avalonDock:LayoutAnchorable Title="Window">
+                            <avalonDock:LayoutAnchorable Title="Window" AutoHideMinWidth="500">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
                                                   Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" 
                                                   Content="{Binding Display.Window}"/>
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
                         <!--<avalonDock:LayoutAnchorablePane>
-                            <avalonDock:LayoutAnchorable Title="Sprites">
+                            <avalonDock:LayoutAnchorable Title="Sprites" AutoHideMinWidth="500">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
                                                   Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" 
                                                   Content="{Binding Display.Sprites}"/>
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>-->
                         <avalonDock:LayoutAnchorablePane>
-                            <avalonDock:LayoutAnchorable Title="Sprite Layer">
+                            <avalonDock:LayoutAnchorable Title="Sprite Layer" AutoHideMinWidth="500">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
                                                   Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" 
                                                   Content="{Binding Display.SpriteLayer}"/>
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
                         <!--<avalonDock:LayoutAnchorablePane>
-                            <avalonDock:LayoutAnchorable Title="Display Timing">
+                            <avalonDock:LayoutAnchorable Title="Display Timing" AutoHideMinWidth="500">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
                                                   Visibility="{Binding ElementName=DisplaySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" 
                                                   Content="{Binding Display.DisplayTiming}"/>
@@ -222,7 +222,7 @@
                         </avalonDock:LayoutAnchorablePane>-->
                     </avalonDock:LayoutAnchorablePaneGroup>
                     <avalonDock:LayoutAnchorablePane>
-                        <avalonDock:LayoutAnchorable Title="GameBoy">
+                        <avalonDock:LayoutAnchorable Title="GameBoy" AutoHideMinWidth="500">
                             <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
                                               Content="{Binding GameBoyGamePad}" 
                                               Visibility="{Binding ElementName=GamePadSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" />
@@ -237,49 +237,49 @@
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
                         <avalonDock:LayoutAnchorablePane>
-                            <avalonDock:LayoutAnchorable Title="Memory">
+                            <avalonDock:LayoutAnchorable Title="Memory" AutoHideMinWidth="500">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
                                                   Content="{Binding Memory}"
                                                   Visibility="{Binding ElementName=MemorySectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" />
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
                         <avalonDock:LayoutAnchorablePane>
-                            <avalonDock:LayoutAnchorable Title="Interrupts">
+                            <avalonDock:LayoutAnchorable Title="Interrupts" AutoHideMinWidth="500">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
                                                   Content="{Binding Interrupt}"
                                                   Visibility="{Binding ElementName=InterruptSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" />
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
                         <avalonDock:LayoutAnchorablePane>
-                            <avalonDock:LayoutAnchorable Title="IO Registers">
+                            <avalonDock:LayoutAnchorable Title="IO Registers" AutoHideMinWidth="500">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
                                                   Content="{Binding IORegisters}"
                                                   Visibility="{Binding ElementName=InterruptSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" />
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
                         <!--<avalonDock:LayoutAnchorablePane>
-                            <avalonDock:LayoutAnchorable Title="Sound Channel Internals">
+                            <avalonDock:LayoutAnchorable Title="Sound Channel Internals" AutoHideMinWidth="500">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
                                                   Content="{Binding SoundChannelInternals}"
                                                   Visibility="{Binding ElementName=InterruptSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" />
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>-->
                         <avalonDock:LayoutAnchorablePane>
-                          <avalonDock:LayoutAnchorable Title="Instruction Histogram">
+                          <avalonDock:LayoutAnchorable Title="Instruction Histogram" AutoHideMinWidth="500">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
                                                   Content="{Binding InstructionHistogram}" 
                                                   Visibility="{Binding ElementName=ControllerSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" />
                           </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
                         <!--<avalonDock:LayoutAnchorablePane>
-                            <avalonDock:LayoutAnchorable Title="Spectrogram">
+                            <avalonDock:LayoutAnchorable Title="Spectrogram" AutoHideMinWidth="500">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
                                                   Content="{Binding APU}" 
                                                   Visibility="{Binding ElementName=ControllerSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>-->
                         <avalonDock:LayoutAnchorablePane>
-                            <avalonDock:LayoutAnchorable Title="Memory Image">
+                            <avalonDock:LayoutAnchorable Title="Memory Image" AutoHideMinWidth="500">
                                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
                                                   Content="{Binding MemoryImage}" 
                                                   Visibility="{Binding ElementName=ControllerSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
