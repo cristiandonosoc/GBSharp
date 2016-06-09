@@ -240,8 +240,6 @@ namespace GBSharp.AudioSpace
             _memory.LowLevelWrite((ushort)register, value);
             break;
           }
-        default:
-          throw new InvalidProgramException("Invalid register received.");
       }
     }
 

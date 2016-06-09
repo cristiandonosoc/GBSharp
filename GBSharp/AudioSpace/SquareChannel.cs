@@ -317,10 +317,6 @@ namespace GBSharp.AudioSpace
       {
         SetEnabled((Utils.UtilFuncs.TestBit(value, _channelIndex) != 0));
       }
-      else
-      {
-        throw new InvalidProgramException("Invalid register received");
-      }
 
 #if SoundTiming
       //Timeline[TimelineCount++] = before;

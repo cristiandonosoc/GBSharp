@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System.Windows;
+using System.Windows.Input;
 
 namespace GBSharp.ViewModel
 {
@@ -56,6 +57,7 @@ namespace GBSharp.ViewModel
             // TODO(aaecheve): Should this be another function handling this?
             _gameBoy.CPU.BreakpointFound += BreakpointHandler;
             _gameBoy.CPU.InterruptHappened += InterruptHandler;
+            _gameBoy.ErrorEvent += _gameBoy_ErrorEvent;
 
             _interrupt = new InterruptManagerViewModel(_gameBoy, _dispatcher);
             _ioRegisters = new IORegistersManagerViewModel(_gameBoy, _dispatcher);
@@ -75,6 +77,11 @@ namespace GBSharp.ViewModel
             _gameBoyController.OnStep += StepHandler;
             _gameBoyController.OnRun += RunHandler;
             _gameBoyController.OnPause += PauseHandler;
+        }
+
+        private void _gameBoy_ErrorEvent(string message)
+        {
+            MessageBox.Show(message);
         }
 
         public void OnClosed()

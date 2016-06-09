@@ -11,75 +11,78 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using System.IO.Compression;
 using GBSharp.MemorySpace.MemoryHandlers;
+using GBSharp.Utils;
 
 namespace GBSharp
 {
-  public class GameBoy : IGameBoy, IDisposable
-  {
-    internal static double targetFramerate = 60.0; // This is not the real gameboy framerate, but it's a nice number.
-    internal static double stopwatchTicksPerFrame = Stopwatch.Frequency / targetFramerate;
-    internal static double stopwatchTicksPerMs = Stopwatch.Frequency / 1000.0;
-
-    internal static double targetMillisecondsPerTick = 0.0002384185791015625; // It is know that this is 2^-22.
-    internal static int ticksPerMillisecond = 4194; // Actually it's 4194,304
-
-    class State
+    public class GameBoy : IGameBoy, IDisposable
     {
-      internal bool Pause;
-      internal bool Run;
-      internal bool FrameReady;
-      internal bool InBreakpoint;
-    }
-    State _state = new State();
 
-    internal bool FastEmulation { get; private set; }
+        internal static double targetFramerate = 60.0; // This is not the real gameboy framerate, but it's a nice number.
+        internal static double stopwatchTicksPerFrame = Stopwatch.Frequency / targetFramerate;
+        internal static double stopwatchTicksPerMs = Stopwatch.Frequency / 1000.0;
 
-    public event Action StepCompleted;
-    public event Action FrameCompleted;
-    public event Action PauseRequested;
-    public event Action StopRequested;
+        internal static double targetMillisecondsPerTick = 0.0002384185791015625; // It is know that this is 2^-22.
+        internal static int ticksPerMillisecond = 4194; // Actually it's 4194,304
 
-    private CPUSpace.CPU _cpu;
-    private CPUSpace.InterruptController _interruptController;
-    private MemorySpace.Memory _memory;
+        class State
+        {
+            internal bool Pause;
+            internal bool Run;
+            internal bool FrameReady;
+            internal bool InBreakpoint;
+        }
+        State _state = new State();
 
-    private Cartridge.Cartridge _cartridge;
-    internal string CartridgeDirectory { get; private set; }
-    internal string CartridgeFilename { get; private set; }
+        internal bool FastEmulation { get; private set; }
 
-    private VideoSpace.Display _display;
-    private AudioSpace.APU _apu;
-    private SerialSpace.SerialController _serial;
-    private Thread _gameLoopThread;
+        public event Action StepCompleted;
+        public event Action FrameCompleted;
+        public event Action PauseRequested;
+        public event Action StopRequested;
+        public event ErrorDelegate ErrorEvent;
 
-    private ManualResetEvent _pauseEvent;
-    private ManualResetEventSlim _manualResetEvent;
+        private CPUSpace.CPU _cpu;
+        private CPUSpace.InterruptController _interruptController;
+        private MemorySpace.Memory _memory;
 
-    private Keypad _buttons;
-    private Disassembler _disassembler;
+        private Cartridge.Cartridge _cartridge;
+        internal string CartridgeDirectory { get; private set; }
+        internal string CartridgeFilename { get; private set; }
 
-    private Stopwatch _stopwatch;
-    private long _stepCounter;
+        private VideoSpace.Display _display;
+        private AudioSpace.APU _apu;
+        private SerialSpace.SerialController _serial;
+        private Thread _gameLoopThread;
 
-    public bool ReleaseButtons { get; set; }
+        private ManualResetEvent _pauseEvent;
+        private ManualResetEventSlim _manualResetEvent;
 
-    private int _frameCounter = 0;
-    private long _totalFrameTicks = 0;
-    public double FPS { get; private set; }
+        private Keypad _buttons;
+        private Disassembler _disassembler;
 
-    // This is a debug counter
-    public ulong DebugTickCounter { get; set; }
+        private Stopwatch _stopwatch;
+        private long _stepCounter;
 
-    #region INTERFACE GETTERS
+        public bool ReleaseButtons { get; set; }
 
-    public ICPU CPU { get { return _cpu; } }
-    public IMemory Memory { get { return _memory; } }
-    public ICartridge Cartridge { get { return _cartridge; } }
-    public IDisplay Display { get { return _display; } }
-    public IAPU APU { get { return _apu; } }
-    public IDisassembler Disassembler { get { return _disassembler; } }
+        private int _frameCounter = 0;
+        private long _totalFrameTicks = 0;
+        public double FPS { get; private set; }
 
-    #endregion
+        // This is a debug counter
+        public ulong DebugTickCounter { get; set; }
+
+        #region INTERFACE GETTERS
+
+        public ICPU CPU { get { return _cpu; } }
+        public IMemory Memory { get { return _memory; } }
+        public ICartridge Cartridge { get { return _cartridge; } }
+        public IDisplay Display { get { return _display; } }
+        public IAPU APU { get { return _apu; } }
+        public IDisassembler Disassembler { get { return _disassembler; } }
+
+        #endregion
 
 #if TIMING
     private long[] _timingSamples;
@@ -96,73 +99,73 @@ namespace GBSharp
     public static Stopwatch _swBeginInvoke = new Stopwatch();
 #endif
 
-    /// <summary>
-    /// Class constructor.
-    /// Initializes cpu and memory.
-    /// </summary>
-    public GameBoy()
-    {
-      _state.Run = false;
-      _stopwatch = new Stopwatch();
+        /// <summary>
+        /// Class constructor.
+        /// Initializes cpu and memory.
+        /// </summary>
+        public GameBoy()
+        {
+            _state.Run = false;
+            _stopwatch = new Stopwatch();
 
-      _memory = new MemorySpace.Memory();
-      _cpu = new CPUSpace.CPU(this._memory);
-      _interruptController = this._cpu._interruptController;
-      _display = new Display(this._interruptController, this._memory);
-      _apu = new AudioSpace.APU(this, this._memory, 44000, 2, 2);
-      _serial = new SerialSpace.SerialController(this._interruptController, this._memory);
-      _disassembler = new Disassembler(_cpu, _memory);
+            _memory = new MemorySpace.Memory();
+            _cpu = new CPUSpace.CPU(this._memory);
+            _interruptController = this._cpu._interruptController;
+            _display = new Display(this._interruptController, this._memory);
+            _apu = new AudioSpace.APU(this, this._memory, 44000, 2, 2);
+            _serial = new SerialSpace.SerialController(this._interruptController, this._memory);
+            _disassembler = new Disassembler(_cpu, _memory);
 
-      // Events
-      _cpu.BreakpointFound += BreakpointHandler;
-      _cpu.InterruptHappened += InterruptHandler;
-      _display.FrameReady += FrameReadyHandler;
+            // Events
+            _cpu.BreakpointFound += BreakpointHandler;
+            _cpu.InterruptHappened += InterruptHandler;
+            _display.FrameReady += FrameReadyHandler;
 
-      InternalReset(false);
-    }
+            InternalReset(false);
+        }
 
-    /// <summary>
-    /// Wrapper for the outside world
-    /// </summary>
-    public void Reset()
-    {
-      _memory.Save();
-      InternalReset(true);
-    }
+        /// <summary>
+        /// Wrapper for the outside world
+        /// </summary>
+        public void Reset()
+        {
+            _memory.Save();
+            InternalReset(true);
+        }
 
-    public void InternalReset(bool resetComponents)
-    {
-      // NOTE(Cristian): It's responsability of the view (or the calling audio code) to
-      //                 handling and re-hooking correctly the audio on reset
-      if(_state.Run) { this.Stop(); }
+        public void InternalReset(bool resetComponents)
+        {
+            // NOTE(Cristian): It's responsability of the view (or the calling audio code) to
+            //                 handling and re-hooking correctly the audio on reset
+            if (_state.Run) { this.Stop(); }
 
-      if(resetComponents)
-      {
-        _memory.Reset();
-        _cpu.Reset();
-        _interruptController.Reset();
-        _display.Reset();
-        _apu.Reset();
-        _disassembler.Reset();
-        //this.serial = new SerialSpace.SerialController(this.interruptController, this.memory);
-      }
+            if (resetComponents)
+            {
+                _memory.Reset();
+                _cpu.Reset();
+                _interruptController.Reset();
+                _display.Reset();
+                _apu.Reset();
+                _disassembler.Reset();
+                //this.serial = new SerialSpace.SerialController(this.interruptController, this.memory);
+            }
 
-      // We re-hook information
-      if(this._cartridge != null)
-      {
-        _apu.CartridgeFilename = this.CartridgeFilename; 
-        _memory.SetMemoryHandler(GBSharp.MemorySpace.MemoryHandlers.
-                                 MemoryHandlerFactory.CreateMemoryHandler(this));
-      }
+            // We re-hook information
+            if (this._cartridge != null)
+            {
+                _apu.CartridgeFilename = this.CartridgeFilename;
+                _memory.SetMemoryHandler(GBSharp.MemorySpace.MemoryHandlers.
+                                         MemoryHandlerFactory.CreateMemoryHandler(this));
+            }
 
-      _buttons = Keypad.None;
-      _pauseEvent = new ManualResetEvent(true);
-      _manualResetEvent = new ManualResetEventSlim(false);
+            _buttons = Keypad.None;
+            _pauseEvent = new ManualResetEvent(true);
+            _manualResetEvent = new ManualResetEventSlim(false);
 
-      _state.InBreakpoint = false;
-      ReleaseButtons = true;
+            _state.InBreakpoint = false;
+            ReleaseButtons = true;
 
-      var disDef = _display.GetDisplayDefinition();
+            var disDef = _display.GetDisplayDefinition();
 
 #if TIMING
       _timingSamples = new long[_sampleAmount * _maxSamples];
@@ -171,76 +174,76 @@ namespace GBSharp
       _swBlit = new Stopwatch();
       _swClockMem = new Stopwatch();
 #endif
-    }
+        }
 
-    /// <summary>
-    /// Provides access to the interrupt controller to every component connected to the gameboy, so interrupts
-    /// can be requested from memory handlers, the display controller, serial ports, etc.
-    /// If an interrupt can be notified from the memory handler (on write), then direct access from another component
-    /// to the interrupt controller is not recommended and the memory.Write() call should be used instead.
-    /// </summary>
-    internal CPUSpace.InterruptController InterruptController
-    {
-      get { return _interruptController; }
-    }
+        /// <summary>
+        /// Provides access to the interrupt controller to every component connected to the gameboy, so interrupts
+        /// can be requested from memory handlers, the display controller, serial ports, etc.
+        /// If an interrupt can be notified from the memory handler (on write), then direct access from another component
+        /// to the interrupt controller is not recommended and the memory.Write() call should be used instead.
+        /// </summary>
+        internal CPUSpace.InterruptController InterruptController
+        {
+            get { return _interruptController; }
+        }
 
-    /// <summary>
-    /// Connects to the gameboy a new cartridge with the given contents.
-    /// </summary>
-    /// <param name="cartridgeData"></param>
-    public bool LoadCartridge(string cartridgeFullFilename, byte[] cartridgeData)
-    {
-      if (_state.Run) { Reset(); }
-      _cartridge = new Cartridge.Cartridge();
-      _cartridge.Load(cartridgeData);
+        /// <summary>
+        /// Connects to the gameboy a new cartridge with the given contents.
+        /// </summary>
+        /// <param name="cartridgeData"></param>
+        public bool LoadCartridge(string cartridgeFullFilename, byte[] cartridgeData)
+        {
+            if (_state.Run) { Reset(); }
+            _cartridge = new Cartridge.Cartridge();
+            _cartridge.Load(cartridgeData);
 
-      _cpu.ResetBreakpoints();
-      CartridgeFilename = Path.GetFileNameWithoutExtension(cartridgeFullFilename);
-      CartridgeDirectory = Path.GetDirectoryName(cartridgeFullFilename);
-      _apu.CartridgeFilename = this.CartridgeFilename;
-      // We create the MemoryHandler according to the data
-      // from the cartridge and set it to the memory.
-      // From this point onwards, all the access to memory
-      // are done throught the MemoryHandler
-      MemoryHandler memoryHandler = MemoryHandlerFactory.CreateMemoryHandler(this);
-      if (memoryHandler == null)
-      {
-        // We destroy all the info
-        _cartridge = null;
-        CartridgeFilename = "";
-        CartridgeDirectory = "";
-        _apu.CartridgeFilename = "";
+            _cpu.ResetBreakpoints();
+            CartridgeFilename = Path.GetFileNameWithoutExtension(cartridgeFullFilename);
+            CartridgeDirectory = Path.GetDirectoryName(cartridgeFullFilename);
+            _apu.CartridgeFilename = this.CartridgeFilename;
+            // We create the MemoryHandler according to the data
+            // from the cartridge and set it to the memory.
+            // From this point onwards, all the access to memory
+            // are done throught the MemoryHandler
+            MemoryHandler memoryHandler = MemoryHandlerFactory.CreateMemoryHandler(this);
+            if (memoryHandler == null)
+            {
+                // We destroy all the info
+                _cartridge = null;
+                CartridgeFilename = "";
+                CartridgeDirectory = "";
+                _apu.CartridgeFilename = "";
 
-        return false;
-      }
-      _memory.SetMemoryHandler(memoryHandler);
+                return false;
+            }
+            _memory.SetMemoryHandler(memoryHandler);
 
-      return true;
-    }
+            return true;
+        }
 
-    public void Step(bool ignoreBreakpoints)
-    {
-      Pause();
-      MachineStep(ignoreBreakpoints);
-    }
+        public void Step(bool ignoreBreakpoints)
+        {
+            Pause();
+            MachineStep(ignoreBreakpoints);
+        }
 
-    /// <summary>
-    /// Runs the simulation for the smallest amount of time possible.
-    /// This should be 1 whole instruction, arbitrary machine and clock cycles.
-    /// </summary>
-    private void MachineStep(bool ignoreBreakpoints)
-    {
-      // NOTE(Cristian): if inBreakpoint is true, this is the first step since a
-      //                 breakpoint. This next step must ignore the breakpoint
-      //                 or it will stop with itself.
-      bool ignoreNextStep = false;
-      if (_state.InBreakpoint)
-      {
-        _state.InBreakpoint = false;
-        ignoreNextStep = true;
-      }
+        /// <summary>
+        /// Runs the simulation for the smallest amount of time possible.
+        /// This should be 1 whole instruction, arbitrary machine and clock cycles.
+        /// </summary>
+        private void MachineStep(bool ignoreBreakpoints)
+        {
+            // NOTE(Cristian): if inBreakpoint is true, this is the first step since a
+            //                 breakpoint. This next step must ignore the breakpoint
+            //                 or it will stop with itself.
+            bool ignoreNextStep = false;
+            if (_state.InBreakpoint)
+            {
+                _state.InBreakpoint = false;
+                ignoreNextStep = true;
+            }
 
-#if TIMING 
+#if TIMING
       _swCPU.Start();
       // TODO(Cristian): Update rest of flow
       byte ticks = _cpu.DetermineStep(ignoreNextStep || ignoreBreakpoints);
@@ -257,205 +260,227 @@ namespace GBSharp
       _display.Step(ticks);
       _swDisplay.Stop();
 #else
-      /**
-       * The CPU Step works as following
-       * 1. Setup instruction and determine pre-execution ticks
-       * 2. Advance gameboy the pre-execution ticks
-       * 3. Execute the opcode
-       * 4. Advance gameboy the post-execution ticks (if any)
-       * 5. Execute the opcode post-execution code (if any)
-       *
-       * See the CPUSpace/Dictionaries to see how many clocks each pre/post opcode
-       * has and what code is run at pre/post stage (in the case of pre stage, the 
-       * dictionary is simply CPU*Instructions, no "Pre" appended)
-       */
+            /**
+             * The CPU Step works as following
+             * 1. Setup instruction and determine pre-execution ticks
+             * 2. Advance gameboy the pre-execution ticks
+             * 3. Execute the opcode
+             * 4. Advance gameboy the post-execution ticks (if any)
+             * 5. Execute the opcode post-execution code (if any)
+             *
+             * See the CPUSpace/Dictionaries to see how many clocks each pre/post opcode
+             * has and what code is run at pre/post stage (in the case of pre stage, the 
+             * dictionary is simply CPU*Instructions, no "Pre" appended)
+             */
 
-      // Sets the current instruction and obtain how many ticks the peripherals have
-      // to be simulated before opcode execution
-      byte prevTicks = this._cpu.DetermineStep(ignoreNextStep || ignoreBreakpoints);
+            // Sets the current instruction and obtain how many ticks the peripherals have
+            // to be simulated before opcode execution
+            try
+            {
+                byte prevTicks = 0;
+                prevTicks = this._cpu.DetermineStep(ignoreNextStep || ignoreBreakpoints);
+                // NOTE(Cristian): If the CPU is halted, the hardware carry on at a simulated clock
+                byte postTicks = 0;
+                if (_cpu.Halted)
+                {
+                    prevTicks = 4;
+                    StepPeripherals(prevTicks);
+                }
+                else
+                {
+                    // We only need to run the rest of the machine if there where actually ticks
+                    // stepped. A 0 ticks means the cpu didnt clock, probably due to a breakpoint
+                    if (prevTicks > 0)
+                    {
+                        StepPeripherals(prevTicks);
 
-      // NOTE(Cristian): If the CPU is halted, the hardware carry on at a simulated clock
-      byte postTicks = 0;
-      if (_cpu.Halted)
-      {
-        prevTicks = 4;
-        StepPeripherals(prevTicks);
-      }
-      else
-      {
-        // We only need to run the rest of the machine if there where actually ticks
-        // stepped. A 0 ticks means the cpu didnt clock, probably due to a breakpoint
-        if (prevTicks > 0)
-        {
-          StepPeripherals(prevTicks);
+                        // We execute the opcode. Returns the amount of ticks that have to be
+                        // simulated after the opcode execution
+                        postTicks = this._cpu.ExecuteInstruction();
+                        // postTicks 0 means that the instruction run at its last clock
+                        // so there is no postprocessing to be done
+                        if (postTicks > 0)
+                        {
+                            StepPeripherals(postTicks);
+                            // Some opcodes run some code after execution (this is for two-stage opcodes
+                            // that read and write at different clocks)
+                            this._cpu.PostExecuteInstruction();
+                        }
+                    }
+                }
 
-          // We execute the opcode. Returns the amount of ticks that have to be
-          // simulated after the opcode execution
-          postTicks = this._cpu.ExecuteInstruction();
-          // postTicks 0 means that the instruction run at its last clock
-          // so there is no postprocessing to be done
-          if (postTicks > 0)
-          {
-            StepPeripherals(postTicks);
-            // Some opcodes run some code after execution (this is for two-stage opcodes
-            // that read and write at different clocks)
-            this._cpu.PostExecuteInstruction();
-          }
-        }
-      }
-
-      // We track the ticks
-      DebugTickCounter += prevTicks;
-      DebugTickCounter += postTicks;
-
+                // We track the ticks
+                DebugTickCounter += prevTicks;
+                DebugTickCounter += postTicks;
+            }
+            catch (InvalidInstructionException e)
+            {
+                Error(e.Message);
+            }
 #endif
-    }
-
-    private void StepPeripherals(byte ticks)
-    {
-      this._cpu.UpdateClockAndTimers(ticks);
-      this._memory.Step(ticks);
-      this._display.Step(ticks);
-      this._apu.Step(ticks);
-      this._stepCounter++;
-      this._serial.Step(ticks);
-    }
-
-    /// <summary>
-    /// Steps the Gameboy until a frame is ready
-    /// </summary>
-    private void CalculateFrame()
-    {
-      _display.StartFrame();
-      while ((_state.Run) && (!_state.FrameReady))
-      {
-        // We check if the thread has been paused
-        if (_state.Pause)
-        {
-          PauseRequested();
-          _pauseEvent.WaitOne(Timeout.Infinite);
         }
 
-        MachineStep(false);
-      }
-      _display.EndFrame();
-    }
-
-    /// <summary>
-    /// Attempts to run until the heat death of the universe.
-    /// </summary>
-    public void Run()
-    {
-      // We first try to unpause
-      if (_state.Pause)
-      {
-        this._pauseEvent.Set();
-        _state.Pause = false;
-        this._stopwatch.Start();
-      }
-
-      // NOTE(cdonoso): If we're running, we shouldn't restart. Or should we?
-      if (_state.Run) { return; }
-      if (this._cartridge == null) { return; }
-
-      _state.Run = true;
-      this._stepCounter = 0;
-      this._stopwatch.Restart();
-      this._manualResetEvent.Set();
-
-      if(_gameLoopThread == null)
-      {
-        // This is the case if the gameboy is started of has been stoped
-        this._gameLoopThread = new Thread(new ThreadStart(this.ThreadedRun));
-        this._gameLoopThread.Start();
-      }
-    }
-
-    /// <summary>
-    /// Pauses the simulation until Run is called again.
-    /// </summary>
-    public void Pause()
-    {
-      if (!_state.Run) { return; }
-      if (_state.Pause) { return; }
-      _state.Pause = true;
-      this._stopwatch.Stop();
-      this._pauseEvent.Reset();
-    }
-
-    /// <summary>
-    /// Cancels the current simulation. The internal state of the cpu and memory is discarded.
-    /// </summary>
-    public void Stop()
-    {
-      if (!_state.Run) { return; }
-      _state.Run = false;
-      this._stopwatch.Stop();
-
-      // We unpause if needed
-      this._manualResetEvent.Set();
-      this._pauseEvent.Set();
-
-      this._gameLoopThread.Join();
-      // We get rid of the current thread (a new will be created on restart)
-      this._gameLoopThread = null;
-      StopRequested();
-    }
-
-    /// <summary>
-    /// Method that is going to be running in a separate thread, calling Step() forever.
-    /// </summary>Infinite
-    private void ThreadedRun()
-    {
-      long drama = 0;
-      while (_state.Run)
-      {
-        CalculateFrame();
-
-        // Check timing issues
-        long ellapsedStopwatchTicks = this._stopwatch.ElapsedTicks;
-        ellapsedStopwatchTicks += drama;
-
-        long finalTicks;
-        if (!FastEmulation)
+        private void StepPeripherals(byte ticks)
         {
-
-          // Should we sleep?
-          if (ellapsedStopwatchTicks < stopwatchTicksPerFrame)
-          {
-            _manualResetEvent.Reset();
-            int timeToWait = (int)(/* 0.5 + */1000.0 * (stopwatchTicksPerFrame - ellapsedStopwatchTicks) / 
-                                                        Stopwatch.Frequency);
-            _manualResetEvent.Wait(timeToWait);
-            _manualResetEvent.Set();
-          }
-
-          finalTicks = _stopwatch.ElapsedTicks;
-          while (finalTicks < stopwatchTicksPerFrame)
-          {
-            // NOTE(Cristian): Sometimes the thread would be trapped here because when
-            //                 the process close signal gets, the timers stop working and
-            //                 the finalTicks variable would never update.
-            if ((!_state.Run) || (_state.Pause)) { break; }
-            finalTicks = _stopwatch.ElapsedTicks;
-          }
-
-          drama = finalTicks - (long)stopwatchTicksPerFrame;
-        }
-        else
-        {
-          finalTicks = _stopwatch.ElapsedTicks;
+            this._cpu.UpdateClockAndTimers(ticks);
+            this._memory.Step(ticks);
+            this._display.Step(ticks);
+            this._apu.Step(ticks);
+            this._stepCounter++;
+            this._serial.Step(ticks);
         }
 
-        // We calculate how many FPS we're giving
-        _totalFrameTicks += finalTicks;
-        ++_frameCounter;
-        if (_frameCounter >= 30)
+        /// <summary>
+        /// Steps the Gameboy until a frame is ready
+        /// </summary>
+        private void CalculateFrame()
         {
-          FPS = Math.Round(60 * (double)(30 * stopwatchTicksPerFrame) / (double)_totalFrameTicks);
-          _frameCounter = 0;
-          _totalFrameTicks = 0;
+            _display.StartFrame();
+            while ((_state.Run) && (!_state.FrameReady))
+            {
+                // We check if the thread has been paused
+                if (_state.Pause)
+                {
+                    PauseRequested();
+                    _pauseEvent.WaitOne(Timeout.Infinite);
+                }
+
+                MachineStep(false);
+            }
+            _display.EndFrame();
         }
+
+        /// <summary>
+        /// Attempts to run until the heat death of the universe.
+        /// </summary>
+        public void Run()
+        {
+            // We first try to unpause
+            if (_state.Pause)
+            {
+                this._pauseEvent.Set();
+                _state.Pause = false;
+                this._stopwatch.Start();
+            }
+
+            // NOTE(cdonoso): If we're running, we shouldn't restart. Or should we?
+            if (_state.Run) { return; }
+            if (this._cartridge == null) { return; }
+
+            _state.Run = true;
+            this._stepCounter = 0;
+            this._stopwatch.Restart();
+            this._manualResetEvent.Set();
+
+            if (_gameLoopThread == null)
+            {
+                // This is the case if the gameboy is started of has been stoped
+                this._gameLoopThread = new Thread(new ThreadStart(this.ThreadedRun));
+                this._gameLoopThread.Start();
+            }
+        }
+
+        /// <summary>
+        /// Pauses the simulation until Run is called again.
+        /// </summary>
+        public void Pause()
+        {
+            if (!_state.Run) { return; }
+            if (_state.Pause) { return; }
+            _state.Pause = true;
+            this._stopwatch.Stop();
+            this._pauseEvent.Reset();
+        }
+
+        /// <summary>
+        /// Cancels the current simulation. The internal state of the cpu and memory is discarded.
+        /// </summary>
+        public void Stop()
+        {
+            if (!_state.Run) { return; }
+            _state.Run = false;
+            this._stopwatch.Stop();
+
+            // We unpause if needed
+            this._manualResetEvent.Set();
+            this._pauseEvent.Set();
+
+            this._gameLoopThread.Join();
+            // We get rid of the current thread (a new will be created on restart)
+            this._gameLoopThread = null;
+            StopRequested();
+        }
+
+        public void Error(string message)
+        {
+            if (!_state.Run) { return; }
+            _state.Run = false;
+            this._stopwatch.Stop();
+
+            // We unpause if needed
+            this._manualResetEvent.Set();
+            this._pauseEvent.Set();
+
+            this._gameLoopThread.Join();
+            // We get rid of the current thread (a new will be created on restart)
+            this._gameLoopThread = null;
+            ErrorEvent(message);
+        }
+
+        /// <summary>
+        /// Method that is going to be running in a separate thread, calling Step() forever.
+        /// </summary>Infinite
+        private void ThreadedRun()
+        {
+            long drama = 0;
+            while (_state.Run)
+            {
+                CalculateFrame();
+
+                // Check timing issues
+                long ellapsedStopwatchTicks = this._stopwatch.ElapsedTicks;
+                ellapsedStopwatchTicks += drama;
+
+                long finalTicks;
+                if (!FastEmulation)
+                {
+
+                    // Should we sleep?
+                    if (ellapsedStopwatchTicks < stopwatchTicksPerFrame)
+                    {
+                        _manualResetEvent.Reset();
+                        int timeToWait = (int)(/* 0.5 + */1000.0 * (stopwatchTicksPerFrame - ellapsedStopwatchTicks) /
+                                                                    Stopwatch.Frequency);
+                        _manualResetEvent.Wait(timeToWait);
+                        _manualResetEvent.Set();
+                    }
+
+                    finalTicks = _stopwatch.ElapsedTicks;
+                    while (finalTicks < stopwatchTicksPerFrame)
+                    {
+                        // NOTE(Cristian): Sometimes the thread would be trapped here because when
+                        //                 the process close signal gets, the timers stop working and
+                        //                 the finalTicks variable would never update.
+                        if ((!_state.Run) || (_state.Pause)) { break; }
+                        finalTicks = _stopwatch.ElapsedTicks;
+                    }
+
+                    drama = finalTicks - (long)stopwatchTicksPerFrame;
+                }
+                else
+                {
+                    finalTicks = _stopwatch.ElapsedTicks;
+                }
+
+                // We calculate how many FPS we're giving
+                _totalFrameTicks += finalTicks;
+                ++_frameCounter;
+                if (_frameCounter >= 30)
+                {
+                    FPS = Math.Round(60 * (double)(30 * stopwatchTicksPerFrame) / (double)_totalFrameTicks);
+                    _frameCounter = 0;
+                    _totalFrameTicks = 0;
+                }
 
 #if TIMING
         if (_sampleCounter < _maxSamples)
@@ -478,212 +503,212 @@ namespace GBSharp
         _swBeginInvoke.Reset();
 #endif
 
-        _stopwatch.Restart();
-        _stepCounter = 0;
-        _state.FrameReady = false;
+                _stopwatch.Restart();
+                _stepCounter = 0;
+                _state.FrameReady = false;
 
-        // We see if the APU needs to close things this frame
-        _apu.EndFrame();
+                // We see if the APU needs to close things this frame
+                _apu.EndFrame();
 
-        // Finally here we trigger the notification
-        NotifyFrameCompleted();
+                // Finally here we trigger the notification
+                NotifyFrameCompleted();
 
-      }
-    }
-
-    public void SaveState()
-    {
-      // We stop pause the simulation
-      Pause();
-
-      SaveStateFileFormat saveState = new SaveStateFileFormat();
-      // We ge the states
-      saveState.MemoryState = _memory.GetState();
-      saveState.DisplayState = _display.GetState();
-      saveState.InterruptState = _interruptController.GetState();
-      saveState.CPUState = _cpu.GetState();
-      saveState.APUState = _apu.GetState();
-
-      FileStream saveStateStream;
-      string filename = "save_state.stt";
-      if (!File.Exists(filename))
-      {
-        saveStateStream = File.Create(filename);
-      }
-      else
-      {
-        try
-        {
-          saveStateStream = File.Open(filename, FileMode.Truncate);
-        }
-        catch(IOException)
-        {
-          Run();
-          return;
-        }
-      }
-
-      // We compress the state
-      using (GZipStream compressStream = new GZipStream(saveStateStream, CompressionMode.Compress))
-      {
-        BinaryFormatter formatter = new BinaryFormatter();
-        formatter.Serialize(compressStream, saveState);
-      }
-      saveStateStream.Close();
-
-      Run();
-    }
-
-    public void LoadState()
-    {
-      Pause();
-
-      string filename = "save_state.stt";
-
-      if (File.Exists(filename))
-      {
-        FileStream loadStateStream;
-        try
-        {
-          loadStateStream = File.Open(filename, FileMode.Open);
-        }
-        catch (IOException)
-        {
-          Run();
-          return;
+            }
         }
 
-        SaveStateFileFormat loadedState;
-        using (GZipStream decompressStream = new GZipStream(loadStateStream, CompressionMode.Decompress))
+        public void SaveState()
         {
-          BinaryFormatter formatter = new BinaryFormatter();
-          loadedState = formatter.Deserialize(decompressStream) as SaveStateFileFormat;
+            // We stop pause the simulation
+            Pause();
+
+            SaveStateFileFormat saveState = new SaveStateFileFormat();
+            // We ge the states
+            saveState.MemoryState = _memory.GetState();
+            saveState.DisplayState = _display.GetState();
+            saveState.InterruptState = _interruptController.GetState();
+            saveState.CPUState = _cpu.GetState();
+            saveState.APUState = _apu.GetState();
+
+            FileStream saveStateStream;
+            string filename = "save_state.stt";
+            if (!File.Exists(filename))
+            {
+                saveStateStream = File.Create(filename);
+            }
+            else
+            {
+                try
+                {
+                    saveStateStream = File.Open(filename, FileMode.Truncate);
+                }
+                catch (IOException)
+                {
+                    Run();
+                    return;
+                }
+            }
+
+            // We compress the state
+            using (GZipStream compressStream = new GZipStream(saveStateStream, CompressionMode.Compress))
+            {
+                BinaryFormatter formatter = new BinaryFormatter();
+                formatter.Serialize(compressStream, saveState);
+            }
+            saveStateStream.Close();
+
+            Run();
         }
-        loadStateStream.Close();
 
-        _memory.SetState(loadedState.MemoryState);
-        _display.SetState(loadedState.DisplayState);
-        _interruptController.SetState(loadedState.InterruptState);
-        _cpu.SetState(loadedState.CPUState);
-        _apu.SetState(loadedState.APUState);
-      }
-
-      Run();
-    }
-
-    /// <summary>
-    /// Debugger. Handles the cpu.BreakPointFound event.
-    /// </summary>
-    private void BreakpointHandler()
-    {
-      _state.InBreakpoint = true;
-      Pause();
-    }
-
-    /// <summary>
-    /// Debugger. Handles the cpu.InterruptHappened event.
-    /// </summary>
-    private void InterruptHandler(Interrupts interrupt)
-    {
-      _state.InBreakpoint = true;
-      Pause();
-    }
-
-    /// <summary>
-    /// Handles a new frame from the display.
-    /// </summary>
-    private void FrameReadyHandler()
-    {
-      _state.FrameReady = true;
-    }
-
-    /// <summary>
-    /// Call this method when a button is pressed in the user interface.
-    /// </summary>
-    /// <param name="button">The button that was pressed. It can be a combination of buttons too.</param>
-    public void PressButton(Keypad button)
-    {
-      if (button != Keypad.Speed)
-      {
-        _buttons |= button;
-        _interruptController.UpdateKeypadState(_buttons);
-        if (_cpu.Stopped) { _cpu.Stopped = false; }
-      }
-      else
-      {
-        FastEmulation = true;
-      }
-    }
-
-    /// <summary>
-    /// Call this method when a button is released in the user interface.
-    /// </summary>
-    /// <param name="button">The button that was released. It can be a combination of buttons too.</param>
-    public void ReleaseButton(Keypad button)
-    {
-      if (button != Keypad.Speed)
-      {
-        if (ReleaseButtons)
+        public void LoadState()
         {
-          _buttons &= ~button;
-          _interruptController.UpdateKeypadState(_buttons);
+            Pause();
+
+            string filename = "save_state.stt";
+
+            if (File.Exists(filename))
+            {
+                FileStream loadStateStream;
+                try
+                {
+                    loadStateStream = File.Open(filename, FileMode.Open);
+                }
+                catch (IOException)
+                {
+                    Run();
+                    return;
+                }
+
+                SaveStateFileFormat loadedState;
+                using (GZipStream decompressStream = new GZipStream(loadStateStream, CompressionMode.Decompress))
+                {
+                    BinaryFormatter formatter = new BinaryFormatter();
+                    loadedState = formatter.Deserialize(decompressStream) as SaveStateFileFormat;
+                }
+                loadStateStream.Close();
+
+                _memory.SetState(loadedState.MemoryState);
+                _display.SetState(loadedState.DisplayState);
+                _interruptController.SetState(loadedState.InterruptState);
+                _cpu.SetState(loadedState.CPUState);
+                _apu.SetState(loadedState.APUState);
+            }
+
+            Run();
         }
-      }
-      else
-      {
-        FastEmulation = false;
-        _apu.DepleteSoundEventQueues();
-      }
-    }
 
-    /// <summary>
-    /// Notifies subscribers that a step has been completed.
-    /// </summary>
-    private void NotifyStepCompleted()
-    {
-      if (StepCompleted != null)
-      {
-        StepCompleted();
-      }
-    }
+        /// <summary>
+        /// Debugger. Handles the cpu.BreakPointFound event.
+        /// </summary>
+        private void BreakpointHandler()
+        {
+            _state.InBreakpoint = true;
+            Pause();
+        }
 
-    /// <summary>
-    /// Notifies subscribers that a new frame has been completed.
-    /// </summary>
-    private void NotifyFrameCompleted()
-    {
-      if (FrameCompleted != null)
-      {
+        /// <summary>
+        /// Debugger. Handles the cpu.InterruptHappened event.
+        /// </summary>
+        private void InterruptHandler(Interrupts interrupt)
+        {
+            _state.InBreakpoint = true;
+            Pause();
+        }
+
+        /// <summary>
+        /// Handles a new frame from the display.
+        /// </summary>
+        private void FrameReadyHandler()
+        {
+            _state.FrameReady = true;
+        }
+
+        /// <summary>
+        /// Call this method when a button is pressed in the user interface.
+        /// </summary>
+        /// <param name="button">The button that was pressed. It can be a combination of buttons too.</param>
+        public void PressButton(Keypad button)
+        {
+            if (button != Keypad.Speed)
+            {
+                _buttons |= button;
+                _interruptController.UpdateKeypadState(_buttons);
+                if (_cpu.Stopped) { _cpu.Stopped = false; }
+            }
+            else
+            {
+                FastEmulation = true;
+            }
+        }
+
+        /// <summary>
+        /// Call this method when a button is released in the user interface.
+        /// </summary>
+        /// <param name="button">The button that was released. It can be a combination of buttons too.</param>
+        public void ReleaseButton(Keypad button)
+        {
+            if (button != Keypad.Speed)
+            {
+                if (ReleaseButtons)
+                {
+                    _buttons &= ~button;
+                    _interruptController.UpdateKeypadState(_buttons);
+                }
+            }
+            else
+            {
+                FastEmulation = false;
+                _apu.DepleteSoundEventQueues();
+            }
+        }
+
+        /// <summary>
+        /// Notifies subscribers that a step has been completed.
+        /// </summary>
+        private void NotifyStepCompleted()
+        {
+            if (StepCompleted != null)
+            {
+                StepCompleted();
+            }
+        }
+
+        /// <summary>
+        /// Notifies subscribers that a new frame has been completed.
+        /// </summary>
+        private void NotifyFrameCompleted()
+        {
+            if (FrameCompleted != null)
+            {
 #if TIMING
         _swBlit.Start();
         _display.CopyTargets();
         _swBlit.Stop();
 #else
-        _display.CopyTargets();
+                _display.CopyTargets();
 #endif
 
-        FrameCompleted();
-      }
-    }
+                FrameCompleted();
+            }
+        }
 
-    public Dictionary<MMR, ushort> GetRegisterDic()
-    {
-      Dictionary<MMR, ushort> registerDic = new Dictionary<MMR, ushort>();
-      foreach (MMR registerEnum in Enum.GetValues(typeof(MMR)))
-      {
-        registerDic.Add(registerEnum, _memory.LowLevelRead((ushort)registerEnum));
-      }
-      return registerDic;
-    }
+        public Dictionary<MMR, ushort> GetRegisterDic()
+        {
+            Dictionary<MMR, ushort> registerDic = new Dictionary<MMR, ushort>();
+            foreach (MMR registerEnum in Enum.GetValues(typeof(MMR)))
+            {
+                registerDic.Add(registerEnum, _memory.LowLevelRead((ushort)registerEnum));
+            }
+            return registerDic;
+        }
 
-    public void Dispose()
-    {
-      _apu.Dispose();
-      _memory.Dispose();
-    }
+        public void Dispose()
+        {
+            _apu.Dispose();
+            _memory.Dispose();
+        }
 
-    ~GameBoy()
-    {
+        ~GameBoy()
+        {
 #if TIMING
       using (var file = new System.IO.StreamWriter("timing.csv", false))
       {
@@ -706,6 +731,6 @@ namespace GBSharp
         }
       }
 #endif
+        }
     }
-  }
 }
