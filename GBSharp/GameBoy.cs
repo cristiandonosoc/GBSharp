@@ -10,6 +10,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using System.IO.Compression;
+using GBSharp.MemorySpace.MemoryHandlers;
 
 namespace GBSharp
 {
@@ -151,7 +152,7 @@ namespace GBSharp
       {
         _apu.CartridgeFilename = this.CartridgeFilename; 
         _memory.SetMemoryHandler(GBSharp.MemorySpace.MemoryHandlers.
-                                     MemoryHandlerFactory.CreateMemoryHandler(this));
+                                 MemoryHandlerFactory.CreateMemoryHandler(this));
       }
 
       _buttons = Keypad.None;
@@ -187,7 +188,7 @@ namespace GBSharp
     /// Connects to the gameboy a new cartridge with the given contents.
     /// </summary>
     /// <param name="cartridgeData"></param>
-    public void LoadCartridge(string cartridgeFullFilename, byte[] cartridgeData)
+    public bool LoadCartridge(string cartridgeFullFilename, byte[] cartridgeData)
     {
       if (_state.Run) { Reset(); }
       _cartridge = new Cartridge.Cartridge();
@@ -196,13 +197,25 @@ namespace GBSharp
       _cpu.ResetBreakpoints();
       CartridgeFilename = Path.GetFileNameWithoutExtension(cartridgeFullFilename);
       CartridgeDirectory = Path.GetDirectoryName(cartridgeFullFilename);
-      _apu.CartridgeFilename = this.CartridgeFilename; 
+      _apu.CartridgeFilename = this.CartridgeFilename;
       // We create the MemoryHandler according to the data
       // from the cartridge and set it to the memory.
       // From this point onwards, all the access to memory
       // are done throught the MemoryHandler
-      _memory.SetMemoryHandler(GBSharp.MemorySpace.MemoryHandlers.
-                               MemoryHandlerFactory.CreateMemoryHandler(this));
+      MemoryHandler memoryHandler = MemoryHandlerFactory.CreateMemoryHandler(this);
+      if (memoryHandler == null)
+      {
+        // We destroy all the info
+        _cartridge = null;
+        CartridgeFilename = "";
+        CartridgeDirectory = "";
+        _apu.CartridgeFilename = "";
+
+        return false;
+      }
+      _memory.SetMemoryHandler(memoryHandler);
+
+      return true;
     }
 
     public void Step(bool ignoreBreakpoints)

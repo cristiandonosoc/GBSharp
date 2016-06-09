@@ -10,7 +10,7 @@ namespace GBSharp
     event Action PauseRequested;
     event Action StopRequested;
 
-    void LoadCartridge(string filename, byte[] cartridgeData);
+    bool LoadCartridge(string filename, byte[] cartridgeData);
 
     void Run();
     void Reset();

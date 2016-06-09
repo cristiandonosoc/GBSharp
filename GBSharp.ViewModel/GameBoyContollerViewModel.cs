@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using GBSharp.CPUSpace.Dictionaries;
 using GBSharp.CPUSpace;
 using System.Globalization;
+using System.Windows;
 
 namespace GBSharp.ViewModel
 {
@@ -137,7 +138,10 @@ namespace GBSharp.ViewModel
         {
             if (filterIndex == 1)
             {
-                LoadROM(filePath);
+                if(!LoadROM(filePath))
+                {
+                    return;
+                }
                 NotifyFileLoaded();
             }
             else if (filterIndex == 2)
@@ -146,12 +150,21 @@ namespace GBSharp.ViewModel
             }
         }
 
-        private void LoadROM(string filePath)
+        private bool LoadROM(string filePath)
         {
             FilePath = filePath;
             var data = File.ReadAllBytes(filePath);
-            _gameBoy.LoadCartridge(FilePath, data);
+            bool loadSuccessful = _gameBoy.LoadCartridge(FilePath, data);
+            if (!loadSuccessful)
+            {
+                MessageBox.Show("This cartridge type is not supported.\n" +
+                                "Only ROM, ROM_RAM, MBC1 and MBC3 are supported.",
+                                "Unsupported ROM type");
+                return false;
+            }
+      
             CartridgeTitle = _gameBoy.Cartridge.Title;
+            return true;
         }
 
         private void LoadMemoryDump(string filePath)
