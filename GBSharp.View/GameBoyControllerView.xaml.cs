@@ -33,5 +33,18 @@ namespace GBSharp.View
 
       FileText.Text = openFileDialog.FileName;
     }
+
+    private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+      if (e.AddedItems.Count == 0) { return; }
+      try
+      {
+        ((ListBox)sender).ScrollIntoView(e.AddedItems[0]);
+      }
+      catch(Exception)
+      {
+
+      }
+    }
   }
 }
