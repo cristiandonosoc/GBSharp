@@ -74,6 +74,7 @@
     <Compile Include="BackgroundViewModel.cs" />
     <Compile Include="BreakpointsViewModel.cs" />
     <Compile Include="BreakpointViewModel.cs" />
+    <Compile Include="ControlsViewModel.cs" />
     <Compile Include="CPUViewModel.cs" />
     <Compile Include="DelegateCommand.cs" />
     <Compile Include="DisplayTimingViewModel.cs" />

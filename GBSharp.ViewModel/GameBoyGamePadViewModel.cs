@@ -4,226 +4,228 @@ using System.Windows.Media.Imaging;
 
 namespace GBSharp.ViewModel
 {
-  public class GameBoyGamePadViewModel : ViewModelBase, IDisposable
-  {
-    private readonly IGameBoy _gameBoy;
-    private readonly IDisplay _display;
-    private readonly IDispatcher _dispatcher;
-
-    private WriteableBitmap _screen;
-    private string _textScreen;
-
-    private int _frameCount;
-    private double _fps;
-    private DateTime _previousTime = DateTime.Now;
-    private bool _releaseButtons;
-
-    private bool _screenOnly;
-    private bool _asciiMode;
-
-    public WriteableBitmap Screen
+    public class GameBoyGamePadViewModel : ViewModelBase, IDisposable
     {
-      get { return _screen; }
-      set
-      {
-        _screen = value;
-        OnPropertyChanged(() => Screen);
-      }
-    }
+        private ButtonMapping _buttonMapping;
 
-    public string TextScreen
-    {
-      get { return _textScreen; }
-      set
-      {
-        _textScreen = value;
-        OnPropertyChanged(() => TextScreen);
-      }
-    }
+        private readonly IGameBoy _gameBoy;
+        private readonly IDisplay _display;
+        private readonly IDispatcher _dispatcher;
 
-    public bool ReleaseButtons
-    {
-      get { return _releaseButtons; }
-      set
-      {
-        _releaseButtons = value;
-        _gameBoy.ReleaseButtons = value;
-        OnPropertyChanged(() => ReleaseButtons);
-      }
-    }
+        private WriteableBitmap _screen;
+        private string _textScreen;
 
-    public string FPS
-    {
-      get { return _fps.ToString("0.00"); }
-    }
+        private int _frameCount;
+        private double _fps;
+        private DateTime _previousTime = DateTime.Now;
+        private bool _releaseButtons;
 
-    public ICommand ButtonUpDownCommand { get { return new DelegateCommand(ButtonUpDown); } }
-    public ICommand ButtonUpUpCommand { get { return new DelegateCommand(ButtonUpUp); } }
-    private void ButtonUpDown() { _gameBoy.PressButton(Keypad.Up); }
-    private void ButtonUpUp() { _gameBoy.ReleaseButton(Keypad.Up); }
+        private bool _screenOnly;
+        private bool _asciiMode;
 
-    public ICommand ButtonDownDownCommand { get { return new DelegateCommand(ButtonDownDown); } }
-    public ICommand ButtonDownUpCommand { get { return new DelegateCommand(ButtonDownUp); } }
-    private void ButtonDownDown() { _gameBoy.PressButton(Keypad.Down); }
-    private void ButtonDownUp() { _gameBoy.ReleaseButton(Keypad.Down); }
+        public WriteableBitmap Screen
+        {
+            get { return _screen; }
+            set
+            {
+                _screen = value;
+                OnPropertyChanged(() => Screen);
+            }
+        }
 
-    public ICommand ButtonLeftDownCommand { get { return new DelegateCommand(ButtonLeftDown); } }
-    public ICommand ButtonLeftUpCommand { get { return new DelegateCommand(ButtonLeftUp); } }
-    private void ButtonLeftDown() { _gameBoy.PressButton(Keypad.Left); }
-    private void ButtonLeftUp() { _gameBoy.ReleaseButton(Keypad.Left); }
+        public string TextScreen
+        {
+            get { return _textScreen; }
+            set
+            {
+                _textScreen = value;
+                OnPropertyChanged(() => TextScreen);
+            }
+        }
 
-    public ICommand ButtonRightDownCommand { get { return new DelegateCommand(ButtonRightDown); } }
-    public ICommand ButtonRightUpCommand { get { return new DelegateCommand(ButtonRightUp); } }
-    private void ButtonRightDown() { _gameBoy.PressButton(Keypad.Right); }
-    private void ButtonRightUp() { _gameBoy.ReleaseButton(Keypad.Right); }
+        public bool ReleaseButtons
+        {
+            get { return _releaseButtons; }
+            set
+            {
+                _releaseButtons = value;
+                _gameBoy.ReleaseButtons = value;
+                OnPropertyChanged(() => ReleaseButtons);
+            }
+        }
 
-    public ICommand ButtonADownCommand { get { return new DelegateCommand(ButtonADown); } }
-    public ICommand ButtonAUpCommand { get { return new DelegateCommand(ButtonAUp); } }
-    private void ButtonADown() { _gameBoy.PressButton(Keypad.A); }
-    private void ButtonAUp() { _gameBoy.ReleaseButton(Keypad.A); }
+        public string FPS
+        {
+            get { return _fps.ToString("0.00"); }
+        }
 
-    public ICommand ButtonBDownCommand { get { return new DelegateCommand(ButtonBDown); } }
-    public ICommand ButtonBUpCommand { get { return new DelegateCommand(ButtonBUp); } }
-    private void ButtonBDown() { _gameBoy.PressButton(Keypad.B); }
-    private void ButtonBUp() { _gameBoy.ReleaseButton(Keypad.B); }
+        public ICommand ButtonUpDownCommand { get { return new DelegateCommand(ButtonUpDown); } }
+        public ICommand ButtonUpUpCommand { get { return new DelegateCommand(ButtonUpUp); } }
+        private void ButtonUpDown() { _gameBoy.PressButton(Keypad.Up); }
+        private void ButtonUpUp() { _gameBoy.ReleaseButton(Keypad.Up); }
 
-    public ICommand ButtonSelectDownCommand { get { return new DelegateCommand(ButtonSelectDown); } }
-    public ICommand ButtonSelectUpCommand { get { return new DelegateCommand(ButtonSelectUp); } }
-    private void ButtonSelectDown() { _gameBoy.PressButton(Keypad.Select); }
-    private void ButtonSelectUp() { _gameBoy.ReleaseButton(Keypad.Select); }
+        public ICommand ButtonDownDownCommand { get { return new DelegateCommand(ButtonDownDown); } }
+        public ICommand ButtonDownUpCommand { get { return new DelegateCommand(ButtonDownUp); } }
+        private void ButtonDownDown() { _gameBoy.PressButton(Keypad.Down); }
+        private void ButtonDownUp() { _gameBoy.ReleaseButton(Keypad.Down); }
 
-    public ICommand ButtonStartDownCommand { get { return new DelegateCommand(ButtonStartDown); } }
-    public ICommand ButtonStartUpCommand { get { return new DelegateCommand(ButtonStartUp); } }
-    private void ButtonStartDown() { _gameBoy.PressButton(Keypad.Start); }
-    private void ButtonStartUp() { _gameBoy.ReleaseButton(Keypad.Start); }
+        public ICommand ButtonLeftDownCommand { get { return new DelegateCommand(ButtonLeftDown); } }
+        public ICommand ButtonLeftUpCommand { get { return new DelegateCommand(ButtonLeftUp); } }
+        private void ButtonLeftDown() { _gameBoy.PressButton(Keypad.Left); }
+        private void ButtonLeftUp() { _gameBoy.ReleaseButton(Keypad.Left); }
 
-    public bool ScreenOnly
-    {
-      get { return _screenOnly; }
-      set
-      {
-        _screenOnly = value;
-        OnPropertyChanged(() => ScreenOnly);
-      }
-    }
+        public ICommand ButtonRightDownCommand { get { return new DelegateCommand(ButtonRightDown); } }
+        public ICommand ButtonRightUpCommand { get { return new DelegateCommand(ButtonRightUp); } }
+        private void ButtonRightDown() { _gameBoy.PressButton(Keypad.Right); }
+        private void ButtonRightUp() { _gameBoy.ReleaseButton(Keypad.Right); }
 
-    public bool AsciiMode
-    {
-      get { return _asciiMode; }
-      set
-      {
-        _asciiMode = value;
-        OnPropertyChanged(() => AsciiMode);
-      }
-    }
+        public ICommand ButtonADownCommand { get { return new DelegateCommand(ButtonADown); } }
+        public ICommand ButtonAUpCommand { get { return new DelegateCommand(ButtonAUp); } }
+        private void ButtonADown() { _gameBoy.PressButton(Keypad.A); }
+        private void ButtonAUp() { _gameBoy.ReleaseButton(Keypad.A); }
+
+        public ICommand ButtonBDownCommand { get { return new DelegateCommand(ButtonBDown); } }
+        public ICommand ButtonBUpCommand { get { return new DelegateCommand(ButtonBUp); } }
+        private void ButtonBDown() { _gameBoy.PressButton(Keypad.B); }
+        private void ButtonBUp() { _gameBoy.ReleaseButton(Keypad.B); }
+
+        public ICommand ButtonSelectDownCommand { get { return new DelegateCommand(ButtonSelectDown); } }
+        public ICommand ButtonSelectUpCommand { get { return new DelegateCommand(ButtonSelectUp); } }
+        private void ButtonSelectDown() { _gameBoy.PressButton(Keypad.Select); }
+        private void ButtonSelectUp() { _gameBoy.ReleaseButton(Keypad.Select); }
+
+        public ICommand ButtonStartDownCommand { get { return new DelegateCommand(ButtonStartDown); } }
+        public ICommand ButtonStartUpCommand { get { return new DelegateCommand(ButtonStartUp); } }
+        private void ButtonStartDown() { _gameBoy.PressButton(Keypad.Start); }
+        private void ButtonStartUp() { _gameBoy.ReleaseButton(Keypad.Start); }
+
+        public bool ScreenOnly
+        {
+            get { return _screenOnly; }
+            set
+            {
+                _screenOnly = value;
+                OnPropertyChanged(() => ScreenOnly);
+            }
+        }
+
+        public bool AsciiMode
+        {
+            get { return _asciiMode; }
+            set
+            {
+                _asciiMode = value;
+                OnPropertyChanged(() => AsciiMode);
+            }
+        }
 
 
-    public GameBoyGamePadViewModel(IGameBoy gameBoy, IDispatcher dispatcher)
-    {
-      _dispatcher = dispatcher;
-      _gameBoy = gameBoy;
-      _display = _gameBoy.Display;
-      _gameBoy.FrameCompleted += OnFrameCompleted;
+        public GameBoyGamePadViewModel(IGameBoy gameBoy, IDispatcher dispatcher)
+        {
+            _dispatcher = dispatcher;
+            _gameBoy = gameBoy;
+            _display = _gameBoy.Display;
+            _gameBoy.FrameCompleted += OnFrameCompleted;
 
-      VideoSpace.DisplayDefinition disDef = _display.GetDisplayDefinition();
-      _screen = new WriteableBitmap(disDef.ScreenPixelCountX, disDef.ScreenPixelCountY,
-                                    96, 96,
-                                    System.Windows.Media.PixelFormats.Bgra32, null);
-      _frame = new uint[disDef.ScreenPixelCountX * disDef.ScreenPixelCountY];
-    }
+            VideoSpace.DisplayDefinition disDef = _display.GetDisplayDefinition();
+            _screen = new WriteableBitmap(disDef.ScreenPixelCountX, disDef.ScreenPixelCountY,
+                                          96, 96,
+                                          System.Windows.Media.PixelFormats.Bgra32, null);
+            _frame = new uint[disDef.ScreenPixelCountX * disDef.ScreenPixelCountY];
+        }
 
-    uint[] _frame;
+        uint[] _frame;
 
-    private void OnFrameCompleted()
-    {
+        private void OnFrameCompleted()
+        {
 #if TIMING
       GameBoy._swBeginInvoke.Start();
       _dispatcher.BeginInvoke(new Action(UpdateFromGameboy), null);
       GameBoy._swBeginInvoke.Stop();
 #else
-      _dispatcher.BeginInvoke(new Action(UpdateFromGameboy), null);
+            _dispatcher.BeginInvoke(new Action(UpdateFromGameboy), null);
 #endif
+        }
+
+        private void UpdateFromGameboy()
+        {
+            ReleaseButtons = _gameBoy.ReleaseButtons;
+
+            // We copy the ready screen Frame
+            var target = _gameBoy.Display.Screen;
+            Array.Copy(target, _frame, target.Length);
+            Utils.TransferBytesToWriteableBitmap(_screen, _frame);
+            if (AsciiMode)
+                TextScreen = Utils.DisplayBytesToString(_frame, new[] { ' ', ':', '*', '@' }, _screen.PixelWidth);
+            OnPropertyChanged(() => Screen);
+
+            UpdateFPS();
+        }
+
+        private void UpdateFPS()
+        {
+            _frameCount++;
+            if (_frameCount > 30)
+            {
+                _fps = _gameBoy.FPS;
+                OnPropertyChanged(() => FPS);
+                _frameCount = 0;
+
+            }
+        }
+
+        private void OnUpdateDisplay()
+        {
+            OnFrameCompleted();
+        }
+
+        public void Dispose()
+        {
+            _gameBoy.FrameCompleted -= OnFrameCompleted;
+        }
+
+        public void KeyUp(KeyEventArgs args)
+        {
+            if (args.Key == Key.Enter)
+                _gameBoy.ReleaseButton(Keypad.Start);
+            else if (args.Key == Key.Space)
+                _gameBoy.ReleaseButton(Keypad.Select);
+            else if (args.Key == Key.O)
+                _gameBoy.ReleaseButton(Keypad.A);
+            else if (args.Key == Key.P)
+                _gameBoy.ReleaseButton(Keypad.B);
+            else if (args.Key == Key.A)
+                _gameBoy.ReleaseButton(Keypad.Left);
+            else if (args.Key == Key.D)
+                _gameBoy.ReleaseButton(Keypad.Right);
+            else if (args.Key == Key.W)
+                _gameBoy.ReleaseButton(Keypad.Up);
+            else if (args.Key == Key.S)
+                _gameBoy.ReleaseButton(Keypad.Down);
+            else if (args.Key == Key.Oem3)
+                _gameBoy.ReleaseButton(Keypad.Speed);
+        }
+
+        public void KeyDown(KeyEventArgs args)
+        {
+            if (args.Key == Key.Enter)
+                _gameBoy.PressButton(Keypad.Start);
+            else if (args.Key == Key.Space)
+                _gameBoy.PressButton(Keypad.Select);
+            else if (args.Key == Key.O)
+                _gameBoy.PressButton(Keypad.A);
+            else if (args.Key == Key.P)
+                _gameBoy.PressButton(Keypad.B);
+            else if (args.Key == Key.A)
+                _gameBoy.PressButton(Keypad.Left);
+            else if (args.Key == Key.D)
+                _gameBoy.PressButton(Keypad.Right);
+            else if (args.Key == Key.W)
+                _gameBoy.PressButton(Keypad.Up);
+            else if (args.Key == Key.S)
+                _gameBoy.PressButton(Keypad.Down);
+            else if (args.Key == Key.Oem3)
+                _gameBoy.PressButton(Keypad.Speed);
+        }
     }
-
-    private void UpdateFromGameboy()
-    {
-      ReleaseButtons = _gameBoy.ReleaseButtons;
-
-      // We copy the ready screen Frame
-      var target = _gameBoy.Display.Screen;
-      Array.Copy(target, _frame, target.Length);
-      Utils.TransferBytesToWriteableBitmap(_screen, _frame);
-      if (AsciiMode)
-        TextScreen = Utils.DisplayBytesToString(_frame, new []{' ', ':', '*','@'}, _screen.PixelWidth);
-      OnPropertyChanged(() => Screen);
-
-      UpdateFPS();
-    }
-
-    private void UpdateFPS()
-    {
-      _frameCount++;
-      if (_frameCount > 30)
-      {
-        _fps = _gameBoy.FPS;
-        OnPropertyChanged(() => FPS);
-        _frameCount = 0;
-
-      }
-    }
-
-    private void OnUpdateDisplay()
-    {
-      OnFrameCompleted();
-    }
-
-    public void Dispose()
-    {
-      _gameBoy.FrameCompleted -= OnFrameCompleted;
-    }
-
-    public void KeyUp(KeyEventArgs args)
-    {
-      if (args.Key == Key.Enter)
-        _gameBoy.ReleaseButton(Keypad.Start);
-      else if (args.Key == Key.Space)
-        _gameBoy.ReleaseButton(Keypad.Select);
-      else if (args.Key == Key.O)
-        _gameBoy.ReleaseButton(Keypad.A);
-      else if (args.Key == Key.P)
-        _gameBoy.ReleaseButton(Keypad.B);
-      else if (args.Key == Key.A)
-        _gameBoy.ReleaseButton(Keypad.Left);
-      else if (args.Key == Key.D)
-        _gameBoy.ReleaseButton(Keypad.Right);
-      else if (args.Key == Key.W)
-        _gameBoy.ReleaseButton(Keypad.Up);
-      else if (args.Key == Key.S)
-        _gameBoy.ReleaseButton(Keypad.Down); 
-      else if (args.Key == Key.Oem3)
-        _gameBoy.ReleaseButton(Keypad.Speed);
-    }
-
-    public void KeyDown(KeyEventArgs args)
-    {
-      if (args.Key == Key.Enter)
-        _gameBoy.PressButton(Keypad.Start);
-      else if (args.Key == Key.Space)
-        _gameBoy.PressButton(Keypad.Select);
-      else if (args.Key == Key.O)
-        _gameBoy.PressButton(Keypad.A);
-      else if (args.Key == Key.P)
-        _gameBoy.PressButton(Keypad.B);
-      else if (args.Key == Key.A)
-        _gameBoy.PressButton(Keypad.Left);
-      else if (args.Key == Key.D)
-        _gameBoy.PressButton(Keypad.Right);
-      else if (args.Key == Key.W)
-        _gameBoy.PressButton(Keypad.Up);
-      else if (args.Key == Key.S)
-        _gameBoy.PressButton(Keypad.Down);
-      else if (args.Key == Key.Oem3)
-        _gameBoy.PressButton(Keypad.Speed);
-    }
-  }
 }

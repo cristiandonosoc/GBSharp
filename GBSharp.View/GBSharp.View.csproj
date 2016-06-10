@@ -96,6 +96,9 @@
     <Compile Include="BreakpointsView.xaml.cs">
       <DependentUpon>BreakpointsView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ControlsView.xaml.cs">
+      <DependentUpon>ControlsView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DisplayTimingView.xaml.cs">
       <DependentUpon>DisplayTimingView.xaml</DependentUpon>
     </Compile>
@@ -147,6 +150,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="CartridgeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ControlsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

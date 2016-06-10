@@ -24,7 +24,7 @@ namespace GBSharp.ViewModel
         private readonly APUViewModel _apu;
         private readonly MemoryImageViewModel _memoryImage;
         private readonly SoundRecordingViewModel _soundRecording;
-
+        private readonly ControlsViewModel _controls;
 
         public MemoryViewModel Memory { get { return _memory; } }
         public CPUViewModel CPU { get { return _cpu; } }
@@ -40,8 +40,11 @@ namespace GBSharp.ViewModel
         public APUViewModel APU { get { return _apu; } }
         public MemoryImageViewModel MemoryImage { get { return _memoryImage; } }
         public SoundRecordingViewModel SoundRecording { get { return _soundRecording; } }
+        public ControlsViewModel Controls { get { return _controls; } }
 
-        public GameBoyViewModel(IGameBoy gameBoy, IDispatcher dispatcher, IWindow window, IOpenFileDialogFactory fileDialogFactory, IKeyboardHandler keyboardHandler)
+        public GameBoyViewModel(IGameBoy gameBoy, IDispatcher dispatcher, IWindow window, 
+                                IOpenFileDialogFactory fileDialogFactory, 
+                                IKeyboardHandler keyboardHandler)
         {
             _gameBoy = gameBoy;
             _dispatcher = dispatcher;
@@ -70,6 +73,7 @@ namespace GBSharp.ViewModel
             _apu = new APUViewModel(_gameBoy, _dispatcher);
             _memoryImage = new MemoryImageViewModel(_gameBoy, _dispatcher);
             _soundRecording = new SoundRecordingViewModel(_gameBoy);
+            _controls = new ControlsViewModel();
 
             // Gameboy Controller events
             _gameBoyController = new GameBoyContollerViewModel(_gameBoy, fileDialogFactory, _breakpoints);
