@@ -6,8 +6,6 @@ namespace GBSharp.ViewModel
 {
     public class GameBoyGamePadViewModel : ViewModelBase, IDisposable
     {
-        private ButtonMapping _buttonMapping;
-
         private readonly IGameBoy _gameBoy;
         private readonly IDisplay _display;
         private readonly IDispatcher _dispatcher;
@@ -184,48 +182,26 @@ namespace GBSharp.ViewModel
             _gameBoy.FrameCompleted -= OnFrameCompleted;
         }
 
-        public void KeyUp(KeyEventArgs args)
+        public void KeyUp(ButtonMapping mapping, KeyEventArgs args)
         {
-            if (args.Key == Key.Enter)
-                _gameBoy.ReleaseButton(Keypad.Start);
-            else if (args.Key == Key.Space)
-                _gameBoy.ReleaseButton(Keypad.Select);
-            else if (args.Key == Key.O)
-                _gameBoy.ReleaseButton(Keypad.A);
-            else if (args.Key == Key.P)
-                _gameBoy.ReleaseButton(Keypad.B);
-            else if (args.Key == Key.A)
-                _gameBoy.ReleaseButton(Keypad.Left);
-            else if (args.Key == Key.D)
-                _gameBoy.ReleaseButton(Keypad.Right);
-            else if (args.Key == Key.W)
-                _gameBoy.ReleaseButton(Keypad.Up);
-            else if (args.Key == Key.S)
-                _gameBoy.ReleaseButton(Keypad.Down);
-            else if (args.Key == Key.Oem3)
-                _gameBoy.ReleaseButton(Keypad.Speed);
+            foreach(Key key in mapping.Keys)
+            {
+                if (args.Key == key)
+                {
+                    _gameBoy.ReleaseButton(mapping[key]);
+                }
+            }
         }
 
-        public void KeyDown(KeyEventArgs args)
+        public void KeyDown(ButtonMapping mapping, KeyEventArgs args)
         {
-            if (args.Key == Key.Enter)
-                _gameBoy.PressButton(Keypad.Start);
-            else if (args.Key == Key.Space)
-                _gameBoy.PressButton(Keypad.Select);
-            else if (args.Key == Key.O)
-                _gameBoy.PressButton(Keypad.A);
-            else if (args.Key == Key.P)
-                _gameBoy.PressButton(Keypad.B);
-            else if (args.Key == Key.A)
-                _gameBoy.PressButton(Keypad.Left);
-            else if (args.Key == Key.D)
-                _gameBoy.PressButton(Keypad.Right);
-            else if (args.Key == Key.W)
-                _gameBoy.PressButton(Keypad.Up);
-            else if (args.Key == Key.S)
-                _gameBoy.PressButton(Keypad.Down);
-            else if (args.Key == Key.Oem3)
-                _gameBoy.PressButton(Keypad.Speed);
+            foreach(Key key in mapping.Keys)
+            {
+                if (args.Key == key)
+                {
+                    _gameBoy.PressButton(mapping[key]);
+                }
+            }
         }
     }
 }

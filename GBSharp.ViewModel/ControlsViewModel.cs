@@ -19,6 +19,17 @@ namespace GBSharp.ViewModel
         }
 
         private List<Keymap> _mapping;
+        internal IEnumerable<Key> Keys
+        {
+            get
+            {
+                foreach(Keymap keymap in _mapping)
+                {
+                    yield return keymap.Key;
+                }
+                yield break;
+            }
+        }
 
         public Key this[Keypad keypad]
         {
@@ -83,7 +94,7 @@ namespace GBSharp.ViewModel
         }
     }
 
-    public class ControlsViewModel : ViewModelBase, IDisposable
+    public class ControlsViewModel : ViewModelBase
     {
 
         private string _upControl;
@@ -226,13 +237,38 @@ namespace GBSharp.ViewModel
         /// <summary>
         /// Initializes a new instance of the ControlsViewModel class.
         /// </summary>
-        public ControlsViewModel()
+        public ControlsViewModel(ButtonMapping mapping)
         {
-            _mapping = new ButtonMapping();
+            _mapping = mapping;
         }
 
-        public void Dispose()
+        public ICommand ButtonDownUpCommand { get { return new DelegateCommand(ButtonDownUp); } }
+        public void ButtonDownUp() { SetPressMode(Keypad.Up); }
+        public ICommand ButtonDownDownCommand { get { return new DelegateCommand(ButtonDownDown); } }
+        public void ButtonDownDown() { SetPressMode(Keypad.Down); }
+        public ICommand ButtonDownLeftCommand { get { return new DelegateCommand(ButtonDownLeft); } }
+        public void ButtonDownLeft() { SetPressMode(Keypad.Left); }
+        public ICommand ButtonDownRightCommand { get { return new DelegateCommand(ButtonDownRight); } }
+        public void ButtonDownRight() { SetPressMode(Keypad.Right); }
+
+        public ICommand ButtonDownACommand { get { return new DelegateCommand(ButtonDownA); } }
+        public void ButtonDownA() { SetPressMode(Keypad.A); }
+        public ICommand ButtonDownBCommand { get { return new DelegateCommand(ButtonDownB); } }
+        public void ButtonDownB() { SetPressMode(Keypad.B); }
+        public ICommand ButtonDownStartCommand { get { return new DelegateCommand(ButtonDownStart); } }
+        public void ButtonDownStart() { SetPressMode(Keypad.Start); }
+        public ICommand ButtonDownSelectCommand { get { return new DelegateCommand(ButtonDownSelect); } }
+        public void ButtonDownSelect() { SetPressMode(Keypad.Select); }
+
+        public ICommand ButtonDownSpeedCommand { get { return new DelegateCommand(ButtonDownSpeed); } }
+        public void ButtonDownSpeed() { SetPressMode(Keypad.Speed); }
+
+        private void SetPressMode(Keypad keypad)
         {
+
         }
+
+
+
     }
 }
