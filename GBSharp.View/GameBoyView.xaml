@@ -14,6 +14,13 @@
         </ScrollViewer>
       </Grid>
     </DataTemplate>
+    <DataTemplate DataType="{x:Type viewModel:ControlsViewModel}">
+      <Grid Style="{StaticResource SubContentGrid}">
+        <ScrollViewer>
+          <view:ControlsView></view:ControlsView>
+        </ScrollViewer>
+      </Grid>
+    </DataTemplate>
     <DataTemplate DataType="{x:Type viewModel:CPUViewModel}">
       <Grid Style="{StaticResource SubContentGrid}">
         <ScrollViewer>

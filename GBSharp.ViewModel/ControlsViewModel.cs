@@ -6,34 +6,80 @@ namespace GBSharp.ViewModel
 {
     public class ButtonMapping
     {
-        private Dictionary<Key, Keypad> _mappingDictionary;
+        class Keymap
+        {
+            internal Key Key { get; set; }
+            internal Keypad Keypad { get; set; }
 
-        public Keypad UpButton;
-        public Keypad DownButton;
-        public Keypad LeftButton;
-        public Keypad RightButton;
+            internal Keymap(Key key, Keypad keypad)
+            {
+                Key = key;
+                Keypad = keypad;
+            }
+        }
 
-        public Keypad AButton;
-        public Keypad BButton;
-        public Keypad StartButton;
-        public Keypad SelectButton;
+        private List<Keymap> _mapping;
 
-        public Keypad FastButton;
+        public Key this[Keypad keypad]
+        {
+            get
+            {
+                foreach (Keymap map in _mapping)
+                {
+                    if (map.Keypad == keypad) { return map.Key; }
+                }
+                return 0;
+            }
+            set
+            {
+                foreach (Keymap map in _mapping)
+                {
+                    if (map.Keypad == keypad)
+                    {
+                        map.Key = value;
+                    }
+                }
+            }
+        }
+
+        public Keypad this[Key key]
+        {
+            get
+            {
+                foreach (Keymap map in _mapping)
+                {
+                    if (map.Key == key) { return map.Keypad; }
+                }
+                return 0;
+            }
+            set
+            {
+                foreach (Keymap map in _mapping)
+                {
+                    if (map.Key == key)
+                    {
+                        map.Keypad = value;
+                    }
+                }
+            }
+        }
+
 
         public ButtonMapping()
         {
-            _mappingDictionary = new Dictionary<Key, Keypad>();
-            _mappingDictionary.Add(Key.Up, Keypad.Up);
-            _mappingDictionary.Add(Key.Down, Keypad.Down);
-            _mappingDictionary.Add(Key.Left, Keypad.Left);
-            _mappingDictionary.Add(Key.Right, Keypad.Right);
+            _mapping = new List<Keymap>();
 
-            _mappingDictionary.Add(Key.A, Keypad.A);
-            _mappingDictionary.Add(Key.B, Keypad.B);
-            _mappingDictionary.Add(Key.Enter, Keypad.Start);
-            _mappingDictionary.Add(Key.RightShift, Keypad.Select);
+            _mapping.Add(new Keymap(Key.W, Keypad.Up));
+            _mapping.Add(new Keymap(Key.S, Keypad.Down));
+            _mapping.Add(new Keymap(Key.A, Keypad.Left));
+            _mapping.Add(new Keymap(Key.D, Keypad.Right));
 
-            _mappingDictionary.Add(Key.Oem3, Keypad.Speed);
+            _mapping.Add(new Keymap(Key.O, Keypad.A));
+            _mapping.Add(new Keymap(Key.P, Keypad.B));
+            _mapping.Add(new Keymap(Key.Enter, Keypad.Start));
+            _mapping.Add(new Keymap(Key.RightShift, Keypad.Select));
+
+            _mapping.Add(new Keymap(Key.Oem3, Keypad.Speed));
         }
     }
 
@@ -43,7 +89,10 @@ namespace GBSharp.ViewModel
         private string _upControl;
         public string UpControl
         {
-            get { return _upControl; }
+            get
+            {
+                return _mapping[Keypad.Up].ToString();
+            }
             set
             {
                 if (_upControl == value) { return; }
@@ -55,7 +104,10 @@ namespace GBSharp.ViewModel
         private string _downControl;
         public string DownControl
         {
-            get { return _downControl; }
+            get
+            {
+                return _mapping[Keypad.Down].ToString();
+            }
             set
             {
                 if (_downControl == value) { return; }
@@ -67,7 +119,10 @@ namespace GBSharp.ViewModel
         private string _leftControl;
         public string LeftControl
         {
-            get { return _leftControl; }
+            get
+            {
+                return _mapping[Keypad.Left].ToString();
+            }
             set
             {
                 if (_leftControl == value) { return; }
@@ -79,7 +134,10 @@ namespace GBSharp.ViewModel
         private string _rightControl;
         public string RightControl
         {
-            get { return _rightControl; }
+            get
+            {
+                return _mapping[Keypad.Right].ToString();
+            }
             set
             {
                 if (_rightControl == value) { return; }
@@ -91,7 +149,10 @@ namespace GBSharp.ViewModel
         private string _aControl;
         public string AControl
         {
-            get { return _aControl; }
+            get
+            {
+                return _mapping[Keypad.A].ToString();
+            }
             set
             {
                 if (_aControl == value) { return; }
@@ -103,7 +164,10 @@ namespace GBSharp.ViewModel
         private string _bControl;
         public string BControl
         {
-            get { return _bControl; }
+            get
+            {
+                return _mapping[Keypad.B].ToString();
+            }
             set
             {
                 if (_bControl == value) { return; }
@@ -115,7 +179,10 @@ namespace GBSharp.ViewModel
         private string _startControl;
         public string StartControl
         {
-            get { return _startControl; }
+            get
+            {
+                return _mapping[Keypad.Start].ToString();
+            }
             set
             {
                 if (_startControl == value) { return; }
@@ -127,7 +194,10 @@ namespace GBSharp.ViewModel
         private string _selectControl;
         public string SelectControl
         {
-            get { return _selectControl; }
+            get
+            {
+                return _mapping[Keypad.Select].ToString();
+            }
             set
             {
                 if (_selectControl == value) { return; }
@@ -136,23 +206,29 @@ namespace GBSharp.ViewModel
             }
         }
 
-        private string _fastControl;
-        public string FastControl
+        private string _speedControl;
+        public string SpeedControl
         {
-            get { return _fastControl; }
+            get
+            {
+                return _mapping[Keypad.Speed].ToString();
+            }
             set
             {
-                if (_fastControl == value) { return; }
-                _fastControl = value;
-                OnPropertyChanged(() => FastControl);
+                if (_speedControl == value) { return; }
+                _speedControl = value;
+                OnPropertyChanged(() => SpeedControl);
             }
         }
+
+        ButtonMapping _mapping;
 
         /// <summary>
         /// Initializes a new instance of the ControlsViewModel class.
         /// </summary>
         public ControlsViewModel()
         {
+            _mapping = new ButtonMapping();
         }
 
         public void Dispose()

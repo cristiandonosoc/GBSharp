@@ -45,8 +45,8 @@
       <TextBlock  Grid.Row="3" Grid.Column="2" Text="Select" HorizontalAlignment="Right" />
       <TextBox    Grid.Row="3" Grid.Column="3" Text="{Binding SelectControl}" />
 
-      <TextBlock  Grid.Row="4" Grid.Column="0" Text="Fast" HorizontalAlignment="Right" />
-      <TextBox    Grid.Row="4" Grid.Column="1" Text="{Binding FastControl}" />
+      <TextBlock  Grid.Row="4" Grid.Column="0" Text="Speed" HorizontalAlignment="Right" />
+      <TextBox    Grid.Row="4" Grid.Column="1" Text="{Binding SpeedControl}" />
     </Grid>
   </Grid>
 </UserControl>
