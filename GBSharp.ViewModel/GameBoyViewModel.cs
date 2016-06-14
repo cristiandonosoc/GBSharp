@@ -77,7 +77,7 @@ namespace GBSharp.ViewModel
             _apu = new APUViewModel(_gameBoy, _dispatcher);
             _memoryImage = new MemoryImageViewModel(_gameBoy, _dispatcher);
             _soundRecording = new SoundRecordingViewModel(_gameBoy);
-            _controls = new ControlsViewModel(_buttonMapping);
+            _controls = new ControlsViewModel(this, _buttonMapping);
 
             // Gameboy Controller events
             _gameBoyController = new GameBoyContollerViewModel(_gameBoy, fileDialogFactory, _breakpoints);
@@ -99,11 +99,19 @@ namespace GBSharp.ViewModel
 
         private void OnKeyUp(KeyEventArgs args)
         {
-            _gameBoyGamePad.KeyUp(_buttonMapping, args);
+            if (_controls.SetMode)
+            {
+                _controls.SetMapping(args.Key);
+            }
+            else
+            {
+                _gameBoyGamePad.KeyUp(_buttonMapping, args);
+            }
         }
 
         private void OnKeyDown(KeyEventArgs args)
         {
+            if (_controls.SetMode) { return; }
             // NOTE(Cristian): Very hacky F10 step
             if (args.Key == Key.System)
             {
