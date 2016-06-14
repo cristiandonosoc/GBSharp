@@ -2,6 +2,8 @@
 using System.Windows.Input;
 using GBSharp.ViewModel;
 using Microsoft.Win32;
+using System.Collections.Generic;
+using Xceed.Wpf.AvalonDock.Layout;
 
 namespace GBSharp.View
 {
@@ -46,6 +48,30 @@ namespace GBSharp.View
 
         private void DockingManager_Loaded(object sender, RoutedEventArgs e)
         {
+            List<LayoutAnchorable> docks = new List<LayoutAnchorable>();
+            docks.Add(Background);
+            docks.Add(Breakpoints);
+            docks.Add(CPU);
+            //docks.Add(DisplayTiming);
+            docks.Add(Interrupts);
+            docks.Add(InstructionHistogram);
+            docks.Add(IORegisters);
+            docks.Add(Memory);
+            docks.Add(MemoryImage);
+            //docks.Add(SoundChannelInternals);
+            //docks.Add(Spectogram);
+            docks.Add(SpriteLayer);
+            //docks.Add(Sprites);
+            docks.Add(SoundRecording);
+            docks.Add(TileMap);
+            docks.Add(Window);
+
+            foreach(LayoutAnchorable dock in docks)
+            {
+                dock.AutoHideWidth = 500;
+                dock.FloatingWidth = 500;
+            }
+
             Background.ToggleAutoHide();
             Breakpoints.ToggleAutoHide();
             CPU.ToggleAutoHide();

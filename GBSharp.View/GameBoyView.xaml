@@ -156,7 +156,7 @@
     <avalonDock:DockingManager Loaded="DockingManager_Loaded">
       <avalonDock:LayoutRoot>
         <avalonDock:LayoutPanel Orientation="Horizontal">
-          <avalonDock:LayoutAnchorablePaneGroup DockWidth="Auto" Orientation="Vertical">
+          <avalonDock:LayoutAnchorablePaneGroup DockWidth="500" Orientation="Vertical">
             <avalonDock:LayoutAnchorablePane>
               <avalonDock:LayoutAnchorable Title="Main" AutoHideMinWidth="500">
                 <ContentPresenter Content="{Binding GameBoyController}" 
@@ -241,15 +241,6 @@
                                                   Content="{Binding Display.DisplayTiming}"/>
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>-->
-          </avalonDock:LayoutAnchorablePaneGroup>
-          <avalonDock:LayoutAnchorablePane>
-            <avalonDock:LayoutAnchorable x:Name="Gameboy" Title="Gameboy" AutoHideMinWidth="500" CanHide="False">
-              <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
-                                Content="{Binding GameBoyGamePad}" 
-                                Visibility="{Binding ElementName=GamePadSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" />
-            </avalonDock:LayoutAnchorable>
-          </avalonDock:LayoutAnchorablePane>
-          <avalonDock:LayoutAnchorablePaneGroup DockWidth="Auto" Orientation="Vertical" IsMaximized="False">
             <avalonDock:LayoutAnchorablePane>
               <avalonDock:LayoutAnchorable x:Name="CPU" Title="CPU" AutoHideMinWidth="500" CanHide="False">
                 <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
@@ -307,6 +298,13 @@
               </avalonDock:LayoutAnchorable>
             </avalonDock:LayoutAnchorablePane>
           </avalonDock:LayoutAnchorablePaneGroup>
+          <avalonDock:LayoutAnchorablePane DockWidth="Auto">
+            <avalonDock:LayoutAnchorable x:Name="Gameboy" Title="Gameboy" AutoHideMinWidth="500" CanHide="False">
+              <ContentPresenter Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
+                                Content="{Binding GameBoyGamePad}" 
+                                Visibility="{Binding ElementName=GamePadSectionCheck, Path=IsChecked, Converter={StaticResource BoolToVis}}" />
+            </avalonDock:LayoutAnchorable>
+          </avalonDock:LayoutAnchorablePane>
         </avalonDock:LayoutPanel>
       </avalonDock:LayoutRoot>
     </avalonDock:DockingManager>

@@ -393,6 +393,6 @@
             </Grid>
         </Grid>
         <ToggleButton Grid.Row="3" Content="Screen Only" IsChecked="{Binding ScreenOnly}"></ToggleButton>
-        <ToggleButton Grid.Row="4" Content="Ascii Mode" IsChecked="{Binding AsciiMode}"></ToggleButton>
+        <!--<ToggleButton Grid.Row="4" Content="Ascii Mode" IsChecked="{Binding AsciiMode}"></ToggleButton>-->
     </Grid>
 </UserControl>
