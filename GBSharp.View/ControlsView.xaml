@@ -8,10 +8,23 @@
              d:DesignHeight="300" d:DesignWidth="300">
   <Grid Style="{StaticResource SubContentGrid}">
     <Grid.RowDefinitions>
-      <RowDefinition />
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
     </Grid.RowDefinitions>
 
-    <Grid Margin="5">
+    <TextBlock Text="{Binding StatusText}">
+      <TextBlock.Style>
+        <Style TargetType="{x:Type TextBlock}">
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding SetMode}" Value="True">
+              <Setter Property="FontWeight" Value="Bold"></Setter>
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </TextBlock.Style>
+    </TextBlock>
+
+    <Grid Grid.Row="1" Margin="5">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />

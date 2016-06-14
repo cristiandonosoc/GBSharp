@@ -6,6 +6,26 @@ namespace GBSharp.ViewModel
 {
     public class ControlsViewModel : ViewModelBase
     {
+
+        private string _statusText;
+        public string StatusText
+        {
+            get
+            {
+                string message;
+                if (!SetMode)
+                {
+                    message = "Press any button to insert the binding";
+                }
+                else
+                {
+                    message = "Input the binding";
+                }
+
+                return message;
+            }
+        }
+
         public string UpControl { get { return _mapping[Keypad.Up].ToString(); } }
         public string DownControl { get { return _mapping[Keypad.Down].ToString(); } }
         public string LeftControl { get { return _mapping[Keypad.Left].ToString(); } }
@@ -60,12 +80,18 @@ namespace GBSharp.ViewModel
         {
             SetMode = true;
             _keypadToBeSet = keypad;
+            Refresh();
         }
 
         internal void SetMapping(Key key)
         {
             _mapping[_keypadToBeSet] = key;
             SetMode = false;
+            Refresh();
+        }
+
+        internal void Refresh()
+        {
             OnPropertyChanged(() => UpControl);
             OnPropertyChanged(() => DownControl);
             OnPropertyChanged(() => LeftControl);
@@ -77,9 +103,9 @@ namespace GBSharp.ViewModel
             OnPropertyChanged(() => SelectControl);
 
             OnPropertyChanged(() => SpeedControl);
+
+            OnPropertyChanged(() => StatusText);
+            OnPropertyChanged(() => SetMode);
         }
-
-
-
     }
 }
