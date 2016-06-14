@@ -2,6 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
@@ -26,27 +27,83 @@
       </Grid.ColumnDefinitions>
 
       <TextBlock  Grid.Row="0" Grid.Column="0" Text="Up" HorizontalAlignment="Right" />
-      <TextBox    Grid.Row="0" Grid.Column="1" Text="{Binding UpControl}" />
+      <Button     Grid.Row="0" Grid.Column="1" Content="{Binding UpControl}">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+            <i:InvokeCommandAction Command="{Binding ButtonDownUpCommand}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
+      </Button>
       <TextBlock  Grid.Row="0" Grid.Column="2" Text="A" HorizontalAlignment="Right" />
-      <TextBox    Grid.Row="0" Grid.Column="3" Text="{Binding AControl}" />
+      <Button     Grid.Row="0" Grid.Column="3" Content="{Binding AControl}">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+            <i:InvokeCommandAction Command="{Binding ButtonDownACommand}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
+      </Button>
 
       <TextBlock  Grid.Row="1" Grid.Column="0" Text="Down" HorizontalAlignment="Right" />
-      <TextBox    Grid.Row="1" Grid.Column="1" Text="{Binding DownControl}" />
+      <Button     Grid.Row="1" Grid.Column="1" Content="{Binding DownControl}">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+            <i:InvokeCommandAction Command="{Binding ButtonDownDownCommand}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
+      </Button>
       <TextBlock  Grid.Row="1" Grid.Column="2" Text="B" HorizontalAlignment="Right" />
-      <TextBox    Grid.Row="1" Grid.Column="3" Text="{Binding BControl}" />
+      <Button     Grid.Row="1" Grid.Column="3" Content="{Binding BControl}">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+            <i:InvokeCommandAction Command="{Binding ButtonDownBCommand}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
+      </Button>
 
       <TextBlock  Grid.Row="2" Grid.Column="0" Text="Left" HorizontalAlignment="Right" />
-      <TextBox    Grid.Row="2" Grid.Column="1" Text="{Binding LeftControl}" />
+      <Button     Grid.Row="2" Grid.Column="1" Content="{Binding LeftControl}">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+            <i:InvokeCommandAction Command="{Binding ButtonDownLeftCommand}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
+      </Button>
       <TextBlock  Grid.Row="2" Grid.Column="2" Text="Start" HorizontalAlignment="Right" />
-      <TextBox    Grid.Row="2" Grid.Column="3" Text="{Binding StartControl}" />
+      <Button     Grid.Row="2" Grid.Column="3" Content="{Binding StartControl}">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+            <i:InvokeCommandAction Command="{Binding ButtonDownStartCommand}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
+      </Button>
 
       <TextBlock  Grid.Row="3" Grid.Column="0" Text="Right" HorizontalAlignment="Right" />
-      <TextBox    Grid.Row="3" Grid.Column="1" Text="{Binding RightControl}" />
+      <Button     Grid.Row="3" Grid.Column="1" Content="{Binding RightControl}">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+            <i:InvokeCommandAction Command="{Binding ButtonDownRightCommand}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
+      </Button>
       <TextBlock  Grid.Row="3" Grid.Column="2" Text="Select" HorizontalAlignment="Right" />
-      <TextBox    Grid.Row="3" Grid.Column="3" Text="{Binding SelectControl}" />
+      <Button     Grid.Row="3" Grid.Column="3" Content="{Binding SelectControl}">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+            <i:InvokeCommandAction Command="{Binding ButtonDownSelectCommand}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
+      </Button>
 
       <TextBlock  Grid.Row="4" Grid.Column="0" Text="Speed" HorizontalAlignment="Right" />
-      <TextBox    Grid.Row="4" Grid.Column="1" Text="{Binding SpeedControl}" />
+      <Button     Grid.Row="4" Grid.Column="1" Content="{Binding SpeedControl}">
+        <i:Interaction.Triggers>
+          <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+            <i:InvokeCommandAction Command="{Binding ButtonDownSpeedCommand}" />
+          </i:EventTrigger>
+        </i:Interaction.Triggers>
+      </Button>
+
+
     </Grid>
   </Grid>
 </UserControl>

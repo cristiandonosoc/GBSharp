@@ -42,6 +42,8 @@ namespace GBSharp.ViewModel
         public SoundRecordingViewModel SoundRecording { get { return _soundRecording; } }
         public ControlsViewModel Controls { get { return _controls; } }
 
+        private readonly ButtonMapping _buttonMapping;
+
         public GameBoyViewModel(IGameBoy gameBoy, IDispatcher dispatcher, IWindow window, 
                                 IOpenFileDialogFactory fileDialogFactory, 
                                 IKeyboardHandler keyboardHandler)
@@ -53,6 +55,8 @@ namespace GBSharp.ViewModel
             _keyboardHandler.KeyDown += OnKeyDown;
             _keyboardHandler.KeyUp += OnKeyUp;
             _window.OnClosing += HandleClosing;
+
+            _buttonMapping = new ButtonMapping();
 
             _memory = new MemoryViewModel(_gameBoy.Memory, "Memory View");
             _cpu = new CPUViewModel(_gameBoy, _dispatcher);
@@ -73,7 +77,7 @@ namespace GBSharp.ViewModel
             _apu = new APUViewModel(_gameBoy, _dispatcher);
             _memoryImage = new MemoryImageViewModel(_gameBoy, _dispatcher);
             _soundRecording = new SoundRecordingViewModel(_gameBoy);
-            _controls = new ControlsViewModel();
+            _controls = new ControlsViewModel(this, _buttonMapping);
 
             // Gameboy Controller events
             _gameBoyController = new GameBoyContollerViewModel(_gameBoy, fileDialogFactory, _breakpoints);
@@ -95,11 +99,19 @@ namespace GBSharp.ViewModel
 
         private void OnKeyUp(KeyEventArgs args)
         {
-            _gameBoyGamePad.KeyUp(args);
+            if (_controls.SetMode)
+            {
+                _controls.SetMapping(args.Key);
+            }
+            else
+            {
+                _gameBoyGamePad.KeyUp(_buttonMapping, args);
+            }
         }
 
         private void OnKeyDown(KeyEventArgs args)
         {
+            if (_controls.SetMode) { return; }
             // NOTE(Cristian): Very hacky F10 step
             if (args.Key == Key.System)
             {
@@ -109,7 +121,7 @@ namespace GBSharp.ViewModel
                 }
             }
 
-            _gameBoyGamePad.KeyDown(args);
+            _gameBoyGamePad.KeyDown(_buttonMapping, args);
         }
 
         private void InterruptHandler(GBSharp.CPUSpace.Interrupts interrupt)
