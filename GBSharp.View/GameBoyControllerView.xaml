@@ -172,7 +172,7 @@
             <TextBlock Grid.Column="5" Text="Literal" />
             <TextBlock Grid.Column="6" Text="Ticks" />
           </Grid>
-          <ListView Grid.Row="1" MaxHeight="700"  
+          <ListView Grid.Row="1" MaxHeight="400"  
                   ItemsSource ="{Binding Instructions}" 
                   SelectedItem="{Binding SelectedInstruction}"
                   SelectionChanged="ListView_SelectionChanged">

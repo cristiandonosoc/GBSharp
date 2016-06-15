@@ -165,8 +165,8 @@
                                   Converter={StaticResource BoolToVis}}"/>
               </avalonDock:LayoutAnchorable>
             </avalonDock:LayoutAnchorablePane>
-            <avalonDock:LayoutAnchorablePane>
-              <avalonDock:LayoutAnchorable Title="Controls" AutoHideMinWidth="500">
+            <avalonDock:LayoutAnchorablePane DockHeight="300">
+              <avalonDock:LayoutAnchorable Title="Controls" AutoHideHeight="300" AutoHideMinWidth="500">
                 <ContentPresenter Content="{Binding Controls}" 
                                   Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" 
                                   Visibility="{Binding ElementName=ControllerSectionCheck, Path=IsChecked, 

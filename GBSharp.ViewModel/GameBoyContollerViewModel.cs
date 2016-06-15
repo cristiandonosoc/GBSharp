@@ -148,6 +148,8 @@ namespace GBSharp.ViewModel
             {
                 LoadMemoryDump(filePath);
             }
+
+
         }
 
         private bool LoadROM(string filePath)

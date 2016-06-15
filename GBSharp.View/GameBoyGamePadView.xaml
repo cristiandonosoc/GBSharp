@@ -31,7 +31,9 @@
             </TextBox.LayoutTransform>
         </TextBox>
         <Grid Style="{DynamicResource MedGridNoMargin}" Grid.Row="2" Visibility="{Binding AsciiMode, Converter={StaticResource BoolToHid}}">
-            <Image  Visibility="{Binding ScreenOnly, Converter={StaticResource BoolToVis}}" Source="{Binding Screen}"/>
+            <Image  Visibility="{Binding ScreenOnly, Converter={StaticResource BoolToVis}}" 
+                    Source="{Binding Screen}" 
+                    MaxHeight="800"  />
             <Grid Visibility="{Binding ScreenOnly, Converter={StaticResource BoolToHid}}" >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" ></ColumnDefinition>
